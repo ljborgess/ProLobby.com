@@ -13,5 +13,5 @@ Plataforma guarda dado sensível o suficiente pra exigir política clara: print 
 
 ## Exclusão de conta
 
-- Player pode pedir exclusão de conta e dados pessoais (direito LGPD).
+- Player pode pedir exclusão de conta e dados pessoais (direito LGPD) — inclui remoção (kick) do servidor Discord, já que é saída voluntária da plataforma inteira, diferente de suspensão/banimento (ver [docs/discord/](../../../discord/README.md)).
 - Histórico de elo/reputação pode ser mantido de forma **agregada e anonimizada** (sem vincular a print/foto/identidade), pra não perder integridade estatística da plataforma.

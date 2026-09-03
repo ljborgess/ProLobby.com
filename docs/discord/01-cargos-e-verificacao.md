@@ -16,6 +16,9 @@
 - É o cargo que **libera acesso aos canais de fila/lobby** — o gate funcional de verdade vive aqui, os cargos sociais nunca dão acesso.
 - **Revogado automaticamente durante suspensão** (ver [Ranking, reputação e punição](../produto/dossie/02-jogador/06-ranking-reputacao-e-punicao.md)) — perde acesso a canal de fila/lobby, mas continua no servidor geral (coerente com a decisão de que punição não expulsa do Discord).
 - Reconcedido automaticamente quando a suspensão termina.
+- **Banimento permanente**: mesma revogação, sem reconcessão futura — não tem "quando terminar" porque não termina.
+- **Personagem arquivado** (edição nova do jogo exige reverificação — ver [Escopo de plataforma, jogo e região](../produto/dossie/05-produto/08-escopo-plataforma-jogo-regiao.md)): cargo cai junto, porque deixa de existir verificação válida pra edição corrente. Reconcedido quando reverificar a edição nova. Coerente com a fila também bloquear nesse estado.
+- **Exclusão de conta** (pedido voluntário, LGPD — ver [Dados pessoais e LGPD](../produto/dossie/04-governanca/09-dados-pessoais-lgpd.md)): diferente de suspensão/banimento (involuntário, mantém no servidor), exclusão é saída voluntária da plataforma inteira — bot **remove (kick) do servidor** junto com o resto do processo de exclusão.
 
 ## Apelido (nickname)
 

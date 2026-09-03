@@ -26,7 +26,7 @@ Motivo de separar: um jogador pode ser ótimo competidor com reputação ruim (s
 
 Apelação disponível em qualquer degrau, via chamado pra moderação (ver [Moderação](../04-governanca/07-moderacao.md)).
 
-- Suspensão/banimento afeta **só o acesso à fila/matchmaking dentro da plataforma** — não expulsa automaticamente do servidor Discord da comunidade (pessoa punida ainda pode ver avisos, discutir, apelar). Kick do Discord fica reservado a caso extremo, decisão manual da moderação, não automática.
+- Suspensão/banimento afeta **só o acesso à fila/matchmaking dentro da plataforma** — não expulsa automaticamente do servidor Discord da comunidade (pessoa punida ainda pode ver avisos, discutir, apelar). Kick do Discord fica reservado a caso extremo, decisão manual da moderação, não automática. Consequência no Discord (revogação de cargo, log) documentada em [docs/discord/](../../../discord/README.md).
 
 ## Multi-conta / smurfing
 

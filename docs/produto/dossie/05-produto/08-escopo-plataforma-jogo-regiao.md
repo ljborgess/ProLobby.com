@@ -14,7 +14,7 @@
 
 - **Toda edição atual e futuras do FIFA/EA FC são suportadas** — plataforma não trava numa versão só.
 - Personagem fica vinculado à edição do jogo em que foi verificado.
-- Quando sai edição nova: personagens da edição anterior são **arquivados** (saem da fila ativa, não são deletados), exigindo reverificação pra edição nova.
+- Quando sai edição nova: personagens da edição anterior são **arquivados** (saem da fila ativa, não são deletados), exigindo reverificação pra edição nova. Cargo Verificado do Discord cai junto até reverificar (ver [docs/discord/](../../../discord/README.md)).
 - Motivo: atributos/overall mudam de edição pra edição — não é o mesmo dado, precisa de print novo.
 - **Elo/rating e reputação carregam entre edições** (medem a pessoa, não o jogo) — não resetam a cada lançamento. Só **overall/atributos do personagem** resetam, porque são dado extraído do print, específico da edição.
 
