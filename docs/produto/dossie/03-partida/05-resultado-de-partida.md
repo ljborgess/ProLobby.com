@@ -15,6 +15,7 @@ Sem API da EA, resultado depende de **report manual com print** — mesma limita
 Gatilho de validade do print (evita fraude/troll terminando partida cedo, sem depender de botão manual de "partida terminou"):
 1. **Piso de tempo mínimo** desde o lobby fechado — print enviado antes disso é rejeitado automaticamente.
 2. **OCR valida que é a tela de "fim de partida"** (placar final + estatísticas), não HUD de jogo em andamento.
+3. **OCR valida o nome dos 2 clubes na tela** contra o par de clube-casa atribuído àquele lobby (ver [Mecânica real do EA FC Pro Clubs](00-mecanica-pro-clubs.md)) — evita reportar print de partida qualquer fora do ProLobby como se fosse a do lobby.
 
 ## Validação cruzada
 

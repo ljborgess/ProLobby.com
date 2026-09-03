@@ -22,6 +22,8 @@ Só existem 3 jeitos de jogar 11v11 dentro do modo Clubes:
 
 **Fricção nova confirmada**: Amistoso Online exige **coordenação manual dos dois gerentes** (busca o clube rival, cada lado clica "pronto" separadamente) — não é automático nem instantâneo. Isso é uma sincronização real que o bot Discord não alcança (fora do jogo).
 
+**Alívio confirmado — crossplay**: clube EA suporta membro de **PS5/Xbox/PC misturado** (mesma geração — PS4/Xbox One não entram, coerente com o que já foi fechado em [Escopo de plataforma, jogo e região](../05-produto/08-escopo-plataforma-jogo-regiao.md)). Clube-casa não precisa ser um por plataforma — 1 clube-casa serve lobby misto normalmente.
+
 ## Mecanismo proposto pra reconciliar (dedução, não confirmada em campo)
 
 ProLobby manteria um **pool de "clubes-casa" próprios**, já criados dentro do jogo (ex.: pares fixos tipo Clube Alpha / Clube Beta, quantos pares forem necessários pra rodar lobbies em paralelo). Quando o lobby fecha:
@@ -38,6 +40,9 @@ ProLobby manteria um **pool de "clubes-casa" próprios**, já criados dentro do 
 - **Gargalo serial aceito no MVP**: com 1 par só, o próximo lobby só fecha depois do anterior esvaziar (convite → jogo → limpeza manual, tudo dentro do jogo). Fila **não precisa** de mensagem/estado especial distinguindo "esperando jogador" de "esperando clube-casa liberar" — aceito como limitação conhecida do MVP, revisar se virar gargalo real com volume maior.
 - **Limpeza pós-partida é manual, dentro do jogo, fora do alcance do bot**: bot Discord não tem como mexer em clube EA (sem API). Gerente da conta de serviço entra no jogo e remove os 20 convidados depois de cada partida reportada — mesmo gatilho de tempo já usado pra deletar canal de voz do lobby (ver [Resultado de partida](05-resultado-de-partida.md)). Se alguém travar a remoção (não sai, dá erro), vira **caso de moderação** — mesmo fluxo já existente ([Moderação](../04-governanca/07-moderacao.md)), não mecanismo novo.
 - **Dono/gerente do clube-casa**: **ainda em aberto**, não decidido — ver `04-discord-e-lobby.md` quando essa peça for fechada.
+- **Formação tática aplicada pelo gerente**: o voto de formação pós-lobby (ver [Fila e matchmaking](03-fila-e-matchmaking.md)) precisa ser aplicado no menu de tática do clube-casa por quem tem permissão de gerente — mais um passo do mesmo ciclo já documentado (convite → formação → iniciar amistoso), não mecanismo novo.
+- **OCR valida também o nome do clube-casa**: tela de fim de partida mostra placar entre clubes ("Clube A x Clube B"), não entre jogadores individuais. OCR (já desenhado em [Resultado de partida](05-resultado-de-partida.md)) passa a extrair e cruzar o **nome dos 2 clubes** contra o par de clube-casa atribuído àquele lobby, além do placar — fecha uma brecha real (sem isso, nada impede alguém de reportar print de partida qualquer fora do ProLobby como se fosse a do lobby).
+- **Registro interno dos clubes-casa**: ficha administrativa (não cadastro de jogador, não tela pública) mantida pelos 4 — nome do clube, plataforma, EA ID/gamertag da conta de serviço, status livre/ocupado. MVP tem 1 linha (o único par); Fase 2+ adiciona linha por par novo. Vive junto com o painel de moderação já documentado em [Moderação](../04-governanca/07-moderacao.md), não precisa de tela nova.
 
 ## Pendência crítica
 
