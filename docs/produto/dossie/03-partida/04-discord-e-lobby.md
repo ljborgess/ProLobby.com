@@ -6,6 +6,8 @@
 
 Sala de partida dentro do jogo é sempre criada **manualmente** pelo host, dentro do console — a plataforma não tem como automatizar isso (EA não expõe API pra criar sala). Por isso a plataforma vira central de **coordenação**, não de execução da partida em si.
 
+**Atenção**: essa premissa (host cria sala avulsa pra 22 estranhos) ainda não foi verificada contra o mecanismo real do jogo — ver [Mecânica real do EA FC Pro Clubs](00-mecanica-pro-clubs.md), pesquisa aponta que pode não existir esse tipo de sala e o fluxo de host/lobby pode precisar mudar.
+
 Estrutura do servidor (cargos, canais, permissões do bot) documentada à parte, fora do dossiê de produto — ver [docs/discord/](../../../discord/README.md).
 
 ## Vínculo obrigatório

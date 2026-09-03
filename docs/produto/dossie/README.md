@@ -20,6 +20,7 @@ Status: design de produto, sem código além do reaproveitamento do front-end (d
 
 ### Ciclo da partida
 
+0. [Mecânica real do EA FC Pro Clubs](03-partida/00-mecanica-pro-clubs.md) — **pesquisa, verificação prática pendente**
 3. [Fila e matchmaking](03-partida/03-fila-e-matchmaking.md)
 4. [Discord e lobby](03-partida/04-discord-e-lobby.md)
 5. [Resultado de partida](03-partida/05-resultado-de-partida.md)
