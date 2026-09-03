@@ -9,7 +9,7 @@ O bot é o **motor único de automação** entre a plataforma (aplicação web) 
 | Evento na plataforma | Ação do bot no Discord |
 |---|---|
 | Personagem aprovado (OCR) **e** Discord vinculado (qualquer ordem, gatilho duplo) | Concede cargo **Verificado** + sincroniza nickname com gamertag/PSN ID (ver [Cargos e verificação](01-cargos-e-verificacao.md)) |
-| Lobby fecha (22 confirmados) | Escolhe capitão de cada lado (maior reputação com clube+vaga — ver [Discord e lobby](../produto/dossie/03-partida/04-discord-e-lobby.md)), cria **3 canais temporários** (2 de voz privados por time + 1 de texto compartilhado pelos 22), posta nome dos capitães e avisos operacionais no canal de texto, pinga os 22, dispara timer de entrada |
+| Lobby fecha (22 confirmados) | Plataforma decide o capitão de cada lado (critério de reputação — ver [Discord e lobby](../produto/dossie/03-partida/04-discord-e-lobby.md)); bot só executa: cria **3 canais temporários** (2 de voz privados por time + 1 de texto compartilhado pelos 22), posta nome dos capitães e avisos operacionais no canal de texto, pinga os 22, dispara timer de entrada |
 | Partida termina (relatório processado) | Deleta os 3 canais temporários do lobby |
 | Fila fechou / lobby formado / disputa resolvida / punição aplicada | Notifica via DM do bot + notificação in-app na plataforma |
 | Disputa cai em moderação / suspensão aplicada | Notifica as partes envolvidas |

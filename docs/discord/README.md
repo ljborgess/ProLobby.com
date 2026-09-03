@@ -7,6 +7,7 @@ Documenta a estrutura do servidor Discord da comunidade ProLobby: cargos, canais
 1. [Cargos e verificação](01-cargos-e-verificacao.md)
 2. [Canais](02-canais.md)
 3. [Bot: permissões e integração com moderação](03-bot-e-moderacao.md)
+4. [Integração técnica plataforma ↔ bot](04-integracao-tecnica.md)
 
 ## Propriedade e convite do servidor
 
