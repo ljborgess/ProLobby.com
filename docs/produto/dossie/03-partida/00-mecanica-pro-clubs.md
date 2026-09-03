@@ -28,7 +28,7 @@ Só existem 3 jeitos de jogar 11v11 dentro do modo Clubes:
 
 ProLobby manteria um **pool de "clubes-casa" próprios**, já criados dentro do jogo (ex.: pares fixos tipo Clube Alpha / Clube Beta, quantos pares forem necessários pra rodar lobbies em paralelo). Quando o lobby fecha:
 
-1. O operador da conta de serviço (gerente do clube-casa) convida os 11 de cada time pro clube-casa correspondente, por EA ID/gamertag — não depende de nenhum jogador específico ("host" foi removido do desenho, ver [Discord e lobby](04-discord-e-lobby.md): Pro Clubs usa servidor dedicado, sem papel de host de rede).
+1. O operador da conta de serviço (gerente do clube-casa) convida os **10 jogadores reais** de cada time pro clube-casa correspondente, por EA ID/gamertag — o gerente já ocupa a 11ª vaga com o próprio Virtual Pro, jogando junto (confirmado: gerente é um dos jogadores em campo, sem restrição de posição). Não depende de nenhum jogador específico virar "host" (conceito removido do desenho, ver [Discord e lobby](04-discord-e-lobby.md): Pro Clubs usa servidor dedicado, sem papel de host de rede).
 2. Um clube-casa desafia o outro via Amistoso Online.
 3. Depois da partida, todo mundo sai do clube-casa de novo — fica "vazio", pronto pro próximo lobby reusar.
 
@@ -44,6 +44,7 @@ ProLobby manteria um **pool de "clubes-casa" próprios**, já criados dentro do 
 - **Formação tática aplicada pelo gerente**: o voto de formação pós-lobby (ver [Fila e matchmaking](03-fila-e-matchmaking.md)) precisa ser aplicado no menu de tática do clube-casa por quem tem permissão de gerente — mais um passo do mesmo ciclo já documentado (convite → formação → iniciar amistoso), não mecanismo novo.
 - **OCR valida também o nome do clube-casa**: tela de fim de partida mostra placar entre clubes ("Clube A x Clube B"), não entre jogadores individuais. OCR (já desenhado em [Resultado de partida](05-resultado-de-partida.md)) passa a extrair e cruzar o **nome dos 2 clubes** contra o par de clube-casa atribuído àquele lobby, além do placar — fecha uma brecha real (sem isso, nada impede alguém de reportar print de partida qualquer fora do ProLobby como se fosse a do lobby).
 - **Registro interno dos clubes-casa**: ficha administrativa (não cadastro de jogador, não tela pública) mantida pelos 4 — nome do clube, plataforma, EA ID/gamertag da conta de serviço, status livre/ocupado. MVP tem 1 linha (o único par); Fase 2+ adiciona linha por par novo. Vive junto com o painel de moderação já documentado em [Moderação](../04-governanca/07-moderacao.md), não precisa de tela nova.
+- **Composição real da partida**: confirmado que o gerente da conta de serviço **ocupa 1 das 11 vagas em campo, jogando** (não é só administrativo) — sem restrição de posição do jogo, livre escolha de quem opera. Isso muda a conta do matchmaking: **20 jogadores reais** (10 por lado, pareados por elo/categoria), não 22 — a 11ª vaga de cada lado é do gerente, fora do matchmaking, sem elo/reputação rastreados. Distribuição de categoria pros 10 reais: **1 GK + 3 Zaga/Lateral + 2 Meio + 2 Ponta + 2 Ataque** (ver [Fila e matchmaking](03-fila-e-matchmaking.md)). Posição do gerente em campo fica livre, sem regra fixa da plataforma.
 
 ## Pendência crítica
 

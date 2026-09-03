@@ -8,7 +8,7 @@ Sem API da EA, resultado depende de **report manual com print** — mesma limita
 
 ## Quem reporta
 
-- **Qualquer um dos 22** pode mandar o print do placar final.
+- **Qualquer um dos 20 jogadores reais** pode mandar o print do placar final (gerentes das contas de serviço não têm personagem/conta de jogador vinculada — ver [Mecânica real do EA FC Pro Clubs](00-mecanica-pro-clubs.md)).
 
 ## Validação anti-fraude do print
 
@@ -26,7 +26,7 @@ Gatilho de validade do print (evita fraude/troll terminando partida cedo, sem de
 
 - Se só um lado mandar dentro da janela (15 min): aceita como válido com flag "não confirmado", sujeito a contestação por prazo curto (ex.: 48h) — depois disso vira definitivo, evita passivo indefinido de disputa antiga pros 4 moderadores.
 - Se os dois lados mandarem placares divergentes: cai em **disputa/moderação** (ver [Moderação](../04-governanca/07-moderacao.md)).
-- Se **nenhum dos 22** reportar dentro dos 15 min: fica pendente — depois de um prazo bem maior (ex.: 24-48h) sem nenhum report, sistema expira automaticamente e libera as 22 contas. **Não fica sem custo**: aplica penalidade leve de reputação pros 22 (mesma métrica de `06`, rateada — não dá pra saber quem "devia" ter reportado, e escala só em reincidência, igual ao padrão já usado em não-confirmar-lobby de `03`). Sem isso, o time perdedor teria incentivo estrutural de torcer pra ninguém reportar e escapar de graça — número exato de reincidência/threshold é provisório, ajusta com dado real.
+- Se **nenhum dos 20 reais** reportar dentro dos 15 min: fica pendente — depois de um prazo bem maior (ex.: 24-48h) sem nenhum report, sistema expira automaticamente e libera as 20 contas. **Não fica sem custo**: aplica penalidade leve de reputação pros 20 (mesma métrica de `06`, rateada — não dá pra saber quem "devia" ter reportado, e escala só em reincidência, igual ao padrão já usado em não-confirmar-lobby de `03`). Sem isso, o time perdedor teria incentivo estrutural de torcer pra ninguém reportar e escapar de graça — número exato de reincidência/threshold é provisório, ajusta com dado real.
 - **Desconexão / rage quit**: reportado dentro do mesmo fluxo (campo "reportar ausência" na tela de report do placar) — não é fluxo separado. Confirmada pelo outro lado, gera penalidade de reputação maior que perder a partida normalmente.
 
 ## Incentivo estrutural

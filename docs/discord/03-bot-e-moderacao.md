@@ -9,7 +9,7 @@ O bot é o **motor único de automação** entre a plataforma (aplicação web) 
 | Evento na plataforma | Ação do bot no Discord |
 |---|---|
 | Personagem aprovado (OCR) **e** Discord vinculado (qualquer ordem, gatilho duplo) | Concede cargo **Verificado** + sincroniza nickname com gamertag/PSN ID (ver [Cargos e verificação](01-cargos-e-verificacao.md)) |
-| Lobby fecha (22 confirmados) | Cria **3 canais temporários** (2 de voz privados por time — Time A / Time B — + 1 de texto compartilhado pelos 22), posta avisos operacionais no canal de texto, pinga os 22, dispara timer de entrada (ver [Discord e lobby](../produto/dossie/03-partida/04-discord-e-lobby.md)) |
+| Lobby fecha (20 confirmados) | Cria **3 canais temporários** (2 de voz privados por time — Time A / Time B — + 1 de texto compartilhado pelos 20), posta avisos operacionais no canal de texto, pinga os 20, dispara timer de entrada (ver [Discord e lobby](../produto/dossie/03-partida/04-discord-e-lobby.md)) |
 | Partida termina (relatório processado) | Deleta os 3 canais temporários do lobby |
 | Fila fechou / lobby formado / disputa resolvida / punição aplicada | Notifica via DM do bot + notificação in-app na plataforma |
 | Disputa cai em moderação / suspensão aplicada | Notifica as partes envolvidas |
@@ -18,9 +18,9 @@ O bot é o **motor único de automação** entre a plataforma (aplicação web) 
 | Banimento permanente aplicado | Revoga cargo Verificado — sem reconcessão futura |
 | Exclusão de conta (pedido LGPD) | **Kick do servidor** — diferente de suspensão/ban, é saída voluntária da plataforma inteira |
 | Personagem arquivado (edição nova do jogo) | Revoga cargo Verificado até reverificar a edição nova (ver [Cargos e verificação](01-cargos-e-verificacao.md)) |
-| Zero-report expira (24-48h sem ninguém reportar) | Notifica os 22 (partida encerrada sem dado, penalidade leve de reputação aplicada — ver [Resultado de partida](../produto/dossie/03-partida/05-resultado-de-partida.md)) |
-| Resultado de partida confirmado (sem disputa) | Notifica os 22 que elo/reputação foram atualizados |
-| Rollback retroativo (disputa revertida pela moderação) | Notifica os 22 envolvidos que elo/reputação foram recalculados (ver [Ranking, reputação e punição](../produto/dossie/02-jogador/06-ranking-reputacao-e-punicao.md)) |
+| Zero-report expira (24-48h sem ninguém reportar) | Notifica os 20 jogadores reais (partida encerrada sem dado, penalidade leve de reputação aplicada — ver [Resultado de partida](../produto/dossie/03-partida/05-resultado-de-partida.md)) |
+| Resultado de partida confirmado (sem disputa) | Notifica os 20 que elo/reputação foram atualizados |
+| Rollback retroativo (disputa revertida pela moderação) | Notifica os 20 envolvidos que elo/reputação foram recalculados (ver [Ranking, reputação e punição](../produto/dossie/02-jogador/06-ranking-reputacao-e-punicao.md)) |
 | Qualquer chamado de moderação resolvido (exceção de OCR, troca de gamertag, apelação — ver [Moderação](../produto/dossie/04-governanca/07-moderacao.md)) | Notifica o solicitante via DM + in-app — mesma esteira usada pra disputa/punição, sem exceção |
 | Mensagem em **#suporte-e-denuncia** | Cria caso automaticamente na fila de moderação da plataforma ([Moderação](../produto/dossie/04-governanca/07-moderacao.md)) — painel único, sem checar dois sistemas |
 | Qualquer ação sensível (kick, ban, concessão/revogação de Verificado) | Posta registro em **#log-moderacao** (ver [Canais](02-canais.md)) — auditável sem depender do audit log nativo |
