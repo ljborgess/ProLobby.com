@@ -5,6 +5,7 @@
 ## Quem modera
 
 - Fase 1 (MVP): moderação feita pelos 4 (Luciano, Rafael, João, Felipe), com painel simples de fila de casos pendentes.
+- **Conflito de interesse**: sem regra formal de impedimento — se um caso envolve diretamente um dos 4 (jogou a partida em disputa, ou é a pessoa denunciada), decidem em conjunto mesmo assim. Aposta no bom senso do grupo pequeno de alta confiança mútua; sem salvaguarda formal caso vire ponto de contestação por outro usuário — revisitar se acontecer.
 
 ## Casos que caem em moderação
 

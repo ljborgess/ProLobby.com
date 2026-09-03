@@ -9,6 +9,7 @@ Plataforma guarda dado sensível o suficiente pra exigir política clara: print 
 ## Retenção
 
 - Prints (evidência de cadastro e de resultado) retidos por prazo definido (ex.: 90 dias — suficiente pra disputa/auditoria), apagados automaticamente depois.
+- Consequência direta: o "histórico de prints" visível pro dono do perfil (ver [Personagens e verificação](../02-jogador/02-personagens-e-verificacao.md)) cobre só o período de retenção — prints mais antigos que o prazo simplesmente não existem mais pra visualizar.
 
 ## Exclusão de conta
 

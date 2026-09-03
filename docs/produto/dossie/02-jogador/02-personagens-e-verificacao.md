@@ -9,7 +9,7 @@ EA FC Pro Clubs **não tem API pública** — nenhuma integração automática c
 ## Modelo de personagem
 
 - Um **personagem = 1 posição fixa**, com atributos/overall próprios (reflete como o Virtual Pro funciona no jogo).
-- **1 conta (vinculada a Discord — ver [Discord e lobby](../03-partida/04-discord-e-lobby.md)) pode ter até 5 personagens**, um por categoria de posição:
+- **1 conta pode ter até 5 personagens**, um por categoria de posição (Discord é vínculo separado, obrigatório só pra fila — ver [Discord e lobby](../03-partida/04-discord-e-lobby.md)):
   1. Goleiro (GK)
   2. Zaga/Lateral (CB, LB, RB)
   3. Meio-campo (CDM, CM, CAM)
@@ -26,10 +26,12 @@ EA FC Pro Clubs **não tem API pública** — nenhuma integração automática c
 
 - Cadastro via **print in-game** processado por **OCR**, preenchendo automaticamente nome, posição, atributos, foto.
 - OCR também extrai o **gamertag/PSN ID mostrado na tela do print** e compara com o gamertag cadastrado na conta (mesmo pipeline de leitura, sem custo extra de mecanismo). Se não bater, cadastro é **rejeitado automaticamente** — evita alguém usar print de tela de outra pessoa.
+- **Troca de gamertag/PSN ID no console** (PSN ID e Xbox Gamertag permitem troca no mundo real) quebra esse match pro próximo print. Fluxo: jogador pede **atualização do gamertag cadastrado** via chamado de moderação (mesmo caminho da exceção de OCR) — sistema reprocessa unicidade (plataforma+gamertag, já fechada acima) antes de aceitar. Evita ficar travado permanentemente por ter trocado o nome no próprio console.
 - Campos extraídos por OCR (atributos, overall, posição) ficam **travados** — não editáveis manualmente. Único jeito de corrigir/atualizar é **reenviar novo print** (reprocessado, substitui os dados, mantém histórico).
 - Antes de salvar, tela de confirmação mostra dado extraído + nível de confiança do OCR — player confirma ou reenvia.
 - Exceção: se OCR falhar repetidamente, abre **chamado pra moderação** corrigir manualmente (caso raro, auditável — ver [Moderação](../04-governanca/07-moderacao.md)).
 - **Cooldown entre atualizações** (ex.: 1x a cada 24–48h) — evita spam de prints tentando "sorte" no OCR.
 - **Snapshot travado durante fila/lobby ativo** — update de atributos só aplica depois que sai da fila/partida.
-- Nome/foto: editáveis livremente (baixo risco competitivo). Atributos de jogo: só via novo print.
+- Nome/foto: editáveis livremente (baixo risco competitivo, personagem é personalizável, não precisa refletir aparência real do Virtual Pro). Atributos de jogo: só via novo print.
+- Foto **sem checagem automática de conteúdo** no MVP — upload livre; conteúdo inadequado é tratado reativamente via denúncia ([Moderação](../04-governanca/07-moderacao.md)), não por filtro no momento do upload.
 - Histórico de prints: visível só pro dono do perfil e pra moderação (não público) — evita vazamento de dado da tela (ex.: infos da conta EA). Retenção sujeita a política de dados (ver [Dados pessoais e LGPD](../04-governanca/09-dados-pessoais-lgpd.md)).

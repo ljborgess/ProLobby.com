@@ -15,6 +15,7 @@
 - **Elo/rating de desempenho pesa mais que overall** no equilíbrio; overall é critério de desempate entre players de elo parecido.
   - Motivo: overall é auto-declarado via print (mesmo verificado, é atributo do personagem); elo vem de resultado real dentro da plataforma — mais confiável, mais difícil de forjar.
   - Detalhe do elo em [Ranking, reputação e punição](../02-jogador/06-ranking-reputacao-e-punicao.md).
+- **Comparação é categoria contra categoria, não média geral do time**: goleiro do time A é pareado com goleiro do time B (elo próximo), zaga com zaga, meio com meio, ataque com ataque — coerente com elo já ser por categoria. Evita mascarar desequilíbrio grave numa posição crítica (ex.: goleiro fraco) atrás de uma média geral do time que parece equilibrada.
 
 ## Composição do time
 
