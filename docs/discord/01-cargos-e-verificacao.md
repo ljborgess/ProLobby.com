@@ -23,3 +23,4 @@
 ## Apelido (nickname)
 
 - Ao conceder o cargo Verificado, bot **sincroniza o nickname do servidor com o gamertag/PSN ID verificado** — evita impersonation dentro do Discord (texto ou voz) e deixa claro com quem tá jogando só olhando o nome. Antes de verificado, nickname fica livre.
+- **Se a sincronização falhar** (permissão do Discord, hierarquia de cargo, nickname duplicado, etc.): bot manda DM avisando que não conseguiu sincronizar automaticamente e pede pra pessoa trocar o nickname manualmente.
