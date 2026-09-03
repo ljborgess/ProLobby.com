@@ -47,7 +47,7 @@ ProLobby manteria um **pool de "clubes-casa" próprios**, já criados dentro do 
 
 ## Pendência crítica
 
-**Ninguém do time testou isso na prática ainda.** Enquanto isso não for testado, [Discord e lobby](04-discord-e-lobby.md) continua descrevendo o fluxo antigo (sala manual) como premissa — não foi alterado ainda de propósito, até essa verificação acontecer.
+**Ninguém do time testou isso na prática ainda.** [Discord e lobby](04-discord-e-lobby.md) já foi atualizado pra remover a premissa antiga (sala manual criada por host — não existe mais, ver achado sobre servidor dedicado abaixo), mas os detalhes exatos do mecanismo de clube-casa (quem convida, como, conteúdo do canal de texto compartilhado) continuam em aberto até o teste prático confirmar.
 
 ## Checklist de teste — o que precisa
 
