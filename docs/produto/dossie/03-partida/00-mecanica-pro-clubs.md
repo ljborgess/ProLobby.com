@@ -37,7 +37,7 @@ Cada lado do lobby precisa de um clube (Amistoso é sempre clube x clube). Em ve
 
 ## OCR de resultado precisa ser dinâmico
 
-No modelo antigo (clube-casa fixo), o OCR validava o nome do clube contra uma ficha pré-cadastrada (sempre o mesmo par). Agora o clube usado muda a cada lobby (é o clube do capitão sorteado daquela vez), então o **nome dos 2 clubes esperados precisa ser capturado no momento em que os capitães são escolhidos** (não de uma lista fixa) e guardado como o "par esperado" daquele lobby específico — OCR de fim de partida (ver [Resultado de partida](05-resultado-de-partida.md)) cruza contra esse par dinâmico.
+No modelo antigo (clube-casa fixo), o OCR validava o nome do clube contra uma ficha pré-cadastrada (sempre o mesmo par). Agora o clube usado muda a cada lobby (é o clube do capitão escolhido daquela vez) — o nome do clube já vem da **auto-declaração de cadastro** (mesmo campo que diz se o jogador tem clube com vaga, ver [Discord e lobby](04-discord-e-lobby.md) "Escolha do capitão") e é guardado como o "par esperado" daquele lobby no momento em que os capitães são confirmados — OCR de fim de partida (ver [Resultado de partida](05-resultado-de-partida.md)) cruza contra esse par dinâmico.
 
 ## Risco novo: capitão é jogador comum, não conta controlada pela plataforma
 

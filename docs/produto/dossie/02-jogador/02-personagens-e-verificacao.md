@@ -22,6 +22,11 @@ EA FC Pro Clubs **não tem API pública** — nenhuma integração automática c
 
 - Gamertag/PSN ID é único por **combinação (plataforma + gamertag)** — não gamertag isolado. Mesmo gamertag em plataformas diferentes (PS/Xbox/PC) são contas diferentes garantidamente (ecossistemas separados); mesmo gamertag na mesma plataforma não é permitido (conflito real).
 
+## Clube EA (auto-declaração, opcional)
+
+- Campo opcional no perfil: **"tenho clube EA com vaga disponível?"** (sim/não) + nome do clube — jogador atualiza quando quiser. Sem API da EA, é a única forma da plataforma saber quem pode ser candidato a **capitão** (ver [Discord e lobby](../03-partida/04-discord-e-lobby.md) e [Mecânica real do EA FC Pro Clubs](../03-partida/00-mecanica-pro-clubs.md)) — filtra candidatos plausíveis, mas é reconfirmado no momento do lobby (dado pode ficar desatualizado).
+- **Consentimento explícito**: ao marcar "sim", jogador é avisado que autoriza até 10 jogadores de outro lobby serem convidados temporariamente pro clube quando for escolhido capitão — coberto pelos [Termos de Uso](../04-governanca/12-termos-de-uso-e-idade.md), mesmo padrão já usado pra consentimento de print/foto/Discord ID.
+
 ## Verificação / cadastro de atributos
 
 - Cadastro via **print in-game** processado por **OCR**, preenchendo automaticamente nome, posição, atributos, foto.

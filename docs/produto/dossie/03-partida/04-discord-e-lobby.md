@@ -23,9 +23,13 @@ Ao lobby fechar (22 confirmados), o bot de Discord cria **3 canais temporários*
 
 ## Escolha do capitão
 
-- Critério: **maior reputação entre quem tem clube no jogo com vaga sobrando** pros outros 10 do lado (não precisa ser clube dedicado ao ProLobby, pode ser o clube pessoal do jogador — ver [Mecânica real do EA FC Pro Clubs](00-mecanica-pro-clubs.md)). Se o de maior reputação não tiver clube/vaga, passa pro próximo — cascata.
+- **Dado usado pra decidir**: sem API da EA, a plataforma não consegue consultar automaticamente quem tem clube com vaga — depende de **auto-declaração no cadastro/perfil** ("tenho clube EA com vaga disponível?" sim/não + nome do clube, jogador atualiza quando quiser). Esse dado filtra quem é candidato plausível.
+- Critério: **maior reputação entre os candidatos que se declararam com clube/vaga**. Se o de maior reputação não tiver clube/vaga (segundo a declaração), passa pro próximo — cascata.
+- **Confirmação no momento do lobby**: como a auto-declaração pode estar desatualizada (clube encheu depois da última atualização), o candidato escolhido recebe confirmação rápida ("ainda tem vaga?") dentro da mesma janela de 30s que já usa pra confirmar entrada no lobby — sem passo extra. Se recusar (inclusive por não querer ceder o clube pessoal a estranhos, escolha legítima) ou não responder, cai na cascata pro próximo.
+- **Se a cascata esgotar** (nenhum dos 11 do lado tem clube/vaga confirmados): lobby desfaz, os 22 voltam pra fila sem penalidade de reputação — caso raro, sem culpa de comportamento, é falta de recurso disponível. Diferente de zero-report (ver [Resultado de partida](05-resultado-de-partida.md)): aqui a partida nem chegou a existir, não há o que reportar.
+- **Consentimento**: declarar clube com vaga é coberto pelos [Termos de Uso](../04-governanca/12-termos-de-uso-e-idade.md) — jogador é avisado explicitamente que, ao declarar, autoriza até 10 jogadores de outro lobby serem convidados temporariamente pro clube quando ele for escolhido capitão.
 - Capitão convida os outros 10 do próprio lado pro clube dele, aplica a formação votada, coordena o Amistoso Online com o capitão do outro lado.
-- Depois da partida, capitão remove os 10 convidados do próprio clube. Se travar, vira **caso de moderação** (ver [Moderação](../04-governanca/07-moderacao.md)).
+- Depois da partida, capitão remove os 10 convidados do próprio clube. Se travar, vira **caso de moderação** (ver [Moderação](../04-governanca/07-moderacao.md)). Bot manda DM lembrando o capitão de fazer a limpeza (bot não alcança o clube EA diretamente, sem API, mas pode lembrar via Discord).
 - Capitão continua sendo um jogador normal do lobby — tem elo/reputação normal, o papel de capitão é só uma função extra, não uma vaga separada.
 
 ## Notificação
