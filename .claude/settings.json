@@ -1,0 +1,13 @@
+{
+  "extraKnownMarketplaces": {
+    "b2ml": {
+      "source": {
+        "source": "git",
+        "url": "https://gitlab.b2ml.com.br/b2ml/sistemas-internos-b2ml/b2ml-ia/b2ml-agentes-e-skills.git"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "grill-me@b2ml": true
+  }
+}
