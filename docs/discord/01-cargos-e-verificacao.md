@@ -12,7 +12,7 @@
 
 ## Cargo funcional: Verificado
 
-- Concedido **só pelo bot**, automaticamente, quando o personagem passa pela verificação OCR na plataforma (evento real vindo da plataforma — não auto-declarado, não editável pelo próprio usuário).
+- Concedido **só pelo bot**, automaticamente, quando as duas condições estiverem satisfeitas: personagem verificado (OCR aprovado) **e** conta Discord vinculada — como o onboarding permite completar essas duas etapas em qualquer ordem (ver [Onboarding](../produto/dossie/05-produto/11-onboarding.md)), o gatilho é duplo: verificação aprovada com Discord já vinculado concede na hora; Discord vinculado com personagem já verificado também concede na hora. Nenhuma das duas sozinha basta.
 - É o cargo que **libera acesso aos canais de fila/lobby** — o gate funcional de verdade vive aqui, os cargos sociais nunca dão acesso.
 - **Revogado automaticamente durante suspensão** (ver [Ranking, reputação e punição](../produto/dossie/02-jogador/06-ranking-reputacao-e-punicao.md)) — perde acesso a canal de fila/lobby, mas continua no servidor geral (coerente com a decisão de que punição não expulsa do Discord).
 - Reconcedido automaticamente quando a suspensão termina.

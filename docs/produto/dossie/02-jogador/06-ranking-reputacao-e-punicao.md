@@ -16,6 +16,7 @@ Motivo de separar: um jogador pode ser ótimo competidor com reputação ruim (s
 - **Elo inicial (personagem novo numa categoria)**: seed calibrado pelo overall extraído do print, com peso decaindo rápido nas primeiras partidas (~5-10) até o elo real (resultado) dominar sozinho. Motivo: em base pequena de usuários, elo puro neutro demora a convergir (poucas partidas rodando) e deixa os primeiros equilíbrios de time ruins; overall serve só de chute inicial, nunca de peso permanente.
 - **Correção/atualização de personagem** (reenviar print, corrigir dado — mesmo slot/categoria) **mantém o elo** — é a mesma pessoa jogando a mesma posição, não reset.
 - **Rollback retroativo**: elo/reputação aplicados por um report "não confirmado" (ver [Resultado de partida](../03-partida/05-resultado-de-partida.md)) são provisórios até fechar a janela de contestação (48h). Se a moderação resolve uma disputa e o resultado final diverge do que já foi aplicado, sistema **recalcula e corrige elo/reputação dos 22 envolvidos** — sem isso, a confiabilidade do elo (motivo documentado acima, por que pesa mais que overall) quebra em qualquer disputa revertida.
+  - Rollback inclui **contadores de reincidência** (os usados pra escalar penalidade de zero-report e de não-confirmar-lobby, ver [Fila e matchmaking](../03-partida/03-fila-e-matchmaking.md) e [Resultado de partida](../03-partida/05-resultado-de-partida.md)) — uma penalidade revertida não pode deixar rastro permanente no histórico de reincidência de quem não fez nada errado.
 
 ## Escada de punição
 

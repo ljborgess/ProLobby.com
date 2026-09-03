@@ -11,7 +11,7 @@
 
 ## Equilíbrio de time
 
-- Formação dos 22: sistema busca **equilibrar overall médio entre os dois times** — prioriza qualidade de partida sobre velocidade de entrada.
+- Formação dos 22: sistema busca **equilibrar os dois times por categoria** (não por média geral — ver "Comparação é categoria contra categoria" abaixo) — prioriza qualidade de partida sobre velocidade de entrada.
 - **Elo/rating de desempenho pesa mais que overall** no equilíbrio; overall é critério de desempate entre players de elo parecido.
   - Motivo: overall é auto-declarado via print (mesmo verificado, é atributo do personagem); elo vem de resultado real dentro da plataforma — mais confiável, mais difícil de forjar.
   - Detalhe do elo em [Ranking, reputação e punição](../02-jogador/06-ranking-reputacao-e-punicao.md).
