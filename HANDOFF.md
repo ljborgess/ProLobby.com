@@ -32,4 +32,7 @@ Ver [`README.md`](README.md). Origem: ideia nasceu numa sessão sobre o projeto 
 - Moderador comunitário (só entra quando volume de casos justificar)
 - Fila por time pré-formado (Fase 2)
 - Stack técnica completa
-- Divisão de papéis entre os 4
+
+## Decidido: sem divisão de papéis
+
+Time discutiu e decidiu continuar **sem papel fixo por disciplina** entre Luciano, Rafael, João e Felipe — os 4 mexem em qualquer parte, sem dono exclusivo de área. Não é pendência em aberto, é decisão tomada (ver `docs/produto/dossie/05-produto/10-backlog-fases-futuras.md`).

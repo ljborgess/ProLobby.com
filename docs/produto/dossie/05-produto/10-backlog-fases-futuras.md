@@ -19,5 +19,8 @@ Itens explicitamente adiados — mencionados ou identificados, mas sem desenho d
 ## Deliberadamente não decidido
 
 - **Stack técnica** (backend, banco, infra) — adiado até o dossiê de produto fechar.
-- **Divisão de papéis** entre Luciano, Rafael, João e Felipe — time decidiu trabalhar em conjunto, sem divisão fixa por ora.
+
+## Decidido: sem divisão formal
+
+- **Divisão de papéis** entre Luciano, Rafael, João e Felipe — discutido e decidido continuar **sem papel fixo por disciplina**: os 4 trabalham em conjunto, qualquer um mexe em qualquer parte. Não é pendência, é decisão tomada. Revisitar só se o time sentir necessidade (ex.: atrito de responsabilidade, gargalo de decisão).
 
