@@ -18,6 +18,10 @@ Só existem 3 jeitos de jogar 11v11 dentro do modo Clubes:
 
 **Não foi encontrado nenhum mecanismo oficial de "sala privada avulsa"** onde um host junta 21 estranhos sem vínculo de clube numa partida 11v11 só daquela vez. O mais próximo é o Drop-In, mas aí o pareamento é decidido pela EA, não pelo ProLobby — quebra a premissa de matchmaking por elo/categoria que já foi fechada no dossiê.
 
+**Alívio confirmado**: overall/atributos do Virtual Pro pertencem ao **jogador/arquétipo**, não ao clube — trocar de clube (entrar num clube-casa temporário) não reseta nem esconde o overall real. A premissa de OCR/verificação em [Personagens e verificação](../02-jogador/02-personagens-e-verificacao.md) continua de pé mesmo com o mecanismo de clube-casa.
+
+**Fricção nova confirmada**: Amistoso Online exige **coordenação manual dos dois gerentes** (busca o clube rival, cada lado clica "pronto" separadamente) — não é automático nem instantâneo. Isso é uma sincronização real que o bot Discord não alcança (fora do jogo).
+
 ## Mecanismo proposto pra reconciliar (dedução, não confirmada em campo)
 
 ProLobby manteria um **pool de "clubes-casa" próprios**, já criados dentro do jogo (ex.: pares fixos tipo Clube Alpha / Clube Beta, quantos pares forem necessários pra rodar lobbies em paralelo). Quando o lobby fecha:
@@ -27,6 +31,13 @@ ProLobby manteria um **pool de "clubes-casa" próprios**, já criados dentro do 
 3. Depois da partida, todo mundo sai do clube-casa de novo — fica "vazio", pronto pro próximo lobby reusar.
 
 **Consequência se isso for confirmado**: muda peça real de [Discord e lobby](04-discord-e-lobby.md) — "escolha do host" deixa de ser só "quem cria a sala", vira também "quem tem/recebe permissão de gerente daquele clube-casa específico pra aquela partida". E a plataforma passa a precisar manter/administrar N clubes dentro do próprio EA FC — isso é operação nova, fora do que já foi desenhado.
+
+## Decisões já fechadas sobre a operação (independente do resultado do teste)
+
+- **Escala no MVP**: **1 par de clube-casa só**, base pequena de usuário no início — mesmo racional já usado noutras decisões (não superdimensionar cedo). Escala pra mais pares em Fase 2/Futuro quando volume de lobby simultâneo justificar.
+- **Gargalo serial aceito no MVP**: com 1 par só, o próximo lobby só fecha depois do anterior esvaziar (convite → jogo → limpeza manual, tudo dentro do jogo). Fila **não precisa** de mensagem/estado especial distinguindo "esperando jogador" de "esperando clube-casa liberar" — aceito como limitação conhecida do MVP, revisar se virar gargalo real com volume maior.
+- **Limpeza pós-partida é manual, dentro do jogo, fora do alcance do bot**: bot Discord não tem como mexer em clube EA (sem API). Gerente da conta de serviço entra no jogo e remove os 20 convidados depois de cada partida reportada — mesmo gatilho de tempo já usado pra deletar canal de voz do lobby (ver [Resultado de partida](05-resultado-de-partida.md)). Se alguém travar a remoção (não sai, dá erro), vira **caso de moderação** — mesmo fluxo já existente ([Moderação](../04-governanca/07-moderacao.md)), não mecanismo novo.
+- **Dono/gerente do clube-casa**: **ainda em aberto**, não decidido — ver `04-discord-e-lobby.md` quando essa peça for fechada.
 
 ## Pendência crítica
 
@@ -44,12 +55,13 @@ Escopo do teste: **validar o mecanismo**, não simular um lobby cheio. 4 contas 
 2. **Saída do clube** — a pessoa convidada sai do clube (ou é removida pelo gerente). Confirma que sai limpo, sem cooldown pra entrar em outro clube depois (crítico: se tiver cooldown de saída, o mecanismo de "clube-casa reciclável por partida" morre).
 3. **Permissão de convite** — confirma se **só o dono/gerente** consegue convidar, ou se qualquer membro consegue. Decide se "host" = automaticamente vira gerente temporário, ou se precisa de uma conta fixa da plataforma sempre no papel de gerente.
 4. **Amistoso Online entre os 2 clubes** — com os times minimamente povoados (não precisa 11, testa com o que tiver), dispara um Amistoso Online do Clube A contra o Clube B. Confirma: dá pra marcar/iniciar em poucos minutos, ou tem fricção (agendamento, aprovação do outro lado, etc)?
-5. **Tempo total do ciclo** — soma passos 1+3+4: do convite até a bola rolar, quanto tempo passa? Compara com a janela de confirmação de lobby já definida (~30s pra aceitar + tempo de entrar na call/sala — ver [Fila e matchmaking](03-fila-e-matchmaking.md) e [Discord e lobby](04-discord-e-lobby.md)). Se o ciclo de clube for mais lento que a paciência de 22 pessoas esperando, o mecanismo não serve como está, mesmo que funcione tecnicamente.
-6. **Automação** — existe alguma ferramenta (API não-oficial, addon, o que for) pra automatizar convite/remoção, ou é 100% clique manual dentro do menu do jogo pra cada uma das 20 pessoas (10 por lado)? Se for manual, o "host" vira trabalho braçal considerável a cada partida.
+5. **Operação de 2 sessões separadas** — cada sessão do jogo é 1 conta logada por vez; não dá pra uma sessão controlar os 2 clubes ao mesmo tempo. Confirma se dá pra 1 pessoa **alternar entre 2 perfis/dispositivos** (2 consoles, ou 2 contas em 2 devices) com fluidez suficiente pra não travar o lobby — uma sessão logada no clube-casa A convida/confirma, outra logada no B faz o mesmo, os dois clicam "pronto" pra iniciar o amistoso.
+6. **Tempo total do ciclo** — soma passos 1+3+4+5: do convite até a bola rolar, quanto tempo passa? Compara com a janela de confirmação de lobby já definida (~30s pra aceitar + tempo de entrar na call/sala — ver [Fila e matchmaking](03-fila-e-matchmaking.md) e [Discord e lobby](04-discord-e-lobby.md)). Se o ciclo de clube for mais lento que a paciência de 22 pessoas esperando, o mecanismo não serve como está, mesmo que funcione tecnicamente.
+7. **Automação** — existe alguma ferramenta (API não-oficial, addon, o que for) pra automatizar convite/remoção, ou é 100% clique manual dentro do menu do jogo pra cada uma das 20 pessoas (10 por lado)? Se for manual, o "host" vira trabalho braçal considerável a cada partida.
 
 **Critério de decisão pós-teste**:
-- Se os passos 1-4 funcionam rápido (minutos) e sem cooldown de saída → mecanismo de clube-casa é viável, mas precisa de operação nova (plataforma administra N clubes).
-- Se tem cooldown de saída, ou convite é lento/tem fricção, ou só funciona sem automação nenhuma → mecanismo de clube-casa não escala pro produto como pensado, precisa reabrir a discussão (ex.: usar Drop-In aceitando que a EA decide o pareamento, ou repensar o que "partida coordenada pela plataforma" significa).
+- Se os passos 1-5 funcionam rápido (minutos) e sem cooldown de saída → mecanismo de clube-casa é viável, mas precisa de operação nova (plataforma administra o clube-casa, alguém alterna entre 2 sessões por partida).
+- Se tem cooldown de saída, ou convite/coordenação dos 2 gerentes é lento/tem fricção, ou só funciona sem automação nenhuma → mecanismo de clube-casa não escala pro produto como pensado, precisa reabrir a discussão (ex.: usar Drop-In aceitando que a EA decide o pareamento, ou repensar o que "partida coordenada pela plataforma" significa).
 
 ## Fontes (pesquisa pública, EA FC 25/26 — mecânica pode mudar por edição/patch)
 
