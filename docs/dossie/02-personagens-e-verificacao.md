@@ -18,9 +18,14 @@ EA FC Pro Clubs **não tem API pública** — nenhuma integração automática c
 - Sem limite de recriação dentro de uma categoria — mas 1 personagem ativo por categoria.
 - Personagem fica vinculado à edição do jogo (ver [Escopo de plataforma, jogo e região](08-escopo-plataforma-jogo-regiao.md)).
 
+## Identidade da conta
+
+- Gamertag/PSN ID é único por **combinação (plataforma + gamertag)** — não gamertag isolado. Mesmo gamertag em plataformas diferentes (PS/Xbox/PC) são contas diferentes garantidamente (ecossistemas separados); mesmo gamertag na mesma plataforma não é permitido (conflito real).
+
 ## Verificação / cadastro de atributos
 
 - Cadastro via **print in-game** processado por **OCR**, preenchendo automaticamente nome, posição, atributos, foto.
+- OCR também extrai o **gamertag/PSN ID mostrado na tela do print** e compara com o gamertag cadastrado na conta (mesmo pipeline de leitura, sem custo extra de mecanismo). Se não bater, cadastro é **rejeitado automaticamente** — evita alguém usar print de tela de outra pessoa.
 - Campos extraídos por OCR (atributos, overall, posição) ficam **travados** — não editáveis manualmente. Único jeito de corrigir/atualizar é **reenviar novo print** (reprocessado, substitui os dados, mantém histórico).
 - Antes de salvar, tela de confirmação mostra dado extraído + nível de confiança do OCR — player confirma ou reenvia.
 - Exceção: se OCR falhar repetidamente, abre **chamado pra moderação** corrigir manualmente (caso raro, auditável — ver [Moderação](07-moderacao.md)).

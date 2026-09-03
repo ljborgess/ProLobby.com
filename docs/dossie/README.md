@@ -18,3 +18,4 @@ Status: design de produto, sem código além do reaproveitamento do front-end (d
 8. [Escopo de plataforma, jogo e região](08-escopo-plataforma-jogo-regiao.md)
 9. [Dados pessoais e LGPD](09-dados-pessoais-lgpd.md)
 10. [Backlog e fases futuras](10-backlog-fases-futuras.md)
+11. [Onboarding](11-onboarding.md)
