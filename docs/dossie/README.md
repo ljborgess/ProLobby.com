@@ -19,3 +19,4 @@ Status: design de produto, sem código além do reaproveitamento do front-end (d
 9. [Dados pessoais e LGPD](09-dados-pessoais-lgpd.md)
 10. [Backlog e fases futuras](10-backlog-fases-futuras.md)
 11. [Onboarding](11-onboarding.md)
+12. [Termos de uso e idade mínima](12-termos-de-uso-e-idade.md)

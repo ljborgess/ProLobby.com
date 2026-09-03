@@ -16,3 +16,13 @@ Motivo de separar: um jogador pode ser ótimo competidor com reputação ruim (s
 3. Reincidência ou fraude grave (ex.: print falso comprovado) → banimento permanente.
 
 Apelação disponível em qualquer degrau, via chamado pra moderação (ver [Moderação](07-moderacao.md)).
+
+## Multi-conta / smurfing
+
+- Banimento vinculado à combinação **Discord ID + gamertag/PSN** (a mesma identidade registrada em [Personagens e verificação](02-personagens-e-verificacao.md)) — bloqueia os dois de recriarem conta pra escapar de punição.
+- Não é anti-fraude perfeito (detecção mais forte tipo device fingerprint/IP fica pra quando o volume de abuso justificar o investimento) — deliberadamente não superdimensionado pro MVP.
+
+## Conluio de resultado (Futuro)
+
+- Placar combinado entre os dois lados (ambos "confirmam" o mesmo resultado falso) não gera disputa hoje, porque os prints batem — não é coberto pelo fluxo de report atual.
+- Detecção por **padrão** (não por print individual), fica pra quando houver volume de dado histórico suficiente: sinalizar pra moderação (não bloqueio automático) casos como mesmo grupo de contas se enfrentando repetidamente com resultado sempre no mesmo sentido, ou elo subindo fora da curva normal.
