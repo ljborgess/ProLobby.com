@@ -15,4 +15,4 @@ Servidor **não fragmenta por plataforma/posição no MVP** — decisão deliber
 
 ## Canais dinâmicos
 
-- **Voz temporária por lobby — 2 canais, não 1**: bot cria um canal de voz por time (Time A / Time B) quando o lobby fecha (22 confirmados), cada um privado só pros seus 11 (11x11 competitivo, times não compartilham voz). Ambos deletados quando a partida acaba. Mesmo fluxo já descrito em [Discord e lobby](../produto/dossie/03-partida/04-discord-e-lobby.md).
+- **3 canais temporários por lobby** (criados quando o lobby fecha, deletados quando a partida acaba): 2 de voz privados por time (Time A / Time B, 11x11 competitivo não compartilha voz) + 1 de texto compartilhado pelos 22 (host + gamertag de todos, logística cross-time — sem isso o time B não sabe quem é o host nem como entrar na mesma sala do jogo). Mesmo fluxo já descrito em [Discord e lobby](../produto/dossie/03-partida/04-discord-e-lobby.md).

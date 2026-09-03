@@ -14,10 +14,9 @@ Estrutura do servidor (cargos, canais, permissões do bot) documentada à parte,
 
 ## Fluxo do bot
 
-Ao lobby fechar (22 confirmados), o bot de Discord:
-- Cria **2 canais de voz temporários** (Time A / Time B) — não 1 canal com os 22 juntos. Partida é 11x11 competitivo, cada time coordena internamente; canal de um time é privado, só os próprios 11 conseguem entrar/ouvir.
-- Posta host + gamertag/PSN ID de todos (visível só dentro do lobby, não público no perfil geral)
-- Pinga os 22 automaticamente
+Ao lobby fechar (22 confirmados), o bot de Discord cria **3 canais temporários**:
+- **2 de voz, privados por time** (Time A / Time B) — cada um só pros próprios 11. Partida é 11x11 competitivo, times não compartilham voz.
+- **1 de texto, compartilhado pelos 22** — onde o bot posta host + gamertag/PSN ID de **todos** (visível só dentro do lobby, não público no perfil geral) e pinga os 22. Precisa ser compartilhado (não por time): o host cria uma sala só no jogo e precisa localizar/convidar os outros 21 — sem essa informação cruzando os times, o time B não sabe quem é o host nem como entrar na mesma partida.
 - Dispara timer pra todos entrarem (ausência afeta reputação — ver [Ranking, reputação e punição](../02-jogador/06-ranking-reputacao-e-punicao.md))
 
 ## Escolha do host
