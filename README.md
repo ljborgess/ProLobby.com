@@ -53,6 +53,30 @@ fila por time pré-formado, stack técnica) estão listados no
 
 ---
 
+## 🎬 Referência visual
+
+ProLobby ainda não tem UI própria — a identidade visual (cores, fontes,
+raios, sombras) foi herdada do design system do projeto
+[`escalacao-brasileirao`](https://github.com/rafaeljs08/escalacao-brasileirao).
+Vídeo e capturas abaixo são as telas **desse** projeto de origem, não do
+ProLobby, servindo só de referência de estilo:
+
+<p align="center">
+  <video src="docs/assets/demo-escalacao.mp4" poster="docs/assets/demo-campo.png" width="920" controls playsinline></video><br>
+  <a href="docs/assets/demo-escalacao.mp4">Assistir o vídeo (MP4)</a>
+</p>
+
+<p align="center">
+  <img src="docs/assets/demo-lista-times.png" alt="Design system de origem — lista de times" width="440">
+  <img src="docs/assets/demo-campo.png" alt="Design system de origem — campo" width="440">
+</p>
+<p align="center">
+  <img src="docs/assets/demo-catalogo-atletas.png" alt="Design system de origem — catálogo" width="440">
+  <img src="docs/assets/demo-busca-elenco.png" alt="Design system de origem — busca" width="440">
+</p>
+
+---
+
 ## 📁 Documentação
 
 - [`docs/`](docs/README.md) — índice geral da documentação
