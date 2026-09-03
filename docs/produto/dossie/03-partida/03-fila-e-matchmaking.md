@@ -26,7 +26,7 @@
 
 - Depois do lobby fechado (22 confirmados), **cada time vota** a formação (ex.: 4-3-3, 4-4-2, 4-2-3-1) dentro de um conjunto compatível com a distribuição fixa de categoria acima — não muda quem tá no time, só o esquema tático em campo.
 - Não afeta matchmaking nem elo — é coordenação/flavor pro time decidir junto antes de entrar na partida.
-- **Empate na votação**: host decide (reaproveita o papel já definido por reputação/conexão em [Discord e lobby](04-discord-e-lobby.md), sem critério novo).
+- **Empate na votação**: sorteio entre as opções empatadas — não existe papel de "host" pra decidir desempate (ver [Discord e lobby](04-discord-e-lobby.md), Pro Clubs usa servidor dedicado, sem host de jogador). Sorteio é simples, sem viés, sem exigir designar alguém.
 
 ## Timeout de fila
 

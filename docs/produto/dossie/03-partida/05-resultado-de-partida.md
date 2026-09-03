@@ -8,7 +8,7 @@ Sem API da EA, resultado depende de **report manual com print** — mesma limita
 
 ## Quem reporta
 
-- **Qualquer um dos 22** (não precisa ser o host) pode mandar o print do placar final.
+- **Qualquer um dos 22** pode mandar o print do placar final.
 
 ## Validação anti-fraude do print
 

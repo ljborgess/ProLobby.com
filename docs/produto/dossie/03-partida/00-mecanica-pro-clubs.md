@@ -28,11 +28,11 @@ Só existem 3 jeitos de jogar 11v11 dentro do modo Clubes:
 
 ProLobby manteria um **pool de "clubes-casa" próprios**, já criados dentro do jogo (ex.: pares fixos tipo Clube Alpha / Clube Beta, quantos pares forem necessários pra rodar lobbies em paralelo). Quando o lobby fecha:
 
-1. O host de cada lado (ou uma conta de gerente controlada pela plataforma) convida os outros 10 do próprio time pro clube-casa correspondente, por EA ID/gamertag.
+1. O operador da conta de serviço (gerente do clube-casa) convida os 11 de cada time pro clube-casa correspondente, por EA ID/gamertag — não depende de nenhum jogador específico ("host" foi removido do desenho, ver [Discord e lobby](04-discord-e-lobby.md): Pro Clubs usa servidor dedicado, sem papel de host de rede).
 2. Um clube-casa desafia o outro via Amistoso Online.
 3. Depois da partida, todo mundo sai do clube-casa de novo — fica "vazio", pronto pro próximo lobby reusar.
 
-**Consequência se isso for confirmado**: muda peça real de [Discord e lobby](04-discord-e-lobby.md) — "escolha do host" deixa de ser só "quem cria a sala", vira também "quem tem/recebe permissão de gerente daquele clube-casa específico pra aquela partida". E a plataforma passa a precisar manter/administrar N clubes dentro do próprio EA FC — isso é operação nova, fora do que já foi desenhado.
+**Consequência**: [Discord e lobby](04-discord-e-lobby.md) não tem mais conceito de "host" — removido do desenho porque Pro Clubs usa servidor dedicado (sem host de rede) e o poder de admin dentro do jogo é da conta de serviço, não de um jogador escolhido. A plataforma passa a precisar manter/administrar N clubes dentro do próprio EA FC — isso é operação nova, fora do que já foi desenhado antes desse achado.
 
 ## Decisões já fechadas sobre a operação (independente do resultado do teste)
 
@@ -59,11 +59,11 @@ Escopo do teste: **validar o mecanismo**, não simular um lobby cheio. 4 contas 
 
 1. **Convite pra dentro do clube** — dono/gerente do Clube A convida uma conta que NÃO é membro (por EA ID/gamertag/PSN, sem ela ter aplicado antes). Cronometra quanto tempo leva do convite até a pessoa estar jogável no clube.
 2. **Saída do clube** — a pessoa convidada sai do clube (ou é removida pelo gerente). Confirma que sai limpo, sem cooldown pra entrar em outro clube depois (crítico: se tiver cooldown de saída, o mecanismo de "clube-casa reciclável por partida" morre).
-3. **Permissão de convite** — confirma se **só o dono/gerente** consegue convidar, ou se qualquer membro consegue. Decide se "host" = automaticamente vira gerente temporário, ou se precisa de uma conta fixa da plataforma sempre no papel de gerente.
+3. **Permissão de convite** — confirma se **só o dono/gerente** consegue convidar, ou se qualquer membro consegue. Já decidido: gerente é sempre a conta de serviço fixa da plataforma (sem conceito de "host" jogador — ver acima).
 4. **Amistoso Online entre os 2 clubes** — com os times minimamente povoados (não precisa 11, testa com o que tiver), dispara um Amistoso Online do Clube A contra o Clube B. Confirma: dá pra marcar/iniciar em poucos minutos, ou tem fricção (agendamento, aprovação do outro lado, etc)?
 5. **Operação de 2 sessões separadas** — cada sessão do jogo é 1 conta logada por vez; não dá pra uma sessão controlar os 2 clubes ao mesmo tempo. Confirma se dá pra 1 pessoa **alternar entre 2 perfis/dispositivos** (2 consoles, ou 2 contas em 2 devices) com fluidez suficiente pra não travar o lobby — uma sessão logada no clube-casa A convida/confirma, outra logada no B faz o mesmo, os dois clicam "pronto" pra iniciar o amistoso.
 6. **Tempo total do ciclo** — soma passos 1+3+4+5: do convite até a bola rolar, quanto tempo passa? Compara com a janela de confirmação de lobby já definida (~30s pra aceitar + tempo de entrar na call/sala — ver [Fila e matchmaking](03-fila-e-matchmaking.md) e [Discord e lobby](04-discord-e-lobby.md)). Se o ciclo de clube for mais lento que a paciência de 22 pessoas esperando, o mecanismo não serve como está, mesmo que funcione tecnicamente.
-7. **Automação** — existe alguma ferramenta (API não-oficial, addon, o que for) pra automatizar convite/remoção, ou é 100% clique manual dentro do menu do jogo pra cada uma das 20 pessoas (10 por lado)? Se for manual, o "host" vira trabalho braçal considerável a cada partida.
+7. **Automação** — existe alguma ferramenta (API não-oficial, addon, o que for) pra automatizar convite/remoção, ou é 100% clique manual dentro do menu do jogo pra cada uma das 21 pessoas (11 por lado, o gerente já é a conta de serviço)? Se for manual, quem opera a conta de serviço tem trabalho braçal considerável a cada partida.
 
 **Critério de decisão pós-teste**:
 - Se os passos 1-5 funcionam rápido (minutos) e sem cooldown de saída → mecanismo de clube-casa é viável, mas precisa de operação nova (plataforma administra o clube-casa, alguém alterna entre 2 sessões por partida).

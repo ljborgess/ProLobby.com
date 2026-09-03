@@ -4,9 +4,9 @@
 
 ## Contexto
 
-Sala de partida dentro do jogo é sempre criada **manualmente** pelo host, dentro do console — a plataforma não tem como automatizar isso (EA não expõe API pra criar sala). Por isso a plataforma vira central de **coordenação**, não de execução da partida em si.
+Sala/partida dentro do jogo não é criada pela plataforma diretamente (EA não expõe API pra isso) — a plataforma vira central de **coordenação**, não de execução da partida em si. O mecanismo exato de como os 22 confirmados viram uma partida real dentro do EA FC ainda não foi verificado na prática — ver [Mecânica real do EA FC Pro Clubs](00-mecanica-pro-clubs.md) (hipótese de trabalho: pool de "clubes-casa" administrados pela plataforma).
 
-**Atenção**: essa premissa (host cria sala avulsa pra 22 estranhos) ainda não foi verificada contra o mecanismo real do jogo — ver [Mecânica real do EA FC Pro Clubs](00-mecanica-pro-clubs.md), pesquisa aponta que pode não existir esse tipo de sala e o fluxo de host/lobby pode precisar mudar.
+**Não existe mais o conceito de "host" escolhido por reputação/conexão** — Pro Clubs usa servidor dedicado da EA (Game Data Centers), não conexão P2P entre jogadores, então não há papel técnico de host de rede pra escolher (ping de cada um depende só da própria distância ao servidor da EA, não de outro jogador). E o poder de admin dentro do jogo (convidar pro clube-casa, ajustar tática, iniciar amistoso) é da **conta de serviço da plataforma**, não de um jogador selecionado — ver [Mecânica real do EA FC Pro Clubs](00-mecanica-pro-clubs.md).
 
 Estrutura do servidor (cargos, canais, permissões do bot) documentada à parte, fora do dossiê de produto — ver [docs/discord/](../../../discord/README.md).
 
@@ -18,14 +18,8 @@ Estrutura do servidor (cargos, canais, permissões do bot) documentada à parte,
 
 Ao lobby fechar (22 confirmados), o bot de Discord cria **3 canais temporários**:
 - **2 de voz, privados por time** (Time A / Time B) — cada um só pros próprios 11. Partida é 11x11 competitivo, times não compartilham voz.
-- **1 de texto, compartilhado pelos 22** — onde o bot posta host + gamertag/PSN ID de **todos** (visível só dentro do lobby, não público no perfil geral) e pinga os 22. Precisa ser compartilhado (não por time): o host cria uma sala só no jogo e precisa localizar/convidar os outros 21 — sem essa informação cruzando os times, o time B não sabe quem é o host nem como entrar na mesma partida.
+- **1 de texto, compartilhado pelos 22** — bot posta o que for necessário pros 22 saberem como a partida vai acontecer (ex.: qual clube-casa cada time foi convidado a entrar, avisos operacionais). Conteúdo exato depende do mecanismo confirmado em [Mecânica real do EA FC Pro Clubs](00-mecanica-pro-clubs.md) — precisa ser compartilhado entre os 2 times (não só dentro de cada canal de voz), já que a coordenação entre lados é o ponto desse canal.
 - Dispara timer pra todos entrarem (ausência afeta reputação — ver [Ranking, reputação e punição](../02-jogador/06-ranking-reputacao-e-punicao.md))
-
-## Escolha do host
-
-- Critério: **reputação + histórico de conexão estável** (não aleatório) — evita host com lag/ping ruim estragando o jogo pra todo mundo.
-- Se o host escolhido não confirma entrada ou desconecta, papel é **reatribuído automaticamente** pro próximo melhor candidato entre os 21 restantes, mesmo critério — lobby nunca fica sem host formal.
-- **Cascata completa**: se o próximo candidato também falhar, reaplica o mesmo critério recursivamente até alguém confirmar — sem caso especial, mesma regra repetida quantas vezes precisar.
 
 ## Notificação
 
