@@ -9,7 +9,7 @@ Ver [`README.md`](README.md). Origem: ideia nasceu numa sessão sobre o projeto 
 ## Estado atual (2026-09-03)
 
 - **Fase**: design de produto / levantamento de requisitos. Zero código de aplicação.
-- **Branch de trabalho**: `dev` (regra do time: nada vai direto pra `main`).
+- **Branches**: só `main` e `dev` (sem branch de feature por item). Trabalho corre em `dev`; `main` só recebe merge quando o time decidir promover. Nada vai direto pra `main`.
 - Todo o conteúdo abaixo já está commitado e pushed em `dev`.
 
 ## Onde está tudo
