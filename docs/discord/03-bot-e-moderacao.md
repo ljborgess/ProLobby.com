@@ -8,10 +8,10 @@ O bot é o **motor único de automação** entre a plataforma (aplicação web) 
 
 | Evento na plataforma | Ação do bot no Discord |
 |---|---|
-| Personagem aprovado (OCR) **e** Discord vinculado (qualquer ordem, gatilho duplo) | Concede cargo **Verificado** (ver [Cargos e verificação](01-cargos-e-verificacao.md)) |
-| Lobby fecha (22 confirmados) | Cria canal de voz temporário, posta host + gamertag/PSN de todos (só dentro do lobby), pinga os 22, dispara timer de entrada (ver [Discord e lobby](../produto/dossie/03-partida/04-discord-e-lobby.md)) |
+| Personagem aprovado (OCR) **e** Discord vinculado (qualquer ordem, gatilho duplo) | Concede cargo **Verificado** + sincroniza nickname com gamertag/PSN ID (ver [Cargos e verificação](01-cargos-e-verificacao.md)) |
+| Lobby fecha (22 confirmados) | Cria **2 canais de voz temporários** (Time A / Time B, privados cada um aos seus 11), posta host + gamertag/PSN de todos (só dentro do lobby), pinga os 22, dispara timer de entrada (ver [Discord e lobby](../produto/dossie/03-partida/04-discord-e-lobby.md)) |
 | Host não confirma / desconecta | Reatribui host pro próximo melhor candidato, automaticamente |
-| Partida termina (relatório processado) | Deleta canal de voz temporário do lobby |
+| Partida termina (relatório processado) | Deleta os 2 canais de voz temporários do lobby |
 | Fila fechou / lobby formado / disputa resolvida / punição aplicada | Notifica via DM do bot + notificação in-app na plataforma |
 | Disputa cai em moderação / suspensão aplicada | Notifica as partes envolvidas |
 | Suspensão aplicada | Revoga cargo Verificado (perde acesso a canal de fila/lobby, continua no servidor) |
@@ -19,6 +19,7 @@ O bot é o **motor único de automação** entre a plataforma (aplicação web) 
 | Zero-report expira (24-48h sem ninguém reportar) | Notifica os 22 (partida encerrada sem dado, penalidade leve de reputação aplicada — ver [Resultado de partida](../produto/dossie/03-partida/05-resultado-de-partida.md)) |
 | Rollback retroativo (disputa revertida pela moderação) | Notifica os 22 envolvidos que elo/reputação foram recalculados (ver [Ranking, reputação e punição](../produto/dossie/02-jogador/06-ranking-reputacao-e-punicao.md)) |
 | Mensagem em **#suporte-e-denuncia** | Cria caso automaticamente na fila de moderação da plataforma ([Moderação](../produto/dossie/04-governanca/07-moderacao.md)) — painel único, sem checar dois sistemas |
+| Qualquer ação sensível (kick, ban, concessão/revogação de Verificado) | Posta registro em **#log-moderacao** (ver [Canais](02-canais.md)) — auditável sem depender do audit log nativo |
 
 ## O que continua manual (mesmo com permissão total)
 

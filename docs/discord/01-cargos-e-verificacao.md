@@ -16,3 +16,7 @@
 - É o cargo que **libera acesso aos canais de fila/lobby** — o gate funcional de verdade vive aqui, os cargos sociais nunca dão acesso.
 - **Revogado automaticamente durante suspensão** (ver [Ranking, reputação e punição](../produto/dossie/02-jogador/06-ranking-reputacao-e-punicao.md)) — perde acesso a canal de fila/lobby, mas continua no servidor geral (coerente com a decisão de que punição não expulsa do Discord).
 - Reconcedido automaticamente quando a suspensão termina.
+
+## Apelido (nickname)
+
+- Ao conceder o cargo Verificado, bot **sincroniza o nickname do servidor com o gamertag/PSN ID verificado** — evita impersonation dentro do Discord (texto ou voz) e deixa claro com quem tá jogando só olhando o nome. Antes de verificado, nickname fica livre.
