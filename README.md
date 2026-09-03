@@ -1,107 +1,117 @@
 <div align="center">
 
-# 🎮 ProLobby
+# PROLOBBY
 
-**Matchmaking e comunidade pra EA FC Pro Clubs**
+**Matchmaking e comunidade competitiva pra EA FC Pro Clubs**
 
-![Status](https://img.shields.io/badge/status-design%20de%20produto-yellow?style=for-the-badge)
-![Stack](https://img.shields.io/badge/stack-a%20definir-lightgrey?style=for-the-badge)
+![Status](https://img.shields.io/badge/STATUS-DESIGN%20DE%20PRODUTO-0c1322?style=for-the-badge&labelColor=070b14&color=22c55e)
+![Fase](https://img.shields.io/badge/FASE-MVP-0c1322?style=for-the-badge&labelColor=070b14&color=f5b841)
+![Stack](https://img.shields.io/badge/STACK-A%20DEFINIR-0c1322?style=for-the-badge&labelColor=070b14&color=6b7a94)
 
-[📋 O que é](#-o-que-é) ·
-[🎯 Como funciona](#-como-funciona) ·
-[✨ Funcionalidades](#-funcionalidades) ·
-[📁 Documentação](#-documentação) ·
-[🚧 Estado atual](#-estado-atual) ·
-[👥 Time](#-time)
+`fila` → `lobby` → `capitão` → `partida` → `resultado` → `ranking`
 
 </div>
 
----
+<br>
 
-## 📋 O que é
+## Sistema
 
-Você entra numa fila pela sua posição (goleiro, zaga, meio, ponta, ataque),
-o sistema forma dois times de 11 equilibrados por elo, e a plataforma
-coordena tudo — Discord, resultado, ranking — enquanto a partida acontece
-dentro do próprio EA FC.
+ProLobby transforma fila em partida real de Pro Clubs. Jogador entra por
+posição, o sistema forma dois times de 11 equilibrados por elo, e a
+plataforma coordena tudo — Discord, resultado, ranking — enquanto o jogo
+roda dentro do próprio EA FC.
 
-A identidade visual (cores, fontes, raios, sombras) é herdada do design
-system do projeto [`escalacao-brasileirao`](https://github.com/rafaeljs08/escalacao-brasileirao) —
-mas ProLobby é um **projeto novo e independente**, sem reaproveitar
-backend/dados de lá.
+Identidade visual herdada do design system de
+[`escalacao-brasileirao`](https://github.com/rafaeljs08/escalacao-brasileirao).
+ProLobby é projeto novo e independente — nada de backend/dados de lá.
 
----
+<br>
 
-## 🎯 Como funciona
+## Pipeline
 
-```
-1. Cadastro         → verifica personagem por print + OCR (sem API oficial da EA)
-2. Fila              → escolhe posição, entra na fila individual
-3. Lobby              → 22 jogadores confirmados, 2 times equilibrados por elo
-4. Capitão            → 1 de cada lado, escolhido por reputação, empresta o
-                        próprio clube EA pra reunir o time (sem API, sem "host" —
-                        Pro Clubs roda em servidor dedicado, não P2P)
-5. Partida            → Amistoso Online entre os dois clubes, dentro do jogo
-6. Resultado          → print + OCR confirmam placar, elo e reputação atualizam
-```
+<table>
+<tr><td width="90"><code>01</code></td><td><b>Cadastro</b></td><td>Personagem verificado por print + OCR — EA FC não tem API pública, toda verificação é evidência enviada pelo jogador</td></tr>
+<tr><td><code>02</code></td><td><b>Fila</b></td><td>Escolhe posição (goleiro / zaga / meio / ponta / ataque), entra na fila individual por categoria</td></tr>
+<tr><td><code>03</code></td><td><b>Lobby</b></td><td>22 confirmados, 2 times de 11 equilibrados categoria-contra-categoria por elo</td></tr>
+<tr><td><code>04</code></td><td><b>Capitão</b></td><td>1 jogador real por lado, escolhido por reputação, empresta o próprio clube EA — sem host de rede, Pro Clubs roda em servidor dedicado</td></tr>
+<tr><td><code>05</code></td><td><b>Partida</b></td><td>Amistoso Online entre os dois clubes, dentro do jogo — plataforma não executa, só coordena</td></tr>
+<tr><td><code>06</code></td><td><b>Resultado</b></td><td>Print + OCR confirmam placar, elo e reputação atualizam por categoria</td></tr>
+</table>
 
-O ponto mais delicado do produto — como 22 estranhos viram uma partida real
-dentro do Pro Clubs, já que o jogo não tem "sala privada avulsa" — está
-documentado em detalhe em
-[`mecânica real do EA FC Pro Clubs`](docs/produto/dossie/03-partida/00-mecanica-pro-clubs.md),
-incluindo o que já foi confirmado por pesquisa e o que falta testar na prática.
+<details>
+<summary><b>Por que "capitão" e não "host"?</b></summary>
+<br>
 
----
+O produto assumia originalmente que um jogador criava uma sala privada e
+convidava os outros 21. Pesquisa confirmou que **esse mecanismo não existe**
+em Pro Clubs — o jogo só permite liga, Drop-In (fila da própria EA) ou
+Amistoso Online entre clubes. Como Pro Clubs roda em servidor dedicado (não
+P2P), também não existe "host" cujo ping afete os outros.
 
-## ✨ Funcionalidades
+O mecanismo real: cada lado do lobby usa o clube pessoal de um dos próprios
+11 jogadores — o **capitão**, escolhido por maior reputação entre quem tem
+clube com vaga. Detalhe completo, achados de pesquisa e checklist de teste
+prático em
+[`docs/produto/dossie/03-partida/00-mecanica-pro-clubs.md`](docs/produto/dossie/03-partida/00-mecanica-pro-clubs.md).
 
-Levantadas e detalhadas no [dossiê de produto](docs/produto/dossie/README.md),
-cada uma marcada por fase (MVP / Fase 2 / Futuro):
+</details>
 
-| Área | Recurso |
-|------|---------|
-| **Identidade** | Cadastro de personagem verificado por print + OCR |
-| **Matchmaking** | Fila por posição, times equilibrados por elo/categoria |
-| **Partida** | Capitão dinâmico (jogador real, escolhido por reputação) + coordenação via Discord |
-| **Resultado** | Report com print/OCR, zero report penalizado, bloqueio em disputa |
-| **Ranking** | Elo por categoria, reputação, seed inicial, punição a smurfing/conluio |
-| **Governança** | Moderação, LGPD, termos de uso e idade mínima |
-| **Social** | Perfil e visibilidade pública (elo, reputação, histórico) |
-| **Onboarding** | Fluxo guiado: conta → personagem → Discord |
+<br>
 
-Itens deliberadamente adiados (aposta em dinheiro, moderador comunitário,
-fila por time pré-formado, stack técnica) estão listados no
-[backlog de fases futuras](docs/produto/dossie/05-produto/10-backlog-fases-futuras.md).
+## Módulos
 
----
+<table>
+<tr><th align="left">Módulo</th><th align="left">Cobre</th></tr>
+<tr><td><b>Identidade</b></td><td>Personagem verificado por print + OCR, até 5 categorias por conta, atributos travados</td></tr>
+<tr><td><b>Matchmaking</b></td><td>Fila por posição, equilíbrio por elo categoria-contra-categoria, timeout com feedback de categoria faltante</td></tr>
+<tr><td><b>Partida</b></td><td>Capitão dinâmico, formação votada, coordenação via Discord (canais de voz por time + texto compartilhado)</td></tr>
+<tr><td><b>Resultado</b></td><td>Report com print/OCR, validação de nome de clube, zero-report penalizado, janela de contestação de 48h</td></tr>
+<tr><td><b>Ranking</b></td><td>Elo por categoria, reputação por conta, seed inicial por overall, rollback retroativo, punição a smurfing/conluio</td></tr>
+<tr><td><b>Governança</b></td><td>Moderação, LGPD, retenção de dados, termos de uso, idade mínima 16 anos</td></tr>
+<tr><td><b>Social</b></td><td>Perfil público (elo, reputação, histórico agregado) — print e Discord ID continuam privados</td></tr>
+<tr><td><b>Onboarding</b></td><td>Conta → personagem → Discord, cada etapa desbloqueia acesso incremental</td></tr>
+</table>
 
-## 🖼️ Preview do produto
+Detalhado por fase (MVP / Fase 2 / Futuro) no
+[dossiê de produto](docs/produto/dossie/README.md). Itens deliberadamente
+adiados — aposta, moderador comunitário, fila por time pré-formado, stack
+técnica — no
+[backlog](docs/produto/dossie/05-produto/10-backlog-fases-futuras.md).
 
-Artifact navegável com fila, lobby (capitão + 2 times), report de
-resultado, perfil público e ranking — usando o design system real do
-projeto. Dados são exemplo.
+<br>
+
+## Discord
+
+Servidor da comunidade é domínio próprio — cargos, canais, e o bot que
+automatiza tudo (cargo Verificado, canais de lobby, notificações,
+moderação):
+
+<table>
+<tr><td><b>Cargos</b></td><td>Admin / Moderador fixos, cargo funcional Verificado (gate real de acesso)</td></tr>
+<tr><td><b>Canais</b></td><td>Estrutura unificada + 3 temporários por lobby (2 voz privados por time, 1 texto compartilhado)</td></tr>
+<tr><td><b>Bot</b></td><td>Motor único de automação — plataforma decide, bot executa. Kick/ban sempre manual</td></tr>
+<tr><td><b>Integração</b></td><td>Webhook plataforma → bot, OAuth2 pro vínculo de conta, retry se o bot cair</td></tr>
+</table>
+
+→ [`docs/discord/`](docs/discord/README.md)
+
+<br>
+
+## Preview
+
+Artifact navegável — fila, lobby (capitão + 2 times), report de resultado,
+perfil público e ranking, com o design system real do projeto. Dados de
+exemplo.
 
 *(link do artifact publicado — atualizado conforme o design evolui)*
 
----
+<br>
 
-## 🤖 Discord
+## Referência visual
 
-Servidor da comunidade é domínio próprio, documentado à parte do dossiê de
-produto — cargos, canais, e o bot que automatiza tudo (cargo Verificado,
-canais de lobby, notificações, moderação):
-
-- [`docs/discord/`](docs/discord/README.md)
-
----
-
-## 🎬 Referência visual
-
-ProLobby ainda não tem UI própria — a identidade visual (cores, fontes,
-raios, sombras) foi herdada do design system do projeto
-[`escalacao-brasileirao`](https://github.com/rafaeljs08/escalacao-brasileirao).
-Vídeo e capturas abaixo são as telas **desse** projeto de origem, não do
-ProLobby, servindo só de referência de estilo:
+ProLobby ainda não tem UI própria — a identidade abaixo (cores, fontes,
+raios, sombras) é herdada do design system de `escalacao-brasileirao`. As
+telas são do projeto de origem, servindo só de referência de estilo:
 
 <p align="center">
   <video src="docs/assets/demo-escalacao.mp4" width="920" autoplay loop muted playsinline></video>
@@ -116,38 +126,37 @@ ProLobby, servindo só de referência de estilo:
   <img src="docs/assets/demo-busca-elenco.png" alt="Design system de origem — busca" width="440">
 </p>
 
----
+<br>
 
-## 📁 Documentação
+## Documentação
 
-- [`docs/`](docs/README.md) — índice geral da documentação
-- [`docs/produto/dossie/`](docs/produto/dossie/README.md) — dossiê completo de produto, separado por nicho (visão, jogador, partida, governança, escopo)
-- [`docs/discord/`](docs/discord/README.md) — estrutura do servidor Discord e do bot
-- [`HANDOFF.md`](HANDOFF.md) — pra retomar o trabalho em outra sessão/máquina, leia primeiro
+<table>
+<tr><td><a href="docs/README.md"><code>docs/</code></a></td><td>Índice geral</td></tr>
+<tr><td><a href="docs/produto/dossie/README.md"><code>docs/produto/dossie/</code></a></td><td>Dossiê de produto, por nicho (visão, jogador, partida, governança, escopo)</td></tr>
+<tr><td><a href="docs/discord/README.md"><code>docs/discord/</code></a></td><td>Estrutura do servidor Discord e do bot</td></tr>
+<tr><td><a href="HANDOFF.md"><code>HANDOFF.md</code></a></td><td>Pra retomar o trabalho em outra sessão/máquina — leia primeiro</td></tr>
+</table>
 
----
+<br>
 
-## 🚧 Estado atual
+## Estado atual
 
-Fase de **design de produto** (levantamento de requisitos) — ainda sem
-código de aplicação. O mecanismo central de partida (capitão + clube
-dinâmico) já está decidido, mas falta um **teste prático no jogo** pra
-confirmar detalhes de tempo/fricção — checklist em
+Design de produto — sem código de aplicação ainda. Mecanismo central de
+partida (capitão + clube dinâmico) já decidido; falta **teste prático no
+jogo** pra confirmar tempo/fricção — checklist em
 [`00-mecanica-pro-clubs.md`](docs/produto/dossie/03-partida/00-mecanica-pro-clubs.md).
-Stack técnica é a próxima decisão grande em aberto; divisão de papéis no
-time já foi decidida (sem papel fixo, trabalho em conjunto).
+Stack técnica é a próxima decisão grande em aberto. Divisão de papéis no
+time já fechada — sem papel fixo, trabalho em conjunto.
 
-Trabalho corre na branch `dev`; `main` só recebe merge quando o time decidir
+Trabalho corre em `dev`; `main` só recebe merge quando o time decidir
 promover.
 
----
-
-## 👥 Time
-
-Luciano, Rafael, João, Felipe.
+<br>
 
 <div align="center">
 
-*Em design de produto · 2026*
+**Luciano · Rafael · João · Felipe**
+
+<sub>em design de produto — 2026</sub>
 
 </div>
