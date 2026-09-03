@@ -4,7 +4,7 @@ Itens explicitamente adiados — mencionados ou identificados, mas sem desenho d
 
 ## Bloqueador crítico — verificar antes de avançar o fluxo de lobby
 
-- **Mecanismo real de reunir 22 estranhos numa partida 11v11 de Pro Clubs** — ver [Mecânica real do EA FC Pro Clubs](../03-partida/00-mecanica-pro-clubs.md). Pesquisa pública indica que a premissa atual do dossiê ("host cria sala manual pra 22 avulsos") pode não existir no jogo — o mecanismo real parece exigir clube persistente (liga, drop-in da própria EA, ou amistoso clube-contra-clube). Alguém do time precisa **testar na prática** (criar 2 clubes, convidar por EA ID, rodar amistoso) antes de fechar [Discord e lobby](../03-partida/04-discord-e-lobby.md) definitivamente — pode mudar o que "escolher o host" significa e exigir a plataforma administrar clubes-casa dentro do próprio jogo.
+- **Mecanismo real de reunir 22 estranhos numa partida 11v11 de Pro Clubs** — ver [Mecânica real do EA FC Pro Clubs](../03-partida/00-mecanica-pro-clubs.md). Mecanismo já **decidido** (Amistoso Online entre o clube pessoal de um capitão escolhido por reputação em cada lado, não clube-casa administrado pela plataforma) e já propagado em [Discord e lobby](../03-partida/04-discord-e-lobby.md) e [Fila e matchmaking](../03-partida/03-fila-e-matchmaking.md). Falta só **testar na prática** (convite por EA ID, tempo de ciclo, comportamento de IA em Amistoso) — checklist completo no arquivo de mecânica.
 
 ## Futuro
 
