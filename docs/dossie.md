@@ -75,12 +75,39 @@ Reaproveitamento aprovado: **identidade visual (design system) do front-end atua
 ## 6. Ranking / Reputação
 
 Dois eixos separados:
-- **Reputação** — mede comportamento (reportou certo, não sumiu, print bateu, entrou no lobby a tempo). Afeta prioridade/acesso à fila.
+- **Reputação** — mede comportamento (reportou certo, não sumiu, print bateu, entrou no lobby a tempo, não desconectou/rage quit). Afeta prioridade/acesso à fila.
 - **Elo/rating** — mede desempenho competitivo (vitória/derrota real). Usado no equilíbrio de times, pesa mais que overall.
 
-## 7. Itens explicitamente adiados (não resolvidos agora)
+### Desconexão / rage quit
+- Reportado dentro do mesmo fluxo de report de resultado (campo "reportar ausência" na tela onde manda o print do placar) — não é fluxo separado.
+- Confirmada pelo outro lado, gera penalidade de reputação maior que perder a partida normalmente.
 
-- **Forma de pagamento por jogador em cada lobby** — mencionado pelo time como algo a existir, mas discussão adiada pra próxima seção de planejamento.
+### Escada de punição
+1. Reputação baixa → fila mais lenta / prioridade pior (fricção, sem bloqueio).
+2. Abaixo de piso crítico → suspensão temporária (ex.: 7 dias sem fila).
+3. Reincidência ou fraude grave (ex.: print falso comprovado) → banimento permanente.
+- Apelação disponível em qualquer degrau, via chamado pra moderação (mesma fila de disputas/exceções de OCR).
+
+## 7. Moderação
+
+- Fase 1 (MVP): moderação feita pelos 4 (Luciano, Rafael, João, Felipe), com painel simples de fila de casos pendentes (disputas de placar, exceções de OCR, denúncias, apelações).
+- Papel de moderador comunitário só entra quando volume de casos passar da capacidade dos 4 — não resolvido antecipadamente (over-engineering pra volume ainda desconhecido).
+
+## 8. Escopo de jogo / plataforma / região
+
+- **Crossplay unificado** (PS5, Xbox Series, PC) — sem separar fila por plataforma. Cadastro guarda a plataforma de cada personagem, pra permitir segmentar depois se necessário.
+- **Sem suporte a geração antiga** (PS4, Xbox One) — fora do escopo, mesmo que o jogo permita.
+- **Toda edição atual e futuras do FIFA/EA FC são suportadas** (não trava numa versão só). Personagem fica vinculado à edição do jogo; quando sai edição nova, personagens da anterior são arquivados (saem da fila ativa, não são deletados), exigindo reverificação pra edição nova.
+- **Região: só Brasil / América do Sul no MVP** — evita problema de ping/latência misturando regiões distantes. Expansão de região é aditiva, não trava arquitetura.
+
+## 9. Dados pessoais / LGPD
+
+- Prints (evidência de cadastro e de resultado) retidos por prazo definido (ex.: 90 dias — suficiente pra disputa/auditoria), apagados automaticamente depois.
+- Player pode pedir exclusão de conta e dados pessoais (direito LGPD); histórico de elo/reputação pode ser mantido de forma agregada e anonimizada (sem vincular a print/foto/identidade).
+
+## 10. Itens explicitamente adiados (não resolvidos agora)
+
+- **Aposta em dinheiro por jogador/lobby** — ideia embrionária do time pra fases futuras, não faz parte do MVP nem tem desenho de fluxo ainda.
 - Stack técnica (backend, banco, infra) — deliberadamente não decidida ainda.
 - Fila por time pré-formado (fase 2).
 - Divisão de papéis entre Luciano, Rafael, João e Felipe — time decidiu trabalhar em conjunto, sem divisão fixa por ora.
