@@ -62,8 +62,7 @@ Vídeo e capturas abaixo são as telas **desse** projeto de origem, não do
 ProLobby, servindo só de referência de estilo:
 
 <p align="center">
-  <video src="docs/assets/demo-escalacao.mp4" poster="docs/assets/demo-campo.png" width="920" controls playsinline></video><br>
-  <a href="docs/assets/demo-escalacao.mp4">Assistir o vídeo (MP4)</a>
+  <video src="docs/assets/demo-escalacao.mp4" width="920" autoplay loop muted playsinline></video>
 </p>
 
 <p align="center">
