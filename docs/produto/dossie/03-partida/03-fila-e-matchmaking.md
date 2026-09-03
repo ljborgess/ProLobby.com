@@ -26,10 +26,11 @@
 
 - Depois do lobby fechado (22 confirmados), **cada time vota** a formação (ex.: 4-3-3, 4-4-2, 4-2-3-1) dentro de um conjunto compatível com a distribuição fixa de categoria acima — não muda quem tá no time, só o esquema tático em campo.
 - Não afeta matchmaking nem elo — é coordenação/flavor pro time decidir junto antes de entrar na partida.
+- **Empate na votação**: host decide (reaproveita o papel já definido por reputação/conexão em [Discord e lobby](04-discord-e-lobby.md), sem critério novo).
 
 ## Timeout de fila
 
-- Se a fila não fechar os 22 dentro de um prazo (ex.: 10-15 min), avisa o player ("sem jogadores suficientes agora") com opção de continuar esperando ou sair — sem isso, fila trava sem feedback e não dá pra distinguir "sem gente" de bug.
+- Se a fila não fechar os 22 dentro de um prazo (ex.: 10-15 min), avisa o player apontando a **categoria específica que falta** (ex.: "faltam goleiros") com opção de continuar esperando ou sair — mais útil que mensagem genérica, ajuda o jogador a decidir e sinaliza onde a fila tá travada.
 
 ## Confirmação de entrada no lobby
 

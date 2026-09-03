@@ -24,7 +24,9 @@ Ao lobby fechar (22 confirmados), o bot de Discord:
 
 - Critério: **reputação + histórico de conexão estável** (não aleatório) — evita host com lag/ping ruim estragando o jogo pra todo mundo.
 - Se o host escolhido não confirma entrada ou desconecta, papel é **reatribuído automaticamente** pro próximo melhor candidato entre os 21 restantes, mesmo critério — lobby nunca fica sem host formal.
+- **Cascata completa**: se o próximo candidato também falhar, reaplica o mesmo critério recursivamente até alguém confirmar — sem caso especial, mesma regra repetida quantas vezes precisar.
 
 ## Notificação
 
 - Canal ativo de aviso (fila fechou, lobby formado, disputa resolvida, punição aplicada) é **Discord (DM do bot) + notificação in-app na própria plataforma web** — sem e-mail. Reaproveita o vínculo Discord já obrigatório, evita sistema de notificação paralelo.
+- **Fallback se a DM falhar** (usuário bloqueou DM de membro do servidor): nenhum tratamento especial — notificação in-app recebe o mesmo evento independente da DM funcionar. DM é conveniência, in-app é a garantia.
