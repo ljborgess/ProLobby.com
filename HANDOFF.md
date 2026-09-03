@@ -14,14 +14,14 @@ Ver [`README.md`](README.md). Origem: ideia nasceu numa sessão sobre o projeto 
 
 ## Onde está tudo
 
-- **`docs/produto/dossie/`** — o dossiê completo, separado por nicho (12 arquivos + índice em `README.md`). Foi construído em várias rodadas de entrevista (skill `grill-me`), cobrindo: visão geral, personagens/verificação (OCR, identidade), fila/matchmaking, Discord/lobby, resultado de partida, ranking/reputação/punição/smurfing/conluio, moderação, escopo (plataforma/edição/região), LGPD, backlog, onboarding, ToS/idade.
+- **`docs/produto/dossie/`** — o dossiê completo, separado por nicho e organizado em seções no índice (13 arquivos + índice em `README.md`). Foi construído em várias rodadas de entrevista (skill `grill-me`), cobrindo: visão geral, personagens/verificação (OCR, identidade), fila/matchmaking (composição de time + voto de formação), Discord/lobby (notificação, reatribuição de host), resultado de partida (zero report, bloqueio em disputa), ranking/reputação/punição (elo por categoria, seed inicial, smurfing/conluio), moderação, escopo (plataforma/edição/região), LGPD, backlog (monetização), onboarding, ToS/idade, perfil e visibilidade social.
 - **`.claude/settings.json`** — registra o marketplace de plugins B2ML (`https://gitlab.b2ml.com.br/.../b2ml-agentes-e-skills`) como `extraKnownMarketplaces` e habilita o plugin `grill-me` — abrindo este repo no Claude Code, isso já carrega sozinho.
 
 ## Como continuar
 
-1. Se for seguir levantando requisito/design: use a skill `grill-me` (já habilitada via `.claude/settings.json`) pra continuar entrevistando e resolvendo lacunas. O dossiê em `docs/produto/dossie/10-backlog-fases-futuras.md` lista o que já foi deliberadamente adiado — não regrilar esses itens sem motivo novo.
+1. Se for seguir levantando requisito/design: use a skill `grill-me` (já habilitada via `.claude/settings.json`) pra continuar entrevistando e resolvendo lacunas. O dossiê em `docs/produto/dossie/05-produto/10-backlog-fases-futuras.md` lista o que já foi deliberadamente adiado — não regrilar esses itens sem motivo novo.
 2. Quando for hora de decidir stack técnica: isso foi **deliberadamente não decidido ainda** (ver item em `10-backlog-fases-futuras.md`) — é a próxima decisão grande em aberto.
-3. Front-end: reaproveitar o design system documentado em `docs/produto/dossie/01-visao-geral.md` (cores, fontes, raios, sombras — extraído de `futebol/static/futebol/css/app.css` do repo `escalacao-brasileirao`).
+3. Front-end: reaproveitar o design system documentado em `docs/produto/dossie/01-visao/01-visao-geral.md` (cores, fontes, raios, sombras — extraído de `futebol/static/futebol/css/app.css` do repo `escalacao-brasileirao`).
 
 ## Itens conhecidos como não resolvidos (de propósito)
 

@@ -14,7 +14,17 @@
 - Formação dos 22: sistema busca **equilibrar overall médio entre os dois times** — prioriza qualidade de partida sobre velocidade de entrada.
 - **Elo/rating de desempenho pesa mais que overall** no equilíbrio; overall é critério de desempate entre players de elo parecido.
   - Motivo: overall é auto-declarado via print (mesmo verificado, é atributo do personagem); elo vem de resultado real dentro da plataforma — mais confiável, mais difícil de forjar.
-  - Detalhe do elo em [Ranking, reputação e punição](06-ranking-reputacao-e-punicao.md).
+  - Detalhe do elo em [Ranking, reputação e punição](../02-jogador/06-ranking-reputacao-e-punicao.md).
+
+## Composição do time
+
+- Cada time (11) fecha com uma **distribuição fixa por categoria**, definida a priori (ex.: 1 GK, 4 zaga/lateral, 3 meio, 3 ponta/ataque = 11) — matchmaking só fecha os 22 quando bate essa distribuição nos dois lados.
+- Motivo: separa a decisão de **quem entra** (matchmaking, precisa de número fechado por categoria) da decisão de **como jogar** (tática, ver "Formação tática" abaixo) — evita ambiguidade de "quanto falta pra fechar fila".
+
+## Formação tática (pós-lobby)
+
+- Depois do lobby fechado (22 confirmados), **cada time vota** a formação (ex.: 4-3-3, 4-4-2, 4-2-3-1) dentro de um conjunto compatível com a distribuição fixa de categoria acima — não muda quem tá no time, só o esquema tático em campo.
+- Não afeta matchmaking nem elo — é coordenação/flavor pro time decidir junto antes de entrar na partida.
 
 ## Timeout de fila
 
@@ -28,4 +38,4 @@
 
 ## Escopo
 
-- Crossplay, gerações de console, edições do jogo e região: ver [Escopo de plataforma, jogo e região](08-escopo-plataforma-jogo-regiao.md).
+- Crossplay, gerações de console, edições do jogo e região: ver [Escopo de plataforma, jogo e região](../05-produto/08-escopo-plataforma-jogo-regiao.md).

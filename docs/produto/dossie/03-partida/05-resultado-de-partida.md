@@ -4,7 +4,7 @@
 
 ## Contexto
 
-Sem API da EA, resultado depende de **report manual com print** — mesma limitação estrutural do cadastro de personagem (ver [Personagens e verificação](02-personagens-e-verificacao.md)).
+Sem API da EA, resultado depende de **report manual com print** — mesma limitação estrutural do cadastro de personagem (ver [Personagens e verificação](../02-jogador/02-personagens-e-verificacao.md)).
 
 ## Quem reporta
 
@@ -24,9 +24,11 @@ Gatilho de validade do print (evita fraude/troll terminando partida cedo, sem de
 ## Casos de borda
 
 - Se só um lado mandar dentro da janela (15 min): aceita como válido com flag "não confirmado", sujeito a contestação.
-- Se os dois lados mandarem placares divergentes: cai em **disputa/moderação** (ver [Moderação](07-moderacao.md)).
+- Se os dois lados mandarem placares divergentes: cai em **disputa/moderação** (ver [Moderação](../04-governanca/07-moderacao.md)).
+- Se **nenhum dos 22** reportar dentro dos 15 min: fica pendente, não expira ainda — só depois de um prazo bem maior (ex.: 24-48h) sem nenhum report, sistema **expira automaticamente e libera as 22 contas sem afetar elo/reputação** (trata como "partida sem dado").
 - **Desconexão / rage quit**: reportado dentro do mesmo fluxo (campo "reportar ausência" na tela de report do placar) — não é fluxo separado. Confirmada pelo outro lado, gera penalidade de reputação maior que perder a partida normalmente.
 
 ## Incentivo estrutural
 
 - **Conta fica bloqueada de nova fila até a partida anterior ser reportada e resolvida** — tira da plataforma a responsabilidade de "garantir" que alguém reporte; quem quer jogar de novo resolve o pendente por interesse próprio.
+- Esse bloqueio **também vale durante disputa/moderação pendente** (mesmo com prints divergentes já enviados) — decisão deliberada pro MVP dado baixo volume de casos com só 4 moderadores; revisar se o volume crescer e virar gargalo real (jogador inocente preso esperando resolução).
