@@ -30,13 +30,26 @@ ProLobby manteria um **pool de "clubes-casa" próprios**, já criados dentro do 
 
 ## Pendência crítica
 
-**Ninguém do time testou isso na prática ainda.** Antes de fechar qualquer decisão de fluxo de lobby/host em cima disso, alguém precisa:
-- Criar 2 clubes de teste.
-- Convidar contas de teste pra dentro via EA ID.
-- Rodar um Amistoso Online entre os dois.
-- Confirmar: dá pra fazer isso rápido o bastante pra não travar a janela de entrada no lobby (hoje ~timer curto pós-confirmação)? Dá pra automatizar convite/remoção via alguma ferramenta, ou é 100% manual dentro do jogo?
+**Ninguém do time testou isso na prática ainda.** Enquanto isso não for testado, [Discord e lobby](04-discord-e-lobby.md) continua descrevendo o fluxo antigo (sala manual) como premissa — não foi alterado ainda de propósito, até essa verificação acontecer.
 
-Enquanto isso não for testado, [Discord e lobby](04-discord-e-lobby.md) continua descrevendo o fluxo antigo (sala manual) como premissa — não foi alterado ainda de propósito, até essa verificação acontecer.
+## Checklist de teste — o que precisa
+
+Escopo do teste: **validar o mecanismo**, não simular um lobby cheio. 4 contas (os 4 sócios) bastam — não precisa dos 22. Um dos 4 já tem clube criado; o teste real fica pra quando o time decidir rodar (esta seção documenta o passo a passo pra quando isso acontecer, não bloqueia o resto do dossiê).
+
+**Pré-requisito**: 2 clubes existentes (1 já tem — criar o segundo, ou usar um clube de teste dos outros 3 sócios).
+
+**Passo a passo**:
+
+1. **Convite pra dentro do clube** — dono/gerente do Clube A convida uma conta que NÃO é membro (por EA ID/gamertag/PSN, sem ela ter aplicado antes). Cronometra quanto tempo leva do convite até a pessoa estar jogável no clube.
+2. **Saída do clube** — a pessoa convidada sai do clube (ou é removida pelo gerente). Confirma que sai limpo, sem cooldown pra entrar em outro clube depois (crítico: se tiver cooldown de saída, o mecanismo de "clube-casa reciclável por partida" morre).
+3. **Permissão de convite** — confirma se **só o dono/gerente** consegue convidar, ou se qualquer membro consegue. Decide se "host" = automaticamente vira gerente temporário, ou se precisa de uma conta fixa da plataforma sempre no papel de gerente.
+4. **Amistoso Online entre os 2 clubes** — com os times minimamente povoados (não precisa 11, testa com o que tiver), dispara um Amistoso Online do Clube A contra o Clube B. Confirma: dá pra marcar/iniciar em poucos minutos, ou tem fricção (agendamento, aprovação do outro lado, etc)?
+5. **Tempo total do ciclo** — soma passos 1+3+4: do convite até a bola rolar, quanto tempo passa? Compara com a janela de confirmação de lobby já definida (~30s pra aceitar + tempo de entrar na call/sala — ver [Fila e matchmaking](03-fila-e-matchmaking.md) e [Discord e lobby](04-discord-e-lobby.md)). Se o ciclo de clube for mais lento que a paciência de 22 pessoas esperando, o mecanismo não serve como está, mesmo que funcione tecnicamente.
+6. **Automação** — existe alguma ferramenta (API não-oficial, addon, o que for) pra automatizar convite/remoção, ou é 100% clique manual dentro do menu do jogo pra cada uma das 20 pessoas (10 por lado)? Se for manual, o "host" vira trabalho braçal considerável a cada partida.
+
+**Critério de decisão pós-teste**:
+- Se os passos 1-4 funcionam rápido (minutos) e sem cooldown de saída → mecanismo de clube-casa é viável, mas precisa de operação nova (plataforma administra N clubes).
+- Se tem cooldown de saída, ou convite é lento/tem fricção, ou só funciona sem automação nenhuma → mecanismo de clube-casa não escala pro produto como pensado, precisa reabrir a discussão (ex.: usar Drop-In aceitando que a EA decide o pareamento, ou repensar o que "partida coordenada pela plataforma" significa).
 
 ## Fontes (pesquisa pública, EA FC 25/26 — mecânica pode mudar por edição/patch)
 
