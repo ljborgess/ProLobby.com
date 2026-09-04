@@ -2,7 +2,7 @@
 
 ## Estrutura unificada (MVP)
 
-Servidor **não fragmenta por plataforma/posição no MVP** — decisão deliberada: comunidade pequena precisa se sentir unificada, canal segmentado demais com pouca gente vira canal morto. Segmentação (se fizer sentido) é aditiva pra quando o volume justificar, mesmo racional já usado em [Escopo de plataforma, jogo e região](../produto/dossie/05-produto/08-escopo-plataforma-jogo-regiao.md) pra expansão de região.
+Servidor **não fragmenta por plataforma/posição no MVP** — decisão deliberada: comunidade pequena precisa se sentir unificada, canal segmentado demais com pouca gente vira canal morto. Segmentação (se fizer sentido) é aditiva pra quando o volume justificar, mesmo racional já usado em [Escopo de plataforma, jogo e região](../produto/05-produto/02-escopo-plataforma-jogo-regiao.md) pra expansão de região.
 
 ## Canais fixos
 
@@ -16,4 +16,4 @@ Servidor **não fragmenta por plataforma/posição no MVP** — decisão deliber
 
 ## Canais dinâmicos
 
-- **3 canais temporários por lobby** (criados quando o lobby fecha, deletados quando a partida acaba): 2 de voz privados por time (Time A / Time B, 11x11 competitivo não compartilha voz) + 1 de texto compartilhado por todos os humanos do lobby (nome do capitão de cada lado, avisos operacionais de como a partida vai acontecer, logística cross-time — ver [Discord e lobby](../produto/dossie/03-partida/04-discord-e-lobby.md)). Mesmo fluxo já descrito lá.
+- **3 canais temporários por lobby** (criados quando o lobby fecha, deletados quando a partida acaba): 2 de voz privados por time (Time A / Time B, 11x11 competitivo não compartilha voz) + 1 de texto compartilhado por todos os humanos do lobby (nome do capitão de cada lado, avisos operacionais de como a partida vai acontecer, logística cross-time — ver [Discord e lobby](../produto/03-partida/03-discord-e-lobby.md)). Mesmo fluxo já descrito lá.

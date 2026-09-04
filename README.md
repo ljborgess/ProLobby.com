@@ -52,7 +52,7 @@ O mecanismo real: cada lado do lobby usa o clube pessoal de um dos próprios
 11 jogadores — o **capitão**, escolhido por maior reputação entre quem tem
 clube com vaga. Detalhe completo, achados de pesquisa e checklist de teste
 prático em
-[`docs/produto/dossie/03-partida/00-mecanica-pro-clubs.md`](docs/produto/dossie/03-partida/00-mecanica-pro-clubs.md).
+[`docs/produto/03-partida/01-mecanica-pro-clubs.md`](docs/produto/03-partida/01-mecanica-pro-clubs.md).
 
 </details>
 
@@ -73,10 +73,10 @@ prático em
 </table>
 
 Detalhado por fase (MVP / Fase 2 / Futuro) no
-[dossiê de produto](docs/produto/dossie/README.md). Itens deliberadamente
+[dossiê de produto](docs/produto/README.md). Itens deliberadamente
 adiados — aposta, moderador comunitário, fila por time pré-formado, stack
 técnica — no
-[backlog](docs/produto/dossie/05-produto/10-backlog-fases-futuras.md).
+[backlog](docs/produto/05-produto/03-backlog-fases-futuras.md).
 
 <br>
 
@@ -132,7 +132,9 @@ telas são do projeto de origem, servindo só de referência de estilo:
 
 <table>
 <tr><td><a href="docs/README.md"><code>docs/</code></a></td><td>Índice geral</td></tr>
-<tr><td><a href="docs/produto/dossie/README.md"><code>docs/produto/dossie/</code></a></td><td>Dossiê de produto, por nicho (visão, jogador, partida, governança, escopo)</td></tr>
+<tr><td><a href="docs/produto/README.md"><code>docs/produto/</code></a></td><td>Requisitos e design de produto, por domínio</td></tr>
+<tr><td><a href="docs/produto/parametros.md"><code>parametros.md</code></a></td><td>Todos os números do sistema num lugar só (elo, reputação, prazos, limites)</td></tr>
+<tr><td><a href="docs/negocio/README.md"><code>docs/negocio/</code></a></td><td>Tese de mercado e ordem de implementação</td></tr>
 <tr><td><a href="docs/discord/README.md"><code>docs/discord/</code></a></td><td>Estrutura do servidor Discord e do bot</td></tr>
 <tr><td><a href="HANDOFF.md"><code>HANDOFF.md</code></a></td><td>Pra retomar o trabalho em outra sessão/máquina — leia primeiro</td></tr>
 </table>
@@ -144,7 +146,7 @@ telas são do projeto de origem, servindo só de referência de estilo:
 Design de produto — sem código de aplicação ainda. Mecanismo central de
 partida (capitão + clube dinâmico) já decidido; falta **teste prático no
 jogo** pra confirmar tempo/fricção — checklist em
-[`00-mecanica-pro-clubs.md`](docs/produto/dossie/03-partida/00-mecanica-pro-clubs.md).
+[`01-mecanica-pro-clubs.md`](docs/produto/03-partida/01-mecanica-pro-clubs.md).
 Stack técnica é a próxima decisão grande em aberto. Divisão de papéis no
 time já fechada — sem papel fixo, trabalho em conjunto.
 

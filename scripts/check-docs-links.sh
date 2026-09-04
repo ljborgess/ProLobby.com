@@ -34,7 +34,7 @@ check_index_coverage() {
   done < <(find "$base_dir" -name '*.md' -print0)
 }
 
-check_index_coverage "docs/produto/dossie" "docs/produto/dossie/README.md"
+check_index_coverage "docs/produto" "docs/produto/README.md"
 check_index_coverage "docs/discord" "docs/discord/README.md"
 check_index_coverage "docs/negocio" "docs/negocio/README.md"
 

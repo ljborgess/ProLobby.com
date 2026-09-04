@@ -1,6 +1,6 @@
 # Discord — estrutura de servidor e bot
 
-Documenta a estrutura do servidor Discord da comunidade ProLobby: cargos, canais, permissões do bot, integração técnica com a plataforma. Domínio próprio, separado do dossiê de produto (`docs/produto/dossie/`) — aqui é infraestrutura de comunidade, não fluxo de produto. Onde os dois se cruzam (ex.: bot cria canal de lobby, notifica resultado), o dossiê de produto (ver [Discord e lobby](../produto/dossie/03-partida/04-discord-e-lobby.md)) linka pra cá.
+Documenta a estrutura do servidor Discord da comunidade ProLobby: cargos, canais, permissões do bot, integração técnica com a plataforma. Domínio próprio, separado do dossiê de produto (`docs/produto/`) — aqui é infraestrutura de comunidade, não fluxo de produto. Onde os dois se cruzam (ex.: bot cria canal de lobby, notifica resultado), o dossiê de produto (ver [Discord e lobby](../produto/03-partida/03-discord-e-lobby.md)) linka pra cá.
 
 ## Conteúdo
 

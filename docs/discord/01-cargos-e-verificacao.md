@@ -3,22 +3,22 @@
 ## Cargos fixos
 
 - **Admin** — os 4 sócios (Luciano, Rafael, João, Felipe). Acesso total ao servidor e ao bot.
-- **Moderador** — mesmo grupo dos 4 no MVP (cargo separado do Admin já preparado pro dia que entrar moderador comunitário — ver [Moderação](../produto/dossie/04-governanca/07-moderacao.md)).
+- **Moderador** — mesmo grupo dos 4 no MVP (cargo separado do Admin já preparado pro dia que entrar moderador comunitário — ver [Moderação](../produto/04-governanca/01-moderacao.md)).
 
 ## Cargos sociais (auto-selecionáveis)
 
 - No **join do servidor**, usuário passa pelo recurso nativo de **Onboarding/Screening do próprio Discord** (zero código — a plataforma Discord já oferece isso): pergunta intuitiva de plataforma (PS5/Xbox/PC), objetivo, etc., concede cargo por botão.
-- Esses cargos são **só organização social** — não liberam nenhum canal funcional (fila, lobby). Servem pra dar contexto e identidade antes mesmo do onboarding formal da plataforma estar completo (ver [Onboarding](../produto/dossie/05-produto/11-onboarding.md)).
+- Esses cargos são **só organização social** — não liberam nenhum canal funcional (fila, lobby). Servem pra dar contexto e identidade antes mesmo do onboarding formal da plataforma estar completo (ver [Onboarding](../produto/05-produto/01-onboarding.md)).
 
 ## Cargo funcional: Verificado
 
-- Concedido **só pelo bot**, automaticamente, quando as duas condições estiverem satisfeitas: personagem verificado (OCR aprovado) **e** conta Discord vinculada — como o onboarding permite completar essas duas etapas em qualquer ordem (ver [Onboarding](../produto/dossie/05-produto/11-onboarding.md)), o gatilho é duplo: verificação aprovada com Discord já vinculado concede na hora; Discord vinculado com personagem já verificado também concede na hora. Nenhuma das duas sozinha basta.
+- Concedido **só pelo bot**, automaticamente, quando as duas condições estiverem satisfeitas: personagem verificado (OCR aprovado) **e** conta Discord vinculada — como o onboarding permite completar essas duas etapas em qualquer ordem (ver [Onboarding](../produto/05-produto/01-onboarding.md)), o gatilho é duplo: verificação aprovada com Discord já vinculado concede na hora; Discord vinculado com personagem já verificado também concede na hora. Nenhuma das duas sozinha basta.
 - É o cargo que **libera acesso aos canais de fila/lobby** — o gate funcional de verdade vive aqui, os cargos sociais nunca dão acesso.
-- **Revogado automaticamente durante suspensão** (ver [Ranking, reputação e punição](../produto/dossie/02-jogador/06-ranking-reputacao-e-punicao.md)) — perde acesso a canal de fila/lobby, mas continua no servidor geral (coerente com a decisão de que punição não expulsa do Discord).
+- **Revogado automaticamente durante suspensão** (ver [Ranking, reputação e punição](../produto/02-jogador/02-ranking-reputacao-e-punicao.md)) — perde acesso a canal de fila/lobby, mas continua no servidor geral (coerente com a decisão de que punição não expulsa do Discord).
 - Reconcedido automaticamente quando a suspensão termina.
 - **Banimento permanente**: mesma revogação, sem reconcessão futura — não tem "quando terminar" porque não termina.
-- **Personagem arquivado** (edição nova do jogo exige reverificação — ver [Escopo de plataforma, jogo e região](../produto/dossie/05-produto/08-escopo-plataforma-jogo-regiao.md)): cargo cai junto, porque deixa de existir verificação válida pra edição corrente. Reconcedido quando reverificar a edição nova. Coerente com a fila também bloquear nesse estado.
-- **Exclusão de conta** (pedido voluntário, LGPD — ver [Dados pessoais e LGPD](../produto/dossie/04-governanca/09-dados-pessoais-lgpd.md)): diferente de suspensão/banimento (involuntário, mantém no servidor), exclusão é saída voluntária da plataforma inteira — bot **remove (kick) do servidor** junto com o resto do processo de exclusão.
+- **Personagem arquivado** (edição nova do jogo exige reverificação — ver [Escopo de plataforma, jogo e região](../produto/05-produto/02-escopo-plataforma-jogo-regiao.md)): cargo cai junto, porque deixa de existir verificação válida pra edição corrente. Reconcedido quando reverificar a edição nova. Coerente com a fila também bloquear nesse estado.
+- **Exclusão de conta** (pedido voluntário, LGPD — ver [Dados pessoais e LGPD](../produto/04-governanca/02-dados-pessoais-lgpd.md)): diferente de suspensão/banimento (involuntário, mantém no servidor), exclusão é saída voluntária da plataforma inteira — bot **remove (kick) do servidor** junto com o resto do processo de exclusão.
 
 ## Apelido (nickname)
 
