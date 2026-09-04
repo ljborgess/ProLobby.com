@@ -36,7 +36,7 @@ EA FC Pro Clubs **não tem API pública** — nenhuma integração automática c
 - Antes de salvar, tela de confirmação mostra dado extraído + nível de confiança do OCR — player confirma ou reenvia.
 - Exceção: se OCR falhar repetidamente, abre **chamado pra moderação** corrigir manualmente (caso raro, auditável — ver [Moderação](../04-governanca/07-moderacao.md)).
 - **Cooldown entre atualizações** (ex.: 1x a cada 24–48h) — evita spam de prints tentando "sorte" no OCR.
-- **Snapshot travado durante fila/lobby ativo** — update de atributos só aplica depois que sai da fila/partida.
+- **Snapshot travado durante fila/lobby ativo** — trava só o **personagem/categoria que está na fila/lobby naquele momento**, não os outros 4 da conta (ex.: se você tá numa partida de goleiro, seu personagem de ataque continua atualizável normalmente). Update de atributos do personagem travado só aplica depois que sai da fila/partida.
 - Nome/foto: editáveis livremente (baixo risco competitivo, personagem é personalizável, não precisa refletir aparência real do Virtual Pro). Atributos de jogo: só via novo print.
 - Foto **sem checagem automática de conteúdo** no MVP — upload livre; conteúdo inadequado é tratado reativamente via denúncia ([Moderação](../04-governanca/07-moderacao.md)), não por filtro no momento do upload.
 - Histórico de prints: visível só pro dono do perfil e pra moderação (não público) — evita vazamento de dado da tela (ex.: infos da conta EA). Retenção sujeita a política de dados (ver [Dados pessoais e LGPD](../04-governanca/09-dados-pessoais-lgpd.md)).

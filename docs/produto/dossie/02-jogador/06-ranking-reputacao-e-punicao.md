@@ -26,6 +26,8 @@ Motivo de separar: um jogador pode ser ótimo competidor com reputação ruim (s
 
 Apelação disponível em qualquer degrau, via chamado pra moderação (ver [Moderação](../04-governanca/07-moderacao.md)).
 
+- **Suspensão aplicada durante lobby confirmado/partida em andamento**: não expulsa a pessoa no meio do jogo (prejudicaria os outros 21 inocentes que dependem dela pra fechar 11v11) — suspensão só bloqueia a **próxima** tentativa de entrar na fila, partida em curso termina normalmente.
+
 - Suspensão/banimento afeta **só o acesso à fila/matchmaking dentro da plataforma** — não expulsa automaticamente do servidor Discord da comunidade (pessoa punida ainda pode ver avisos, discutir, apelar). Kick do Discord fica reservado a caso extremo, decisão manual da moderação, não automática. Consequência no Discord (revogação de cargo, log) documentada em [docs/discord/](../../../discord/README.md).
 
 ## Multi-conta / smurfing
