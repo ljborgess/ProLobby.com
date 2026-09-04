@@ -37,6 +37,7 @@ docs/
 │   ├── 05-funcionais       RF-001 a RF-070
 │   ├── 06-piloto-ocr       bloqueador nº 2
 │   └── 07-nao-funcionais   RNF-001 a RNF-020
+├── adr/          decisão técnica difícil de reverter (001 a 004; stack entra aqui)
 ├── discord/      01-cargos · 02-canais · 03-bot · 04-integracao
 └── negocio/      01-mercado · 02-implementacao · 03-sustentabilidade · 04-lancamento
 ```

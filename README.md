@@ -8,7 +8,7 @@
 ![Fase](https://img.shields.io/badge/FASE-MVP-0c1322?style=for-the-badge&labelColor=070b14&color=f5b841)
 ![Stack](https://img.shields.io/badge/STACK-A%20DEFINIR-0c1322?style=for-the-badge&labelColor=070b14&color=6b7a94)
 
-`fila` → `lobby` → `capitão` → `partida` → `resultado` → `ranking`
+`fila` → `lobby` → `capitão` → `partida` → `resultado` → `ranking` → `antifraude`
 
 </div>
 
@@ -17,9 +17,9 @@
 ## Sistema
 
 ProLobby transforma fila em partida real de Pro Clubs. Jogador entra por
-posição, o sistema forma dois times de 11 equilibrados por elo, e a
-plataforma coordena tudo — Discord, resultado, ranking — enquanto o jogo
-roda dentro do próprio EA FC.
+posição, o sistema monta dois lados equilibrados por elo — de 4 a 11 humanos
+cada, com a IA do próprio jogo cobrindo o resto dos 11 — e coordena tudo:
+Discord, resultado, ranking. A partida em si roda dentro do EA FC.
 
 Identidade visual herdada do design system de
 [`escalacao-brasileirao`](https://github.com/rafaeljs08/escalacao-brasileirao).
@@ -34,9 +34,9 @@ ProLobby é projeto novo e independente — nada de backend/dados de lá.
 <tr><td><code>02</code></td><td><b>Fila</b></td><td>Escolhe posição (goleiro / zaga / meio / ponta / ataque), entra na fila individual por categoria</td></tr>
 <tr><td><code>03</code></td><td><b>Lobby</b></td><td>8 a 22 humanos, simetria por categoria entre os lados — a IA do próprio jogo cobre as vagas restantes dos 11</td></tr>
 <tr><td><code>04</code></td><td><b>Capitão</b></td><td>1 jogador real por lado, escolhido por reputação, empresta o próprio clube EA — sem host de rede, Pro Clubs roda em servidor dedicado</td></tr>
-<tr><td><code>05</code></td><td><b>Antifraude</b></td><td>Hash antes do OCR, roster do print final conferido contra o lobby, timeout progressivo por recusa</td></tr>
 <tr><td><code>05</code></td><td><b>Partida</b></td><td>Amistoso Online entre os dois clubes, dentro do jogo — plataforma não executa, só coordena</td></tr>
 <tr><td><code>06</code></td><td><b>Resultado</b></td><td>Print + OCR confirmam placar, elo e reputação atualizam por categoria</td></tr>
+<tr><td><code>07</code></td><td><b>Antifraude</b></td><td>Hash antes do OCR, roster do print final conferido contra o lobby, timeout progressivo por recusa</td></tr>
 </table>
 
 <details>
@@ -133,9 +133,10 @@ telas são do projeto de origem, servindo só de referência de estilo:
 
 <table>
 <tr><td><a href="docs/README.md"><code>docs/</code></a></td><td>Índice geral</td></tr>
-<tr><td><a href="docs/produto/README.md"><code>docs/produto/</code></a></td><td>Requisitos e design de produto, por domínio</td></tr>
+<tr><td><a href="docs/produto/README.md"><code>docs/produto/</code></a></td><td>Decisões de produto e o motivo de cada uma, por domínio</td></tr>
 <tr><td><a href="docs/produto/parametros.md"><code>parametros.md</code></a></td><td>Todos os números do sistema num lugar só (elo, reputação, prazos, limites)</td></tr>
 <tr><td><a href="docs/requisitos/README.md"><code>docs/requisitos/</code></a></td><td>O que o sistema faz: RF-001 a RF-070, RNF-001 a RNF-020, estados, modelo de dados</td></tr>
+<tr><td><a href="docs/adr/README.md"><code>docs/adr/</code></a></td><td>Decisão de arquitetura, com supersessão explícita — só o que custa refatoração pra desfazer</td></tr>
 <tr><td><a href="docs/negocio/README.md"><code>docs/negocio/</code></a></td><td>Tese de mercado, sustentabilidade, ordem de implementação e plano de lançamento</td></tr>
 <tr><td><a href="docs/discord/README.md"><code>docs/discord/</code></a></td><td>Estrutura do servidor Discord e do bot</td></tr>
 <tr><td><a href="HANDOFF.md"><code>HANDOFF.md</code></a></td><td>Pra retomar o trabalho em outra sessão/máquina — leia primeiro</td></tr>
