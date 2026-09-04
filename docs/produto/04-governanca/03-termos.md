@@ -7,6 +7,18 @@
 - **16 anos** — acompanha a classificação do próprio EA FC, mas com corte mais alto que o padrão Discord (13) porque envolve chat de voz com estranhos via Pro Clubs.
 - **Verificação**: campo de **data de nascimento** no cadastro (não checkbox genérico "sou maior de 16") — sistema calcula a idade e bloqueia o cadastro na hora se der menos de 16 anos, sem depender de o jogador fazer conta sozinho. Sem verificação documental. Mesmo padrão de mercado usado por plataformas sociais/gaming (o próprio Discord funciona assim); verificação documental é atrito e custo de compliance desproporcional pro MVP.
 
+## Apoio financeiro (Fundador e Apoiador)
+
+Os Termos precisam cobrir o que a [Sustentabilidade](../../negocio/03-sustentabilidade.md) decidiu vender já no lançamento — e a redação é o que sustenta o enquadramento:
+
+- **Fundador é apoio ao projeto, não compra de serviço com continuidade garantida.** Sem reembolso caso o projeto pare (decisão do time, risco assumido).
+- **A palavra "vitalício" não aparece** em nenhum lugar — implica serviço perpétuo, o que é promessa de continuidade. A formulação é "acesso de Fundador enquanto a plataforma existir".
+- **Risco dito antes do pagamento**, na mesma tela: fase inicial, sem garantia de continuidade, sem reembolso. Não em link de rodapé.
+- **Nada comprado altera fila, elo, escolha de capitão ou resultado** — a linha vermelha entra no texto dos Termos, não só no dossiê interno.
+- Ativar cobrança é **mudança material**, então exige novo aceite versionado de quem já usava.
+
+**Ressalva jurídica**: apoio **com contrapartida** pode ser lido como contrato de serviço sob o CDC — o Código de Defesa do Consumidor não deixa de valer porque o vendedor chamou de doação. A redação da página de venda entra na mesma consulta jurídica das pendências abaixo.
+
 ## Adolescente de 16-17 anos — pendência jurídica
 
 Com corte em 16 anos, **a base inclui menores de idade** — e a LGPD (art. 14) trata dado de criança e adolescente com regra própria, exigindo que o tratamento seja no melhor interesse do titular. O texto da lei é explícito sobre consentimento de responsável para **criança** (até 12); para **adolescente** (12 a 18) a interpretação é menos assentada e varia conforme o entendimento aplicado.

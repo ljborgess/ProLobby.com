@@ -30,7 +30,9 @@ O bot é o **motor único de automação** entre a plataforma (aplicação web) 
 | Rollback retroativo (disputa revertida pela moderação) | Notifica todos os humanos envolvidos que elo/reputação foram recalculados (ver [Ranking, reputação e punição](../produto/02-jogador/02-ranking.md)) |
 | Qualquer chamado de moderação resolvido (exceção de OCR, troca de gamertag, apelação — ver [Moderação](../produto/04-governanca/01-moderacao.md)) | Notifica o solicitante via DM + in-app — mesma esteira usada pra disputa/punição, sem exceção |
 | Mensagem em **#suporte-e-denuncia** | Cria caso automaticamente na fila de moderação da plataforma ([Moderação](../produto/04-governanca/01-moderacao.md)) — painel único, sem checar dois sistemas |
-| Qualquer ação sensível (kick, ban, concessão/revogação de Verificado) | Posta registro em **#log-moderacao** (ver [Canais](02-canais.md)) — auditável sem depender do audit log nativo |
+| Plano ativado no painel (Fundador ou Apoiador, confirmação manual de PIX) | Concede o cargo **Fundador** ou **Apoiador** — reconhecimento só, sem liberar canal nem permissão nenhuma (ver [Cargos](01-cargos.md) e [Sustentabilidade](../negocio/03-sustentabilidade.md)) |
+| Plano mensal de Apoiador expira sem renovação | Revoga o cargo Apoiador. **Fundador nunca é revogado** — é pagamento único |
+| Qualquer ação sensível (kick, ban, concessão/revogação de Verificado, ativação de plano) | Posta registro em **#log-moderacao** (ver [Canais](02-canais.md)) — auditável sem depender do audit log nativo |
 
 ## O que continua manual (mesmo com permissão total)
 

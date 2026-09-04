@@ -68,7 +68,60 @@ R$ 9,90/mês precisa cobrir MEI (~R$ 76) + hospedagem, uns R$ 126/mês — **13 
 
 **Ativa quando**: 300+ contas ativas, **ou** o custo mensal estourar o free tier — o que vier primeiro.
 
+## Receita no lançamento — cobrança única, não assinatura
+
+Decisão do time: gerar receita já no lançamento. O modelo muda, porque **assinatura é o pior formato pra lançamento e cobrança única é o melhor** — assinatura promete valor contínuo, e com fila magra o assinante cancela em semanas; cobrança única não tem churn, a escassez é verdadeira, e o dinheiro entra quando mais falta.
+
+### 1 · Fundador — R$ 49, pagamento único
+
+Janela limitada: **primeiros 30 dias ou primeiras 50 pessoas**, o que vier primeiro. Depois nunca mais — é o que faz a escassez ser real em vez de encenada.
+
+Recebe cargo Fundador permanente no Discord, badge no perfil, e os benefícios de Apoiador **sem mensalidade**: estatística estendida, inscrição antecipada, criar liga privada. Tudo do lado de fora da [linha vermelha](#a-linha-vermelha--regra-fixa-sem-exceção).
+
+**20 pessoas × R$ 49 = R$ 980.** Contra custo de ~R$ 3/mês em free tier, é mais de um ano de fôlego recebido no primeiro mês.
+
+### 2 · Torneio mensal com inscrição — R$ 10 por pessoa
+
+**É o único modelo que melhora o cold start em vez de piorar.** Torneio tem data marcada, e data marcada concentra gente numa janela — exatamente a "largada coordenada" que a [tese de mercado](01-mercado.md) já prescreve como organização social. Cobra e gera liquidez no mesmo movimento, ao contrário de assinatura, que taxa a liquidez.
+
+4 times × 8 humanos = 32 inscritos × R$ 10 = **R$ 320**. Premiação 70% (R$ 224), plataforma retém 30% (R$ 96). Mensal, cobre MEI e hospedagem sozinho.
+
+Competição por habilidade com inscrição e premiação — regime jurídico distinto de aposta de quota fixa (ver seção final), mas exige CNPJ e orientação contábil.
+
+### 3 · Apoiador mensal de R$ 9,90 — disponível, não empurrado
+
+Existe desde o lançamento, sem paywall e sem insistência. Converte de verdade no gatilho de ~300 contas ativas; antes disso é troco.
+
+### Como cobrar: PIX manual, sem gateway
+
+**Não integrar gateway de pagamento.** Pra 25 pagamentos, Mercado Pago ou Stripe custa semanas de integração, taxa por transação e webhook pra manter no ar. PIX com confirmação manual entrega o mesmo resultado com zero código de pagamento.
+
+1. **Chave PIX + comprovante.** Pessoa paga, envia comprovante, um dos 4 confirma.
+2. **Painel de moderação ganha a ação "ativar plano"** — reusa o painel já desenhado com 2FA e log de auditoria ([Moderação](../produto/04-governanca/01-moderacao.md)), então rastreabilidade de dinheiro sai de graça, no mesmo log das outras ações sensíveis.
+3. **Schema**: campo de plano na conta + tabela de evento de pagamento (já previsto na [ordem de implementação](02-implementacao.md)).
+4. **Bot concede o cargo** no evento de plano ativado — a esteira plataforma → webhook → bot já existe inteira ([Bot](../discord/03-bot.md)), é só mais uma linha na tabela de responsabilidades.
+5. **Uma página** com o que é, o PIX, o que a pessoa recebe, e "zero vantagem dentro da partida" em destaque.
+6. **MEI aberto antes do primeiro real recebido** — a receita de Fundador paga com folga, e sem ele é receita recebida como PF sem nota.
+
+Gateway de verdade entra junto com o gatilho de volume, não antes.
+
+### Sem reembolso — enquadrado como apoio, e a redação é que sustenta isso
+
+**Decisão do time**: não há reembolso se o projeto parar pelo [critério de desistir](01-mercado.md) dos 90 dias. Fundador é vendido como **apoio ao projeto**, não como compra de serviço com continuidade garantida, e o risco fica dito na própria página de venda.
+
+Risco assumido consciente: se o projeto parar, 20 pessoas pagaram por um cargo numa plataforma morta — e são justamente as que mais acreditaram. O desgaste cai numa comunidade BR de Pro Clubs pequena, onde reputação circula rápido.
+
+**O que faz esse enquadramento sobreviver é a redação, não a intenção.** Três exigências:
+
+- **Nunca usar a palavra "vitalício"** — implica serviço perpétuo, o que é promessa de continuidade e destrói o enquadramento de apoio. A formulação correta é **"acesso de Fundador enquanto a plataforma existir"**.
+- **Risco explícito antes do pagamento**, na mesma tela e não em link de rodapé: projeto em fase inicial, sem garantia de continuidade, sem reembolso.
+- **Nada de linguagem de benefício futuro garantido** na venda ("você terá", "sempre terá"). Descreve o que existe hoje.
+
+Ressalva factual, não reabertura da decisão: mesmo enquadrado como apoio, apoio **com contrapartida** pode ser lido como contrato de serviço sob o Código de Defesa do Consumidor — o CDC não desaparece porque o vendedor chamou de doação. Entra na mesma consulta jurídica das outras pendências ([entidade legal](01-mercado.md), [LGPD 16-17](../produto/04-governanca/03-termos.md)), e a redação da página deve ser revisada junto.
+
 ## Por onde começar (horas, não semanas — e nada de cobrança)
+
+Vale pra monetização de volume (assinatura no gatilho de 300). O que entra **no lançamento** está na seção acima.
 
 1. **A linha vermelha registrada** — este arquivo. É a decisão difícil de reverter depois.
 2. **Schema nasce preparado**: campo de plano na conta e tabela de evento de pagamento, junto do aceite versionado de Termos que já está desenhado ([Onboarding](../produto/05-produto/01-onboarding.md)). Fazer isso como migração retroativa é o que custa caro.

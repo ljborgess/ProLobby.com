@@ -96,6 +96,19 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 | Meta de resposta — denúncia e apelação | 48 h | [Moderação](04-governanca/01-moderacao.md) |
 | Idiomas | português e espanhol | [Escopo](05-produto/02-escopo.md) |
 
+## Sustentabilidade
+
+| Parâmetro | Valor | Onde é decidido |
+|---|---|---|
+| Custo mensal do MVP | R$ 50–90 (≈R$ 3 em free tier) | [Sustentabilidade](../negocio/03-sustentabilidade.md) |
+| Fundador — preço | R$ 49, pagamento único | [Sustentabilidade](../negocio/03-sustentabilidade.md) |
+| Fundador — janela | 30 dias ou 50 pessoas (o que vier primeiro) | [Sustentabilidade](../negocio/03-sustentabilidade.md) |
+| Apoiador — mensalidade | R$ 9,90 | [Sustentabilidade](../negocio/03-sustentabilidade.md) |
+| Torneio — inscrição | R$ 10 por pessoa | [Sustentabilidade](../negocio/03-sustentabilidade.md) |
+| Torneio — divisão | 70% premiação / 30% plataforma | [Sustentabilidade](../negocio/03-sustentabilidade.md) |
+| Gatilho de assinatura recorrente | 300 contas ativas, ou custo estourar o free tier | [Sustentabilidade](../negocio/03-sustentabilidade.md) |
+| Reembolso | nenhum (enquadrado como apoio) | [Termos](04-governanca/03-termos.md) |
+
 ## Integração com o bot
 
 | Parâmetro | Valor | Onde é decidido |

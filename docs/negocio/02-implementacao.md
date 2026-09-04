@@ -52,7 +52,8 @@ Não bloqueia desenvolvimento interno/teste com os 4, mas bloqueia abrir pra for
 - Painel de moderação com **2FA obrigatório** e **log de auditoria de toda ação** ([Moderação](../produto/04-governanca/01-moderacao.md)) — maior alvo de risco se comprometido.
 - Termos de Uso + Política de Privacidade publicados ([Termos de uso](../produto/04-governanca/03-termos.md)).
 - Retenção automática de dados (LGPD, [02-lgpd.md](../produto/04-governanca/02-lgpd.md)).
-- Entidade legal (CNPJ/MEI) — pendência registrada na [tese de mercado](01-mercado.md), só bloqueia ToS ter peso jurídico e monetização futura, não bloqueia teste interno.
+- Entidade legal (**MEI aberto antes do primeiro real recebido**) — a receita de Fundador paga com folga, e sem ele é receita como PF sem nota (ver [Sustentabilidade](03-sustentabilidade.md)).
+- **Cobrança de lançamento**, que é dias de trabalho e não semanas, porque não tem gateway: chave PIX com confirmação manual, ação "ativar plano" no painel de moderação (mesmo log de auditoria), cargo Fundador/Apoiador via a esteira de bot já existente, e uma página de venda com o risco dito antes do pagamento. Redação revisada junto com os Termos ([Termos de uso](../produto/04-governanca/03-termos.md)) — o enquadramento de apoio depende dela.
 
 ## Resumo — o que fazer essa semana
 
