@@ -76,7 +76,10 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 | Cooldown entre atualizações aceitas | 24 h | [Personagens](02-jogador/01-verificacao.md) |
 | Personagens por conta | até 5 (1 por categoria) | [Personagens](02-jogador/01-verificacao.md) |
 | Nome de clube — limite | 20 caracteres | [Personagens](02-jogador/01-verificacao.md) |
-| Anti-reuso de print | hash do arquivo | [Resultado](03-partida/04-resultado.md) |
+| Anti-reuso de print | hash do arquivo, checado **antes** do OCR | [Resultado](03-partida/04-resultado.md) |
+| Teto de uploads por conta | 10 por hora | [Personagens](02-jogador/01-verificacao.md) |
+| Pré-checagens antes do OCR | hash, dimensão mínima, nível de foco | [Personagens](02-jogador/01-verificacao.md) |
+| Validação do roster no print final | gamertags conferidos contra o lobby | [Resultado](03-partida/04-resultado.md) |
 
 ## Resultado de partida
 
@@ -106,6 +109,7 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 | Apelações por punição | 1 (reabre só com fato novo) | [Moderação](04-governanca/01-moderacao.md) |
 | Meta de resposta — disputa e OCR | 24 h | [Moderação](04-governanca/01-moderacao.md) |
 | Meta de resposta — denúncia e apelação | 48 h | [Moderação](04-governanca/01-moderacao.md) |
+| Denúncias abertas por conta | máximo 3 simultâneas | [Moderação](04-governanca/01-moderacao.md) |
 | Ranking — recorte | top 50 por categoria, ativos nos últimos 30 dias | [Perfil](02-jogador/03-perfil.md) |
 | Busca de perfil por gamertag | não existe (só histórico, lobby e ranking) | [Perfil](02-jogador/03-perfil.md) |
 | Idiomas da interface | português e espanhol | [Escopo](05-produto/02-escopo.md) |

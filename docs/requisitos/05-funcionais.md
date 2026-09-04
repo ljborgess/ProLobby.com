@@ -2,7 +2,7 @@
 
 Lista numerada e rastreável. Formato e regras em [README](README.md).
 
-**Status: 9 áreas levantadas, RF-001 a RF-062, RNF-001 a RNF-020.** Nenhuma área permanece sem varredura de lacuna.
+**Status: 9 áreas levantadas, RF-001 a RF-070, RNF-001 a RNF-020.** Nenhuma área permanece sem varredura de lacuna.
 
 Cobre as 9 áreas do produto, mais os [não-funcionais](07-nao-funcionais.md) em arquivo próprio.
 
@@ -22,6 +22,7 @@ Cobertura por área, pra saber onde ainda não se olhou:
 | Perfil, ranking e descoberta | **levantado** |
 | Moderação | **levantado** |
 | **Discord e bot** | **levantado** |
+| **Antiabuso e antifraude** | **levantado** |
 | Notificação | coberto por [04-notificacoes.md](04-notificacoes.md) |
 | Não-funcionais | coberto por [07-nao-funcionais.md](07-nao-funcionais.md) |
 
@@ -37,7 +38,7 @@ Cobertura por área, pra saber onde ainda não se olhou:
 ### RF-020 · Um e-mail, uma conta
 **Origem**: [produto/05-produto/01-onboarding.md](../produto/05-produto/01-onboarding.md)
 
-**Aceite**: cadastro com e-mail já usado é recusado, inclusive se a conta existente estiver suspensa ou banida. Conta excluída por pedido LGPD libera o e-mail.
+**Aceite**: só existe uma conta por endereço. **A tela nunca revela isso**: cadastro e recuperação respondem sempre "enviamos um e-mail com as instruções", e o conteúdo real (link de verificação, ou aviso de conta existente) chega por e-mail. Conta excluída por pedido LGPD libera o endereço.
 
 ### RF-021 · Idade calculada da data de nascimento, bloqueio na hora
 **Origem**: [produto/04-governanca/03-termos.md](../produto/04-governanca/03-termos.md)
@@ -368,3 +369,55 @@ Motivo: comando de jogador duplicaria a plataforma dentro do Discord, criando do
 **Origem**: [discord/04-integracao.md](../discord/04-integracao.md)
 
 **Aceite**: a criação do servidor não é automatizada, mesmo sendo possível via API — o bot viraria dono, contra a decisão de propriedade por conta separada não pessoal. O **Server Members Intent** precisa estar ativo no Developer Portal, sem o qual o cargo Verificado nunca é concedido e a falha é silenciosa.
+
+---
+
+## Antiabuso e antifraude
+
+Requisitos vindos de uma revisão adversarial do fluxo inteiro — procurando brecha de bug, spam e fraude, não lacuna de decisão.
+
+### RF-063 · Hash roda antes do OCR, não depois
+**Origem**: [produto/02-jogador/01-verificacao.md](../produto/02-jogador/01-verificacao.md)
+
+**Aceite**: arquivo cujo hash já existe é rejeitado **sem** que nenhuma chamada de OCR seja feita. Vale pro print de verificação e pro de resultado.
+
+### RF-064 · Pré-checagens locais barram lixo antes de custar chamada
+**Origem**: [produto/02-jogador/01-verificacao.md](../produto/02-jogador/01-verificacao.md)
+
+**Aceite**: imagem abaixo da dimensão mínima ou completamente desfocada é rejeitada localmente, sem chamada de OCR, com mensagem dizendo o que corrigir.
+
+### RF-065 · Teto de 10 uploads por hora por conta
+**Origem**: [produto/02-jogador/01-verificacao.md](../produto/02-jogador/01-verificacao.md)
+
+**Aceite**: do 11º upload na janela de uma hora em diante, a resposta é recusa com o tempo restante. Conta a tentativa, aceita ou não.
+
+Os três juntos fecham o vetor: a regra de rejeição não consumir cooldown transformava cada print ruim numa chamada de OCR grátis e ilimitada — 1000 unidades de free tier queimadas numa tarde, derrubando a premissa de custo R$ 0. A intenção original (não punir quem tem foto ruim) continua de pé.
+
+### RF-066 · Gamertags do print final conferem contra o roster do lobby
+**Origem**: [produto/03-partida/04-resultado.md](../produto/03-partida/04-resultado.md)
+
+**Aceite**: o OCR extrai os gamertags da tela de fim de partida. Nome humano que não consta no roster do lobby **derruba o resultado** e abre caso de abuso de capitão. Vagas de IA não contam.
+
+Fecha o furo mais grave da revisão: **"clube com vaga" não é "clube sem outros humanos"**. Membro humano do clube do capitão entra na escalação antes da IA, então a partida podia rodar com amigos do capitão que não estão na plataforma — sem elo, sem reputação, sem verificação — e o equilíbrio por elo virava ficção sem ninguém perceber.
+
+### RF-067 · Print final confere a categoria jogada
+**Origem**: [produto/03-partida/04-resultado.md](../produto/03-partida/04-resultado.md)
+
+**Aceite**: a posição de cada jogador na tela final é comparada com a categoria em que ele entrou na fila. Divergência abre caso, não derruba o resultado automaticamente — a leitura de posição é menos confiável que a de nome.
+
+Mitiga o furo aberto pela ressalva da Virtual Pro única: nada impedia verificar um build e jogar com outro ([Personagens](../produto/02-jogador/01-verificacao.md), teste 7 do [checklist](../produto/03-partida/05-checklist.md)).
+
+### RF-068 · Máximo de 3 denúncias abertas por conta
+**Origem**: [produto/04-governanca/01-moderacao.md](../produto/04-governanca/01-moderacao.md)
+
+**Aceite**: com 3 casos abertos pela conta, a abertura do 4º é recusada até um resolver. Vale também pra denúncia originada de mensagem em `#suporte-e-denuncia`.
+
+### RF-069 · Denúncia reincidente sem fundamento vira caso de conduta
+**Origem**: [produto/04-governanca/01-moderacao.md](../produto/04-governanca/01-moderacao.md)
+
+**Aceite**: padrão de denúncias arquivadas como improcedentes abre caso contra quem denunciou, avaliado pela moderação como qualquer outro.
+
+### RF-070 · Tela nunca revela se um e-mail tem conta
+**Origem**: [produto/05-produto/01-onboarding.md](../produto/05-produto/01-onboarding.md)
+
+**Aceite**: cadastro e recuperação de senha devolvem a mesma resposta independente de o endereço existir. A distinção chega por e-mail, para a pessoa que é dona dele.

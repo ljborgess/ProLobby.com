@@ -21,6 +21,14 @@
 - Recuperação de conta com e-mail e Discord perdidos (ver [Onboarding](../05-produto/01-onboarding.md))
 - Ausência reportada com nota individual 0.0 no print — possível bug de perda de controle do jogo, não abandono real (ver [Resultado de partida](../03-partida/04-resultado.md))
 
+## Limite de denúncia — contra inundação da fila
+
+**3 denúncias abertas por conta ao mesmo tempo.** Com 3 pendentes, a próxima só entra quando uma resolver.
+
+- É limite de **casos em aberto**, não cota por período. Quem tem problema real raramente tem 3 simultâneos; quem quer inundar fica travado no terceiro.
+- Sem isso, uma pessoa dedicada derruba a capacidade dos 4 moderadores part-time sozinha — e a mensagem em `#suporte-e-denuncia` abre caso **automaticamente** ([Bot](../../discord/03-bot.md)), então não havia freio nenhum. A avaliação negativa por pares já tinha trava (5 de pessoas diferentes em partidas diferentes); a denúncia direta não tinha.
+- **Denúncia reincidente sem fundamento vira, ela mesma, caso de conduta** — o mecanismo não é só de vazão, é de responsabilidade.
+
 ## Denúncia é anônima pro denunciado
 
 A moderação vê quem denunciou; **o denunciado nunca sabe**. Recebe o motivo e a decisão, nunca o autor.
