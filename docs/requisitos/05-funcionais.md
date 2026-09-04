@@ -2,7 +2,11 @@
 
 Lista numerada e rastreável. Formato e regras em [README](README.md).
 
-**Status: 8 áreas levantadas, RF-001 a RF-046.** Nenhuma área permanece sem varredura. Este arquivo cresce a cada rodada de levantamento. A numeração é estável — **RF nunca é renumerado nem reaproveitado**; requisito derrubado fica marcado como revogado, com o motivo, porque saber o que foi descartado vale tanto quanto saber o que vale.
+**Status: 8 áreas levantadas, RF-001 a RF-046.** Nenhuma área permanece sem varredura de lacuna.
+
+A lista é **amostra, não especificação exaustiva** — o dossiê tem mais regra decidida que RF escrito. Por decisão do time, os RFs restantes são escritos **por fatia, pouco antes de cada uma virar código**: três parâmetros do dossiê estão marcados como "a calibrar" e vão mudar com o retorno do [checklist no jogo](../produto/03-partida/05-checklist.md) e do [piloto de OCR](06-piloto-ocr.md). Escrever tudo agora garantiria reescrever parte.
+
+A numeração é estável — **RF nunca é renumerado nem reaproveitado**. Requisito derrubado fica marcado como revogado, com o motivo, porque saber o que foi descartado vale tanto quanto saber o que vale.
 
 Cobertura por área, pra saber onde ainda não se olhou:
 

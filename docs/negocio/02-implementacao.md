@@ -10,6 +10,10 @@ Só depois disso faz sentido decidir **stack técnica** (deliberadamente adiada 
 
 **O teto de custo já está resolvido**: R$ 0 no MVP, via free tier (ver [Sustentabilidade](03-sustentabilidade.md)). Isso restringe a stack — favorece o que roda inteiro num host só, sem serviço gerenciado pago. E desarma a escolha "OCR pago vs. biblioteca local": o volume do MVP cabe no free tier do provedor, então nessa escala nenhuma das duas custa nada, e a decisão passa a ser técnica em vez de financeira.
 
+**Primeiro trabalho de engenharia: o [piloto de OCR](../requisitos/06-piloto-ocr.md)** — bloqueador nº 2. Dos cinco riscos do projeto, quatro se resolvem jogando ou com gente; o OCR é o único que exige código pra ser medido, e roda isolado (um script sobre 50 prints reais, sem conta, sem banco, sem tela). Vem antes de qualquer parte da plataforma, em paralelo ao checklist.
+
+> A ordem por dependência abaixo continua correta pra responder *o que dá pra construir*. Ela não responde *o que construir primeiro*, que é ordenado por risco.
+
 ## 1. Discord primeiro (configuração, não código)
 
 Servidor Discord não depende da plataforma existir — é configuração manual, rápida, sem escrever linha de código:
