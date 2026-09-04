@@ -16,7 +16,7 @@
   - Motivo: overall é auto-declarado via print (mesmo verificado, é atributo do personagem); elo vem de resultado real dentro da plataforma — mais confiável, mais difícil de forjar.
   - Detalhe do elo em [Ranking, reputação e punição](../02-jogador/06-ranking-reputacao-e-punicao.md).
 - **Comparação é categoria contra categoria, não média geral do time**: goleiro do time A é pareado com goleiro do time B (elo próximo), zaga com zaga, meio com meio, ataque com ataque — coerente com elo já ser por categoria. Evita mascarar desequilíbrio grave numa posição crítica (goleiro fraco, por exemplo) atrás de uma média geral do time que parece equilibrada.
-- **Tolerância de elo e expansão de busca**: matchmaking começa buscando dentro de uma banda de **±150 pontos de elo por categoria**. Se não fechar os 22 dentro do timeout inicial (ver "Timeout de fila" abaixo), expande a banda em **incrementos de 50 pontos a cada 2 minutos**, até um teto de **±400 pontos** — evita fila trancada esperando par perfeito numa base pequena de usuários, sem abrir mão de equilíbrio nos primeiros minutos (quando a chance de achar par próximo é maior).
+- **Tolerância de elo e expansão de busca**: matchmaking começa buscando dentro de uma banda de **±150 pontos de elo por categoria**, expandindo em **incrementos de 50 pontos a cada 2 minutos desde o início da busca** (não espera o timeout de fila) — chega ao teto de **±400 pontos** aos 10 minutos, mesmo momento em que o timeout de fila (ver abaixo) avisa o jogador. Evita fila trancada esperando par perfeito numa base pequena de usuários, sem abrir mão de equilíbrio nos primeiros minutos (quando a chance de achar par próximo é maior).
 
 ## Composição do time
 
@@ -36,7 +36,7 @@
 ## Confirmação de entrada no lobby
 
 - Quando o matchmaking acha os 22, **não fecha automático** — cada player tem uma janela de **30 segundos** pra aceitar/recusar antes do lobby fechar de vez.
-- Quem não confirma é removido da fila (vaga reabre pros outros 21 continuarem esperando substituto), com penalidade leve de reputação em caso de reincidência — **3 faltas de confirmação em 30 dias** escalam a penalidade (mesmo padrão de threshold usado no zero-report, ver [Resultado de partida](05-resultado-de-partida.md)); primeira e segunda falta no período não pesam de verdade, só a partir da terceira.
+- Quem não confirma é removido da fila (vaga reabre pros outros 21 continuarem esperando substituto), com **penalidade de -3 pontos de reputação** a partir da 3ª falta de confirmação em 30 dias (mesmo padrão de threshold usado no zero-report, ver [Resultado de partida](05-resultado-de-partida.md)) — primeira e segunda falta no período não pesam de verdade, só a partir da terceira.
 - Motivo: sem essa etapa, alguém AFK trava o lobby até o timer de entrada no Discord estourar, desperdiçando o tempo dos outros 21.
 
 ## Escopo

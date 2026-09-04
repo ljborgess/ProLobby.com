@@ -21,6 +21,8 @@ Motivo de fazer isso cedo: zero dependência de decisão de stack, dá pro time 
 
 ## 2. Núcleo da plataforma — sem isso nada funciona
 
+**Transversal, desde o primeiro item**: requisitos de segurança de [Dados pessoais e LGPD](../produto/dossie/04-governanca/09-dados-pessoais-lgpd.md#requisitos-de-segurança-independentes-de-stack) — criptografia de dado sensível em repouso e rate limiting na API própria entram junto com conta/autenticação (item 1), não depois. 2FA no painel e log de auditoria de moderador entram só quando o painel existir (item 5, Governança) — mas o schema de log já deveria contemplar isso desde o design do banco, pra não precisar migração retroativa.
+
 Ordem dentro da plataforma, cada item destrava o próximo:
 
 1. **Conta + autenticação** — onboarding etapa 1 ([Onboarding](../produto/dossie/05-produto/11-onboarding.md)).
@@ -43,7 +45,7 @@ Só depois do núcleo funcionando: escolha de capitão, integração com o bot v
 
 Não bloqueia desenvolvimento interno/teste com os 4, mas bloqueia abrir pra fora:
 
-- Painel de moderação ([Moderação](../produto/dossie/04-governanca/07-moderacao.md)).
+- Painel de moderação com **2FA obrigatório** e **log de auditoria de toda ação** ([Moderação](../produto/dossie/04-governanca/07-moderacao.md)) — maior alvo de risco se comprometido.
 - Termos de Uso + Política de Privacidade publicados ([Termos de uso](../produto/dossie/04-governanca/12-termos-de-uso-e-idade.md)).
 - Retenção automática de dados (LGPD, [09-dados-pessoais-lgpd.md](../produto/dossie/04-governanca/09-dados-pessoais-lgpd.md)).
 - Entidade legal (CNPJ/MEI) — pendência registrada na [tese de mercado](tese-de-mercado.md), só bloqueia ToS ter peso jurídico e monetização futura, não bloqueia teste interno.
