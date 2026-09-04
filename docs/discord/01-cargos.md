@@ -20,6 +20,12 @@
 - **Personagem arquivado** (edição nova do jogo exige reverificação — ver [Escopo de plataforma, jogo e região](../produto/05-produto/02-escopo.md)): cargo cai junto, porque deixa de existir verificação válida pra edição corrente. Reconcedido quando reverificar a edição nova. Coerente com a fila também bloquear nesse estado.
 - **Exclusão de conta** (pedido voluntário, LGPD — ver [Dados pessoais e LGPD](../produto/04-governanca/02-lgpd.md)): diferente de suspensão/banimento (involuntário, mantém no servidor), exclusão é saída voluntária da plataforma inteira — bot **remove (kick) do servidor** junto com o resto do processo de exclusão.
 
+## Cargo de reconhecimento: Apoiador
+
+- Concedido pelo bot a quem tem plano ativo ou apoio voluntário registrado (ver [Sustentabilidade](../negocio/03-sustentabilidade.md)). Cor própria e destaque na lista de membros.
+- **Não libera canal nenhum, não dá permissão nenhuma** — é reconhecimento, e nada mais. O gate funcional continua sendo só o Verificado, e a [linha vermelha](../negocio/03-sustentabilidade.md) proíbe qualquer vantagem comprada que toque fila, elo, capitão ou resultado.
+- Já entra na estrutura do servidor desde a montagem inicial, mesmo sem ninguém pra receber — criar cargo depois é trivial, mas deixar registrado agora evita que a decisão seja reaberta quando houver dinheiro em jogo.
+
 ## Apelido (nickname)
 
 - Ao conceder o cargo Verificado, bot **sincroniza o nickname do servidor com o gamertag/PSN ID verificado** — evita impersonation dentro do Discord (texto ou voz) e deixa claro com quem tá jogando só olhando o nome. Antes de verificado, nickname fica livre.

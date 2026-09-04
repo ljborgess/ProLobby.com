@@ -86,6 +86,8 @@ Nunca estimado, e depende de decisões que ainda não foram tomadas:
 - Precisa de acordo explícito **antes** do primeiro gasto recorrente: quem é o titular das contas, como o rateio acontece (mensal, por trimestre), e o que acontece se alguém sair do time.
 - Vale o mesmo racional já usado pra propriedade do servidor Discord ([docs/discord/](../discord/README.md)): credencial e titularidade em nome de uma pessoa só é risco de continuidade. Aqui não dá pra resolver com "conta separada não pessoal" porque envolve dinheiro real — resolve de vez quando o CNPJ existir.
 
+**Estimado e resolvido**: o custo real do MVP é de **R$ 50-90/mês**, e cai pra ~R$ 3/mês em free tier — com o OCR saindo de graça, porque o volume do MVP cabe no free tier do provedor. O detalhamento, o caminho de custo zero no dia 1 e o modelo de assinatura estão em [Sustentabilidade](03-sustentabilidade.md). Consequência: o teto de gasto mensal na prática é **R$ 0 no MVP**, o que restringe a escolha de stack (favorece o que roda inteiro num host só, sem serviço gerenciado pago).
+
 **Pendência**: combinar entre os 4 um **teto de gasto mensal aceitável antes de escolher a stack** — a escolha de OCR pago vs. local pode ser decidida por esse teto, não o contrário. Registrado aqui pra não virar surpresa depois de já estar construído.
 
 ## Risco estrutural — aceito, não resolvido

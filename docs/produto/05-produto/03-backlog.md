@@ -8,9 +8,13 @@ Itens explicitamente adiados — mencionados ou identificados, mas sem desenho d
 
 ## Futuro
 
-- **Aposta em dinheiro por jogador/lobby** — ideia embrionária do time pra fases futuras, não faz parte do MVP.
 - **Moderador comunitário** — ver [Moderação](../04-governanca/01-moderacao.md).
-- **Monetização** (assinatura, prioridade de fila paga, cosmético) — ideia validada pelo time, não descartada, mas MVP é **100% gratuito**. Discussão de modelo fica pra quando fizer sentido, junto com aposta.
+- **Torneio/liga com taxa de inscrição e premiação** — caminho de receita real (competição por habilidade, tratamento jurídico distinto de aposta), exige CNPJ e orientação contábil. Ver [Sustentabilidade](../../negocio/03-sustentabilidade.md).
+
+## Saiu do backlog — já decidido
+
+- **Monetização** — deixou de ser ideia solta: modelo desenhado em [Sustentabilidade](../../negocio/03-sustentabilidade.md) (plano único de R$ 9,90, gatilho em ~300 contas ativas; MVP segue **100% gratuito**). A **linha vermelha** que saiu disso é decisão fixa e não revisável do produto: *nada que altere fila, elo, escolha de capitão ou resultado é vendável* — o que inclui **prioridade de fila paga**, descartada por colidir com a escada de punição ([Ranking, reputação e punição](../02-jogador/02-ranking.md)), que já usa prioridade de fila como moeda de bom comportamento.
+- **Aposta em dinheiro por jogador/lobby** — **descartado, não adiado.** A Lei 14.790/2023 exige autorização federal com outorga de R$ 30 milhões pra operar aposta de quota fixa; não existe versão pequena nem caminho informal, e operar sem autorização tem exposição criminal pessoal. Substituído pelo item de torneio com inscrição acima.
 
 ## Fase 2
 

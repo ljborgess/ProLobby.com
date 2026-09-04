@@ -8,7 +8,7 @@ Uso interno dos 4. Ordem sugerida com base nas dependências já mapeadas no dos
 
 Só depois disso faz sentido decidir **stack técnica** (deliberadamente adiada até aqui) — a resposta do teste pode influenciar decisão de stack (ex.: se o ciclo de convite for lento, importa mais ter backend que lida bem com espera assíncrona/fila do que outra coisa).
 
-**Junto com a stack, decidir o teto de custo mensal** (ver [tese de mercado](01-mercado.md)) — principalmente OCR pago por chamada vs. biblioteca local, que é a escolha de maior impacto no custo recorrente.
+**O teto de custo já está resolvido**: R$ 0 no MVP, via free tier (ver [Sustentabilidade](03-sustentabilidade.md)). Isso restringe a stack — favorece o que roda inteiro num host só, sem serviço gerenciado pago. E desarma a escolha "OCR pago vs. biblioteca local": o volume do MVP cabe no free tier do provedor, então nessa escala nenhuma das duas custa nada, e a decisão passa a ser técnica em vez de financeira.
 
 ## 1. Discord primeiro (configuração, não código)
 
@@ -29,7 +29,7 @@ Motivo de fazer isso cedo: zero dependência de decisão de stack, dá pro time 
 
 Ordem dentro da plataforma, cada item destrava o próximo:
 
-1. **Conta + autenticação** — e-mail + senha, verificação de e-mail, recuperação por link (30min), aceite versionado de ToS, pergunta de segurança no cadastro ([Onboarding](../produto/05-produto/01-onboarding.md)). Interface já nasce em **português e espanhol** ([Escopo](../produto/05-produto/02-escopo.md)) — retrofit de i18n depois custa mais caro que nascer com ele.
+1. **Conta + autenticação** — e-mail + senha, verificação de e-mail, recuperação por link (30min), aceite versionado de ToS, pergunta de segurança no cadastro ([Onboarding](../produto/05-produto/01-onboarding.md)). O schema já nasce com **campo de plano na conta e tabela de evento de pagamento** ([Sustentabilidade](03-sustentabilidade.md)) — nada de cobrança implementado, só o espaço reservado, porque fazer isso como migração retroativa é o que custa caro. Interface já nasce em **português e espanhol** ([Escopo](../produto/05-produto/02-escopo.md)) — retrofit de i18n depois custa mais caro que nascer com ele.
 2. **OCR de personagem** (cadastro/verificação) — é o mesmo motor de OCR que "Resultado de partida" vai reusar depois, vale construir pensando nos dois usos desde já ([Personagens e verificação](../produto/02-jogador/01-verificacao.md)). Fluxo de upload nasce **mobile-first** — a maioria dos envios vem do celular (foto da tela do console), não do desktop.
 3. **Vínculo Discord (OAuth2)** — só depois de já ter conta + personagem funcionando, porque é o terceiro (e último) requisito do onboarding, e depende do bot já existir (etapa 1 acima).
 4. **Fila e matchmaking** — distribuição por categoria, equilíbrio por elo ([Fila e matchmaking](../produto/03-partida/02-fila.md)). Essa é a primeira peça que só faz sentido depois que personagem + elo (próximo item) existem.
