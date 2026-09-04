@@ -16,6 +16,12 @@
 - Abuso de capitão (recusa convidar sem motivo, remove alguém no meio da formação, trava a limpeza pós-jogo — ver [Mecânica real do EA FC Pro Clubs](../03-partida/00-mecanica-pro-clubs.md))
 - Retry de webhook plataforma↔bot esgotado (ver [Integração técnica](../../../discord/04-integracao-tecnica.md))
 
+## Meta de tempo de resposta
+
+- **Disputa de placar e exceção de OCR**: meta de **24 horas** pra primeira resposta (não necessariamente resolução final) — reporter bloqueado de fila enquanto isso, então prioridade alta.
+- **Denúncia e apelação de punição**: meta de **48 horas**.
+- Meta, não garantia contratual — com só 4 moderadores part-time, serve pra time saber quando um caso já passou do esperado e virar prioridade, não pra prometer SLA externo.
+
 ## Escala futura
 
 - Papel de moderador comunitário (voluntário/eleito, painel próprio) só entra quando o volume de casos passar da capacidade dos 4 — decisão deliberadamente adiada, não faz sentido desenhar pra um volume ainda desconhecido.

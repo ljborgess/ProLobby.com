@@ -13,7 +13,7 @@ Decisões de arquitetura (não implementação/stack — ver [Bot: permissões e
 
 ## Falha de comunicação (bot fora do ar)
 
-- **Fila de retry simples**: se o bot não responder/confirmar recebimento de um evento, plataforma tenta reenviar algumas vezes (ex.: 3 tentativas, intervalo crescente) antes de desistir. Evita perda silenciosa de evento por queda momentânea do bot — não exige infraestrutura de fila pesada (Kafka/RabbitMQ) pro MVP, só retry simples.
+- **Fila de retry simples**: se o bot não responder/confirmar recebimento de um evento em **10 segundos**, plataforma reenvia — **3 tentativas no total**, intervalo dobrando a cada uma (10s, 20s, 40s) — antes de desistir. Evita perda silenciosa de evento por queda momentânea do bot — não exige infraestrutura de fila pesada (Kafka/RabbitMQ) pro MVP, só retry simples.
 - **Retry esgotado**: vira caso automático na fila de moderação da plataforma (mesmo painel já usado pra chamados de OCR/gamertag/apelação, ver [Moderação](../produto/dossie/04-governanca/07-moderacao.md)) — sem sistema de alerta separado.
 
 ## Rate limit da API do Discord
