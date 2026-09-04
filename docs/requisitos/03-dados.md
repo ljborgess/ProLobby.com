@@ -8,13 +8,13 @@ Estados de cada entidade em [Estados do lobby e da partida](02-estados.md).
 
 ## Identidade: gamertag é por plataforma
 
-**Inconsistência que a modelagem revelou.** O dossiê afirmava três coisas que não fechavam juntas: gamertag fica **na conta**, plataforma fica **no personagem**, e a identidade única é a combinação **plataforma + gamertag** ([Personagens](../02-jogador/01-verificacao.md), [Escopo](../05-produto/02-escopo.md)).
+**Inconsistência que a modelagem revelou.** O dossiê afirmava três coisas que não fechavam juntas: gamertag fica **na conta**, plataforma fica **no personagem**, e a identidade única é a combinação **plataforma + gamertag** ([Personagens](../produto/02-jogador/01-verificacao.md), [Escopo](../produto/05-produto/02-escopo.md)).
 
 Quem migra de PS5 pra PC — caso que o escopo trata explicitamente, preservando a reputação da conta — passa a ter personagens em duas plataformas. E PSN ID e gamertag de Xbox são nomes diferentes: um campo só na conta não guarda os dois. Pior, o OCR compara "o gamertag da tela" contra "o gamertag da conta" e não teria como saber contra qual comparar.
 
 **Decisão: a conta guarda um gamertag por plataforma.** O personagem aponta pra plataforma; o OCR compara contra o gamertag daquela plataforma. Casa com a identidade única ser o par, e com a troca de plataforma já prevista.
 
-- Unicidade global continua em **(plataforma, gamertag)**, e a exclusividade só nasce com a verificação — reivindicação não verificada expira em 7 dias ([Personagens](../02-jogador/01-verificacao.md)).
+- Unicidade global continua em **(plataforma, gamertag)**, e a exclusividade só nasce com a verificação — reivindicação não verificada expira em 7 dias ([Personagens](../produto/02-jogador/01-verificacao.md)).
 - Troca de gamertag no console altera o valor **daquela plataforma**, via chamado de moderação, sem afetar as outras.
 
 ## Entidades
@@ -36,13 +36,13 @@ Auto-declaração que habilita a pessoa a ser capitão.
 `conta` · `categoria` (GK / zaga-lateral / meio / ponta / ataque) · `plataforma` · `edicao_jogo` · `nome` · `foto` · `overall` · `atributos` · `elo` · `partidas_na_categoria` · `estado` · `criado_em`
 
 - **1 ativo por categoria por edição**, até 5 ativos. Recriação dentro da categoria é livre, então há personagens inativos e arquivados guardados.
-- `partidas_na_categoria` existe porque **o K-factor e o decaimento do seed dependem da contagem** (32 até a 9ª, 20 da 10ª — ver [Ranking](../02-jogador/02-ranking.md)). Sem esse contador, nenhum dos dois é calculável.
+- `partidas_na_categoria` existe porque **o K-factor e o decaimento do seed dependem da contagem** (32 até a 9ª, 20 da 10ª — ver [Ranking](../produto/02-jogador/02-ranking.md)). Sem esse contador, nenhum dos dois é calculável.
 
 ### EnvioDePrint
 `personagem` ou `lobby` · `hash_arquivo` (único, anti-reuso) · `arquivo` · `confianca_ocr` · `idioma_detectado` · `aceito` · `enviado_em`
 
-- `hash_arquivo` é a trava de reuso de print ([Resultado](../03-partida/04-resultado.md)); `idioma_detectado` existe porque o OCR reconhece PT, ES e EN ([Personagens](../02-jogador/01-verificacao.md)) e o valor ajuda a diagnosticar rejeição.
-- Arquivo apagado aos **90 dias**; o registro sobrevive pra manter o hash funcionando ([LGPD](../04-governanca/02-lgpd.md)).
+- `hash_arquivo` é a trava de reuso de print ([Resultado](../produto/03-partida/04-resultado.md)); `idioma_detectado` existe porque o OCR reconhece PT, ES e EN ([Personagens](../produto/02-jogador/01-verificacao.md)) e o valor ajuda a diagnosticar rejeição.
+- Arquivo apagado aos **90 dias**; o registro sobrevive pra manter o hash funcionando ([LGPD](../produto/04-governanca/02-lgpd.md)).
 
 ### EntradaFila
 `conta` · `personagem` · `categoria` · `elo_no_momento` · `entrou_em` — uma ativa por conta.
@@ -52,12 +52,12 @@ Auto-declaração que habilita a pessoa a ser capitão.
 ### Lobby
 `estado` · `criado_em` · `capitao_lado_a` · `capitao_lado_b` · `clube_a` · `clube_b` · `formacao_a` · `formacao_b`
 
-`clube_a` / `clube_b` guardam o **nome do clube capturado no momento da escolha do capitão** — é o par esperado que o OCR de resultado valida, e muda a cada lobby ([Mecânica](../03-partida/01-mecanica.md)).
+`clube_a` / `clube_b` guardam o **nome do clube capturado no momento da escolha do capitão** — é o par esperado que o OCR de resultado valida, e muda a cada lobby ([Mecânica](../produto/03-partida/01-mecanica.md)).
 
 ### ParticipacaoLobby
 `lobby` · `conta` · `personagem` · `lado` · `posicao` · `confirmou_entrada` · `confirmou_convite_recebido` · `voto_formacao`
 
-`confirmou_convite_recebido` é o que sustenta o cancelamento anti-exclusão de 5 minutos ([Lobby](../03-partida/03-lobby.md)).
+`confirmou_convite_recebido` é o que sustenta o cancelamento anti-exclusão de 5 minutos ([Lobby](../produto/03-partida/03-lobby.md)).
 
 ### Report
 `lobby` · `conta` · `placar_a` · `placar_b` · `envio_print` · `reportou_ausencia_de` · `enviado_em`
@@ -65,11 +65,11 @@ Auto-declaração que habilita a pessoa a ser capitão.
 ### Avaliacao
 `lobby` · `de_conta` · `para_conta` · `tipo` (joinha / negativa) · `criada_em` — só entre companheiros do mesmo lado.
 
-Ao excluir a conta de quem avaliou, `de_conta` é anonimizado e a joinha continua contando pro outro ([LGPD](../04-governanca/02-lgpd.md)).
+Ao excluir a conta de quem avaliou, `de_conta` é anonimizado e a joinha continua contando pro outro ([LGPD](../produto/04-governanca/02-lgpd.md)).
 
 ### EventoReputacao e EventoElo — as entidades que o rollback exige
 
-**Implicação que estava implícita e não podia ficar.** O dossiê decidiu **rollback retroativo** de elo, reputação e contadores de reincidência quando a moderação reverte uma disputa ([Ranking](../02-jogador/02-ranking.md)). Guardar só o valor atual **torna isso impossível** — não há como desfazer o que não foi registrado.
+**Implicação que estava implícita e não podia ficar.** O dossiê decidiu **rollback retroativo** de elo, reputação e contadores de reincidência quando a moderação reverte uma disputa ([Ranking](../produto/02-jogador/02-ranking.md)). Guardar só o valor atual **torna isso impossível** — não há como desfazer o que não foi registrado.
 
 `conta` (ou `personagem`, no elo) · `delta` · `motivo` · `lobby` · `criado_em` · `revertido_em`
 
@@ -82,13 +82,13 @@ Três regras do dossiê dependem desse log, não só o rollback:
 ### CasoModeracao
 `tipo` · `estado` · `aberto_em` · `origem` (sistema / usuário / mensagem no Discord) · `lobby` · `conta_alvo` · `resolvido_por` · `resolvido_em` · `decisao`
 
-Os tipos são os já enumerados em [Moderação](../04-governanca/01-moderacao.md), incluindo os abertos automaticamente.
+Os tipos são os já enumerados em [Moderação](../produto/04-governanca/01-moderacao.md), incluindo os abertos automaticamente.
 
 ### LogAuditoria
 `ator` · `acao` · `alvo` · `detalhe` · `criado_em` — toda ação de moderador, inclusive **acesso a print de terceiro** ([Requisitos transversais](01-transversais.md)).
 
 ### AceiteTos
-`conta` · `versao` · `aceito_em` — mudança material exige aceite novo ([Termos](../04-governanca/03-termos.md)).
+`conta` · `versao` · `aceito_em` — mudança material exige aceite novo ([Termos](../produto/04-governanca/03-termos.md)).
 
 ### Notificacao
 `conta` · `tipo` · `payload` · `lida_em` · `criada_em` — ver [inventário de notificações](04-notificacoes.md).

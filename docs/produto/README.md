@@ -48,15 +48,6 @@ Limites do MVP e o que ficou pra depois.
 - [02 — Escopo de plataforma, jogo e região](05-produto/02-escopo.md) — crossplay, edições, região, idioma
 - [03 — Backlog e fases futuras](05-produto/03-backlog.md) — o que foi deliberadamente adiado
 
-## 06 · Requisitos transversais
-
-O que atravessa o produto inteiro e não pertence a um fluxo só.
-
-- [01 — Requisitos transversais](06-requisitos/01-transversais.md) — fuso, janela de 30 dias, papéis da plataforma, não-funcionais, idempotência, acessibilidade, inventário de telas
-- [02 — Estados do lobby e da partida](06-requisitos/02-estados.md) — os 12 estados, o que prende a fila, efeitos por transição
-- [03 — Modelo de dados](06-requisitos/03-dados.md) — entidades e atributos, gamertag por plataforma, o log que o rollback exige
-- [04 — Inventário de notificações](06-requisitos/04-notificacoes.md) — todo evento, in-app x DM, o que é urgente
-
 ## Referência rápida
 
 - [Parâmetros do sistema](parametros.md) — todos os números do produto num lugar só (elo, reputação, prazos, limites)

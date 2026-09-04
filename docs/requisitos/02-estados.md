@@ -2,9 +2,9 @@
 
 **Fase: MVP**
 
-Consolidação, não decisão nova: todas as transições abaixo já estavam decididas, espalhadas em prosa por [Fila](../03-partida/02-fila.md), [Lobby](../03-partida/03-lobby.md), [Resultado](../03-partida/04-resultado.md) e [Moderação](../04-governanca/01-moderacao.md). O que faltava era a **lista dos estados**.
+Consolidação, não decisão nova: todas as transições abaixo já estavam decididas, espalhadas em prosa por [Fila](../produto/03-partida/02-fila.md), [Lobby](../produto/03-partida/03-lobby.md), [Resultado](../produto/03-partida/04-resultado.md) e [Moderação](../produto/04-governanca/01-moderacao.md). O que faltava era a **lista dos estados**.
 
-Por que importa como requisito: a regra "conta fica bloqueada de nova fila até a partida anterior resolver" ([Resultado](../03-partida/04-resultado.md)) depende inteiramente de qual estado a partida está. Sem a lista, quem implementar inventa os estados, e a regra passa a depender de interpretação — com o efeito colateral de prender jogador inocente, que é justo o que os cancelamentos foram desenhados pra evitar.
+Por que importa como requisito: a regra "conta fica bloqueada de nova fila até a partida anterior resolver" ([Resultado](../produto/03-partida/04-resultado.md)) depende inteiramente de qual estado a partida está. Sem a lista, quem implementar inventa os estados, e a regra passa a depender de interpretação — com o efeito colateral de prender jogador inocente, que é justo o que os cancelamentos foram desenhados pra evitar.
 
 ## Os estados
 
@@ -25,13 +25,13 @@ Por que importa como requisito: a regra "conta fica bloqueada de nova fila até 
 
 ## O que a tabela torna explícito
 
-**Só quatro estados prendem a fila além do fluxo normal**, e três deles são terminais que a liberam. O único que prende por muito tempo é `em_disputa` — decisão deliberada do MVP, com revisão prevista se virar gargalo ([Backlog](../05-produto/03-backlog.md)).
+**Só quatro estados prendem a fila além do fluxo normal**, e três deles são terminais que a liberam. O único que prende por muito tempo é `em_disputa` — decisão deliberada do MVP, com revisão prevista se virar gargalo ([Backlog](../produto/05-produto/03-backlog.md)).
 
 **`nao_confirmado` libera a fila mesmo com a partida em aberto** (estado 7). Coerente com o desenho: quem reportou fez a parte dele, e a janela de 48 h corre sem prendê-lo — o bloqueio existe pra forçar o report, não pra punir quem reportou.
 
 **Os três cancelamentos são estados distintos, não um só.** Parecem iguais de fora (lobby desfeito, fila livre) mas têm consequências diferentes: `cancelado_sem_culpa` não gera nada, `cancelado_por_capitao` abre caso de moderação, e `expirada_sem_report` aplica penalidade. Colapsar os três num "cancelado" genérico perderia exatamente a distinção que evita punir quem não tem culpa.
 
-**`expirada_sem_report` só é alcançável a partir de `em_andamento` com convites confirmados.** É o que separa "a partida aconteceu e ninguém reportou" (negligência real, penalidade justa) de "a partida nunca começou" (sem culpa) — a distinção decidida em [Resultado](../03-partida/04-resultado.md).
+**`expirada_sem_report` só é alcançável a partir de `em_andamento` com convites confirmados.** É o que separa "a partida aconteceu e ninguém reportou" (negligência real, penalidade justa) de "a partida nunca começou" (sem culpa) — a distinção decidida em [Resultado](../produto/03-partida/04-resultado.md).
 
 ## Efeitos colaterais por transição
 
@@ -46,7 +46,7 @@ Ações que o sistema dispara ao mudar de estado, todas já decididas nos arquiv
 | 6 → 8 | elo e reputação aplicados; convite pra avaliar companheiros; DM lembrando capitães da limpeza do clube |
 | 7 → 8 | mesmos efeitos, ao fim das 48 h |
 | 9 → 8 | recálculo e **rollback** de elo, reputação e contadores de reincidência, se divergir do já aplicado |
-| qualquer → terminal | canais temporários entram na regra de deleção ([Canais](../../discord/02-canais.md)) |
+| qualquer → terminal | canais temporários entram na regra de deleção ([Canais](../discord/02-canais.md)) |
 
 ## Estados da conta e do personagem
 
@@ -56,4 +56,4 @@ Menores, mas também nunca enumerados:
 
 **Personagem**: `aguardando_ocr` → `ativo` → `travado` (em fila ou lobby, sem atualizar atributos) · `arquivado` (edição nova do jogo, exige reverificação).
 
-Personagem `travado` trava só ele, não os outros 4 da conta ([Personagens](../02-jogador/01-verificacao.md)).
+Personagem `travado` trava só ele, não os outros 4 da conta ([Personagens](../produto/02-jogador/01-verificacao.md)).

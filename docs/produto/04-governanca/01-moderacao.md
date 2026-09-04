@@ -5,7 +5,7 @@
 ## Quem modera
 
 - Fase 1 (MVP): moderação feita pelos 4 (Luciano, Rafael, João, Felipe), com painel simples de fila de casos pendentes. Requisitos de segurança do painel (2FA obrigatório pros 4, log de auditoria de toda ação de moderador) documentados em [Dados pessoais e LGPD](02-lgpd.md#requisitos-de-segurança-independentes-de-stack) — o painel é o alvo de maior risco se comprometido (poder de kick/ban/editar disputa).
-- **Conflito de interesse**: o sistema **bloqueia tecnicamente** a ação do moderador sobre a própria conta (resolver disputa da própria partida, remover a própria punição — ver [Requisitos transversais](../06-requisitos/01-transversais.md)). Fora desse caso óbvio, sem regra formal de impedimento — se um caso envolve diretamente um dos 4 (jogou a partida em disputa, ou é a pessoa denunciada), decidem em conjunto mesmo assim. Aposta no bom senso do grupo pequeno de alta confiança mútua; sem salvaguarda formal caso vire ponto de contestação por outro usuário — revisitar se acontecer.
+- **Conflito de interesse**: o sistema **bloqueia tecnicamente** a ação do moderador sobre a própria conta (resolver disputa da própria partida, remover a própria punição — ver [Requisitos transversais](../../requisitos/01-transversais.md)). Fora desse caso óbvio, sem regra formal de impedimento — se um caso envolve diretamente um dos 4 (jogou a partida em disputa, ou é a pessoa denunciada), decidem em conjunto mesmo assim. Aposta no bom senso do grupo pequeno de alta confiança mútua; sem salvaguarda formal caso vire ponto de contestação por outro usuário — revisitar se acontecer.
 
 ## Casos que caem em moderação
 
