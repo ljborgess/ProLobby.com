@@ -32,6 +32,11 @@ EA FC Pro Clubs **não tem API pública** — nenhuma integração automática c
 
 - Cadastro via **print in-game** processado por **OCR**, preenchendo automaticamente nome, posição, atributos, foto.
 - **Upload validado**: formato JPG, PNG ou WEBP, tamanho máximo **10 MB** por arquivo — rejeita outro formato/tamanho antes de gastar processamento de OCR à toa.
+- **Como o print chega até a plataforma** (dois caminhos aceitos, já que a tela fica no console, não no PC):
+  1. **Screenshot do console**, transferido de qualquer forma (app oficial PlayStation/Xbox no celular, nuvem, cabo) — caso mais fácil pro OCR, imagem limpa.
+  2. **Foto da tela tirada com o celular** — aceito, desde que o painel e os dados estejam **nítidos e legíveis** (sem reflexo cobrindo número, sem ângulo que distorça, sem corte de informação).
+  - Foto de tela erra mais no OCR (brilho, reflexo, moiré) — não precisa de regra nova: a confiança mínima de 85% já rejeita o que sair ruim, e a tela de confirmação mostra o que foi lido antes de salvar.
+  - **Consequência de interface**: o fluxo de upload precisa ser **mobile-first**, não só responsivo — é de onde a maioria dos envios vai sair (o jogador está com o celular na mão, na frente do console).
 - **Nível de confiança mínimo do OCR pra aceitar automaticamente: 85%** — abaixo disso, mesmo sem erro óbvio, pede confirmação extra do jogador antes de salvar (não é a mesma coisa que falha total, é zona de incerteza).
 - OCR também extrai o **gamertag/PSN ID mostrado na tela do print** e compara com o gamertag cadastrado na conta (mesmo pipeline de leitura, sem custo extra de mecanismo). Se não bater, cadastro é **rejeitado automaticamente** — evita alguém usar print de tela de outra pessoa.
 - **Troca de gamertag/PSN ID no console** (PSN ID e Xbox Gamertag permitem troca no mundo real) quebra esse match pro próximo print. Fluxo: jogador pede **atualização do gamertag cadastrado** via chamado de moderação (mesmo caminho da exceção de OCR) — sistema reprocessa unicidade (plataforma+gamertag, já fechada acima) antes de aceitar. Evita ficar travado permanentemente por ter trocado o nome no próprio console.

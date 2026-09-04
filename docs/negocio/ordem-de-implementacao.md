@@ -8,6 +8,8 @@ Uso interno dos 4. Ordem sugerida com base nas dependências já mapeadas no dos
 
 Só depois disso faz sentido decidir **stack técnica** (deliberadamente adiada até aqui) — a resposta do teste pode influenciar decisão de stack (ex.: se o ciclo de convite for lento, importa mais ter backend que lida bem com espera assíncrona/fila do que outra coisa).
 
+**Junto com a stack, decidir o teto de custo mensal** (ver [tese de mercado](tese-de-mercado.md)) — principalmente OCR pago por chamada vs. biblioteca local, que é a escolha de maior impacto no custo recorrente.
+
 ## 1. Discord primeiro (configuração, não código)
 
 Servidor Discord não depende da plataforma existir — é configuração manual, rápida, sem escrever linha de código:
@@ -26,7 +28,7 @@ Motivo de fazer isso cedo: zero dependência de decisão de stack, dá pro time 
 Ordem dentro da plataforma, cada item destrava o próximo:
 
 1. **Conta + autenticação** — e-mail + senha, verificação de e-mail, recuperação por link (30min), aceite versionado de ToS, pergunta de segurança no cadastro ([Onboarding](../produto/dossie/05-produto/11-onboarding.md)). Interface já nasce em **português e espanhol** ([Escopo](../produto/dossie/05-produto/08-escopo-plataforma-jogo-regiao.md)) — retrofit de i18n depois custa mais caro que nascer com ele.
-2. **OCR de personagem** (cadastro/verificação) — é o mesmo motor de OCR que "Resultado de partida" vai reusar depois, vale construir pensando nos dois usos desde já ([Personagens e verificação](../produto/dossie/02-jogador/02-personagens-e-verificacao.md)).
+2. **OCR de personagem** (cadastro/verificação) — é o mesmo motor de OCR que "Resultado de partida" vai reusar depois, vale construir pensando nos dois usos desde já ([Personagens e verificação](../produto/dossie/02-jogador/02-personagens-e-verificacao.md)). Fluxo de upload nasce **mobile-first** — a maioria dos envios vem do celular (foto da tela do console), não do desktop.
 3. **Vínculo Discord (OAuth2)** — só depois de já ter conta + personagem funcionando, porque é o terceiro (e último) requisito do onboarding, e depende do bot já existir (etapa 1 acima).
 4. **Fila e matchmaking** — distribuição por categoria, equilíbrio por elo ([Fila e matchmaking](../produto/dossie/03-partida/03-fila-e-matchmaking.md)). Essa é a primeira peça que só faz sentido depois que personagem + elo (próximo item) existem.
 5. **Motor de elo/reputação** — precisa existir antes da fila fechar de verdade (equilíbrio depende disso).

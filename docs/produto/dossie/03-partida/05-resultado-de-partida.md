@@ -4,7 +4,7 @@
 
 ## Contexto
 
-Sem API da EA, resultado depende de **report manual com print** — mesma limitação estrutural do cadastro de personagem (ver [Personagens e verificação](../02-jogador/02-personagens-e-verificacao.md)).
+Sem API da EA, resultado depende de **report manual com print** — mesma limitação estrutural do cadastro de personagem (ver [Personagens e verificação](../02-jogador/02-personagens-e-verificacao.md)), incluindo os dois caminhos aceitos de envio (screenshot do console ou foto de tela pelo celular, com requisito de legibilidade) e o fluxo de upload mobile-first.
 
 ## Quem reporta
 

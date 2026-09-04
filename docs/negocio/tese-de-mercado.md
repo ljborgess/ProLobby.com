@@ -40,6 +40,28 @@ Sem dashboard sofisticado — só acordo prévio do que conta como "funcionou", 
 
 Termos de Uso ([12-termos-de-uso-e-idade.md](../produto/dossie/04-governanca/12-termos-de-uso-e-idade.md)) precisam existir antes do primeiro usuário externo — mas **não existe CNPJ/MEI formado ainda**. Não bloqueia MVP gratuito com poucos usuários de teste, mas é pré-requisito real antes de: (a) o próprio ToS ter peso jurídico de verdade, (b) qualquer monetização futura (assinatura/prioridade/cosmético — já adiada no [backlog](../produto/dossie/05-produto/10-backlog-fases-futuras.md)), já que pagamento exige CNPJ. Registrado aqui como pendência, não decisão tomada.
 
+## Cold start — o risco de produto mais subestimado
+
+Uma partida exige **22 pessoas simultâneas, na fila, com a distribuição certa de categoria** (1 GK + 4 zaga + 2 meio + 2 ponta + 2 ataque por lado). Isso é muito para uma base nova: mesmo com centenas de cadastrados, os 22 dificilmente coincidem por acaso nas primeiras semanas — e quem entra na fila, não fecha e vai embora, gera boca-a-boca negativo ("entrei lá, não tinha ninguém").
+
+**Estratégia decidida — plataforma completa, largada coordenada**:
+
+- A plataforma **não tem limitação técnica nenhuma**: fila contínua, aberta 24/7 desde o dia 1, produto inteiro funcionando como desenhado. Nada é cortado ou simplificado pro lançamento.
+- O que muda é só **coordenação de comunidade**: o time anuncia horários de concentração no Discord ("hoje 20h, todo mundo na fila") enquanto a base for pequena. Isso vive fora do produto — é organização social, não feature.
+- Some sozinho conforme o volume cresce: quando houver gente suficiente pra fila fechar a qualquer hora, o anúncio deixa de ser necessário sem precisar mudar nada no código.
+
+Esse é o gargalo real dos primeiros meses — não infraestrutura, não bug: é ter 22 pessoas ao mesmo tempo querendo jogar.
+
+## Custo operacional — a estimar junto com a stack
+
+Nunca estimado, e depende de decisões que ainda não foram tomadas:
+
+- **OCR** é o item mais imprevisível: serviço pago por chamada (Google Vision, AWS Textract) custa por print processado e escala com o uso — cada verificação de personagem e cada report de resultado é uma chamada. Biblioteca local (Tesseract) é grátis mas exige mais trabalho de ajuste e servidor próprio pra rodar.
+- **Storage de prints** com retenção de 90 dias ([LGPD](../produto/dossie/04-governanca/09-dados-pessoais-lgpd.md)) — volume cresce com partidas, mas o corte automático limita o teto.
+- **Hospedagem** da plataforma + bot.
+
+**Pendência**: combinar entre os 4 um **teto de gasto mensal aceitável antes de escolher a stack** — a escolha de OCR pago vs. local pode ser decidida por esse teto, não o contrário. Registrado aqui pra não virar surpresa depois de já estar construído.
+
 ## Risco estrutural — aceito, não resolvido
 
 Plataforma depende 100% de como o Pro Clubs funciona **hoje** — sem contrato ou API oficial da EA (ver [mecânica do jogo](../produto/dossie/03-partida/00-mecanica-pro-clubs.md)). Qualquer patch pode alterar o mecanismo de clube/Amistoso Online que o produto inteiro usa como base.
