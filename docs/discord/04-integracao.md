@@ -1,6 +1,6 @@
 # 4. Integração técnica plataforma ↔ bot
 
-Decisões de arquitetura (não implementação/stack — ver [Bot: permissões e integração com moderação](03-bot-e-moderacao.md) pra responsabilidade, e [Backlog](../produto/05-produto/03-backlog-fases-futuras.md) pra stack, deliberadamente não decidida).
+Decisões de arquitetura (não implementação/stack — ver [Bot: permissões e integração com moderação](03-bot.md) pra responsabilidade, e [Backlog](../produto/05-produto/03-backlog.md) pra stack, deliberadamente não decidida).
 
 ## Como o bot sabe que um evento aconteceu
 
@@ -33,11 +33,11 @@ Discord sai do ar algumas vezes por ano. Nesse cenário a plataforma web continu
 
 - **Servidor é criado à mão, não pelo bot.** A API do Discord até permite bot criar servidor (`POST /guilds`, para bot em menos de 10 servidores — o nosso estaria em 1), mas nesse caso **o bot vira o dono** — o que quebra a decisão de o servidor pertencer a uma conta separada não-pessoal (ver [Propriedade e convite do servidor](README.md)). Criação manual, uma vez só.
 - **Server Members Intent** precisa ser ativado no Developer Portal — não vem ligado por padrão, e sem ele o bot não enxerga membros nem consegue gerenciar cargo/nickname. Falha silenciosa clássica: o bot roda, mas cargo Verificado nunca é concedido.
-- Aplicação criada no Discord Developer Portal, token do bot, link de convite OAuth2 com os escopos/permissões necessários (ver [Bot: permissões e integração com moderação](03-bot-e-moderacao.md) pra permissão total já decidida) — tudo isso fica sob a **mesma conta separada, não pessoal, que já é dona do servidor** (ver [Propriedade e convite do servidor](README.md)). Mesma lógica de continuidade: token/credencial não fica preso à conta pessoal de nenhum dos 4.
+- Aplicação criada no Discord Developer Portal, token do bot, link de convite OAuth2 com os escopos/permissões necessários (ver [Bot: permissões e integração com moderação](03-bot.md) pra permissão total já decidida) — tudo isso fica sob a **mesma conta separada, não pessoal, que já é dona do servidor** (ver [Propriedade e convite do servidor](README.md)). Mesma lógica de continuidade: token/credencial não fica preso à conta pessoal de nenhum dos 4.
 
 ## Segurança do token
 
-O token do bot dá **permissão total no servidor** (kick, ban, cargo, canal) — é a credencial mais sensível do domínio Discord, equivalente ao painel de moderação do lado da plataforma (ver [requisitos de segurança](../produto/04-governanca/02-dados-pessoais-lgpd.md#requisitos-de-segurança-independentes-de-stack)).
+O token do bot dá **permissão total no servidor** (kick, ban, cargo, canal) — é a credencial mais sensível do domínio Discord, equivalente ao painel de moderação do lado da plataforma (ver [requisitos de segurança](../produto/04-governanca/02-lgpd.md#requisitos-de-segurança-independentes-de-stack)).
 
 - **Nunca em repositório** — só variável de ambiente. Token commitado, mesmo que removido depois, permanece no histórico do git.
 - **Se vazar**: regenerar imediatamente no Developer Portal (invalida o antigo na hora), revisar **#log-moderacao** atrás de ação estranha no período, avisar os 4.

@@ -4,5 +4,5 @@ Documentos de decisão de negócio/mercado, separados do dossiê de produto (mec
 
 ## Conteúdo
 
-1. [Tese de mercado](tese-de-mercado.md) — dor real, panorama competitivo, caminho de crescimento, risco estrutural
-2. [Ordem de implementação](ordem-de-implementacao.md) — por onde começar, Discord x plataforma, dependências entre etapas
+1. [Tese de mercado](01-mercado.md) — dor real, panorama competitivo, caminho de crescimento, risco estrutural
+2. [Ordem de implementação](02-implementacao.md) — por onde começar, Discord x plataforma, dependências entre etapas

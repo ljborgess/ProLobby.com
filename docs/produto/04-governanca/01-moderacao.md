@@ -4,7 +4,7 @@
 
 ## Quem modera
 
-- Fase 1 (MVP): moderação feita pelos 4 (Luciano, Rafael, João, Felipe), com painel simples de fila de casos pendentes. Requisitos de segurança do painel (2FA obrigatório pros 4, log de auditoria de toda ação de moderador) documentados em [Dados pessoais e LGPD](02-dados-pessoais-lgpd.md#requisitos-de-segurança-independentes-de-stack) — o painel é o alvo de maior risco se comprometido (poder de kick/ban/editar disputa).
+- Fase 1 (MVP): moderação feita pelos 4 (Luciano, Rafael, João, Felipe), com painel simples de fila de casos pendentes. Requisitos de segurança do painel (2FA obrigatório pros 4, log de auditoria de toda ação de moderador) documentados em [Dados pessoais e LGPD](02-lgpd.md#requisitos-de-segurança-independentes-de-stack) — o painel é o alvo de maior risco se comprometido (poder de kick/ban/editar disputa).
 - **Conflito de interesse**: sem regra formal de impedimento — se um caso envolve diretamente um dos 4 (jogou a partida em disputa, ou é a pessoa denunciada), decidem em conjunto mesmo assim. Aposta no bom senso do grupo pequeno de alta confiança mútua; sem salvaguarda formal caso vire ponto de contestação por outro usuário — revisitar se acontecer.
 
 ## Casos que caem em moderação
@@ -12,12 +12,12 @@
 - Disputa de placar (prints divergentes entre os dois lados)
 - Exceção de OCR (falha repetida no reconhecimento do print)
 - Denúncia (fraude, desconexão contestada, comportamento)
-- Apelação de punição (ver [Ranking, reputação e punição](../02-jogador/02-ranking-reputacao-e-punicao.md))
-- Abuso de capitão (recusa convidar sem motivo, remove alguém no meio da formação, trava a limpeza pós-jogo — ver [Mecânica real do EA FC Pro Clubs](../03-partida/01-mecanica-pro-clubs.md))
-- Retry de webhook plataforma↔bot esgotado (ver [Integração técnica](../../discord/04-integracao-tecnica.md))
-- Acúmulo de avaliação negativa por pares (5 negativos em 30 dias, de pessoas diferentes em partidas diferentes — ver [Ranking, reputação e punição](../02-jogador/02-ranking-reputacao-e-punicao.md))
+- Apelação de punição (ver [Ranking, reputação e punição](../02-jogador/02-ranking.md))
+- Abuso de capitão (recusa convidar sem motivo, remove alguém no meio da formação, trava a limpeza pós-jogo — ver [Mecânica real do EA FC Pro Clubs](../03-partida/01-mecanica.md))
+- Retry de webhook plataforma↔bot esgotado (ver [Integração técnica](../../discord/04-integracao.md))
+- Acúmulo de avaliação negativa por pares (5 negativos em 30 dias, de pessoas diferentes em partidas diferentes — ver [Ranking, reputação e punição](../02-jogador/02-ranking.md))
 - Recuperação de conta com e-mail e Discord perdidos (ver [Onboarding](../05-produto/01-onboarding.md))
-- Ausência reportada com nota individual 0.0 no print — possível bug de perda de controle do jogo, não abandono real (ver [Resultado de partida](../03-partida/04-resultado-de-partida.md))
+- Ausência reportada com nota individual 0.0 no print — possível bug de perda de controle do jogo, não abandono real (ver [Resultado de partida](../03-partida/04-resultado.md))
 
 ## Meta de tempo de resposta
 

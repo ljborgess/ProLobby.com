@@ -52,7 +52,7 @@ O mecanismo real: cada lado do lobby usa o clube pessoal de um dos próprios
 11 jogadores — o **capitão**, escolhido por maior reputação entre quem tem
 clube com vaga. Detalhe completo, achados de pesquisa e checklist de teste
 prático em
-[`docs/produto/03-partida/01-mecanica-pro-clubs.md`](docs/produto/03-partida/01-mecanica-pro-clubs.md).
+[`docs/produto/03-partida/01-mecanica.md`](docs/produto/03-partida/01-mecanica.md).
 
 </details>
 
@@ -76,7 +76,7 @@ Detalhado por fase (MVP / Fase 2 / Futuro) no
 [dossiê de produto](docs/produto/README.md). Itens deliberadamente
 adiados — aposta, moderador comunitário, fila por time pré-formado, stack
 técnica — no
-[backlog](docs/produto/05-produto/03-backlog-fases-futuras.md).
+[backlog](docs/produto/05-produto/03-backlog.md).
 
 <br>
 
@@ -146,7 +146,7 @@ telas são do projeto de origem, servindo só de referência de estilo:
 Design de produto — sem código de aplicação ainda. Mecanismo central de
 partida (capitão + clube dinâmico) já decidido; falta **teste prático no
 jogo** pra confirmar tempo/fricção — checklist em
-[`01-mecanica-pro-clubs.md`](docs/produto/03-partida/01-mecanica-pro-clubs.md).
+[`05-checklist.md`](docs/produto/03-partida/05-checklist.md).
 Stack técnica é a próxima decisão grande em aberto. Divisão de papéis no
 time já fechada — sem papel fixo, trabalho em conjunto.
 

@@ -7,7 +7,7 @@
 - **Crossplay unificado** (PS5, Xbox Series, PC) — sem separar fila por plataforma.
 - Cadastro guarda a plataforma real de cada personagem, pra permitir segmentar depois se necessário (ex: se surgir problema de conexão entre plataformas específicas).
 - **Sem suporte a geração antiga** (PS4, Xbox One) — fora do escopo, mesmo que o próprio EA FC ainda permita.
-- **Troca de plataforma pelo jogador** (vende PS5, migra pra PC): como identidade é única por combinação plataforma+gamertag e personagem fica vinculado à plataforma (ver [Personagens e verificação](../02-jogador/01-personagens-e-verificacao.md)), jogador cadastra personagem novo na plataforma nova — **elo começa do seed**, como qualquer personagem novo. **Reputação da conta continua intacta** (reputação é por conta, elo é por personagem/categoria). Mesmo racional já aplicado a edição nova do jogo, logo abaixo.
+- **Troca de plataforma pelo jogador** (vende PS5, migra pra PC): como identidade é única por combinação plataforma+gamertag e personagem fica vinculado à plataforma (ver [Personagens e verificação](../02-jogador/01-verificacao.md)), jogador cadastra personagem novo na plataforma nova — **elo começa do seed**, como qualquer personagem novo. **Reputação da conta continua intacta** (reputação é por conta, elo é por personagem/categoria). Mesmo racional já aplicado a edição nova do jogo, logo abaixo.
 
 > Nota: crossplay em Pro Clubs no EA FC hoje funciona entre mesma geração (PS5/Xbox Series/PC), com PS4/Xbox One num pool à parte, e é configurável dentro do jogo — pode mudar por versão/patch, não é regra fixa garantida ano a ano.
 

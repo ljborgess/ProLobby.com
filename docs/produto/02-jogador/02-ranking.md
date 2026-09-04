@@ -5,7 +5,7 @@
 ## Dois eixos separados
 
 - **Reputação** — mede comportamento: reportou certo, não sumiu, print bateu, entrou no lobby a tempo, não desconectou/rage quit. Afeta prioridade/acesso à fila. **Escala 0-100, começa em 70** (neutro-alto, dá benefício da dúvida pra conta nova em vez de partir de zero como se já fosse suspeita).
-- **Elo/rating** — mede desempenho competitivo (vitória/derrota real). Usado no equilíbrio de times (ver [Fila e matchmaking](../03-partida/02-fila-e-matchmaking.md)), pesa mais que overall. **Escala numérica livre, baseline 1000** (convenção clássica de sistema Elo, familiar pra quem já jogou qualquer coisa com rating competitivo).
+- **Elo/rating** — mede desempenho competitivo (vitória/derrota real). Usado no equilíbrio de times (ver [Fila e matchmaking](../03-partida/02-fila.md)), pesa mais que overall. **Escala numérica livre, baseline 1000** (convenção clássica de sistema Elo, familiar pra quem já jogou qualquer coisa com rating competitivo).
 
 Motivo de separar: um jogador pode ser ótimo competidor com reputação ruim (sempre atrasado pra reportar), ou reputação impecável mas fraco tecnicamente. Misturar os dois num score só distorce as duas funções.
 
@@ -16,8 +16,8 @@ Motivo de separar: um jogador pode ser ótimo competidor com reputação ruim (s
 - **Elo inicial (personagem novo numa categoria)**: seed calculado a partir do overall extraído do print, com **piso em overall 50** (overall abaixo disso ainda ancora em 50, evita elo inicial baixo/negativo pra Virtual Pro recém-criado com atributo bem baixo) — overall 99 → elo próximo de 1400; overall 50 → elo próximo de 600, escala linear entre esses pontos. Esse seed pesa **100% na primeira partida, decaindo 12,5 pontos percentuais por partida** até chegar a 0% na 9ª partida — a partir daí é elo puramente real (resultado), sem influência de overall. Motivo: em base pequena de usuários, elo puro neutro demora a convergir (poucas partidas rodando) e deixa os primeiros equilíbrios de time ruins; overall serve só de chute inicial, nunca de peso permanente.
 - **Variação de elo por partida (K-factor)**: **32 pontos** durante as primeiras **9 partidas** do personagem na categoria (mesma janela de decaimento do seed acima — elo ainda calibrando, varia mais rápido), **20 pontos** a partir da 10ª partida (elo já estabilizado, varia mais devagar). Cálculo de ganho/perda dentro desse K-factor segue fórmula Elo padrão (probabilidade esperada de vitória pela diferença de elo entre os dois lados).
 - **Correção/atualização de personagem** (reenviar print, corrigir dado — mesmo slot/categoria) **mantém o elo** — é a mesma pessoa jogando a mesma posição, não reset.
-- **Rollback retroativo**: elo/reputação aplicados por um report "não confirmado" (ver [Resultado de partida](../03-partida/04-resultado-de-partida.md)) são provisórios até fechar a janela de contestação (48h). Se a moderação resolve uma disputa e o resultado final diverge do que já foi aplicado, sistema **recalcula e corrige elo/reputação de todos os humanos envolvidos** — sem isso, a confiabilidade do elo (motivo documentado acima, por que pesa mais que overall) quebra em qualquer disputa revertida.
-  - Rollback inclui **contadores de reincidência** (os usados pra escalar penalidade de zero-report e de não-confirmar-lobby, ver [Fila e matchmaking](../03-partida/02-fila-e-matchmaking.md) e [Resultado de partida](../03-partida/04-resultado-de-partida.md)) — uma penalidade revertida não pode deixar rastro permanente no histórico de reincidência de quem não fez nada errado.
+- **Rollback retroativo**: elo/reputação aplicados por um report "não confirmado" (ver [Resultado de partida](../03-partida/04-resultado.md)) são provisórios até fechar a janela de contestação (48h). Se a moderação resolve uma disputa e o resultado final diverge do que já foi aplicado, sistema **recalcula e corrige elo/reputação de todos os humanos envolvidos** — sem isso, a confiabilidade do elo (motivo documentado acima, por que pesa mais que overall) quebra em qualquer disputa revertida.
+  - Rollback inclui **contadores de reincidência** (os usados pra escalar penalidade de zero-report e de não-confirmar-lobby, ver [Fila e matchmaking](../03-partida/02-fila.md) e [Resultado de partida](../03-partida/04-resultado.md)) — uma penalidade revertida não pode deixar rastro permanente no histórico de reincidência de quem não fez nada errado.
 
 ## Avaliação por pares (pós-partida)
 
@@ -43,12 +43,12 @@ Apelação disponível em qualquer degrau, via chamado pra moderação (ver [Mod
 
 ## Multi-conta / smurfing
 
-- Banimento vinculado à combinação **Discord ID + gamertag/PSN** (a mesma identidade registrada em [Personagens e verificação](01-personagens-e-verificacao.md)) — bloqueia os dois de recriarem conta pra escapar de punição.
+- Banimento vinculado à combinação **Discord ID + gamertag/PSN** (a mesma identidade registrada em [Personagens e verificação](01-verificacao.md)) — bloqueia os dois de recriarem conta pra escapar de punição.
 - Não é anti-fraude perfeito (detecção mais forte tipo device fingerprint/IP fica pra quando o volume de abuso justificar o investimento) — deliberadamente não superdimensionado pro MVP.
 
 ## Conluio de resultado (Futuro — risco aceito, severidade aumentada)
 
 - Placar combinado entre os dois lados (ambos "confirmam" o mesmo resultado falso) não gera disputa hoje, porque os prints batem — não é coberto pelo fluxo de report atual.
-- **O piso de 8 humanos (ver [Fila e matchmaking](../03-partida/02-fila-e-matchmaking.md)) aumentou a exposição a isso**: antes exigia coordenar 22 pessoas pra dominar um lobby; agora bastam 8 amigos entrando na fila num horário vazio pra ocupar o lobby inteiro e combinar o resultado. Farm de elo fica viável pra um grupo pequeno e organizado.
+- **O piso de 8 humanos (ver [Fila e matchmaking](../03-partida/02-fila.md)) aumentou a exposição a isso**: antes exigia coordenar 22 pessoas pra dominar um lobby; agora bastam 8 amigos entrando na fila num horário vazio pra ocupar o lobby inteiro e combinar o resultado. Farm de elo fica viável pra um grupo pequeno e organizado.
 - **Decisão: risco aceito por enquanto** — base pequena onde os 4 conhecem quem joga, e detecção sofisticada não se justifica sem volume de dado. Mas o gatilho de revisão mudou: **não esperar "volume grande" pra tratar** — se aparecer qualquer sinal de grupo fechado se enfrentando repetidamente em horário vazio, tratar já, mesmo com base pequena.
 - Detecção por **padrão** (não por print individual), quando for implementada: sinalizar pra moderação (não bloqueio automático) casos como mesmo grupo de contas se enfrentando repetidamente, lobby fechando no piso mínimo com os mesmos jogadores, ou elo subindo fora da curva normal.

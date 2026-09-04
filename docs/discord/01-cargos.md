@@ -14,11 +14,11 @@
 
 - Concedido **só pelo bot**, automaticamente, quando as duas condições estiverem satisfeitas: personagem verificado (OCR aprovado) **e** conta Discord vinculada — como o onboarding permite completar essas duas etapas em qualquer ordem (ver [Onboarding](../produto/05-produto/01-onboarding.md)), o gatilho é duplo: verificação aprovada com Discord já vinculado concede na hora; Discord vinculado com personagem já verificado também concede na hora. Nenhuma das duas sozinha basta.
 - É o cargo que **libera acesso aos canais de fila/lobby** — o gate funcional de verdade vive aqui, os cargos sociais nunca dão acesso.
-- **Revogado automaticamente durante suspensão** (ver [Ranking, reputação e punição](../produto/02-jogador/02-ranking-reputacao-e-punicao.md)) — perde acesso a canal de fila/lobby, mas continua no servidor geral (coerente com a decisão de que punição não expulsa do Discord).
+- **Revogado automaticamente durante suspensão** (ver [Ranking, reputação e punição](../produto/02-jogador/02-ranking.md)) — perde acesso a canal de fila/lobby, mas continua no servidor geral (coerente com a decisão de que punição não expulsa do Discord).
 - Reconcedido automaticamente quando a suspensão termina.
 - **Banimento permanente**: mesma revogação, sem reconcessão futura — não tem "quando terminar" porque não termina.
-- **Personagem arquivado** (edição nova do jogo exige reverificação — ver [Escopo de plataforma, jogo e região](../produto/05-produto/02-escopo-plataforma-jogo-regiao.md)): cargo cai junto, porque deixa de existir verificação válida pra edição corrente. Reconcedido quando reverificar a edição nova. Coerente com a fila também bloquear nesse estado.
-- **Exclusão de conta** (pedido voluntário, LGPD — ver [Dados pessoais e LGPD](../produto/04-governanca/02-dados-pessoais-lgpd.md)): diferente de suspensão/banimento (involuntário, mantém no servidor), exclusão é saída voluntária da plataforma inteira — bot **remove (kick) do servidor** junto com o resto do processo de exclusão.
+- **Personagem arquivado** (edição nova do jogo exige reverificação — ver [Escopo de plataforma, jogo e região](../produto/05-produto/02-escopo.md)): cargo cai junto, porque deixa de existir verificação válida pra edição corrente. Reconcedido quando reverificar a edição nova. Coerente com a fila também bloquear nesse estado.
+- **Exclusão de conta** (pedido voluntário, LGPD — ver [Dados pessoais e LGPD](../produto/04-governanca/02-lgpd.md)): diferente de suspensão/banimento (involuntário, mantém no servidor), exclusão é saída voluntária da plataforma inteira — bot **remove (kick) do servidor** junto com o resto do processo de exclusão.
 
 ## Apelido (nickname)
 

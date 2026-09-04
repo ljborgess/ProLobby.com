@@ -9,14 +9,14 @@ EA FC Pro Clubs **não tem API pública** — nenhuma integração automática c
 ## Modelo de personagem
 
 - Um **personagem = 1 posição fixa**, com atributos/overall próprios (reflete como o Virtual Pro funciona no jogo).
-- **1 conta pode ter até 5 personagens**, um por categoria de posição (Discord é vínculo separado, obrigatório só pra fila — ver [Discord e lobby](../03-partida/03-discord-e-lobby.md)):
+- **1 conta pode ter até 5 personagens**, um por categoria de posição (Discord é vínculo separado, obrigatório só pra fila — ver [Discord e lobby](../03-partida/03-lobby.md)):
   1. Goleiro (GK)
   2. Zaga/Lateral (CB, LB, RB)
   3. Meio-campo (CDM, CM, CAM)
   4. Ponta (LM, RM, LW, RW)
   5. Ataque (ST, CF)
 - Sem limite de recriação dentro de uma categoria — mas 1 personagem ativo por categoria.
-- Personagem fica vinculado à edição do jogo (ver [Escopo de plataforma, jogo e região](../05-produto/02-escopo-plataforma-jogo-regiao.md)).
+- Personagem fica vinculado à edição do jogo (ver [Escopo de plataforma, jogo e região](../05-produto/02-escopo.md)).
 
 ## Identidade da conta
 
@@ -24,9 +24,9 @@ EA FC Pro Clubs **não tem API pública** — nenhuma integração automática c
 
 ## Clube EA (auto-declaração, opcional)
 
-- Campo opcional no perfil: **"tenho clube EA com vaga disponível?"** (sim/não) + nome do clube — jogador atualiza quando quiser. Sem API da EA, é a única forma da plataforma saber quem pode ser candidato a **capitão** (ver [Discord e lobby](../03-partida/03-discord-e-lobby.md) e [Mecânica real do EA FC Pro Clubs](../03-partida/01-mecanica-pro-clubs.md)) — filtra candidatos plausíveis, mas é reconfirmado no momento do lobby (dado pode ficar desatualizado).
+- Campo opcional no perfil: **"tenho clube EA com vaga disponível?"** (sim/não) + nome do clube — jogador atualiza quando quiser. Sem API da EA, é a única forma da plataforma saber quem pode ser candidato a **capitão** (ver [Discord e lobby](../03-partida/03-lobby.md) e [Mecânica real do EA FC Pro Clubs](../03-partida/01-mecanica.md)) — filtra candidatos plausíveis, mas é reconfirmado no momento do lobby (dado pode ficar desatualizado).
 - Campo de nome do clube limitado a **20 caracteres** (limite real de nome completo de clube no EA FC) — validação de tamanho evita entrada inválida que nunca vai bater com o que aparece na tela do jogo.
-- **Consentimento explícito**: ao marcar "sim", jogador é avisado que autoriza até 10 jogadores de outro lobby serem convidados temporariamente pro clube quando for escolhido capitão — coberto pelos [Termos de Uso](../04-governanca/03-termos-de-uso-e-idade.md), mesmo padrão já usado pra consentimento de print/foto/Discord ID.
+- **Consentimento explícito**: ao marcar "sim", jogador é avisado que autoriza até 10 jogadores de outro lobby serem convidados temporariamente pro clube quando for escolhido capitão — coberto pelos [Termos de Uso](../04-governanca/03-termos.md), mesmo padrão já usado pra consentimento de print/foto/Discord ID.
 
 ## Verificação / cadastro de atributos
 
@@ -48,4 +48,4 @@ EA FC Pro Clubs **não tem API pública** — nenhuma integração automática c
 - **Snapshot travado durante fila/lobby ativo** — trava só o **personagem/categoria que está na fila/lobby naquele momento**, não os outros 4 da conta (ex.: se você tá numa partida de goleiro, seu personagem de ataque continua atualizável normalmente). Update de atributos do personagem travado só aplica depois que sai da fila/partida.
 - Nome/foto: editáveis livremente (baixo risco competitivo, personagem é personalizável, não precisa refletir aparência real do Virtual Pro). Atributos de jogo: só via novo print.
 - Foto **sem checagem automática de conteúdo** no MVP — upload livre; conteúdo inadequado é tratado reativamente via denúncia ([Moderação](../04-governanca/01-moderacao.md)), não por filtro no momento do upload.
-- Histórico de prints: visível só pro dono do perfil e pra moderação (não público) — evita vazamento de dado da tela (ex.: infos da conta EA). Retenção sujeita a política de dados (ver [Dados pessoais e LGPD](../04-governanca/02-dados-pessoais-lgpd.md)).
+- Histórico de prints: visível só pro dono do perfil e pra moderação (não público) — evita vazamento de dado da tela (ex.: infos da conta EA). Retenção sujeita a política de dados (ver [Dados pessoais e LGPD](../04-governanca/02-lgpd.md)).

@@ -11,6 +11,6 @@
 
 - Obrigatórios **antes do primeiro usuário externo ao time** (não precisa ser documento jurídico complexo no dia 1, mas precisa existir).
 - **Aceite versionado**: plataforma registra qual versão do ToS cada jogador aceitou e quando. Mudança material (ex.: quando entrar monetização) exige novo aceite antes de continuar usando — exigência prática de LGPD, já que consentimento precisa ser rastreável. Barato se o schema nascer com o campo (ver [Onboarding](../05-produto/01-onboarding.md)).
-- Publicados em **português e espanhol**, acompanhando o idioma da plataforma (ver [Escopo de plataforma, jogo e região](../05-produto/02-escopo-plataforma-jogo-regiao.md)).
-- Motivo: coleta de print, foto, Discord ID e gamertag sem aviso formal é risco jurídico direto, não só decisão de produto — complementa a política de retenção/exclusão de [Dados pessoais e LGPD](02-dados-pessoais-lgpd.md).
-- Cobre também o consentimento de **uso do clube EA declarado pelo jogador** (ver [Personagens e verificação](../02-jogador/01-personagens-e-verificacao.md)) — ao declarar clube com vaga, jogador é avisado explicitamente que autoriza até 10 jogadores de outro lobby serem convidados temporariamente pro clube quando escolhido capitão.
+- Publicados em **português e espanhol**, acompanhando o idioma da plataforma (ver [Escopo de plataforma, jogo e região](../05-produto/02-escopo.md)).
+- Motivo: coleta de print, foto, Discord ID e gamertag sem aviso formal é risco jurídico direto, não só decisão de produto — complementa a política de retenção/exclusão de [Dados pessoais e LGPD](02-lgpd.md).
+- Cobre também o consentimento de **uso do clube EA declarado pelo jogador** (ver [Personagens e verificação](../02-jogador/01-verificacao.md)) — ao declarar clube com vaga, jogador é avisado explicitamente que autoriza até 10 jogadores de outro lobby serem convidados temporariamente pro clube quando escolhido capitão.

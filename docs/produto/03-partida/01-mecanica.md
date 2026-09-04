@@ -18,26 +18,26 @@ Só existem 3 jeitos de jogar 11v11 dentro do modo Clubes:
 
 ## Achados confirmados (pesquisa pública)
 
-- **Overall/atributos do Virtual Pro pertencem ao jogador/arquétipo, não ao clube** — trocar de clube não reseta nem esconde o overall real. A premissa de OCR/verificação em [Personagens e verificação](../02-jogador/01-personagens-e-verificacao.md) continua de pé.
+- **Overall/atributos do Virtual Pro pertencem ao jogador/arquétipo, não ao clube** — trocar de clube não reseta nem esconde o overall real. A premissa de OCR/verificação em [Personagens e verificação](../02-jogador/01-verificacao.md) continua de pé.
 - **Amistoso Online exige coordenação manual dos dois gerentes** (busca o clube rival, cada lado clica "pronto" separadamente) — não é automático nem instantâneo. Sincronização real que o bot Discord não alcança (fora do jogo).
-- **Crossplay**: clube EA suporta membro de PS5/Xbox/PC misturado (mesma geração — coerente com [Escopo de plataforma, jogo e região](../05-produto/02-escopo-plataforma-jogo-regiao.md)).
-- **Servidor dedicado, não P2P**: Pro Clubs roda em servidor dedicado da EA (Game Data Centers) — não existe "host de rede" cujo ping afeta os outros. Por isso o dossiê não tem mais conceito de "host" escolhido por conexão (ver [Discord e lobby](03-discord-e-lobby.md)).
-- **IA preenche vaga vazia** quando o clube não tem os 11 humanos completos — recurso padrão do modo, não gambiarra. **É o achado de maior impacto no produto**: sem ele, uma partida exigiria 22 pessoas simultâneas na fila (inviável numa base nova); com ele, a meta cai pra 8 (ver [Fila e matchmaking](02-fila-e-matchmaking.md) e [tese de mercado](../../negocio/tese-de-mercado.md)). O preenchimento é decisão do **jogo**, não da plataforma — a plataforma só escolhe quando fechar o lobby e com quantos humanos.
+- **Crossplay**: clube EA suporta membro de PS5/Xbox/PC misturado (mesma geração — coerente com [Escopo de plataforma, jogo e região](../05-produto/02-escopo.md)).
+- **Servidor dedicado, não P2P**: Pro Clubs roda em servidor dedicado da EA (Game Data Centers) — não existe "host de rede" cujo ping afeta os outros. Por isso o dossiê não tem mais conceito de "host" escolhido por conexão (ver [Discord e lobby](03-lobby.md)).
+- **IA preenche vaga vazia** quando o clube não tem os 11 humanos completos — recurso padrão do modo, não gambiarra. **É o achado de maior impacto no produto**: sem ele, uma partida exigiria 22 pessoas simultâneas na fila (inviável numa base nova); com ele, a meta cai pra 8 (ver [Fila e matchmaking](02-fila.md) e [tese de mercado](../../negocio/01-mercado.md)). O preenchimento é decisão do **jogo**, não da plataforma — a plataforma só escolhe quando fechar o lobby e com quantos humanos.
 
 ## Mecanismo decidido: capitão dinâmico, jogador real
 
 Cada lado do lobby precisa de um clube (Amistoso é sempre clube x clube). Em vez da plataforma manter clubes-casa próprios administrados pelos 4 sócios, **o clube usado é o clube pessoal de um dos próprios 11 jogadores reais daquele lado** — não precisa ser dedicado ao ProLobby, só precisa ter vaga sobrando.
 
-- **Capitão** = 1 dos 11 jogadores reais já pareados pela fila (com elo/reputação normal, matchmaking igual a qualquer outro — ver [Fila e matchmaking](02-fila-e-matchmaking.md)), que **também** acumula a função de dono/gerente do clube usado naquela partida. Não é vaga extra fora do matchmaking — é um papel a mais em cima de um dos 11 já escalados.
+- **Capitão** = 1 dos 11 jogadores reais já pareados pela fila (com elo/reputação normal, matchmaking igual a qualquer outro — ver [Fila e matchmaking](02-fila.md)), que **também** acumula a função de dono/gerente do clube usado naquela partida. Não é vaga extra fora do matchmaking — é um papel a mais em cima de um dos 11 já escalados.
 - **Critério de escolha**: maior reputação **entre quem tem clube com vaga sobrando pros outros 10** — se o de maior reputação não tiver clube (ou não tiver vaga), passa pro próximo, cascata igual ao padrão já usado noutras decisões do dossiê (reatribuição de host antigo, agora aplicado aqui).
-- **Fluxo**: capitão convida os outros 10 do próprio lado pro clube dele (por EA ID/gamertag — já coletado no cadastro, ver [Personagens e verificação](../02-jogador/01-personagens-e-verificacao.md)). Aplica a formação votada (ver [Fila e matchmaking](02-fila-e-matchmaking.md)). Os 2 capitães (um por lado) coordenam Amistoso Online entre os clubes.
+- **Fluxo**: capitão convida os outros 10 do próprio lado pro clube dele (por EA ID/gamertag — já coletado no cadastro, ver [Personagens e verificação](../02-jogador/01-verificacao.md)). Aplica a formação votada (ver [Fila e matchmaking](02-fila.md)). Os 2 capitães (um por lado) coordenam Amistoso Online entre os clubes.
 - **Depois da partida**: capitão remove os 10 convidados do próprio clube (limpeza pós-jogo). Se travar (não remove, dá erro), vira **caso de moderação** — mesmo fluxo já existente ([Moderação](../04-governanca/01-moderacao.md)).
 - **Sem depender dos 4 sócios jogando**: os 4 só sustentam a operação da plataforma (moderação, backlog, decisão de produto) — não precisam estar presentes em nenhuma partida. Resolve a tensão que existia no modelo antigo (clube-casa fixo administrado pelos 4, gargalo de 1 par só).
 - **Escala naturalmente**: como cada lobby usa o clube de um jogador diferente (não um recurso fixo da plataforma), múltiplos lobbies rodam em paralelo sem esperar um "clube-casa" liberar — não existe mais o gargalo serial do modelo antigo.
 
 ## OCR de resultado precisa ser dinâmico
 
-No modelo antigo (clube-casa fixo), o OCR validava o nome do clube contra uma ficha pré-cadastrada (sempre o mesmo par). Agora o clube usado muda a cada lobby (é o clube do capitão escolhido daquela vez) — o nome do clube já vem da **auto-declaração de cadastro** (mesmo campo que diz se o jogador tem clube com vaga, ver [Discord e lobby](03-discord-e-lobby.md) "Escolha do capitão") e é guardado como o "par esperado" daquele lobby no momento em que os capitães são confirmados — OCR de fim de partida (ver [Resultado de partida](04-resultado-de-partida.md)) cruza contra esse par dinâmico.
+No modelo antigo (clube-casa fixo), o OCR validava o nome do clube contra uma ficha pré-cadastrada (sempre o mesmo par). Agora o clube usado muda a cada lobby (é o clube do capitão escolhido daquela vez) — o nome do clube já vem da **auto-declaração de cadastro** (mesmo campo que diz se o jogador tem clube com vaga, ver [Discord e lobby](03-lobby.md) "Escolha do capitão") e é guardado como o "par esperado" daquele lobby no momento em que os capitães são confirmados — OCR de fim de partida (ver [Resultado de partida](04-resultado.md)) cruza contra esse par dinâmico.
 
 ## Risco novo: capitão é jogador comum, não conta controlada pela plataforma
 
@@ -50,34 +50,17 @@ EA proíbe explicitamente "robô, spider ou dispositivo automatizado acessando s
 - OCR roda em cima de **print que o próprio jogador tira e sobe manualmente** — processamento acontece no servidor do ProLobby, nunca é acesso automatizado a um serviço da EA.
 - Toda ação dentro do jogo (convidar pro clube, ajustar tática, iniciar Amistoso) é feita **manualmente pelo capitão humano** — nunca por bot/script controlando o cliente do jogo ou a conta EA.
 - Bot Discord só toca o servidor Discord — nunca se conecta a serviço da EA.
-- ProLobby não dá vantagem competitiva **dentro** da partida (sem macro, sem cheat) — é ferramenta de coordenação externa, mesma categoria de outras já existentes no mercado (Pro Clubs Hub, Pro Clubs Finder, servidores com bot Disporty — ver [tese de mercado](../../negocio/tese-de-mercado.md)) sem ação de enforcement conhecida contra elas.
+- ProLobby não dá vantagem competitiva **dentro** da partida (sem macro, sem cheat) — é ferramenta de coordenação externa, mesma categoria de outras já existentes no mercado (Pro Clubs Hub, Pro Clubs Finder, servidores com bot Disporty — ver [tese de mercado](../../negocio/01-mercado.md)) sem ação de enforcement conhecida contra elas.
 
 Fontes: [EA Terms of Service](https://tos.ea.com/legalapp/webterms/US/en/PC/09042012), [EA Account bans/suspensions](https://help.ea.com/en/help/account/information-about-locked-or-banned-or-suspended-accounts/).
 
 ## Pendência crítica
 
-**Ninguém do time testou isso na prática ainda.** [Discord e lobby](03-discord-e-lobby.md) já reflete esse mecanismo, mas os detalhes exatos (tempo de convite, se há cooldown de saída, fricção do Amistoso) continuam em aberto até o teste prático confirmar.
+**Ninguém do time testou isso na prática ainda.** [Discord e lobby](03-lobby.md) já reflete esse mecanismo, mas os detalhes exatos (tempo de convite, se há cooldown de saída, fricção do Amistoso) continuam em aberto até o teste prático confirmar.
 
-## Checklist de teste — o que precisa
+## Checklist de teste
 
-Escopo do teste: **validar o mecanismo**, não simular um lobby cheio. 4 contas (os 4 sócios, jogando o papel de "capitão de teste") bastam — não precisa dos 22.
-
-**Pré-requisito**: 2 clubes existentes (times pessoais dos sócios servem pro teste, ou clubes de teste criados na hora).
-
-**Passo a passo**:
-
-1. **Convite pra dentro do clube** — dono/gerente do Clube A convida uma conta que NÃO é membro (por EA ID/gamertag/PSN, sem ela ter aplicado antes). Cronometra quanto tempo leva do convite até a pessoa estar jogável no clube.
-2. **Saída do clube** — a pessoa convidada sai do clube (ou é removida pelo capitão). Confirma que sai limpo, sem cooldown pra entrar em outro clube depois (crítico: se tiver cooldown de saída, atrapalha o jogador convidado de participar de outro lobby logo em seguida).
-3. **Amistoso Online entre os 2 clubes** — com os times minimamente povoados (não precisa 11, testa com o que tiver), dispara um Amistoso Online do Clube A contra o Clube B. Confirma: dá pra marcar/iniciar em poucos minutos, ou tem fricção (agendamento, aprovação do outro lado, etc)?
-4. **Coordenação de 2 capitães** — cada capitão loga na própria conta normalmente (sem alternância de perfil, já que agora é o clube pessoal de cada um, não uma conta de serviço compartilhada) — confirma que os dois conseguem se encontrar/aceitar o Amistoso em tempo hábil.
-5. **Tempo total do ciclo** — soma passos 1+3+4: do convite até a bola rolar, quanto tempo passa? Compara com a janela de confirmação de lobby já definida (~30s pra aceitar + tempo de entrar na call — ver [Fila e matchmaking](02-fila-e-matchmaking.md) e [Discord e lobby](03-discord-e-lobby.md)).
-6. **Vaga com IA — item mais crítico do checklist.** Confirma que a IA cobre vaga vazia **em Amistoso Online especificamente** (não só Liga/Drop-In, que é onde a maior parte da documentação pública fala), e com quantas vagas vazias o jogo ainda aceita iniciar a partida. Todo o modelo de fila depende disso: se o Amistoso exigir os 11 humanos, o piso de 4 por lado não funciona e a meta volta pra 22 pessoas. Testar com poucos jogadores de cada lado e verificar se a partida inicia normalmente.
-   - Testar também: **alguém sai no meio da partida** — a IA assume a posição e o jogo continua normalmente, ou a partida quebra/encerra? Presumido que assume (mesma mecânica), mas sem confirmação em fonte (ver [Resultado de partida](04-resultado-de-partida.md)).
-7. **Unicidade de nome de clube** — cria clube com nome comum (ex.: "Real Madrid"), tenta criar um segundo com o mesmo nome exato. Se aceitar os dois, busca esse nome na tela de Amistoso Online: aparece lista com mais de um resultado (capitão escolhe visualmente por brasão/membros), ou só o primeiro cadastrado? Decide se a validação de nome de clube no OCR ([Resultado de partida](04-resultado-de-partida.md)) precisa de reforço (ex.: capitão confirma visualmente o clube certo antes do amistoso, camada humana além do texto).
-
-**Critério de decisão pós-teste**:
-- Se convite/saída são rápidos (minutos) e sem cooldown, e Amistoso inicia sem fricção grande → mecanismo é viável como desenhado.
-- Se tem cooldown de saída significativo, ou convite/Amistoso tem fricção grande → revisar o desenho (ex.: prazo maior de janela de confirmação de lobby, ou repensar o mecanismo).
+O passo a passo completo do teste prático vive em arquivo próprio: **[05-checklist.md](05-checklist.md)** — 7 testes, o que medir em cada um, e o que fazer com cada resultado possível.
 
 ## Fontes (pesquisa pública, EA FC 25/26 — mecânica pode mudar por edição/patch)
 
