@@ -36,6 +36,7 @@ check_index_coverage() {
 
 check_index_coverage "docs/produto/dossie" "docs/produto/dossie/README.md"
 check_index_coverage "docs/discord" "docs/discord/README.md"
+check_index_coverage "docs/negocio" "docs/negocio/README.md"
 
 if [ "$fail" -eq 0 ]; then
   echo "docs OK: links e índice consistentes."
