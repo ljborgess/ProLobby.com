@@ -17,6 +17,7 @@
 - Retry de webhook plataforma↔bot esgotado (ver [Integração técnica](../../../discord/04-integracao-tecnica.md))
 - Acúmulo de avaliação negativa por pares (5 negativos em 30 dias, de pessoas diferentes em partidas diferentes — ver [Ranking, reputação e punição](../02-jogador/06-ranking-reputacao-e-punicao.md))
 - Recuperação de conta com e-mail e Discord perdidos (ver [Onboarding](../05-produto/11-onboarding.md))
+- Ausência reportada com nota individual 0.0 no print — possível bug de perda de controle do jogo, não abandono real (ver [Resultado de partida](../03-partida/05-resultado-de-partida.md))
 
 ## Meta de tempo de resposta
 
