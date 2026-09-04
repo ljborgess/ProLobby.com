@@ -17,6 +17,8 @@ Gatilho de validade do print (evita fraude/troll terminando partida cedo, sem de
 2. **OCR valida que é a tela de "fim de partida"** (placar final + estatísticas), não HUD de jogo em andamento.
 3. **OCR valida o nome dos 2 clubes na tela** contra o par capturado no momento em que os capitães foram escolhidos naquele lobby (dinâmico, não uma lista fixa — ver [Mecânica real do EA FC Pro Clubs](00-mecanica-pro-clubs.md)) — evita reportar print de partida qualquer fora do ProLobby como se fosse a do lobby.
 4. **Placar validado como número inteiro entre 0 e 20 por lado** — fora dessa faixa, OCR marca como confiança baixa e pede reenvio ou abre exceção de moderação (placar real de Pro Clubs não passa disso; protege contra erro de leitura do OCR virando gol fantasma).
+5. **Hash do arquivo, contra reuso de print**: plataforma guarda o hash de todo print aceito — arquivo idêntico reenviado é rejeitado na hora. Sem isso existe brecha real: as outras validações (nome dos clubes, placar, piso de tempo) **não distinguem duas partidas do mesmo par de clubes**, já que o ID do lobby é interno da plataforma e não aparece na tela do jogo. Se os mesmos dois capitães jogam de novo, o print da partida anterior passaria como se fosse da nova.
+   - Cobre o reuso preguiçoso (mesmo arquivo). Reuso sofisticado (fotografar de novo a tela antiga) continua possível, mas cai em disputa assim que o outro lado reportar o placar real.
 
 ## Validação cruzada
 
