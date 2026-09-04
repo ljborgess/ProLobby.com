@@ -15,6 +15,8 @@
 - Apelação de punição (ver [Ranking, reputação e punição](../02-jogador/06-ranking-reputacao-e-punicao.md))
 - Abuso de capitão (recusa convidar sem motivo, remove alguém no meio da formação, trava a limpeza pós-jogo — ver [Mecânica real do EA FC Pro Clubs](../03-partida/00-mecanica-pro-clubs.md))
 - Retry de webhook plataforma↔bot esgotado (ver [Integração técnica](../../../discord/04-integracao-tecnica.md))
+- Acúmulo de avaliação negativa por pares (5 negativos em 30 dias, de pessoas diferentes em partidas diferentes — ver [Ranking, reputação e punição](../02-jogador/06-ranking-reputacao-e-punicao.md))
+- Recuperação de conta com e-mail e Discord perdidos (ver [Onboarding](../05-produto/11-onboarding.md))
 
 ## Meta de tempo de resposta
 

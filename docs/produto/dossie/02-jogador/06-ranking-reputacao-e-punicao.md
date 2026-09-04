@@ -19,6 +19,16 @@ Motivo de separar: um jogador pode ser ótimo competidor com reputação ruim (s
 - **Rollback retroativo**: elo/reputação aplicados por um report "não confirmado" (ver [Resultado de partida](../03-partida/05-resultado-de-partida.md)) são provisórios até fechar a janela de contestação (48h). Se a moderação resolve uma disputa e o resultado final diverge do que já foi aplicado, sistema **recalcula e corrige elo/reputação dos 22 envolvidos** — sem isso, a confiabilidade do elo (motivo documentado acima, por que pesa mais que overall) quebra em qualquer disputa revertida.
   - Rollback inclui **contadores de reincidência** (os usados pra escalar penalidade de zero-report e de não-confirmar-lobby, ver [Fila e matchmaking](../03-partida/03-fila-e-matchmaking.md) e [Resultado de partida](../03-partida/05-resultado-de-partida.md)) — uma penalidade revertida não pode deixar rastro permanente no histórico de reincidência de quem não fez nada errado.
 
+## Avaliação por pares (pós-partida)
+
+Eventos automáticos (não reportar, não confirmar lobby, desconectar) não pegam comportamento tóxico em call nem quem joga mal de propósito. Avaliação entre jogadores cobre esse buraco, desenhada pra não virar arma de vingança:
+
+- **Só avalia quem jogou no próprio time** (os 10 companheiros) — nunca o adversário. Elimina de saída o principal vetor de abuso: perder a partida e descer o pau em todo mundo do outro lado.
+- **Joinha (positivo)**: **+1 ponto de reputação**, efeito direto e imediato. Baixo risco — reputação só sobe.
+- **Não-joinha / report (negativo)**: **não desce reputação na hora**. Vira sinal acumulado. Só quando alguém junta **5 negativos em 30 dias, vindos de pessoas diferentes em partidas diferentes**, abre **caso automático de moderação** (não punição automática — ver [Moderação](../04-governanca/07-moderacao.md)).
+- Motivo do negativo não ter efeito direto: uma pessoa irritada sozinha não pune ninguém (efeito zero), e panelinha não funciona porque exige pessoas diferentes em partidas diferentes. Padrão real de toxicidade aparece; ruído isolado não. Punição continua sendo decisão humana.
+- Avaliação é **opcional** — não avaliar não gera penalidade nenhuma.
+
 ## Escada de punição
 
 1. **Reputação abaixo de 55** → fila mais lenta / prioridade pior na fila (fricção, sem bloqueio) — outros jogadores com reputação normal são priorizados no matchmaking quando há fila.
