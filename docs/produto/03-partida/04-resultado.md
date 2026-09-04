@@ -36,6 +36,8 @@ O prazo de **15 minutos** conta **desde o primeiro print válido aceito** naquel
 ## Casos de borda
 
 - Se só um lado mandar dentro da janela (15 min): aceita como válido com flag "não confirmado", sujeito a contestação por **48 horas** — depois disso vira definitivo, evita passivo indefinido de disputa antiga pros 4 moderadores.
+  - **Quem pode contestar: qualquer humano da partida, uma vez cada.** Não só o lado que não reportou — quem foi prejudicado pode estar no próprio time de quem mandou o print (placar digitado errado pelo companheiro). Limitar ao lado adversário travaria justamente esse caso.
+  - **Uma contestação por pessoa por partida**, pra não reabrir o caso em série depois de perder. Contestação abre disputa e a conta volta a ficar bloqueada de fila até resolver (ver Incentivo estrutural abaixo).
 - Se os dois lados mandarem placares divergentes: cai em **disputa/moderação** (ver [Moderação](../04-governanca/01-moderacao.md)).
 - Se **nenhum humano da partida** reportar: o tratamento depende de a partida ter acontecido ou não — os dois casos existiam misturados antes, e penalizavam igual.
   - **Partida nunca começou** (convite não chegou em 5 min, ou silêncio total por 60 min — ver [Discord e lobby](03-lobby.md)): lobby encerrado, fila liberada, **sem penalidade nenhuma**. Não há o que reportar, e a culpa não é de quem esperou.

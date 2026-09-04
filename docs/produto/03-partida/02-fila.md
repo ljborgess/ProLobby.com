@@ -53,8 +53,28 @@
 ## Confirmação de entrada no lobby
 
 - Quando o matchmaking fecha o lobby, **não confirma automático** — cada player tem uma janela de **30 segundos** pra aceitar/recusar antes do lobby fechar de vez.
-- Quem não confirma é removido da fila (vaga reabre pros outros humanos do lobby continuarem esperando substituto), com **penalidade de -3 pontos de reputação** a partir da 3ª falta de confirmação em 30 dias (mesmo padrão de threshold usado no zero-report, ver [Resultado de partida](04-resultado.md)) — primeira e segunda falta no período não pesam de verdade, só a partir da terceira.
+- Quem não confirma é removido da fila (vaga reabre pros outros humanos do lobby continuarem esperando substituto).
 - Motivo: sem essa etapa, alguém AFK trava o lobby até o timer de entrada no Discord estourar, desperdiçando o tempo dos outros humanos do lobby.
+
+### Timeout progressivo de fila (substitui a penalidade de reputação)
+
+**Recusar a partida ou deixar os 30 s estourarem dá o mesmo resultado: bloqueio temporário de nova fila, que cresce na reincidência.**
+
+| Ocorrência | Bloqueio |
+|---|---|
+| 1ª | 5 min |
+| 2ª | 15 min |
+| 3ª | 30 min |
+| 4ª e seguintes | 2 h |
+
+- **Zera após 12 h sem nenhuma recusa**, ou ao completar uma partida.
+- **Substituiu a penalidade de −3 de reputação na 3ª falta em 30 dias**, que era o desenho anterior. Motivo: o timeout paga o dano na hora e é proporcional, enquanto a penalidade de reputação castigava duas vezes o mesmo ato e deixava marca permanente por algo que se resolve em minutos. Sai também um contador de janela móvel — reputação volta a medir só o que atravessa partidas.
+- **Recusar e não responder pesam igual**, por decisão explícita. Recusar rápido é mais educado (devolve o lobby à fila antes), mas separar os dois criaria um terceiro número num sistema que já tem vários — e o dano ao lobby é o mesmo: ele caiu.
+
+## O que a pessoa vê da fila
+
+- **Faixa de movimento por categoria, não número exato**: "pouca gente", "movimentada", "cheia".
+- Motivo: a pessoa precisa da informação pra decidir se vale esperar, mas número exato escancara a liquidez justo quando ela está pior — e "0 na fila" faz fechar a aba e não voltar, que é o boca-a-boca negativo apontado como fatal na [tese de mercado](../../negocio/01-mercado.md). Faixa entrega a decisão sem entregar a fraqueza.
 
 ## Escopo
 

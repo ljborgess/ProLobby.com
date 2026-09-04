@@ -15,6 +15,7 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 | K-factor — calibrando | 32 (primeiras 9 partidas na categoria) | [Ranking](02-jogador/02-ranking.md) |
 | K-factor — estabilizado | 20 (a partir da 10ª) | [Ranking](02-jogador/02-ranking.md) |
 | Granularidade | por personagem/categoria (não por conta) | [Ranking](02-jogador/02-ranking.md) |
+| Decaimento por inatividade | −25/mês após 60 dias parado, piso no seed | [Ranking](02-jogador/02-ranking.md) |
 
 ## Reputação
 
@@ -33,7 +34,6 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 |---|---|---|
 | Partida limpa (sem incidente) | +1, teto em 70 | [Ranking](02-jogador/02-ranking.md) |
 | Joinha de companheiro | +1, direto (único caminho acima de 70) | [Ranking](02-jogador/02-ranking.md) |
-| Não confirmar lobby (3ª vez em 30 dias) | −3 | [Fila](03-partida/02-fila.md) |
 | Zero-report (3ª vez em 30 dias) | −3 | [Resultado](03-partida/04-resultado.md) |
 | Desconexão/rage quit confirmado | −8 | [Resultado](03-partida/04-resultado.md) |
 | Não-joinha (report de companheiro) | 0 direto — acumula, 5 em 30 dias (pessoas/partidas diferentes) abre caso de moderação | [Ranking](02-jogador/02-ranking.md) |
@@ -53,6 +53,9 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 | Teto da banda | ±400 (atingido aos 10 min) | [Fila](03-partida/02-fila.md) |
 | Timeout de fila | 10 min (aviso repete a cada 5 min) | [Fila](03-partida/02-fila.md) |
 | Janela de confirmação do jogador | 30 s | [Fila](03-partida/02-fila.md) |
+| Timeout progressivo por recusa | 5 min · 15 min · 30 min · 2 h | [Fila](03-partida/02-fila.md) |
+| Zeramento do timeout | 12 h sem recusa, ou 1 partida completada | [Fila](03-partida/02-fila.md) |
+| Fila visível ao jogador | faixa de movimento, não número exato | [Fila](03-partida/02-fila.md) |
 | Janela de confirmação do capitão | 30 s (separada, após a dos jogadores) | [Discord e lobby](03-partida/03-lobby.md) |
 | Janela de confirmação de convite recebido | 5 min após o lobby fechar | [Discord e lobby](03-partida/03-lobby.md) |
 | Cancelamento por silêncio total | 60 min após o lobby fechar (a calibrar com o teste 5) | [Discord e lobby](03-partida/03-lobby.md) |
@@ -83,6 +86,7 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 | Janela de report do 2º lado | 15 min a partir do 1º print aceito | [Resultado](03-partida/04-resultado.md) |
 | Placar válido | inteiro, 0–20 por lado | [Resultado](03-partida/04-resultado.md) |
 | Janela de contestação | 48 h | [Resultado](03-partida/04-resultado.md) |
+| Quem pode contestar | qualquer humano da partida, 1 vez cada | [Resultado](03-partida/04-resultado.md) |
 | Expiração por zero-report (partida que aconteceu) | 36 h | [Resultado](03-partida/04-resultado.md) |
 | Assinatura do bug de perda de controle | nota individual 0.0 | [Resultado](03-partida/04-resultado.md) |
 
@@ -92,11 +96,14 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 |---|---|---|
 | Idade mínima | 16 anos (data de nascimento no cadastro) | [Termos](04-governanca/03-termos.md) |
 | Validade do link de redefinição de senha | 30 min | [Onboarding](05-produto/01-onboarding.md) |
-| Retenção de prints | 90 dias (limpeza diária automática) | [LGPD](04-governanca/02-lgpd.md) |
+| Retenção de prints (imagem) | 90 dias (limpeza diária automática) | [LGPD](04-governanca/02-lgpd.md) |
+| Retenção de histórico de partida | indefinida | [LGPD](04-governanca/02-lgpd.md) |
 | Retenção de comprovante de pagamento | nenhuma — descartado na confirmação | [LGPD](04-governanca/02-lgpd.md) |
 | Retenção de registro fiscal de transação | 5 anos (exceção à exclusão de conta) | [LGPD](04-governanca/02-lgpd.md) |
 | Meta de resposta — disputa e OCR | 24 h | [Moderação](04-governanca/01-moderacao.md) |
 | Meta de resposta — denúncia e apelação | 48 h | [Moderação](04-governanca/01-moderacao.md) |
+| Ranking — recorte | top 50 por categoria, ativos nos últimos 30 dias | [Perfil](02-jogador/03-perfil.md) |
+| Busca de perfil por gamertag | não existe (só histórico, lobby e ranking) | [Perfil](02-jogador/03-perfil.md) |
 | Idiomas da interface | português e espanhol | [Escopo](05-produto/02-escopo.md) |
 | Idiomas que o OCR reconhece | português, espanhol e inglês (detecção automática) | [Personagens](02-jogador/01-verificacao.md) |
 | Fuso dos prazos e contadores | UTC interno, local na tela | [Requisitos transversais](../requisitos/01-transversais.md) |

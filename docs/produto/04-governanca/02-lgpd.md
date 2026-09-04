@@ -9,6 +9,7 @@ Plataforma guarda dado sensível o suficiente pra exigir política clara: print 
 ## Retenção
 
 - Prints (evidência de cadastro e de resultado) retidos por **90 dias**, apagados automaticamente depois (job de limpeza roda diariamente, apaga tudo que passou do prazo — sem exclusão manual dependente de alguém lembrar). 90 dias cobre com folga a janela de contestação (48h) e o zero-report (36h), sobrando margem pra investigação de moderação em caso mais raro/demorado.
+- **O histórico de partida em si não expira** — placar, elo aplicado e escalação ficam indefinidamente; só a **imagem** do print morre aos 90 dias. São coisas diferentes: o histórico é texto leve, sustenta a auditabilidade do elo (todo ponto precisa ter partida de origem, ver [Modelo de dados](../../requisitos/03-dados.md)) e é parte do valor do perfil público. Apagá-lo deixaria o ranking sem lastro.
 - Consequência direta: o "histórico de prints" visível pro dono do perfil (ver [Personagens e verificação](../02-jogador/01-verificacao.md)) cobre só o período de retenção — prints mais antigos que o prazo simplesmente não existem mais pra visualizar.
 
 ## Dado financeiro (apoio e assinatura)

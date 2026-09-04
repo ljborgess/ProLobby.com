@@ -10,10 +10,10 @@ Cobertura por área, pra saber onde ainda não se olhou:
 |---|---|
 | Conta e autenticação | não levantado |
 | Personagem e verificação | não levantado |
-| Fila e matchmaking | **em levantamento** |
+| Fila e matchmaking | **levantado** |
 | Lobby | não levantado |
-| Resultado e disputa | não levantado |
-| Perfil, ranking e descoberta | não levantado |
+| Resultado e disputa | **parcial** — contestação levantada |
+| Perfil, ranking e descoberta | **levantado** |
 | Moderação | não levantado |
 | Notificação | coberto por [04-notificacoes.md](04-notificacoes.md) |
 
@@ -55,3 +55,66 @@ Cobertura por área, pra saber onde ainda não se olhou:
 **Origem**: [produto/03-partida/02-fila.md](../produto/03-partida/02-fila.md)
 
 **Aceite**: aos 10 min sem atingir o piso, a pessoa recebe aviso nomeando a categoria sem par ou a ausência de candidato a capitão, com opção de continuar ou sair. Repete a cada 5 min enquanto ela continuar.
+
+### RF-008 · Fila mostra faixa de movimento, nunca número exato
+**Origem**: [produto/03-partida/02-fila.md](../produto/03-partida/02-fila.md)
+
+**Aceite**: cada categoria exibe "pouca gente", "movimentada" ou "cheia". Em nenhuma tela ou resposta de API aparece a contagem de pessoas na fila.
+
+### RF-009 · Recusar ou não confirmar gera timeout progressivo de fila
+**Origem**: [produto/03-partida/02-fila.md](../produto/03-partida/02-fila.md)
+
+**Aceite**: recusa explícita e estouro dos 30 s produzem o mesmo bloqueio — 5 min na 1ª ocorrência, 15 min na 2ª, 30 min na 3ª, 2 h da 4ª em diante. Durante o bloqueio, entrar na fila é recusado com o tempo restante na mensagem.
+
+### RF-010 · Contador de timeout zera com 12 h limpas ou uma partida completada
+**Origem**: [produto/03-partida/02-fila.md](../produto/03-partida/02-fila.md)
+
+**Aceite**: após 12 h sem recusa, a próxima ocorrência volta a valer 5 min. Completar uma partida tem o mesmo efeito, imediatamente.
+
+### RF-011 · Recusar não altera reputação
+**Origem**: [produto/03-partida/02-fila.md](../produto/03-partida/02-fila.md)
+
+**Aceite**: nenhuma recusa ou não-confirmação, em qualquer quantidade, gera evento de reputação. **Revoga o desenho anterior** de −3 na 3ª falta em 30 dias — o timeout substituiu.
+
+---
+
+## Resultado e disputa
+
+### RF-012 · Qualquer humano da partida contesta, uma vez cada
+**Origem**: [produto/03-partida/04-resultado.md](../produto/03-partida/04-resultado.md)
+
+**Aceite**: participante de qualquer um dos dois lados abre contestação dentro das 48 h, inclusive alguém do lado que reportou. A segunda tentativa da mesma pessoa na mesma partida é recusada.
+
+### RF-013 · Contestação abre disputa e volta a bloquear a fila
+**Origem**: [produto/03-partida/04-resultado.md](../produto/03-partida/04-resultado.md)
+
+**Aceite**: partida em `nao_confirmado` (fila livre) passa a `em_disputa` e as contas envolvidas voltam a ficar bloqueadas até a moderação resolver — ver [estados](02-estados.md).
+
+---
+
+## Perfil, ranking e descoberta
+
+### RF-014 · Cinco rankings, um por categoria
+**Origem**: [produto/02-jogador/03-perfil.md](../produto/02-jogador/03-perfil.md)
+
+**Aceite**: não existe ranking geral combinando categorias. Cada ranking ordena por elo daquela categoria.
+
+### RF-015 · Ranking lista top 50 ativos
+**Origem**: [produto/02-jogador/03-perfil.md](../produto/02-jogador/03-perfil.md)
+
+**Aceite**: no máximo 50 posições, e só personagens cuja conta tem partida completada nos últimos 30 dias. Quem passa de 30 dias sem jogar desaparece do ranking sem perder elo por isso (o decaimento é separado, ver RF-017).
+
+### RF-016 · Perfil de terceiro não é pesquisável
+**Origem**: [produto/02-jogador/03-perfil.md](../produto/02-jogador/03-perfil.md)
+
+**Aceite**: não existe campo de busca por gamertag em nenhuma tela nem endpoint. Chega-se ao perfil por histórico de partida compartilhada, lobby ativo ou ranking. O perfil em si continua público pra quem chega por esses caminhos.
+
+### RF-017 · Elo decai após 60 dias de inatividade, com piso no seed
+**Origem**: [produto/02-jogador/02-ranking.md](../produto/02-jogador/02-ranking.md)
+
+**Aceite**: personagem sem partida por 60 dias perde 25 de elo por mês subsequente, parando no valor do seed original. Jogar uma partida interrompe o decaimento; o elo perdido não é devolvido.
+
+### RF-018 · Histórico de partida não expira
+**Origem**: [produto/04-governanca/02-lgpd.md](../produto/04-governanca/02-lgpd.md)
+
+**Aceite**: placar, elo aplicado e escalação de qualquer partida seguem consultáveis indefinidamente. Só a **imagem** do print é apagada aos 90 dias — o registro do envio (hash, confiança, idioma) sobrevive.
