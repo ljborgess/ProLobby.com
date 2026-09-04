@@ -43,6 +43,17 @@ No modelo antigo (clube-casa fixo), o OCR validava o nome do clube contra uma fi
 
 Diferente do modelo antigo (conta de serviço, sempre confiável), o capitão agora é um jogador comum com poder real dentro do jogo (aceitar/recusar convite, mexer em tática, remover gente). Escolha por maior reputação mitiga risco, mas não elimina — abuso de capitão (recusa convidar sem motivo, remove alguém no meio da formação, etc.) cai no mesmo fluxo de denúncia já existente ([Moderação](../04-governanca/07-moderacao.md)), sem mecanismo novo necessário.
 
+## Compliance com Termos de Serviço da EA (pesquisado, alívio confirmado)
+
+EA proíbe explicitamente "robô, spider ou dispositivo automatizado acessando serviços da EA" e software não-autorizado (macro, hack, cheat) pra ganhar vantagem injusta no jogo. **Nada no desenho do ProLobby esbarra nisso**, por decisão de arquitetura, não por sorte:
+
+- OCR roda em cima de **print que o próprio jogador tira e sobe manualmente** — processamento acontece no servidor do ProLobby, nunca é acesso automatizado a um serviço da EA.
+- Toda ação dentro do jogo (convidar pro clube, ajustar tática, iniciar Amistoso) é feita **manualmente pelo capitão humano** — nunca por bot/script controlando o cliente do jogo ou a conta EA.
+- Bot Discord só toca o servidor Discord — nunca se conecta a serviço da EA.
+- ProLobby não dá vantagem competitiva **dentro** da partida (sem macro, sem cheat) — é ferramenta de coordenação externa, mesma categoria de outras já existentes no mercado (Pro Clubs Hub, Pro Clubs Finder, servidores com bot Disporty — ver [tese de mercado](../../../negocio/tese-de-mercado.md)) sem ação de enforcement conhecida contra elas.
+
+Fontes: [EA Terms of Service](https://tos.ea.com/legalapp/webterms/US/en/PC/09042012), [EA Account bans/suspensions](https://help.ea.com/en/help/account/information-about-locked-or-banned-or-suspended-accounts/).
+
 ## Pendência crítica
 
 **Ninguém do time testou isso na prática ainda.** [Discord e lobby](04-discord-e-lobby.md) já reflete esse mecanismo, mas os detalhes exatos (tempo de convite, se há cooldown de saída, fricção do Amistoso) continuam em aberto até o teste prático confirmar.

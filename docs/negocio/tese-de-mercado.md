@@ -26,6 +26,20 @@ Três frentes, não mutuamente exclusivas:
 2. **Parceria com criador de conteúdo/streamer** de Pro Clubs BR — acelera adoção, mas depende de relação externa (e possivelmente custo de patrocínio). Vale explorar quando a plataforma já tiver uso real pra mostrar, não antes.
 3. **Expansão de região** — já desenhado como aditivo no dossiê ([escopo](../produto/dossie/05-produto/08-escopo-plataforma-jogo-regiao.md)), sem travar arquitetura. Fica pra quando BR/América do Sul já estiver validado.
 
+## Métricas de sucesso do MVP
+
+Como saber se funcionou, sem esperar "sentir no feeling":
+
+1. **Partidas completadas por semana** — sinal básico de uso real (não só cadastro, partida de verdade acontecendo).
+2. **% de resultado confirmado sem disputa** — sinal de que o fluxo de OCR/report funciona sem fricção (muita disputa = fluxo ruim ou fraude, não só "gente brigando").
+3. **Retenção simples**: % de jogador que voltou pra fila numa segunda partida — sinal de que valeu a pena, não só experimentou uma vez e sumiu.
+
+Sem dashboard sofisticado — só acordo prévio do que conta como "funcionou", pra não decidir depois olhando pro número que dá na telha.
+
+## Entidade legal — pendência
+
+Termos de Uso ([12-termos-de-uso-e-idade.md](../produto/dossie/04-governanca/12-termos-de-uso-e-idade.md)) precisam existir antes do primeiro usuário externo — mas **não existe CNPJ/MEI formado ainda**. Não bloqueia MVP gratuito com poucos usuários de teste, mas é pré-requisito real antes de: (a) o próprio ToS ter peso jurídico de verdade, (b) qualquer monetização futura (assinatura/prioridade/cosmético — já adiada no [backlog](../produto/dossie/05-produto/10-backlog-fases-futuras.md)), já que pagamento exige CNPJ. Registrado aqui como pendência, não decisão tomada.
+
 ## Risco estrutural — aceito, não resolvido
 
 Plataforma depende 100% de como o Pro Clubs funciona **hoje** — sem contrato ou API oficial da EA (ver [mecânica do jogo](../produto/dossie/03-partida/00-mecanica-pro-clubs.md)). Qualquer patch pode alterar o mecanismo de clube/Amistoso Online que o produto inteiro usa como base.
