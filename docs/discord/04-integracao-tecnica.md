@@ -19,7 +19,7 @@ Decisões de arquitetura (não implementação/stack — ver [Bot: permissões e
 ## Rate limit da API do Discord
 
 - **Biblioteca de bot mantida** já respeita o rate limit nativo do Discord automaticamente (comportamento padrão, não construído do zero).
-- **Ações do mesmo evento rodam em fila sequencial**, não paralelas soltas — ex.: criar os 3 canais + pingar os 22 + postar mensagem do lobby fechado disparam um após o outro, não todos de uma vez. Evita estourar limite de requisição sem precisar de infraestrutura de throttling própria.
+- **Ações do mesmo evento rodam em fila sequencial**, não paralelas soltas — ex.: criar os 3 canais + pingar os jogadores + postar mensagem do lobby fechado disparam um após o outro, não todos de uma vez. Evita estourar limite de requisição sem precisar de infraestrutura de throttling própria.
 
 ## Aplicação do bot no Discord
 

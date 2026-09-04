@@ -8,7 +8,7 @@ Sem API da EA, resultado depende de **report manual com print** — mesma limita
 
 ## Quem reporta
 
-- **Qualquer um dos 22** (não precisa ser o capitão) pode mandar o print do placar final.
+- **Qualquer um dos humanos da partida** (não precisa ser o capitão) pode mandar o print do placar final.
 
 ## Validação anti-fraude do print
 
@@ -27,7 +27,7 @@ Gatilho de validade do print (evita fraude/troll terminando partida cedo, sem de
 
 - Se só um lado mandar dentro da janela (15 min): aceita como válido com flag "não confirmado", sujeito a contestação por **48 horas** — depois disso vira definitivo, evita passivo indefinido de disputa antiga pros 4 moderadores.
 - Se os dois lados mandarem placares divergentes: cai em **disputa/moderação** (ver [Moderação](../04-governanca/07-moderacao.md)).
-- Se **nenhum dos 22** reportar dentro dos 15 min: fica pendente — depois de **36 horas** sem nenhum report, sistema expira automaticamente e libera as 22 contas. **Não fica sem custo**: aplica **-3 pontos de reputação** pros 22 (mesma métrica/valor de `03`, rateada — não dá pra saber quem "devia" ter reportado). Escala só em reincidência: **3 zero-reports em 30 dias** — igual ao threshold usado em não-confirmar-lobby de `03`, mesma métrica, mesmo padrão de escalada. Sem isso, o time perdedor teria incentivo estrutural de torcer pra ninguém reportar e escapar de graça.
+- Se **nenhum humano da partida** reportar dentro dos 15 min: fica pendente — depois de **36 horas** sem nenhum report, sistema expira automaticamente e libera as contas envolvidas. **Não fica sem custo**: aplica **-3 pontos de reputação** pra todos eles (mesma métrica/valor de `03`, rateada — não dá pra saber quem "devia" ter reportado). Escala só em reincidência: **3 zero-reports em 30 dias** — igual ao threshold usado em não-confirmar-lobby de `03`, mesma métrica, mesmo padrão de escalada. Sem isso, o time perdedor teria incentivo estrutural de torcer pra ninguém reportar e escapar de graça.
 - **Desconexão / rage quit**: reportado dentro do mesmo fluxo (campo "reportar ausência" na tela de report do placar) — não é fluxo separado. Confirmada pelo outro lado, gera **-8 pontos de reputação** (maior que a penalidade de zero-report, coerente com ser abandono ativo confirmado, não negligência coletiva).
 
 ## Incentivo estrutural

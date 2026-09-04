@@ -42,15 +42,16 @@ Termos de Uso ([12-termos-de-uso-e-idade.md](../produto/dossie/04-governanca/12-
 
 ## Cold start — o risco de produto mais subestimado
 
-Uma partida exige **22 pessoas simultâneas, na fila, com a distribuição certa de categoria** (1 GK + 4 zaga + 2 meio + 2 ponta + 2 ataque por lado). Isso é muito para uma base nova: mesmo com centenas de cadastrados, os 22 dificilmente coincidem por acaso nas primeiras semanas — e quem entra na fila, não fecha e vai embora, gera boca-a-boca negativo ("entrei lá, não tinha ninguém").
+Uma partida 11v11 completa exigiria 22 pessoas simultâneas na fila com a distribuição certa de categoria — inviável numa base nova, mesmo com centenas de cadastrados. Fila que não fecha vira boca-a-boca negativo ("entrei lá, não tinha ninguém").
 
-**Estratégia decidida — plataforma completa, largada coordenada**:
+**O que resolve de fato: a IA do próprio jogo preenche as vagas vazias.** Recurso padrão do modo Clubes (ver [mecânica real do jogo](../produto/dossie/03-partida/00-mecanica-pro-clubs.md)) — o EA FC completa o time automaticamente quando o clube entra em partida sem os 11 humanos. Isso não é feature da plataforma nem gambiarra: é comportamento do jogo, e a plataforma só decide quando fechar o lobby.
+
+Com isso, a meta de fila cai de 22 pra **8 pessoas** (piso de 4 humanos por lado, com simetria obrigatória entre os times — ver [Fila e matchmaking](../produto/dossie/03-partida/03-fila-e-matchmaking.md)). Diferença entre inviável e alcançável já na primeira semana.
+
+**Complemento — plataforma completa, largada coordenada**:
 
 - A plataforma **não tem limitação técnica nenhuma**: fila contínua, aberta 24/7 desde o dia 1, produto inteiro funcionando como desenhado. Nada é cortado ou simplificado pro lançamento.
-- O que muda é só **coordenação de comunidade**: o time anuncia horários de concentração no Discord ("hoje 20h, todo mundo na fila") enquanto a base for pequena. Isso vive fora do produto — é organização social, não feature.
-- Some sozinho conforme o volume cresce: quando houver gente suficiente pra fila fechar a qualquer hora, o anúncio deixa de ser necessário sem precisar mudar nada no código.
-
-Esse é o gargalo real dos primeiros meses — não infraestrutura, não bug: é ter 22 pessoas ao mesmo tempo querendo jogar.
+- Enquanto a base for pequena, o time anuncia horários de concentração no Discord ("hoje 20h, todo mundo na fila") — quanto mais gente na mesma janela, mais humanos por partida e menos IA. Isso vive fora do produto: é organização social, não feature, e some sozinho conforme o volume cresce.
 
 ## Custo operacional — a estimar junto com a stack
 
