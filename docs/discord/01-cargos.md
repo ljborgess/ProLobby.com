@@ -22,6 +22,7 @@
 
 ## Cargos de reconhecimento: Fundador e Apoiador
 
+- **Beta** — quem participou do beta fechado gratuito (ver [Lançamento](../negocio/04-lancamento.md)). Cargo **permanente**, posicionado como mais antigo que Fundador na hierarquia visual. É a única recompensa do beta: sem Fundador grátis nem com desconto.
 - **Fundador** — quem apoiou na janela de lançamento (primeiros 30 dias ou 50 pessoas, ver [Sustentabilidade](../negocio/03-sustentabilidade.md)). Cargo **permanente**, nunca reconcedido depois que a janela fecha — é o que faz a escassez ser real.
 - **Apoiador** — concedido pelo bot a quem tem plano ativo (ver [Sustentabilidade](../negocio/03-sustentabilidade.md)). Cor própria e destaque na lista de membros. Fundador já inclui os benefícios de Apoiador, sem mensalidade.
 - **Não libera canal nenhum, não dá permissão nenhuma** — é reconhecimento, e nada mais. O gate funcional continua sendo só o Verificado, e a [linha vermelha](../negocio/03-sustentabilidade.md) proíbe qualquer vantagem comprada que toque fila, elo, capitão ou resultado.

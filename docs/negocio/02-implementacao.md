@@ -55,6 +55,12 @@ Não bloqueia desenvolvimento interno/teste com os 4, mas bloqueia abrir pra for
 - Entidade legal (**MEI aberto antes do primeiro real recebido**) — a receita de Fundador paga com folga, e sem ele é receita como PF sem nota (ver [Sustentabilidade](03-sustentabilidade.md)).
 - **Cobrança de lançamento**, que é dias de trabalho e não semanas, porque não tem gateway: chave PIX com confirmação manual, ação "ativar plano" no painel de moderação (mesmo log de auditoria), cargo Fundador/Apoiador via a esteira de bot já existente, e uma página de venda com o risco dito antes do pagamento. Redação revisada junto com os Termos ([Termos de uso](../produto/04-governanca/03-termos.md)) — o enquadramento de apoio depende dela.
 
+## 6. Beta fechado, depois abertura
+
+Produto pronto não vai direto pro público: roda **beta fechado gratuito** com ~24 convidados (metade rede pessoal, metade estranhos), até o critério de saída medido bater — 10 partidas completas, fila fechando sozinha em metade, OCR aceitando 80% de primeira, zero cancelamento por bug. Só então abre, com a janela de Fundador e o primeiro torneio. Detalhe em [Lançamento](04-lancamento.md).
+
+**O recrutamento dos convidados roda em paralelo ao desenvolvimento**, não depois — é a única etapa que não depende de código, e a que mais costuma ser esquecida até virar bloqueio.
+
 ## Resumo — o que fazer essa semana
 
 1. Rodar o [checklist de teste no jogo](../produto/03-partida/05-checklist.md) (item 0) — zero código, alguém dos 4 só precisa jogar.
