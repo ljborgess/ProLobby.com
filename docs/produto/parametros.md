@@ -44,7 +44,8 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 | Forma do time | 1 GK + 4 zaga/lateral + 2 meio + 2 ponta + 2 ataque = 11 | [Fila](03-partida/02-fila.md) |
 | Mínimo de humanos por lado | 4 (8 no total) | [Fila](03-partida/02-fila.md) |
 | Máximo de humanos por lado | 11 | [Fila](03-partida/02-fila.md) |
-| Simetria entre os lados | obrigatória (mesmo nº de humanos) | [Fila](03-partida/02-fila.md) |
+| Simetria entre os lados | obrigatória **por categoria** (não só pelo total) | [Fila](03-partida/02-fila.md) |
+| Candidatos a capitão pra fechar lobby | ao menos 1 por lado (clube declarado com vaga) | [Fila](03-partida/02-fila.md) |
 | Vagas restantes | preenchidas pela IA do próprio jogo | [Mecânica](03-partida/01-mecanica.md) |
 | Banda de elo inicial | ±150 por categoria | [Fila](03-partida/02-fila.md) |
 | Expansão da banda | +50 a cada 2 min, desde o início | [Fila](03-partida/02-fila.md) |
@@ -73,8 +74,7 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 | Parâmetro | Valor | Onde é decidido |
 |---|---|---|
 | Piso de tempo mínimo pra reportar | 5 min após lobby fechar | [Resultado](03-partida/04-resultado.md) |
-| Janela de report normal | 15 min | [Resultado](03-partida/04-resultado.md) |
-| Distância máxima entre timestamps dos 2 lados | 10 min | [Resultado](03-partida/04-resultado.md) |
+| Janela de report do 2º lado | 15 min a partir do 1º print aceito | [Resultado](03-partida/04-resultado.md) |
 | Placar válido | inteiro, 0–20 por lado | [Resultado](03-partida/04-resultado.md) |
 | Janela de contestação | 48 h | [Resultado](03-partida/04-resultado.md) |
 | Expiração por zero-report | 36 h | [Resultado](03-partida/04-resultado.md) |

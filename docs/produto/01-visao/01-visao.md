@@ -4,7 +4,7 @@
 
 ## Conceito
 
-Plataforma de matchmaking/comunidade pra EA FC Pro Clubs: player cadastra seu(s) personagem(ns) do jogo, entra numa fila automatizada por posição, é pareado com outros 21 jogadores pra formar 2 times equilibrados, e coordena a partida (que acontece dentro do console/jogo, fora da plataforma).
+Plataforma de matchmaking/comunidade pra EA FC Pro Clubs: player cadastra seu(s) personagem(ns) do jogo, entra numa fila automatizada por posição, é pareado com outros jogadores pra formar 2 times equilibrados (4 a 11 humanos por lado, a IA do jogo cobre o resto), e coordena a partida (que acontece dentro do console/jogo, fora da plataforma).
 
 ## Relação com o projeto `escalacao-brasileirao`
 

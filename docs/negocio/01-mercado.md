@@ -61,6 +61,11 @@ Nunca estimado, e depende de decisões que ainda não foram tomadas:
 - **Storage de prints** com retenção de 90 dias ([LGPD](../produto/04-governanca/02-lgpd.md)) — volume cresce com partidas, mas o corte automático limita o teto.
 - **Hospedagem** da plataforma + bot.
 
+**Quem paga — pendência separada do teto.** O teto responde "quanto"; falta responder "de quem sai". Sem CNPJ formado (pendência acima), não existe conta da empresa — então alguém dos 4 vai pagar do próprio bolso e os outros ressarcem, com tudo no nome dessa pessoa (cartão, domínio, provedor de nuvem, conta do OCR).
+
+- Precisa de acordo explícito **antes** do primeiro gasto recorrente: quem é o titular das contas, como o rateio acontece (mensal, por trimestre), e o que acontece se alguém sair do time.
+- Vale o mesmo racional já usado pra propriedade do servidor Discord ([docs/discord/](../discord/README.md)): credencial e titularidade em nome de uma pessoa só é risco de continuidade. Aqui não dá pra resolver com "conta separada não pessoal" porque envolve dinheiro real — resolve de vez quando o CNPJ existir.
+
 **Pendência**: combinar entre os 4 um **teto de gasto mensal aceitável antes de escolher a stack** — a escolha de OCR pago vs. local pode ser decidida por esse teto, não o contrário. Registrado aqui pra não virar surpresa depois de já estar construído.
 
 ## Risco estrutural — aceito, não resolvido

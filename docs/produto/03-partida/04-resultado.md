@@ -20,9 +20,17 @@ Gatilho de validade do print (evita fraude/troll terminando partida cedo, sem de
 5. **Hash do arquivo, contra reuso de print**: plataforma guarda o hash de todo print aceito — arquivo idêntico reenviado é rejeitado na hora. Sem isso existe brecha real: as outras validações (nome dos clubes, placar, piso de tempo) **não distinguem duas partidas do mesmo par de clubes**, já que o ID do lobby é interno da plataforma e não aparece na tela do jogo. Se os mesmos dois capitães jogam de novo, o print da partida anterior passaria como se fosse da nova.
    - Cobre o reuso preguiçoso (mesmo arquivo). Reuso sofisticado (fotografar de novo a tela antiga) continua possível, mas cai em disputa assim que o outro lado reportar o placar real.
 
+## Janela de report — o marco é o primeiro print
+
+O prazo de **15 minutos** conta **desde o primeiro print válido aceito** naquele lobby, não desde o lobby fechar. Motivo: a plataforma não tem como saber que a partida terminou (sem API da EA, o fim de jogo só existe no console) — o primeiro print aceito é o único sinal real de "acabou" que ela recebe. Contar desde o lobby fechar seria impossível de cumprir: a partida ainda estaria rolando.
+
+- Primeiro print válido inicia a contagem; o outro lado tem 15 minutos pra mandar o dele e confirmar.
+- **Não existe mais regra separada de "timestamps a até 10 minutos um do outro"** — era redundante com esta janela e, por ser mais curta, tornava os 15 minutos letra morta. Um número só, um marco só.
+- Se **ninguém** reportar, a contagem nunca começa — esse caso é coberto pelo zero-report de 36 h desde o lobby fechar (ver Casos de borda).
+
 ## Validação cruzada
 
-- **Placar bate** entre os dois lados + **timestamps de envio a até 10 minutos um do outro** — janela generosa o bastante pra cobrir alguém demorando pra tirar o print, curta o suficiente pra pegar tentativa de report fora de contexto.
+- **Placar bate** entre os dois lados, com o segundo report dentro da janela de 15 minutos acima.
 - **ID da partida = o próprio lobby** gerado pela plataforma — não depende de nada lido do jogo (EA FC não expõe ID de partida legível via OCR).
 
 ## Casos de borda
@@ -30,6 +38,8 @@ Gatilho de validade do print (evita fraude/troll terminando partida cedo, sem de
 - Se só um lado mandar dentro da janela (15 min): aceita como válido com flag "não confirmado", sujeito a contestação por **48 horas** — depois disso vira definitivo, evita passivo indefinido de disputa antiga pros 4 moderadores.
 - Se os dois lados mandarem placares divergentes: cai em **disputa/moderação** (ver [Moderação](../04-governanca/01-moderacao.md)).
 - Se **nenhum humano da partida** reportar dentro dos 15 min: fica pendente — depois de **36 horas** sem nenhum report, sistema expira automaticamente e libera as contas envolvidas. **Não fica sem custo**: aplica **-3 pontos de reputação** pra todos eles (mesma métrica/valor de `03`, rateada — não dá pra saber quem "devia" ter reportado). Escala só em reincidência: **3 zero-reports em 30 dias** — igual ao threshold usado em não-confirmar-lobby de `03`, mesma métrica, mesmo padrão de escalada. Sem isso, o time perdedor teria incentivo estrutural de torcer pra ninguém reportar e escapar de graça.
+- **Capitão desconecta ou sai no meio da partida**: a partida **segue normalmente** — o clube não deixa de existir porque o dono saiu, e a IA assume a posição dele como assumiria de qualquer um. Penalidade de reputação é a **mesma de qualquer desconexão (−8)**: agravar seria desincentivar gente a aceitar ser capitão, e o dano competitivo é idêntico ao de qualquer jogador que abandona.
+  - O que muda é a **limpeza pós-jogo**: sem o capitão pra remover os convidados, eles ficam parados no clube dele. Bot manda a DM de lembrete normalmente; sem resposta, vira **caso de moderação** — mesmo fluxo do capitão que trava a limpeza (ver [Mecânica real do EA FC Pro Clubs](01-mecanica.md) e [Moderação](../04-governanca/01-moderacao.md)), sem mecanismo novo.
 - **Desconexão / rage quit**: reportado dentro do mesmo fluxo (campo "reportar ausência" na tela de report do placar) — não é fluxo separado. Confirmada pelo outro lado, gera **-8 pontos de reputação** (maior que a penalidade de zero-report, coerente com ser abandono ativo confirmado, não negligência coletiva).
   - Presume-se que a **IA assume a posição de quem sai no meio da partida** (mesma mecânica de preencher vaga vazia — ver [Mecânica real do EA FC Pro Clubs](01-mecanica.md)), mas isso ainda **não foi confirmado em fonte nem em teste** — entra no checklist junto com o resto.
 - **Proteção contra bug de perda de controle**: existe bug conhecido no EA FC onde o jogador **perde o controle do próprio Virtual Pro sem ter desconectado** (a IA assume, a nota individual vai a **0.0**). Companheiros veem alguém parado e reportam como ausência — punição injusta por falha do jogo. Mitigação, usando dado que o OCR **já captura**: se a nota do jogador no print de fim de partida for **0.0**, a plataforma **não aplica a penalidade automaticamente** — marca como "possível falha do jogo" e manda pra [Moderação](../04-governanca/01-moderacao.md) decidir.

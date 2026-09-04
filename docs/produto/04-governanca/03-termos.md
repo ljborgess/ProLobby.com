@@ -7,6 +7,14 @@
 - **16 anos** — acompanha a classificação do próprio EA FC, mas com corte mais alto que o padrão Discord (13) porque envolve chat de voz com estranhos via Pro Clubs.
 - **Verificação**: campo de **data de nascimento** no cadastro (não checkbox genérico "sou maior de 16") — sistema calcula a idade e bloqueia o cadastro na hora se der menos de 16 anos, sem depender de o jogador fazer conta sozinho. Sem verificação documental. Mesmo padrão de mercado usado por plataformas sociais/gaming (o próprio Discord funciona assim); verificação documental é atrito e custo de compliance desproporcional pro MVP.
 
+## Adolescente de 16-17 anos — pendência jurídica
+
+Com corte em 16 anos, **a base inclui menores de idade** — e a LGPD (art. 14) trata dado de criança e adolescente com regra própria, exigindo que o tratamento seja no melhor interesse do titular. O texto da lei é explícito sobre consentimento de responsável para **criança** (até 12); para **adolescente** (12 a 18) a interpretação é menos assentada e varia conforme o entendimento aplicado.
+
+- **Não é decisão de produto, é de assessoria jurídica** — registrado aqui como pendência, não resolvido por conta própria. Entra junto com a formalização da entidade legal (ver [tese de mercado](../../negocio/01-mercado.md)), antes do primeiro usuário externo.
+- Alternativa que elimina a questão, se a resposta jurídica vier complicada: **subir o corte pra 18 anos**. Custa alcance de público, mas fecha o assunto sem depender de interpretação.
+- Não bloqueia teste interno com os 4 sócios (todos maiores).
+
 ## Termos de Uso / Política de Privacidade
 
 - Obrigatórios **antes do primeiro usuário externo ao time** (não precisa ser documento jurídico complexo no dia 1, mas precisa existir).

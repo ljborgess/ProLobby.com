@@ -27,8 +27,13 @@
 
 ## Quantos humanos por partida
 
-- **Simetria obrigatória**: os dois lados fecham com **o mesmo número de humanos**. Se sobrar gente ímpar na fila, o excedente espera o próximo lobby. Motivo: IA joga diferente de humano — time com mais humanos leva vantagem estrutural, e o equilíbrio por elo (premissa central do produto) desmorona se os lados têm composição diferente.
+- **Simetria obrigatória, e é por categoria — não só por contagem**: se um lado tem humano numa categoria, o outro lado tem humano na mesma categoria; se um lado deixa a vaga pra IA, o outro deixa também. Contar só o total não basta: 4 zagueiros humanos contra 1 goleiro + 1 meio + 2 atacantes dá a mesma contagem, mas o pareamento **categoria contra categoria** (a premissa central do equilíbrio, descrito acima) deixa de existir — não há goleiro do B pra comparar com o goleiro do A, e o elo da partida fica sem base pra ser justificado.
+  - Consequência prática: a fila fecha mais devagar, porque precisa achar **par de mesma categoria**, não só gente. Custo aceito deliberadamente — equilíbrio é o produto; velocidade de fila é conveniência.
+  - Quem sobra sem par na própria categoria espera o próximo lobby (mesma regra do excedente ímpar).
 - **Piso de 4 humanos por lado (8 no total)** pra abrir partida. Abaixo disso a partida vira majoritariamente IA e perde sentido competitivo — elo ficaria difícil de justificar.
+- **Pré-requisito de capitão pra fechar o lobby**: cada lado precisa ter, entre os humanos escalados, **ao menos 1 jogador com clube EA declarado com vaga** (ver [Personagens e verificação](../02-jogador/01-verificacao.md)) — é critério de fechamento de lobby, não de entrada na fila (qualquer um entra na fila, com clube ou sem).
+  - Motivo: o piso de 4 encolheu a lista de candidatos a capitão de 11 pra 4 por lado. Sem esse critério, a cascata de escolha de capitão ([Discord e lobby](03-lobby.md)) esgota com frequência alta numa base pequena, e o lobby é desfeito depois de todo mundo já ter confirmado entrada — a pior forma de falhar, porque desperdiça a confirmação de 8 pessoas. Melhor não fechar o lobby do que fechar e desfazer.
+  - Não elimina o caso de cascata esgotada (a declaração pode estar desatualizada e ser recusada na confirmação de 30s — ver [Discord e lobby](03-lobby.md)), só o torna raro em vez de comum.
 - **Teto natural de 11 por lado** — quanto mais humano, melhor; a fila sempre tenta juntar o máximo dentro do prazo.
 - **Partida com IA conta igual pro elo**: como os dois lados têm a mesma quantidade de IA (simetria acima), a disputa é justa entre si — não há razão pra valer menos, e evita mecanismo de peso variável difícil de explicar pro jogador.
 - Isso é o que destrava o problema de arranque da plataforma (ver [tese de mercado](../../negocio/01-mercado.md)): meta realista de 8 pessoas em vez de 22 pra uma partida acontecer.
@@ -42,13 +47,13 @@
 ## Timeout de fila
 
 - Durante **10 minutos** a fila trabalha pra juntar o **máximo de humanos possível** (com a banda de elo expandindo, como descrito acima). No fim do prazo, fecha com quem tiver — respeitando a simetria entre os lados e o piso de 4 por lado. O que faltar vira IA dentro do jogo.
-- Se nem o piso for atingido em 10 minutos, avisa o player apontando a **categoria específica que falta** (ex.: "faltam goleiros") com opção de continuar esperando ou sair — mais útil que mensagem genérica. Aviso se repete a cada 5 minutos adicionais enquanto o jogador continuar esperando.
+- Se nem o piso for atingido em 10 minutos, avisa o player apontando o **que falta** — a categoria específica sem par (ex.: "falta goleiro do outro lado") ou, se for esse o caso, que **nenhum lado tem candidato a capitão** (ninguém com clube declarado com vaga) com opção de continuar esperando ou sair — mais útil que mensagem genérica. Aviso se repete a cada 5 minutos adicionais enquanto o jogador continuar esperando.
 
 ## Confirmação de entrada no lobby
 
 - Quando o matchmaking fecha o lobby, **não confirma automático** — cada player tem uma janela de **30 segundos** pra aceitar/recusar antes do lobby fechar de vez.
-- Quem não confirma é removido da fila (vaga reabre pros outros 21 continuarem esperando substituto), com **penalidade de -3 pontos de reputação** a partir da 3ª falta de confirmação em 30 dias (mesmo padrão de threshold usado no zero-report, ver [Resultado de partida](04-resultado.md)) — primeira e segunda falta no período não pesam de verdade, só a partir da terceira.
-- Motivo: sem essa etapa, alguém AFK trava o lobby até o timer de entrada no Discord estourar, desperdiçando o tempo dos outros 21.
+- Quem não confirma é removido da fila (vaga reabre pros outros humanos do lobby continuarem esperando substituto), com **penalidade de -3 pontos de reputação** a partir da 3ª falta de confirmação em 30 dias (mesmo padrão de threshold usado no zero-report, ver [Resultado de partida](04-resultado.md)) — primeira e segunda falta no período não pesam de verdade, só a partir da terceira.
+- Motivo: sem essa etapa, alguém AFK trava o lobby até o timer de entrada no Discord estourar, desperdiçando o tempo dos outros humanos do lobby.
 
 ## Escopo
 

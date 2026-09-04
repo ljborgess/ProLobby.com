@@ -47,6 +47,8 @@ Confirmar que a IA cobre vaga vazia **em Amistoso Online especificamente** (a do
 
 **Testar também**: alguém sai no meio da partida — a IA assume a posição e o jogo continua, ou a partida quebra? Presumido que assume (mesma mecânica), sem confirmação em fonte (ver [Resultado](04-resultado.md)).
 
+**Testar também — o dono do clube saindo**: o capitão (dono do clube usado) desconecta no meio do Amistoso. A partida segue pros outros, ou quebra pros dois lados porque o clube anfitrião perdeu o dono? [Resultado](04-resultado.md) presume que segue e trata só a limpeza pós-jogo — se quebrar, essa regra precisa mudar e o papel de capitão passa a exigir tratamento próprio.
+
 ### 7 · Unicidade de nome de clube
 Criar clube com nome comum (ex.: "Real Madrid"), tentar criar um segundo com o mesmo nome exato.
 
