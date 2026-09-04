@@ -98,3 +98,8 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 | Timeout de resposta do bot | 10 s | [Integração técnica](../discord/04-integracao-tecnica.md) |
 | Tentativas de reenvio | 3 (10s, 20s, 40s) | [Integração técnica](../discord/04-integracao-tecnica.md) |
 | Retry esgotado | vira caso de moderação | [Integração técnica](../discord/04-integracao-tecnica.md) |
+| Deleção de canal — call vazia por | 10 min | [Canais](../discord/02-canais.md) |
+| Deleção de canal — piso | 15 min após lobby fechar | [Canais](../discord/02-canais.md) |
+| Deleção de canal — teto | 3 h após lobby fechar | [Canais](../discord/02-canais.md) |
+| Faxina de canal órfão | de hora em hora | [Canais](../discord/02-canais.md) |
+| Alerta de limite de canais | acima de 400 (teto do Discord: 500) | [Canais](../discord/02-canais.md) |

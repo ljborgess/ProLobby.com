@@ -10,7 +10,9 @@ O bot é o **motor único de automação** entre a plataforma (aplicação web) 
 |---|---|
 | Personagem aprovado (OCR) **e** Discord vinculado (qualquer ordem, gatilho duplo) | Concede cargo **Verificado** + sincroniza nickname com gamertag/PSN ID (ver [Cargos e verificação](01-cargos-e-verificacao.md)) |
 | Lobby fecha (humanos confirmados) | Plataforma decide o capitão de cada lado (critério de reputação — ver [Discord e lobby](../produto/03-partida/03-discord-e-lobby.md)); **só depois dos 2 capitães confirmados** (cascata esgotada nunca chega aqui, ver linha abaixo), bot cria **3 canais temporários** (2 de voz privados por time + 1 de texto compartilhado por todos), posta nome dos capitães e avisos operacionais no canal de texto, pinga todo mundo, dispara timer de entrada |
-| Partida termina (relatório processado) | Deleta os 3 canais temporários do lobby, manda DM lembrando os 2 capitães de remover os convidados do próprio clube (bot não alcança o clube EA diretamente, sem API — só lembra) |
+| Calls do lobby vazias por 10 min (piso 15 min / teto 3 h após o lobby fechar) | Deleta os 3 canais temporários — ver [Canais](02-canais.md) |
+| Partida termina (relatório processado) | Manda DM lembrando os 2 capitães de remover os convidados do próprio clube (bot não alcança o clube EA diretamente, sem API — só lembra) |
+| Varredura de hora em hora | Apaga canal temporário órfão de lobby já encerrado; alerta em **#status-sistema** se o servidor passar de 400 canais (limite do Discord é 500) |
 | Cascata de capitão esgota (nenhum candidato de um lado tem clube/vaga) | Desfaz o lobby, notifica todos que voltam pra fila sem penalidade |
 | Fila fechou / lobby formado / disputa resolvida / punição aplicada | Notifica via DM do bot + notificação in-app na plataforma |
 | Disputa cai em moderação / suspensão aplicada | Notifica as partes envolvidas |

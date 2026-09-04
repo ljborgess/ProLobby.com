@@ -23,4 +23,6 @@ Decisões de arquitetura (não implementação/stack — ver [Bot: permissões e
 
 ## Aplicação do bot no Discord
 
+- **Servidor é criado à mão, não pelo bot.** A API do Discord até permite bot criar servidor (`POST /guilds`, para bot em menos de 10 servidores — o nosso estaria em 1), mas nesse caso **o bot vira o dono** — o que quebra a decisão de o servidor pertencer a uma conta separada não-pessoal (ver [Propriedade e convite do servidor](README.md)). Criação manual, uma vez só.
+- **Server Members Intent** precisa ser ativado no Developer Portal — não vem ligado por padrão, e sem ele o bot não enxerga membros nem consegue gerenciar cargo/nickname. Falha silenciosa clássica: o bot roda, mas cargo Verificado nunca é concedido.
 - Aplicação criada no Discord Developer Portal, token do bot, link de convite OAuth2 com os escopos/permissões necessários (ver [Bot: permissões e integração com moderação](03-bot-e-moderacao.md) pra permissão total já decidida) — tudo isso fica sob a **mesma conta separada, não pessoal, que já é dona do servidor** (ver [Propriedade e convite do servidor](README.md)). Mesma lógica de continuidade: token/credencial não fica preso à conta pessoal de nenhum dos 4.

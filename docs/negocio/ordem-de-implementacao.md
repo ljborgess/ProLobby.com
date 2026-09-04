@@ -17,7 +17,9 @@ Servidor Discord não depende da plataforma existir — é configuração manual
 1. Cria a conta separada dona do servidor ([docs/discord/README.md](../discord/README.md)).
 2. Cria o servidor, cargos fixos (Admin/Moderador), canais fixos (#regras, #anuncios, #geral, #fila-status, #status-sistema, #suporte-e-denuncia, #log-moderacao — ver [Canais](../discord/02-canais.md)).
 3. Configura Onboarding/Screening nativo do Discord pros cargos sociais ([Cargos e verificação](../discord/01-cargos-e-verificacao.md)).
-4. Cria a aplicação do bot no Discord Developer Portal, gera token ([Integração técnica](../discord/04-integracao-tecnica.md)) — ainda sem lógica nenhuma implementada, só existindo.
+4. Cria a aplicação do bot no Discord Developer Portal, gera token, **ativa o Server Members Intent** (não vem ligado por padrão — sem ele o bot não gerencia cargo/nickname, e falha em silêncio) ([Integração técnica](../discord/04-integracao-tecnica.md)) — ainda sem lógica nenhuma implementada, só existindo.
+
+O servidor é criado **manualmente**, não pelo bot: a API permitiria, mas o bot viraria dono do servidor, contrariando a decisão de propriedade por conta separada.
 
 Motivo de fazer isso cedo: zero dependência de decisão de stack, dá pro time já ter comunidade rodando (mesmo que manual) enquanto a plataforma é construída — e o servidor existir cedo ajuda a validar cargos/canais na prática antes de automatizar.
 
