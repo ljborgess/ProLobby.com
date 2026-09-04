@@ -95,7 +95,9 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 | Parâmetro | Valor | Onde é decidido |
 |---|---|---|
 | Idade mínima | 16 anos (data de nascimento no cadastro) | [Termos](04-governanca/03-termos.md) |
-| Validade do link de redefinição de senha | 30 min | [Onboarding](05-produto/01-onboarding.md) |
+| Validade do link de redefinição de senha | 30 min, uso único | [Onboarding](05-produto/01-onboarding.md) |
+| Contas por e-mail | 1 (chave única) | [Onboarding](05-produto/01-onboarding.md) |
+| Sessões simultâneas por conta | sem limite | [Onboarding](05-produto/01-onboarding.md) |
 | Retenção de prints (imagem) | 90 dias (limpeza diária automática) | [LGPD](04-governanca/02-lgpd.md) |
 | Retenção de histórico de partida | indefinida | [LGPD](04-governanca/02-lgpd.md) |
 | Retenção de comprovante de pagamento | nenhuma — descartado na confirmação | [LGPD](04-governanca/02-lgpd.md) |

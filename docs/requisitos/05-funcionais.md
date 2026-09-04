@@ -8,7 +8,7 @@ Cobertura por área, pra saber onde ainda não se olhou:
 
 | Área | Estado |
 |---|---|
-| Conta e autenticação | não levantado |
+| Conta e autenticação | **levantado** |
 | Personagem e verificação | não levantado |
 | Fila e matchmaking | **levantado** |
 | Lobby | não levantado |
@@ -16,6 +16,50 @@ Cobertura por área, pra saber onde ainda não se olhou:
 | Perfil, ranking e descoberta | **levantado** |
 | Moderação | não levantado |
 | Notificação | coberto por [04-notificacoes.md](04-notificacoes.md) |
+
+---
+
+## Conta e autenticação
+
+### RF-019 · Cadastro aberto, sem convite nem aprovação
+**Origem**: [produto/05-produto/01-onboarding.md](../produto/05-produto/01-onboarding.md)
+
+**Aceite**: qualquer pessoa com e-mail válido e 16 anos ou mais completa o cadastro sem intervenção de ninguém. Nenhum campo de código de convite existe.
+
+### RF-020 · Um e-mail, uma conta
+**Origem**: [produto/05-produto/01-onboarding.md](../produto/05-produto/01-onboarding.md)
+
+**Aceite**: cadastro com e-mail já usado é recusado, inclusive se a conta existente estiver suspensa ou banida. Conta excluída por pedido LGPD libera o e-mail.
+
+### RF-021 · Idade calculada da data de nascimento, bloqueio na hora
+**Origem**: [produto/04-governanca/03-termos.md](../produto/04-governanca/03-termos.md)
+
+**Aceite**: menos de 16 anos completos na data do cadastro é recusado no envio do formulário, sem criar conta. Não existe checkbox de autodeclaração.
+
+### RF-022 · Sessão simultânea em vários dispositivos
+**Origem**: [produto/05-produto/01-onboarding.md](../produto/05-produto/01-onboarding.md)
+
+**Aceite**: login novo não derruba sessão existente. Duas sessões da mesma conta veem o mesmo estado de fila e de lobby, e a trava de uma fila ativa continua valendo por conta.
+
+### RF-023 · Fechar o navegador não sai do lobby
+**Origem**: [produto/05-produto/01-onboarding.md](../produto/05-produto/01-onboarding.md)
+
+**Aceite**: fechada e reaberta a aba durante um lobby, a pessoa volta ao estado atual dele com os prazos correndo de onde estavam. Nenhuma vaga é liberada e nenhum timeout de recusa é aplicado por isso.
+
+### RF-024 · Link de redefinição de senha expira em 30 min e é de uso único
+**Origem**: [produto/05-produto/01-onboarding.md](../produto/05-produto/01-onboarding.md)
+
+**Aceite**: link usado ou com mais de 30 min é recusado. Pedir novo link invalida o anterior.
+
+### RF-025 · Recuperação sem e-mail e sem Discord exige dois fatores
+**Origem**: [produto/05-produto/01-onboarding.md](../produto/05-produto/01-onboarding.md)
+
+**Aceite**: o caso abre chamado de moderação e só é aprovado com **resposta da pergunta de segurança** e **print in-game novo** mostrando o gamertag da conta. Um fator sozinho não basta.
+
+### RF-026 · Aceite de Termos é versionado e mudança material exige novo aceite
+**Origem**: [produto/04-governanca/03-termos.md](../produto/04-governanca/03-termos.md)
+
+**Aceite**: cada conta guarda a versão aceita e a data. Publicada uma versão marcada como material, a conta é barrada de usar a plataforma até aceitar a nova.
 
 ---
 
