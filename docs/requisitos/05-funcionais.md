@@ -14,7 +14,7 @@ Cobertura por área, pra saber onde ainda não se olhou:
 | Lobby | **levantado** |
 | Resultado e disputa | **parcial** — contestação levantada |
 | Perfil, ranking e descoberta | **levantado** |
-| Moderação | não levantado |
+| Moderação | **levantado** |
 | Notificação | coberto por [04-notificacoes.md](04-notificacoes.md) |
 
 ---
@@ -210,3 +210,37 @@ Cobertura por área, pra saber onde ainda não se olhou:
 **Origem**: [produto/04-governanca/02-lgpd.md](../produto/04-governanca/02-lgpd.md)
 
 **Aceite**: placar, elo aplicado e escalação de qualquer partida seguem consultáveis indefinidamente. Só a **imagem** do print é apagada aos 90 dias — o registro do envio (hash, confiança, idioma) sobrevive.
+
+---
+
+## Moderação
+
+### RF-035 · Moderador parte do caso é travado, decidem os outros 3
+**Origem**: [produto/04-governanca/01-moderacao.md](../produto/04-governanca/01-moderacao.md)
+
+**Aceite**: moderador que é alvo da denúncia, autor dela, ou participante da partida em disputa não consegue abrir nem decidir o caso — a ação é recusada pelo sistema, não apenas desencorajada. Restando menos de 2 moderadores elegíveis, o caso fica pendente em vez de ser decidido por um só.
+
+### RF-036 · Denunciado nunca vê quem denunciou
+**Origem**: [produto/04-governanca/01-moderacao.md](../produto/04-governanca/01-moderacao.md)
+
+**Aceite**: nenhuma tela, notificação ou resposta entregue ao denunciado contém o autor da denúncia. O painel de moderação vê. Vale também pro caso aberto por acúmulo de 5 avaliações negativas.
+
+### RF-037 · Uma apelação por punição, reabertura só com fato novo
+**Origem**: [produto/04-governanca/01-moderacao.md](../produto/04-governanca/01-moderacao.md)
+
+**Aceite**: segunda apelação sobre a mesma punição é recusada. A reabertura exige um anexo ou registro que não constava na primeira análise.
+
+### RF-038 · 2ª suspensão em 180 dias vira banimento
+**Origem**: [produto/04-governanca/01-moderacao.md](../produto/04-governanca/01-moderacao.md)
+
+**Aceite**: aplicada uma segunda suspensão dentro de 180 dias da primeira, a conta é banida permanentemente. Suspensão anterior a 180 dias não conta. Suspensão revertida por apelação não conta.
+
+### RF-039 · Moderador só acessa print anexado ao caso que trata
+**Origem**: [requisitos/01-transversais.md](01-transversais.md)
+
+**Aceite**: não existe navegação livre por prints. Abrir um print registra ator, caso e horário no log de auditoria.
+
+### RF-040 · Toda ação de moderador entra no log de auditoria
+**Origem**: [produto/04-governanca/02-lgpd.md](../produto/04-governanca/02-lgpd.md)
+
+**Aceite**: resolver disputa, aplicar ou reverter punição, editar dado, acessar print e ativar plano ficam registrados com ator, alvo, horário e o que mudou. O log não é editável nem apagável pelo painel.

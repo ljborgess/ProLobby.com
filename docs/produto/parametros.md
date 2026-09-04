@@ -102,6 +102,8 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 | Retenção de histórico de partida | indefinida | [LGPD](04-governanca/02-lgpd.md) |
 | Retenção de comprovante de pagamento | nenhuma — descartado na confirmação | [LGPD](04-governanca/02-lgpd.md) |
 | Retenção de registro fiscal de transação | 5 anos (exceção à exclusão de conta) | [LGPD](04-governanca/02-lgpd.md) |
+| Reincidência: 2ª suspensão em 180 dias | banimento permanente | [Moderação](04-governanca/01-moderacao.md) |
+| Apelações por punição | 1 (reabre só com fato novo) | [Moderação](04-governanca/01-moderacao.md) |
 | Meta de resposta — disputa e OCR | 24 h | [Moderação](04-governanca/01-moderacao.md) |
 | Meta de resposta — denúncia e apelação | 48 h | [Moderação](04-governanca/01-moderacao.md) |
 | Ranking — recorte | top 50 por categoria, ativos nos últimos 30 dias | [Perfil](02-jogador/03-perfil.md) |
