@@ -6,53 +6,89 @@ Pra quem (Claude Code, outra sessão/máquina) for continuar este projeto a part
 
 Ver [`README.md`](README.md). Origem: ideia nasceu numa sessão sobre o projeto `escalacao-brasileirao` (Django, escalação de Brasileirão via API), mas ProLobby é **projeto novo e independente** — só a identidade visual (design system) foi herdada de lá, nada de backend/dados.
 
-## Estado atual (2026-09-03)
+## Estado atual (2026-09-04)
 
-- **Fase**: design de produto / levantamento de requisitos. Zero código de aplicação.
-- **Branches**: só `main` e `dev` (sem branch de feature por item). Trabalho corre em `dev`; `main` só recebe merge quando o time decidir promover. Nada vai direto pra `main`.
-- Todo o conteúdo abaixo já está commitado e pushed em `dev`.
+- **Fase**: design de produto **e requisitos**, ambos fechados. Zero código de aplicação.
+- **Branches**: só `main` e `dev`. Trabalho corre em `dev`; `main` só recebe merge quando o time decidir promover.
+- Todo o conteúdo abaixo está commitado em `dev`.
+
+## Os dois bloqueadores — leia isto antes de qualquer coisa
+
+**Nenhum dos dois é escrever plataforma.** Foram identificados ranqueando os cinco riscos do projeto por probabilidade e dano, e o achado foi que **quatro dos cinco não se resolvem com engenharia**:
+
+1. **[Checklist no jogo](docs/produto/03-partida/05-checklist.md)** — 8 testes, custa minutos e nenhum dinheiro. Valida o mecanismo de capitão/clube em que todo o fluxo de partida se apoia. O teste 6 é o mais crítico do projeto: se o Amistoso Online **não** aceitar a IA cobrindo vaga, o piso de 8 humanos cai e a solução de cold start inteira vai com ele.
+2. **[Piloto de OCR](docs/requisitos/06-piloto-ocr.md)** — um script sobre 50 prints reais **de estranhos**, sem conta, sem banco, sem tela. É o único risco grande que exige código pra ser medido, e decide de quebra a escolha entre OCR pago e local.
+
+Os dois rodam em paralelo. **Stack técnica só depois** — o retorno deles muda três parâmetros marcados como "a calibrar" (os 5 min de confirmação de convite, os 60 min de silêncio total, e se o modelo de 5 personagens sobrevive ao que o jogo oferece).
 
 ## Estrutura da documentação
 
 ```
 docs/
-├── produto/
-│   ├── parametros.md           TODOS os números do sistema num lugar só
-│   ├── 01-visao/  01-visao
-│   ├── 02-jogador/ 01-verificacao · 02-ranking · 03-perfil
-│   ├── 03-partida/ 01-mecanica · 02-fila · 03-lobby · 04-resultado · 05-checklist  ← núcleo
+├── produto/      POR QUE cada regra é assim — decisão, alternativa descartada, motivo
+│   ├── parametros.md          TODOS os números do sistema num lugar só
+│   ├── 01-visao/     01-visao
+│   ├── 02-jogador/   01-verificacao · 02-ranking · 03-perfil
+│   ├── 03-partida/   01-mecanica · 02-fila · 03-lobby · 04-resultado · 05-checklist  ← núcleo
 │   ├── 04-governanca/ 01-moderacao · 02-lgpd · 03-termos
-│   └── 05-produto/ 01-onboarding · 02-escopo · 03-backlog
-├── discord/       01-cargos · 02-canais · 03-bot · 04-integracao
-└── negocio/       01-mercado · 02-implementacao
+│   └── 05-produto/   01-onboarding · 02-escopo · 03-backlog
+├── requisitos/   O QUE o sistema faz — comportamento verificável
+│   ├── 01-transversais · 02-estados · 03-dados · 04-notificacoes
+│   ├── 05-funcionais       RF-001 a RF-070
+│   ├── 06-piloto-ocr       bloqueador nº 2
+│   └── 07-nao-funcionais   RNF-001 a RNF-020
+├── discord/      01-cargos · 02-canais · 03-bot · 04-integracao
+└── negocio/      01-mercado · 02-implementacao · 03-sustentabilidade · 04-lancamento
 ```
 
-**Comece por**: [`produto/03-partida/05-checklist.md`](docs/produto/03-partida/05-checklist.md) — o teste no jogo é o bloqueador nº 1, custa minutos e valida o mecanismo em que tudo se apoia.
+**A divisão produto x requisitos é intencional**: quem implementa segue `requisitos/` e consulta `produto/` quando quer entender a razão de algo. Todo RF aponta pra onde foi decidido — requisito sem origem é requisito que alguém inventou.
 
-Numeração de arquivo indica **ordem de leitura** dentro da pasta. Ler as pastas em ordem dá o fluxo completo do produto.
+Numeração de arquivo indica **ordem de leitura** dentro da pasta.
 
-## Onde está tudo
+## Decisões que mais moldam o produto
 
-- **`docs/produto/`** — o dossiê completo, separado por nicho e organizado em seções no índice (14 arquivos + índice em `README.md`). Foi construído em várias rodadas de entrevista (skill `grill-me`), cobrindo: visão geral, personagens/verificação (OCR, identidade, troca de gamertag), **mecânica real do EA FC Pro Clubs** (`03-partida/01-mecanica.md` — achado crítico: não existe "sala privada avulsa"; mecanismo decidido é **Amistoso Online entre o clube pessoal de um "capitão"** — 1 dos 11 jogadores reais de cada lado, escolhido por reputação entre quem tem clube com vaga, não conta de serviço administrada pela plataforma — com checklist de teste prático pendente), fila/matchmaking (composição de time 11+11, voto de formação com desempate pelo capitão, equilíbrio categoria contra categoria), Discord/lobby (notificação, escolha de capitão — sem conceito de host de rede, já que Pro Clubs usa servidor dedicado), resultado de partida (zero report com penalidade, janela de contestação, bloqueio em disputa, OCR valida nome dinâmico dos 2 clubes do lobby), ranking/reputação/punição (elo por categoria, seed inicial, rollback retroativo, smurfing/conluio), moderação (conflito de interesse sem regra formal, abuso de capitão cai no mesmo fluxo de denúncia), escopo (plataforma/edição/região), LGPD, backlog (monetização — ideia validada, não decidida), onboarding, ToS/idade (verificação por autodeclaração), perfil e visibilidade social.
-- **`docs/discord/`** — domínio à parte (não é produto, é infraestrutura de comunidade): cargos (Admin/Moderador fixos + tags sociais nativas do Discord + cargo funcional Verificado, gatilho duplo verificação+vínculo), canais (estrutura unificada, sem fragmentar), bot central (permissão total, kick/ban sempre manual).
-- **`scripts/check-docs-links.sh`** — valida links cruzados e cobertura de índice de `docs/`. Rodado automaticamente por um hook `PreToolUse` (`.claude/settings.json`) antes de qualquer `git commit` — bloqueia o commit se achar link quebrado ou arquivo órfão fora do índice.
-- **`.claude/settings.json`** — registra o marketplace de plugins B2ML (`https://gitlab.b2ml.com.br/.../b2ml-agentes-e-skills`) como `extraKnownMarketplaces`, habilita o plugin `grill-me`, e configura o hook de checagem de docs acima — abrindo este repo no Claude Code, isso já carrega sozinho.
+Se você só puder ler cinco coisas, leia estas:
+
+1. **Não existe sala privada em Pro Clubs.** O jogo só tem liga, Drop-In e Amistoso Online entre clubes. O mecanismo decidido é **Amistoso entre o clube pessoal de um capitão** — um dos jogadores humanos de cada lado, escolhido por reputação entre quem declarou clube com vaga. Não é conta de serviço da plataforma. Ver `produto/03-partida/01-mecanica.md`.
+2. **A IA do próprio jogo cobre vaga vazia.** É o achado de maior impacto: sem ele, uma partida exigiria 22 pessoas simultâneas; com ele, a meta cai pra **8** (piso de 4 por lado, simetria obrigatória **por categoria**). É o que torna o cold start viável — e é o que o teste 6 valida.
+3. **A linha vermelha da monetização**: nada que altere fila, elo, escolha de capitão ou resultado é vendável. Decisão fixa, não revisável por volume. Ver `negocio/03-sustentabilidade.md`.
+4. **Reputação é recuperável e recusa não a afeta.** Partida limpa devolve +1 até o teto de 70; acima disso só por joinha. Recusar partida gera **timeout progressivo de fila** (5/15/30 min, 2 h), não perda de reputação.
+5. **O rollback exige log de evento.** Elo e reputação guardam cada alteração com motivo, partida e data. Sem isso, o rollback de disputa é inimplementável e os contadores de janela móvel não são contáveis. Ver `requisitos/03-dados.md`.
+
+## Ferramentas do repo
+
+- **`scripts/check-docs-links.sh`** — valida links cruzados e cobertura de índice de `docs/`. Roda automaticamente por um hook `PreToolUse` (`.claude/settings.json`) antes de qualquer `git commit`, e **bloqueia o commit** se achar link quebrado ou arquivo órfão fora do índice.
+- **`.claude/settings.json`** — registra o marketplace de plugins B2ML, habilita o plugin `grill-me`, e configura o hook acima. Abrindo este repo no Claude Code, isso carrega sozinho.
 
 ## Como continuar
 
-1. **Bloqueador crítico antes de fechar o fluxo de lobby**: alguém do time precisa rodar o checklist em `docs/produto/03-partida/05-checklist.md` (testar convite/saída/amistoso entre 2 clubes, usando as contas dos sócios como "capitães de teste") — confirma detalhes de tempo/fricção do mecanismo de capitão que hoje é decisão documentada mas não testada em campo.
-2. Se for seguir levantando requisito/design: use a skill `grill-me` (já habilitada via `.claude/settings.json`) pra continuar entrevistando e resolvendo lacunas. O dossiê em `docs/produto/05-produto/03-backlog.md` lista o que já foi deliberadamente adiado — não regrilar esses itens sem motivo novo.
-3. Quando for hora de decidir stack técnica: isso foi **deliberadamente não decidido ainda** (ver item em `03-backlog.md`) — é a próxima decisão grande em aberto.
-4. Front-end: reaproveitar o design system documentado em `docs/produto/01-visao/01-visao.md` (cores, fontes, raios, sombras — extraído de `futebol/static/futebol/css/app.css` do repo `escalacao-brasileirao`).
+1. **Rodar os dois bloqueadores acima.** Nada mais tem prioridade sobre isso.
+2. Anotar os resultados **no próprio checklist** e atualizar `produto/03-partida/01-mecanica.md`, trocando as premissas presumidas pelo que foi confirmado.
+3. Só então: decidir stack e começar pela ordem de `negocio/02-implementacao.md`.
+4. Se for seguir levantando requisito: use a skill `grill-me`. As lacunas abertas estão tabeladas em `produto/05-produto/03-backlog.md` — não regrilar item já marcado como adiado de propósito sem motivo novo.
+5. Front-end: design system em `produto/01-visao/01-visao.md`.
 
-## Itens conhecidos como não resolvidos (de propósito)
+## Pendências abertas, com dono claro
 
-- Aposta em dinheiro por jogador/lobby (ideia embrionária, futuro)
-- Monetização — assinatura/prioridade/cosmético (ideia validada pelo time, MVP é gratuito)
-- Moderador comunitário (só entra quando volume de casos justificar)
-- Fila por time pré-formado (Fase 2)
-- Stack técnica completa
+Tabela completa em `produto/05-produto/03-backlog.md`. Nenhuma é de requisito:
+
+| Aberto | Natureza |
+|---|---|
+| Os dois bloqueadores acima | execução |
+| Stack técnica | adiada de propósito, depende dos bloqueadores |
+| MEI aceita a atividade de software? | pergunta pra contador — muda o gatilho de preço |
+| Titular das contas e rateio entre os 4 | acordo entre sócios, antes do 1º gasto recorrente |
+| Consulta jurídica | três assuntos numa consulta: redação de apoio/CDC, LGPD 16-17, entidade legal |
+| Desenho de torneio/liga | adiado por decisão: validar o núcleo primeiro |
+| Região do free tier x transferência internacional | verificar se há região BR |
+
+## Riscos aceitos conscientemente — não são lacunas
+
+- **Conluio de resultado**: dois lados combinando placar não gera disputa, porque os prints batem. Risco aceito, com gatilho de revisão definido (tratar ao primeiro sinal de grupo fechado, sem esperar volume).
+- **Smurf com investimento**: conta EA nova + Discord novo + console novo passa. O vínculo pega recriação preguiçosa, não quem investe.
+- **Dependência da mecânica da EA**: sem API nem contrato, qualquer patch pode mudar a base do produto. Mitigação é disciplina operacional, não engenharia.
+- **Sem reembolso** no apoio de Fundador, se houver cobrança.
 
 ## Decidido: sem divisão de papéis
 
-Time discutiu e decidiu continuar **sem papel fixo por disciplina** entre Luciano, Rafael, João e Felipe — os 4 mexem em qualquer parte, sem dono exclusivo de área. Não é pendência em aberto, é decisão tomada (ver `docs/produto/05-produto/03-backlog.md`).
+Os 4 (Luciano, Rafael, João, Felipe) trabalham em conjunto, sem papel fixo por disciplina. Não é pendência, é decisão tomada.

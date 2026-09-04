@@ -398,6 +398,8 @@ Os três juntos fecham o vetor: a regra de rejeição não consumir cooldown tra
 
 **Aceite**: o OCR extrai os gamertags da tela de fim de partida. Nome humano que não consta no roster do lobby **derruba o resultado** e abre caso de abuso de capitão. Vagas de IA não contam.
 
+> **Premissa não verificada deste requisito**: ele assume que dá pra **distinguir nome de IA de gamertag humano** na tela final. Ninguém confirmou isso. Se a IA aparecer com nome plausível e indistinguível, a validação não funciona como escrita e precisa de outro sinal. Entrou no [checklist](../produto/03-partida/05-checklist.md) como parte do teste 6.
+
 Fecha o furo mais grave da revisão: **"clube com vaga" não é "clube sem outros humanos"**. Membro humano do clube do capitão entra na escalação antes da IA, então a partida podia rodar com amigos do capitão que não estão na plataforma — sem elo, sem reputação, sem verificação — e o equilíbrio por elo virava ficção sem ninguém perceber.
 
 ### RF-067 · Print final confere a categoria jogada

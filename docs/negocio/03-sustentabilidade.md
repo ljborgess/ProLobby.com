@@ -105,7 +105,18 @@ Motivo de cortar os dois: vender benefício que não existe é o jeito mais ráp
 
 **Consequência a checar**: com o pacote reduzido a cargo mais estatística, R$ 49 pode parecer caro. Fundador vende apoio, escassez e identidade — não um pacote de features — e por isso a recomendação é manter o preço. Mas se o time achar fino, R$ 39 é o ajuste, não adicionar feature que não existe.
 
-**20 pessoas × R$ 49 = R$ 980.** Contra custo de ~R$ 3/mês em free tier, é mais de um ano de fôlego recebido no primeiro mês.
+**20 pessoas × R$ 49 = R$ 980.**
+
+**Correção de uma conta que este arquivo fazia errado**: a versão anterior dizia "mais de um ano de fôlego", comparando os R$ 980 com o custo de ~R$ 3/mês do free tier. Isso é impossível, porque **o próprio ato de vender Fundador cria o custo que invalida a comparação** — receber dinheiro exige entidade legal aberta, e aí o custo mensal deixa de ser R$ 3.
+
+O fôlego real depende do enquadramento, que é a [verificação pendente com o contador](#dia-1-zerar-por-engenharia-não-por-receita):
+
+| Enquadramento | Custo mensal | Fôlego de R$ 980 |
+|---|---|---|
+| MEI (se aceitar a atividade) | ~R$ 79 | ~12 meses |
+| ME no Simples, com contador | R$ 200–300 | ~4 meses |
+
+Ou seja: entre 4 e 12 meses, não "mais de um ano". E os R$ 3/mês de free tier só valem no cenário **sem cobrança nenhuma** — que é uma escolha legítima, mas não é este.
 
 ### 2 · Torneio mensal com inscrição — adiado, não descartado
 

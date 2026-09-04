@@ -47,6 +47,10 @@ Confirmar que a IA cobre vaga vazia **em Amistoso Online especificamente** (a do
 
 **Testar também**: alguém sai no meio da partida — a IA assume a posição e o jogo continua, ou a partida quebra? Presumido que assume (mesma mecânica), sem confirmação em fonte (ver [Resultado](04-resultado.md)).
 
+**Testar também — como a IA aparece na tela de fim de partida**: o nome do jogador de IA é **distinguível** de um gamertag humano (rótulo, prefixo, nome genérico), ou parece um jogador normal?
+
+**Por que importa**: a validação de roster ([RF-066](../../requisitos/05-funcionais.md)) depende disso. Ela compara os nomes da tela final com o roster do lobby pra pegar o capitão que escalou amigos de fora da plataforma — o furo mais grave da revisão adversarial. Se não der pra separar IA de humano na leitura, a validação não funciona como escrita e precisa de outro sinal.
+
 **Testar também — o dono do clube saindo**: o capitão (dono do clube usado) desconecta no meio do Amistoso. A partida segue pros outros, ou quebra pros dois lados porque o clube anfitrião perdeu o dono? [Resultado](04-resultado.md) presume que segue e trata só a limpeza pós-jogo — se quebrar, essa regra precisa mudar e o papel de capitão passa a exigir tratamento próprio.
 
 ### 7 · Virtual Pro: um só ou vários? — questiona o modelo de 5 personagens

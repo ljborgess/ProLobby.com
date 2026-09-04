@@ -7,10 +7,11 @@
 - **Elo, reputação e histórico agregado de partidas são públicos** — visíveis pra qualquer usuário da plataforma, não só o dono. Faz parte do valor competitivo/social (saber com quem vai jogar, ranking, identidade de "bom jogador").
 - **Dado bruto continua privado**: print, foto de tela, Discord ID e gamertag/PSN ID fora do contexto do lobby ativo — mesma regra já fechada em [Personagens e verificação](01-verificacao.md) (histórico de prints visível só pro dono + moderação).
 - **Clube EA declarado (auto-declaração pra virar capitão, ver [Personagens e verificação](01-verificacao.md)) também é privado** — usado só internamente pelo matchmaking, sem benefício claro de expor pros outros usuários. Só aparece pros convidados daquele lado quando a pessoa é escolhida capitão de fato.
+
 ## Ranking
 
 - **Cinco rankings separados, um por categoria** — coerente com o elo ser por personagem/categoria ([Ranking](02-ranking.md)). Ranking geral único misturaria elos que o dossiê decidiu manter incomparáveis.
-- **Top 50 por categoria**, e só quem tem **partida nos últimos 30 dias**. Dois motivos: base pequena listada por inteiro mostra "posição 12 de 14", que desmotiva mais do que motiva; e ranking dominado por número congelado de quem parou de jogar tira o sentido de quem está jogando (junto com o [decaimento por inatividade](02-ranking.md)).
+- **Top 50 por categoria**, e só quem tem **partida nos últimos 30 dias**. Dois motivos: base pequena listada por inteiro mostra "posição 12 de 14", que desmotiva mais do que motiva; e ranking dominado por número congelado de quem parou de jogar tira o sentido de quem está jogando. **É este filtro que mantém o ranking representativo** — não o [decaimento por inatividade](02-ranking.md), que só começa aos 60 dias e serve pra outra coisa (o elo de quem volta).
 
 ## Como se chega ao perfil de outra pessoa
 

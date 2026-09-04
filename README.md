@@ -32,8 +32,9 @@ ProLobby é projeto novo e independente — nada de backend/dados de lá.
 <table>
 <tr><td width="90"><code>01</code></td><td><b>Cadastro</b></td><td>Personagem verificado por print + OCR — EA FC não tem API pública, toda verificação é evidência enviada pelo jogador</td></tr>
 <tr><td><code>02</code></td><td><b>Fila</b></td><td>Escolhe posição (goleiro / zaga / meio / ponta / ataque), entra na fila individual por categoria</td></tr>
-<tr><td><code>03</code></td><td><b>Lobby</b></td><td>22 confirmados, 2 times de 11 equilibrados categoria-contra-categoria por elo</td></tr>
+<tr><td><code>03</code></td><td><b>Lobby</b></td><td>8 a 22 humanos, simetria por categoria entre os lados — a IA do próprio jogo cobre as vagas restantes dos 11</td></tr>
 <tr><td><code>04</code></td><td><b>Capitão</b></td><td>1 jogador real por lado, escolhido por reputação, empresta o próprio clube EA — sem host de rede, Pro Clubs roda em servidor dedicado</td></tr>
+<tr><td><code>05</code></td><td><b>Antifraude</b></td><td>Hash antes do OCR, roster do print final conferido contra o lobby, timeout progressivo por recusa</td></tr>
 <tr><td><code>05</code></td><td><b>Partida</b></td><td>Amistoso Online entre os dois clubes, dentro do jogo — plataforma não executa, só coordena</td></tr>
 <tr><td><code>06</code></td><td><b>Resultado</b></td><td>Print + OCR confirmam placar, elo e reputação atualizam por categoria</td></tr>
 </table>
@@ -49,8 +50,8 @@ Amistoso Online entre clubes. Como Pro Clubs roda em servidor dedicado (não
 P2P), também não existe "host" cujo ping afete os outros.
 
 O mecanismo real: cada lado do lobby usa o clube pessoal de um dos próprios
-11 jogadores — o **capitão**, escolhido por maior reputação entre quem tem
-clube com vaga. Detalhe completo, achados de pesquisa e checklist de teste
+jogadores humanos daquele lado — o **capitão**, escolhido por maior reputação
+entre quem tem clube com vaga. Detalhe completo, achados de pesquisa e checklist de teste
 prático em
 [`docs/produto/03-partida/01-mecanica.md`](docs/produto/03-partida/01-mecanica.md).
 
@@ -62,10 +63,10 @@ prático em
 
 <table>
 <tr><th align="left">Módulo</th><th align="left">Cobre</th></tr>
-<tr><td><b>Identidade</b></td><td>Personagem verificado por print + OCR, até 5 categorias por conta, atributos travados</td></tr>
+<tr><td><b>Identidade</b></td><td>Personagem verificado por print + OCR em 3 idiomas, até 5 categorias por conta, atributos travados, 1 gamertag por plataforma</td></tr>
 <tr><td><b>Matchmaking</b></td><td>Fila por posição, equilíbrio por elo categoria-contra-categoria, timeout com feedback de categoria faltante</td></tr>
 <tr><td><b>Partida</b></td><td>Capitão dinâmico, formação votada, coordenação via Discord (canais de voz por time + texto compartilhado)</td></tr>
-<tr><td><b>Resultado</b></td><td>Report com print/OCR, validação de nome de clube, zero-report penalizado, janela de contestação de 48h</td></tr>
+<tr><td><b>Resultado</b></td><td>Report com print/OCR, validação de clube e de roster, zero-report penalizado só se a partida aconteceu, contestação de 48h, disputa sem prova anula a partida</td></tr>
 <tr><td><b>Ranking</b></td><td>Elo por categoria, reputação por conta, seed inicial por overall, rollback retroativo, punição a smurfing/conluio</td></tr>
 <tr><td><b>Governança</b></td><td>Moderação, LGPD, retenção de dados, termos de uso, idade mínima 16 anos</td></tr>
 <tr><td><b>Social</b></td><td>Perfil público (elo, reputação, histórico agregado) — print e Discord ID continuam privados</td></tr>
@@ -74,7 +75,7 @@ prático em
 
 Detalhado por fase (MVP / Fase 2 / Futuro) no
 [dossiê de produto](docs/produto/README.md). Itens deliberadamente
-adiados — aposta, moderador comunitário, fila por time pré-formado, stack
+adiados — moderador comunitário, fila por time pré-formado, torneio, stack
 técnica — no
 [backlog](docs/produto/05-produto/03-backlog.md).
 
@@ -103,7 +104,7 @@ Artifact navegável — fila, lobby (capitão + 2 times), report de resultado,
 perfil público e ranking, com o design system real do projeto. Dados de
 exemplo.
 
-*(link do artifact publicado — atualizado conforme o design evolui)*
+[Abrir a pré-visualização](https://claude.ai/code/artifact/8cde45d1-3279-4503-93f2-b1ccfdb86e6d) — atualizada conforme o design evolui.
 
 <br>
 
@@ -134,7 +135,8 @@ telas são do projeto de origem, servindo só de referência de estilo:
 <tr><td><a href="docs/README.md"><code>docs/</code></a></td><td>Índice geral</td></tr>
 <tr><td><a href="docs/produto/README.md"><code>docs/produto/</code></a></td><td>Requisitos e design de produto, por domínio</td></tr>
 <tr><td><a href="docs/produto/parametros.md"><code>parametros.md</code></a></td><td>Todos os números do sistema num lugar só (elo, reputação, prazos, limites)</td></tr>
-<tr><td><a href="docs/negocio/README.md"><code>docs/negocio/</code></a></td><td>Tese de mercado e ordem de implementação</td></tr>
+<tr><td><a href="docs/requisitos/README.md"><code>docs/requisitos/</code></a></td><td>O que o sistema faz: RF-001 a RF-070, RNF-001 a RNF-020, estados, modelo de dados</td></tr>
+<tr><td><a href="docs/negocio/README.md"><code>docs/negocio/</code></a></td><td>Tese de mercado, sustentabilidade, ordem de implementação e plano de lançamento</td></tr>
 <tr><td><a href="docs/discord/README.md"><code>docs/discord/</code></a></td><td>Estrutura do servidor Discord e do bot</td></tr>
 <tr><td><a href="HANDOFF.md"><code>HANDOFF.md</code></a></td><td>Pra retomar o trabalho em outra sessão/máquina — leia primeiro</td></tr>
 </table>
@@ -143,12 +145,22 @@ telas são do projeto de origem, servindo só de referência de estilo:
 
 ## Estado atual
 
-Design de produto — sem código de aplicação ainda. Mecanismo central de
-partida (capitão + clube dinâmico) já decidido; falta **teste prático no
-jogo** pra confirmar tempo/fricção — checklist em
-[`05-checklist.md`](docs/produto/03-partida/05-checklist.md).
-Stack técnica é a próxima decisão grande em aberto. Divisão de papéis no
-time já fechada — sem papel fixo, trabalho em conjunto.
+Design de produto e requisitos fechados — sem código de aplicação ainda.
+Nove áreas levantadas, com RF e RNF numerados e rastreáveis em
+[`docs/requisitos/`](docs/requisitos/README.md).
+
+**Dois bloqueadores, e nenhum é escrever plataforma:**
+
+1. **[Checklist no jogo](docs/produto/03-partida/05-checklist.md)** — 8 testes,
+   custa minutos, valida o mecanismo de capitão/clube em que todo o fluxo de
+   partida se apoia.
+2. **[Piloto de OCR](docs/requisitos/06-piloto-ocr.md)** — um script sobre 50
+   prints reais de estranhos, sem conta e sem banco. Dos cinco riscos do
+   projeto, é o único grande que exige código pra ser medido.
+
+Só depois deles a stack faz sentido: o retorno dos dois muda três parâmetros
+já marcados como "a calibrar". Divisão de papéis no time já fechada — sem
+papel fixo, trabalho em conjunto.
 
 Trabalho corre em `dev`; `main` só recebe merge quando o time decidir
 promover.
