@@ -25,6 +25,10 @@
 - **Beta** — quem participou do beta fechado gratuito (ver [Lançamento](../negocio/04-lancamento.md)). Cargo **permanente**, posicionado como mais antigo que Fundador na hierarquia visual. É a única recompensa do beta: sem Fundador grátis nem com desconto.
 - **Fundador** — quem apoiou na janela de lançamento (primeiros 30 dias ou 50 pessoas, ver [Sustentabilidade](../negocio/03-sustentabilidade.md)). Cargo **permanente**, nunca reconcedido depois que a janela fecha — é o que faz a escassez ser real.
 - **Apoiador** — concedido pelo bot a quem tem plano ativo (ver [Sustentabilidade](../negocio/03-sustentabilidade.md)). Cor própria e destaque na lista de membros. Fundador já inclui os benefícios de Apoiador, sem mensalidade.
+
+**Banimento permanente revoga os três** (Beta, Fundador, Apoiador) junto com o Verificado, **sem devolução de dinheiro** — foi banido por conduta própria, coerente com o enquadramento de apoio sem reembolso ([Termos](../produto/04-governanca/03-termos.md)). Motivo: cargo de honra ao lado de quem fraudou print corrói o valor do cargo pra todos os outros apoiadores, que é a única coisa que ele entrega.
+
+Suspensão temporária **não** mexe nesses cargos — só no Verificado. Apoio não é conduta, e o cargo volta a fazer sentido quando a suspensão terminar.
 - **Não libera canal nenhum, não dá permissão nenhuma** — é reconhecimento, e nada mais. O gate funcional continua sendo só o Verificado, e a [linha vermelha](../negocio/03-sustentabilidade.md) proíbe qualquer vantagem comprada que toque fila, elo, capitão ou resultado.
 - Já entra na estrutura do servidor desde a montagem inicial, mesmo sem ninguém pra receber — criar cargo depois é trivial, mas deixar registrado agora evita que a decisão seja reaberta quando houver dinheiro em jogo.
 

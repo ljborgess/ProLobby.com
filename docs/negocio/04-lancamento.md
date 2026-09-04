@@ -8,12 +8,23 @@ Decisão já registrada: a plataforma sai **completa, sem features cortadas** ([
 
 O que se limita é o **público**, não o produto. Produto inteiro no ar, para um grupo convidado, antes de abrir pra todos. Beta de audiência, não beta de funcionalidade.
 
-## Fase 1 — beta fechado, gratuito
+## Fase 1 — beta fechado, gratuito (com pré-venda no fim)
 
-**Zero cobrança.** Nenhum plano, nenhuma janela de Fundador, nenhum torneio pago. Motivo em duas partes:
+**Gratuito durante o beta.** Nenhum plano cobrado, nenhuma janela de Fundador aberta enquanto o produto está sendo validado:
 
 - Cobrar antes de saber se o OCR aceita print de estranho e se a fila fecha sozinha é vender promessa sem lastro.
-- **O Fundador é um ativo de um tiro só** — a janela de 30 dias / 50 pessoas vale porque só existe uma vez. Gastá-la num beta de 25 convidados queima a escassez com quem apoiaria de qualquer forma.
+- **O Fundador é um ativo de um tiro só** — a janela de 30 dias / 50 pessoas vale porque só existe uma vez. Gastá-la inteira num beta de 25 convidados queima a escassez com quem apoiaria de qualquer forma.
+
+### Pré-venda na última semana — o único jeito de não apostar às cegas
+
+Revisão consciente do "zero cobrança": **na última semana do beta, o Fundador abre pros 24 convidados, a R$ 49, sem desconto nenhum.**
+
+Motivo: sem isso você chega na abertura pública apostando um preço que ninguém nunca validou, e descobre que R$ 49 não converte **depois** de a janela estar queimada. Intenção declarada em formulário não serve — gente diz que pagaria e não paga; só o PIX enviado é sinal.
+
+- Quem compra vira **taxa de conversão real** pra projetar na abertura. 5 de 24 é 21%, e isso dimensiona o quanto esperar das 50 vagas.
+- **Preço cheio, sem desconto** — coerente com a decisão de não dar Fundador de graça nem barato a quem testou ([recompensa do beta](#o-que-o-grupo-recebe)). O que o beta ganha é o cargo Beta; o Fundador ele compra como qualquer um.
+- Gasta ~5 das 50 vagas. Barato pelo que informa.
+- Exige **MEI/entidade legal e Termos já prontos** antes dessa semana — não é o fim do beta, é o fim menos sete dias. Isso antecipa a formalização no cronograma.
 
 ### Por que o beta existe
 
@@ -57,6 +68,16 @@ O beta termina quando **todos** estes forem verdade:
 - **OCR aceitando 80%+ dos prints de primeira** (confiança ≥85%, sem reenvio). Abaixo disso o gargalo é o upload, e vira suporte manual em escala.
 - **Zero lobby cancelado por bug.** Cancelamento por regra não conta — convite não confirmado em 5 min é a regra funcionando como desenhada ([Lobby](../produto/03-partida/03-lobby.md)).
 
+### Como esses números são medidos
+
+Critério numérico sem instrumentação não é critério, é opinião. **Os 4 números derivam de dado que a plataforma já vai gravar de qualquer forma** — tabela de partida, de lobby e de evento de OCR:
+
+- Uma **tela de contagem no painel de moderação** (o mesmo painel com 2FA e log de auditoria, ver [Moderação](../produto/04-governanca/01-moderacao.md)) exibe os 4 números direto do banco.
+- **Nenhuma ferramenta de terceiro** (PostHog, Plausible e afins): mandar dado de comportamento pra fora abre capítulo novo de LGPD e transferência internacional — caro demais pra medir 4 números.
+- **Nada de planilha manual**: depende de alguém lembrar de anotar, e falha justo quando o volume cresce e os números passam a importar.
+
+Vale também pras [métricas de sucesso](01-mercado.md) dos 90 dias, que precisam da mesma tela.
+
 **Sem prazo fixo, de propósito.** Se o critério não bater, o beta continua: o problema é real, não é pressa. Prazo fixo abriria com o OCR rejeitando metade dos prints — exatamente a fricção que faz a pessoa não voltar, e o boca-a-boca negativo que a [tese de mercado](01-mercado.md) aponta como fatal.
 
 Critério escrito **antes** de existir apego ao que foi construído — mesmo princípio do [critério de desistir](01-mercado.md).
@@ -68,8 +89,8 @@ Dispara quando o critério de saída fecha. Tudo ao mesmo tempo:
 1. **Link do Discord divulgado** nos servidores BR de Pro Clubs, sem restrição de entrada.
 2. **Janela de Fundador abre** — R$ 49, 30 dias ou 50 pessoas ([Sustentabilidade](03-sustentabilidade.md)). Aproveita o pico de atenção do anúncio, que é quando a conversão é maior.
 3. **Apoiador de R$ 9,90 disponível**, sem paywall e sem insistência.
-4. **Primeiro torneio pago anunciado** com data — concentra gente numa janela, o que resolve liquidez e fatura no mesmo movimento.
-5. **MEI já aberto** e a página de venda com a redação revisada ([Termos](../produto/04-governanca/03-termos.md)) — nada de receber antes disso.
+4. **Sem torneio.** Adiado por decisão do time ([Sustentabilidade](03-sustentabilidade.md)): valida primeiro o núcleo — fila, lobby, Amistoso Online, resultado — antes de empilhar liga/torneio. Liquidez no início continua vindo da **largada coordenada** no Discord, que custa zero.
+5. **Entidade legal já aberta** e a página de venda com a redação revisada ([Termos](../produto/04-governanca/03-termos.md)) — na prática isso precisa estar pronto uma semana antes do fim do beta, por causa da pré-venda.
 
 **Largada coordenada** ([tese de mercado](01-mercado.md)) continua valendo: horários de concentração anunciados no Discord enquanto a base for pequena.
 
@@ -82,7 +103,9 @@ Dispara quando o critério de saída fecha. Tudo ao mesmo tempo:
 | Núcleo da plataforma + lobby + resultado | o desenvolvimento em si | beta |
 | Recrutamento dos ~24 convidados | trabalho de comunidade, paralelo ao desenvolvimento | beta |
 | **Beta fechado, gratuito** | tempo indeterminado, até o critério bater | abertura |
-| MEI + página de venda + Termos revisados | dias | receber dinheiro |
-| **Abertura pública + Fundador + torneio** | — | — |
+| Consulta com contador (MEI serve? ver [Sustentabilidade](03-sustentabilidade.md)) | uma conversa | entidade legal, e o modelo de preço |
+| Entidade legal + página de venda + Termos revisados | dias | **pré-venda**, que é o fim do beta menos 7 dias |
+| **Pré-venda do Fundador aos 24 do beta** | última semana do beta | dimensionar a abertura |
+| **Abertura pública + janela de Fundador** | — | — |
 
 O recrutamento dos convidados roda **em paralelo** ao desenvolvimento, não depois — é a única etapa que não depende de código e costuma ser a esquecida.

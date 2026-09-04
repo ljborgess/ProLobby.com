@@ -15,6 +15,8 @@ Os Termos precisam cobrir o que a [Sustentabilidade](../../negocio/03-sustentabi
 - **A palavra "vitalício" não aparece** em nenhum lugar — implica serviço perpétuo, o que é promessa de continuidade. A formulação é "acesso de Fundador enquanto a plataforma existir".
 - **Risco dito antes do pagamento**, na mesma tela: fase inicial, sem garantia de continuidade, sem reembolso. Não em link de rodapé.
 - **Nada comprado altera fila, elo, escolha de capitão ou resultado** — a linha vermelha entra no texto dos Termos, não só no dossiê interno.
+- **Banimento permanente revoga os cargos de apoio sem devolver dinheiro** ([Cargos](../../discord/01-cargos.md)) — precisa estar dito, não presumido.
+- **Exclusão de conta não apaga o registro fiscal da transação**, retido por 5 anos por obrigação legal ([LGPD](02-lgpd.md)). Sem essa ressalva escrita, a plataforma promete exclusão total e não pode cumprir.
 - Ativar cobrança é **mudança material**, então exige novo aceite versionado de quem já usava.
 
 **Ressalva jurídica**: apoio **com contrapartida** pode ser lido como contrato de serviço sob o CDC — o Código de Defesa do Consumidor não deixa de valer porque o vendedor chamou de doação. A redação da página de venda entra na mesma consulta jurídica das pendências abaixo.

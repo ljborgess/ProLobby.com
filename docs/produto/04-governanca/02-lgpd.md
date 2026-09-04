@@ -11,9 +11,19 @@ Plataforma guarda dado sensível o suficiente pra exigir política clara: print 
 - Prints (evidência de cadastro e de resultado) retidos por **90 dias**, apagados automaticamente depois (job de limpeza roda diariamente, apaga tudo que passou do prazo — sem exclusão manual dependente de alguém lembrar). 90 dias cobre com folga a janela de contestação (48h) e o zero-report (36h), sobrando margem pra investigação de moderação em caso mais raro/demorado.
 - Consequência direta: o "histórico de prints" visível pro dono do perfil (ver [Personagens e verificação](../02-jogador/01-verificacao.md)) cobre só o período de retenção — prints mais antigos que o prazo simplesmente não existem mais pra visualizar.
 
+## Dado financeiro (apoio e assinatura)
+
+A monetização ([Sustentabilidade](../../negocio/03-sustentabilidade.md)) introduz uma categoria de dado que esta política não cobria: **comprovante de PIX carrega nome completo do pagador e instituição financeira** — dado pessoal, e não coberto pela regra de prints.
+
+- **Comprovante é descartado assim que o pagamento é confirmado.** Fica só o **registro mínimo da transação**: valor, data, forma, conta vinculada e identificação fiscal. A imagem do comprovante não é retida.
+- **Registro mínimo é retido por 5 anos**, por obrigação fiscal — não pelos 90 dias dos prints. Base legal é cumprimento de obrigação legal, não consentimento (então o titular não pode revogá-la).
+- **Isolado do resto**: o registro fiscal vive separado do perfil de jogo, sem vínculo com print, foto ou histórico de partida. Assim a exclusão de conta consegue apagar tudo o que é do jogo sem tocar no que a lei obriga guardar.
+- Criptografia em repouso vale igual, como pra qualquer dado sensível (ver requisitos abaixo).
+
 ## Exclusão de conta
 
 - Player pode pedir exclusão de conta e dados pessoais (direito LGPD) — inclui remoção (kick) do servidor Discord, já que é saída voluntária da plataforma inteira, diferente de suspensão/banimento (ver [docs/discord/](../../discord/README.md)).
+- **Exceção obrigatória — dado fiscal**: o registro mínimo de transação de quem apoiou/assinou **não é apagado** no pedido de exclusão, e fica retido pelos 5 anos legais (ver seção acima). A própria LGPD prevê retenção por cumprimento de obrigação legal, então não é descumprimento do direito de exclusão — mas **precisa estar escrito nos Termos** ([Termos de uso](03-termos.md)), sob pena de a plataforma prometer o que não pode entregar.
 - Histórico de elo/reputação pode ser mantido de forma **agregada e anonimizada** (sem vincular a print/foto/identidade), pra não perder integridade estatística da plataforma.
 
 ## Requisitos de segurança (independentes de stack)

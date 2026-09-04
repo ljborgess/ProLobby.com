@@ -22,6 +22,20 @@ O dossiê tratava o custo como não estimado, e o OCR como "o item mais imprevis
 
 **Cobrança não resolve o dia 1, e a matemática é direta**: o DAS do MEI em serviços está em torno de **R$ 76/mês** — mais que a plataforma inteira custa. Formalizar pra poder cobrar dobra o custo que se quer eliminar. Só fecha a conta quando a receita cobre a plataforma **e** o custo de existir formalmente.
 
+> ### Verificação pendente que muda esta conta — a de maior alavancagem hoje
+>
+> **MEI provavelmente não aceita a atividade.** A lista de ocupações permitidas ao MEI exclui desenvolvimento e licenciamento de software, e uma plataforma de matchmaking com assinatura tende a cair aí — não em prestação de serviço genérica.
+>
+> Se confirmar, a formalização não custa R$ 76/mês: vira **ME no Simples Nacional, com contador, algo entre R$ 200 e R$ 300/mês**. O efeito em cascata:
+>
+> | | MEI (R$ 76) | ME (R$ 250) |
+> |---|---|---|
+> | Assinantes pra fechar a conta | 13 | ~30 |
+> | Contas ativas necessárias (2–5% de conversão) | ~300 | ~700 |
+> | Fôlego que R$ 980 de Fundador compram | mais de 1 ano | ~4 meses |
+>
+> **Não é afirmação, é pergunta pra contador** — e é a verificação de maior alavancagem que existe agora, porque decide se o modelo de receita fecha como desenhado. Custa uma conversa e vem antes de qualquer decisão de preço.
+
 Então o dia 1 vem de custo, não de renda:
 
 - **Stack em free tier**: VM permanentemente gratuita (Oracle Cloud Free Tier dá 4 OCPU / 24 GB ARM, folgado pra app + bot + Postgres juntos), CDN/proxy grátis, OCR no free tier. Sobra o domínio, ~R$ 3/mês — ou zero, usando subdomínio gratuito no começo.
@@ -76,13 +90,30 @@ Decisão do time: gerar receita já no lançamento. O modelo muda, porque **assi
 
 Janela limitada: **primeiros 30 dias ou primeiras 50 pessoas**, o que vier primeiro. Depois nunca mais — é o que faz a escassez ser real em vez de encenada.
 
-Recebe cargo Fundador permanente no Discord, badge no perfil, e os benefícios de Apoiador **sem mensalidade**: estatística estendida, inscrição antecipada, criar liga privada. Tudo do lado de fora da [linha vermelha](#a-linha-vermelha--regra-fixa-sem-exceção).
+Recebe cargo Fundador permanente no Discord, badge no perfil, e os benefícios de Apoiador **sem mensalidade**. Tudo do lado de fora da [linha vermelha](#a-linha-vermelha--regra-fixa-sem-exceção).
+
+**O pacote de lançamento é mais fino do que a primeira versão deste arquivo, de propósito** — só entra o que existe de fato no MVP:
+
+| Benefício | Entra no lançamento? |
+|---|---|
+| Cargo Fundador + badge no perfil + destaque no ranking | **sim** |
+| Estatística estendida (evolução no tempo, comparação por categoria) | **sim** — sobre dado que o OCR já captura |
+| Inscrição antecipada em torneio | **não** — torneio saiu do lançamento (ver abaixo) |
+| Criar liga ou torneio privado | **não** — depende da fila por time pré-formado, que é Fase 2 ([Fila](../produto/03-partida/02-fila.md)) |
+
+Motivo de cortar os dois: vender benefício que não existe é o jeito mais rápido de perder a confiança de quem pagou — e são exatamente as 20 pessoas que mais acreditaram. Entram como benefício **novo** pra quem já apoiava, quando a Fase 2 chegar.
+
+**Consequência a checar**: com o pacote reduzido a cargo mais estatística, R$ 49 pode parecer caro. Fundador vende apoio, escassez e identidade — não um pacote de features — e por isso a recomendação é manter o preço. Mas se o time achar fino, R$ 39 é o ajuste, não adicionar feature que não existe.
 
 **20 pessoas × R$ 49 = R$ 980.** Contra custo de ~R$ 3/mês em free tier, é mais de um ano de fôlego recebido no primeiro mês.
 
-### 2 · Torneio mensal com inscrição — R$ 10 por pessoa
+### 2 · Torneio mensal com inscrição — adiado, não descartado
 
-**É o único modelo que melhora o cold start em vez de piorar.** Torneio tem data marcada, e data marcada concentra gente numa janela — exatamente a "largada coordenada" que a [tese de mercado](01-mercado.md) já prescreve como organização social. Cobra e gera liquidez no mesmo movimento, ao contrário de assinatura, que taxa a liquidez.
+**Decisão do time: fora do lançamento.** Primeiro validar o núcleo — fila, lobby, Amistoso Online, resultado — antes de empilhar uma camada de liga/torneio em cima. O torneio não tem nenhum desenho hoje (formato de chave, no-show de time, arbitragem, como o prêmio é pago), e desenhar isso antes de existir um único usuário é escopo grande no caminho crítico.
+
+Entra quando o núcleo estiver rodando de fato, e aí vale a grelha completa. O que segue registrado, porque é o motivo de o torneio valer a pena depois:
+
+**É o único modelo de receita que melhora o cold start em vez de piorar.** Torneio tem data marcada, e data marcada concentra gente numa janela — exatamente a "largada coordenada" que a [tese de mercado](01-mercado.md) já prescreve como organização social. Cobra e gera liquidez no mesmo movimento, ao contrário de assinatura, que taxa a liquidez.
 
 4 times × 8 humanos = 32 inscritos × R$ 10 = **R$ 320**. Premiação 70% (R$ 224), plataforma retém 30% (R$ 96). Mensal, cobre MEI e hospedagem sozinho.
 

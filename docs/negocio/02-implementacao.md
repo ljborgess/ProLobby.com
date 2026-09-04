@@ -52,12 +52,13 @@ Não bloqueia desenvolvimento interno/teste com os 4, mas bloqueia abrir pra for
 - Painel de moderação com **2FA obrigatório** e **log de auditoria de toda ação** ([Moderação](../produto/04-governanca/01-moderacao.md)) — maior alvo de risco se comprometido.
 - Termos de Uso + Política de Privacidade publicados ([Termos de uso](../produto/04-governanca/03-termos.md)).
 - Retenção automática de dados (LGPD, [02-lgpd.md](../produto/04-governanca/02-lgpd.md)).
-- Entidade legal (**MEI aberto antes do primeiro real recebido**) — a receita de Fundador paga com folga, e sem ele é receita como PF sem nota (ver [Sustentabilidade](03-sustentabilidade.md)).
+- Entidade legal aberta **antes da pré-venda** (fim do beta menos 7 dias), não antes da abertura pública. **Confirmar com contador se MEI aceita a atividade** — se não, é ME no Simples e o custo sobe de ~R$ 76 pra R$ 200-300/mês, mudando o gatilho de assinatura (ver [Sustentabilidade](03-sustentabilidade.md)).
+- **Tela de contagem no painel** com os 4 números do critério de saída do beta e as 3 métricas de sucesso, direto do banco, sem ferramenta de terceiro (ver [Lançamento](04-lancamento.md)).
 - **Cobrança de lançamento**, que é dias de trabalho e não semanas, porque não tem gateway: chave PIX com confirmação manual, ação "ativar plano" no painel de moderação (mesmo log de auditoria), cargo Fundador/Apoiador via a esteira de bot já existente, e uma página de venda com o risco dito antes do pagamento. Redação revisada junto com os Termos ([Termos de uso](../produto/04-governanca/03-termos.md)) — o enquadramento de apoio depende dela.
 
 ## 6. Beta fechado, depois abertura
 
-Produto pronto não vai direto pro público: roda **beta fechado gratuito** com ~24 convidados (metade rede pessoal, metade estranhos), até o critério de saída medido bater — 10 partidas completas, fila fechando sozinha em metade, OCR aceitando 80% de primeira, zero cancelamento por bug. Só então abre, com a janela de Fundador e o primeiro torneio. Detalhe em [Lançamento](04-lancamento.md).
+Produto pronto não vai direto pro público: roda **beta fechado gratuito** com ~24 convidados (metade rede pessoal, metade estranhos), até o critério de saída medido bater — 10 partidas completas, fila fechando sozinha em metade, OCR aceitando 80% de primeira, zero cancelamento por bug. Na última semana do beta roda a **pré-venda** do Fundador aos convidados, a preço cheio, pra ter taxa de conversão real antes de apostar a janela pública. Só então abre. Torneio não entra no lançamento. Detalhe em [Lançamento](04-lancamento.md).
 
 **O recrutamento dos convidados roda em paralelo ao desenvolvimento**, não depois — é a única etapa que não depende de código, e a que mais costuma ser esquecida até virar bloqueio.
 

@@ -92,6 +92,8 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 | Idade mínima | 16 anos (data de nascimento no cadastro) | [Termos](04-governanca/03-termos.md) |
 | Validade do link de redefinição de senha | 30 min | [Onboarding](05-produto/01-onboarding.md) |
 | Retenção de prints | 90 dias (limpeza diária automática) | [LGPD](04-governanca/02-lgpd.md) |
+| Retenção de comprovante de pagamento | nenhuma — descartado na confirmação | [LGPD](04-governanca/02-lgpd.md) |
+| Retenção de registro fiscal de transação | 5 anos (exceção à exclusão de conta) | [LGPD](04-governanca/02-lgpd.md) |
 | Meta de resposta — disputa e OCR | 24 h | [Moderação](04-governanca/01-moderacao.md) |
 | Meta de resposta — denúncia e apelação | 48 h | [Moderação](04-governanca/01-moderacao.md) |
 | Idiomas | português e espanhol | [Escopo](05-produto/02-escopo.md) |
@@ -103,11 +105,12 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 | Custo mensal do MVP | R$ 50–90 (≈R$ 3 em free tier) | [Sustentabilidade](../negocio/03-sustentabilidade.md) |
 | Fundador — preço | R$ 49, pagamento único | [Sustentabilidade](../negocio/03-sustentabilidade.md) |
 | Fundador — janela | 30 dias ou 50 pessoas (o que vier primeiro) | [Sustentabilidade](../negocio/03-sustentabilidade.md) |
+| Fundador — pré-venda | última semana do beta, aos ~24 convidados, preço cheio | [Lançamento](../negocio/04-lancamento.md) |
 | Apoiador — mensalidade | R$ 9,90 | [Sustentabilidade](../negocio/03-sustentabilidade.md) |
-| Torneio — inscrição | R$ 10 por pessoa | [Sustentabilidade](../negocio/03-sustentabilidade.md) |
+| Torneio — inscrição | R$ 10 por pessoa (adiado, fora do lançamento) | [Sustentabilidade](../negocio/03-sustentabilidade.md) |
 | Torneio — divisão | 70% premiação / 30% plataforma | [Sustentabilidade](../negocio/03-sustentabilidade.md) |
-| Gatilho de assinatura recorrente | 300 contas ativas, ou custo estourar o free tier | [Sustentabilidade](../negocio/03-sustentabilidade.md) |
-| Reembolso | nenhum (enquadrado como apoio) | [Termos](04-governanca/03-termos.md) |
+| Gatilho de assinatura recorrente | 300 contas ativas (≈700 se a entidade legal for ME, não MEI), ou custo estourar o free tier | [Sustentabilidade](../negocio/03-sustentabilidade.md) |
+| Reembolso | nenhum (enquadrado como apoio; banimento revoga cargo sem devolver) | [Termos](04-governanca/03-termos.md) |
 
 ## Integração com o bot
 

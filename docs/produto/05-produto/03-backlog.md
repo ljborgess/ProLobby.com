@@ -24,6 +24,23 @@ Itens explicitamente adiados — mencionados ou identificados, mas sem desenho d
 
 - **Bloqueio de conta durante disputa/moderação pendente** — mantido no MVP (baixa demanda, só 4 moderadores). Revisar se virar gargalo real com volume maior de casos (ver [Resultado de partida](../03-partida/04-resultado.md)).
 
+## Lacunas abertas — o que falta decidir ou verificar
+
+Estado da varredura mais recente: **~91% dos pontos de decisão do dossiê estão fechados e justificados.** O que resta, com o que cada item bloqueia:
+
+| Aberto | Bloqueia | Natureza |
+|---|---|---|
+| **Teste no jogo** ([checklist](../03-partida/05-checklist.md)) | escrever código | execução, bloqueador nº 1 |
+| **Stack técnica** | escrever código | decisão adiada de propósito |
+| **MEI aceita a atividade?** ([Sustentabilidade](../../negocio/03-sustentabilidade.md)) | entidade legal, e o gatilho de preço | pergunta pra contador |
+| **Titular das contas e rateio entre os 4** ([tese de mercado](../../negocio/01-mercado.md)) | primeiro gasto recorrente | acordo entre sócios |
+| **Consulta jurídica** — redação Fundador/CDC, LGPD 16-17, entidade legal | receber dinheiro | três assuntos, uma consulta |
+| **Desenho de torneio/liga** — formato, no-show, arbitragem, premiação | receita de torneio (adiada) | grelha própria, depois do núcleo |
+| **Região do free tier vs. transferência internacional de dado** | abrir pra externo | verificar se há região BR |
+| **Preço do Fundador com pacote reduzido** ([Sustentabilidade](../../negocio/03-sustentabilidade.md)) | nada — a pré-venda mede | revisar se R$ 49 sustenta |
+
+Riscos aceitos conscientemente, não lacunas: [conluio de resultado](../02-jogador/02-ranking.md), dependência estrutural da mecânica da EA e ausência de reembolso ([tese de mercado](../../negocio/01-mercado.md)).
+
 ## Deliberadamente não decidido
 
 - **Stack técnica** (backend, banco, infra) — adiado até o dossiê de produto fechar.
