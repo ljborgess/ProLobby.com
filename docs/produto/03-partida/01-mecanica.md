@@ -60,7 +60,7 @@ Fontes: [EA Terms of Service](https://tos.ea.com/legalapp/webterms/US/en/PC/0904
 
 ## Checklist de teste
 
-O passo a passo completo do teste prático vive em arquivo próprio: **[05-checklist.md](05-checklist.md)** — 7 testes, o que medir em cada um, e o que fazer com cada resultado possível.
+O passo a passo completo do teste prático vive em arquivo próprio: **[05-checklist.md](05-checklist.md)** — 8 testes, o que medir em cada um, e o que fazer com cada resultado possível.
 
 ## Fontes (pesquisa pública, EA FC 25/26 — mecânica pode mudar por edição/patch)
 

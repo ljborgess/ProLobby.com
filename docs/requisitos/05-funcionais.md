@@ -9,9 +9,9 @@ Cobertura por área, pra saber onde ainda não se olhou:
 | Área | Estado |
 |---|---|
 | Conta e autenticação | **levantado** |
-| Personagem e verificação | não levantado |
+| Personagem e verificação | **levantado** |
 | Fila e matchmaking | **levantado** |
-| Lobby | não levantado |
+| Lobby | **levantado** |
 | Resultado e disputa | **parcial** — contestação levantada |
 | Perfil, ranking e descoberta | **levantado** |
 | Moderação | não levantado |
@@ -119,6 +119,54 @@ Cobertura por área, pra saber onde ainda não se olhou:
 **Origem**: [produto/03-partida/02-fila.md](../produto/03-partida/02-fila.md)
 
 **Aceite**: nenhuma recusa ou não-confirmação, em qualquer quantidade, gera evento de reputação. **Revoga o desenho anterior** de −3 na 3ª falta em 30 dias — o timeout substituiu.
+
+---
+
+## Personagem e verificação
+
+### RF-027 · Personagem é inativado, nunca apagado
+**Origem**: [produto/02-jogador/01-verificacao.md](../produto/02-jogador/01-verificacao.md)
+
+**Aceite**: não existe ação de excluir personagem. Criar um novo na mesma categoria inativa o anterior, que continua consultável no histórico. O elo da categoria **não** é resetado nesse processo.
+
+### RF-028 · Categoria só muda com zero partida
+**Origem**: [produto/02-jogador/01-verificacao.md](../produto/02-jogador/01-verificacao.md)
+
+**Aceite**: personagem com 0 partidas troca de categoria livremente. Com 1 ou mais, a troca é recusada.
+
+### RF-029 · Print rejeitado diz qual das cinco causas
+**Origem**: [requisitos/04-notificacoes.md](04-notificacoes.md)
+
+**Aceite**: a mensagem distingue confiança abaixo de 85%, idioma não reconhecido, gamertag divergente do cadastrado naquela plataforma, formato ou tamanho inválido, e print já usado (hash repetido). Um "não foi possível processar" genérico não satisfaz este requisito.
+
+### RF-030 · Cooldown de 24 h só conta pra atualização aceita
+**Origem**: [produto/02-jogador/01-verificacao.md](../produto/02-jogador/01-verificacao.md)
+
+**Aceite**: print aceito (≥85%) inicia o cooldown de 24 h naquele personagem. Print rejeitado não inicia nada — dá pra reenviar imediatamente.
+
+### RF-031 · Personagem em fila ou lobby não aceita atualização
+**Origem**: [produto/02-jogador/01-verificacao.md](../produto/02-jogador/01-verificacao.md)
+
+**Aceite**: só o personagem em fila/lobby fica travado; os outros da mesma conta continuam atualizáveis. A atualização recusada informa que ela vale após a partida.
+
+---
+
+## Lobby
+
+### RF-032 · Capitão que desiste após confirmar cai na cascata, sem penalidade
+**Origem**: [produto/03-partida/03-lobby.md](../produto/03-partida/03-lobby.md)
+
+**Aceite**: a desistência passa o papel ao próximo candidato do lado. Esgotada a cascata, o lobby vai pra `cancelado_sem_culpa`. Nenhum evento de reputação nem timeout de fila é gerado.
+
+### RF-033 · Clube em uso não é candidato em outro lobby
+**Origem**: [produto/03-partida/03-lobby.md](../produto/03-partida/03-lobby.md)
+
+**Aceite**: enquanto um lobby não terminal usa o clube de uma conta, ela é excluída da cascata de capitão em qualquer outro lobby. Encerrado o lobby, volta a ser candidata.
+
+### RF-034 · Votação de formação só conta voto de humano do próprio lado
+**Origem**: [produto/03-partida/02-fila.md](../produto/03-partida/02-fila.md)
+
+**Aceite**: prazo de 60 s; quem não votou não conta; empate é decidido pelo capitão daquele lado; nenhum voto vem de vaga de IA nem do lado adversário. Zero votos no prazo, o capitão escolhe.
 
 ---
 

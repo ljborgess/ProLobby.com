@@ -12,7 +12,7 @@ Fazer isso **antes** de escrever código: gastar engenharia no fluxo de capitão
 - **Contas**: 4 bastam (os sócios) — não precisa de 22 pessoas, o objetivo é validar o mecanismo, não simular lobby cheio.
 - **Pré-requisito**: 2 clubes existentes (os times pessoais dos sócios servem, ou clubes criados na hora).
 
-## Os 7 testes
+## Os 8 testes
 
 ### 1 · Convite pra dentro do clube
 Dono/gerente do Clube A convida uma conta que **não** é membro (por EA ID/gamertag/PSN, sem ela ter aplicado antes).
@@ -49,7 +49,18 @@ Confirmar que a IA cobre vaga vazia **em Amistoso Online especificamente** (a do
 
 **Testar também — o dono do clube saindo**: o capitão (dono do clube usado) desconecta no meio do Amistoso. A partida segue pros outros, ou quebra pros dois lados porque o clube anfitrião perdeu o dono? [Resultado](04-resultado.md) presume que segue e trata só a limpeza pós-jogo — se quebrar, essa regra precisa mudar e o papel de capitão passa a exigir tratamento próprio.
 
-### 7 · Unicidade de nome de clube
+### 7 · Virtual Pro: um só ou vários? — questiona o modelo de 5 personagens
+Abrir a customização do Virtual Pro e responder:
+
+**Confirmar**: existe **um** Virtual Pro por conta EA (reconfigurável em posição e arquétipo), ou dá pra manter **vários builds salvos** e escolher qual entra na partida?
+
+**Por que importa**: o dossiê modela "até 5 personagens, um por categoria" ([Personagens](../02-jogador/01-verificacao.md)). Se o jogo tem um só, o modelo não cai — mas muda de significado: os 5 passam a ser **5 snapshots verificados da mesma Virtual Pro em configurações diferentes**, não 5 entidades do jogo.
+
+**Consequência a medir**: quando alguém entra na fila como goleiro, a Virtual Pro dele precisa **estar** configurada como goleiro naquele momento. A plataforma não tem como checar isso — dá pra verificar um build forte e jogar com outro. Medir também **quanto tempo leva pra reconfigurar** (se for demorado, trocar de categoria entre partidas é fricção real na rotatividade da fila).
+
+**Decide**: se o equilíbrio por elo precisa de reforço — por exemplo, o print de fim de partida (que mostra a nota e a posição de cada um) servir pra conferir que a pessoa jogou na categoria em que entrou na fila.
+
+### 8 · Unicidade de nome de clube
 Criar clube com nome comum (ex.: "Real Madrid"), tentar criar um segundo com o mesmo nome exato.
 
 **Se aceitar os dois**: buscar esse nome na tela de Amistoso — aparece lista com vários resultados (capitão escolhe visualmente por brasão/membros), ou só o primeiro?
@@ -62,6 +73,6 @@ Criar clube com nome comum (ex.: "Real Madrid"), tentar criar um segundo com o m
 | Convite/saída rápidos (minutos), sem cooldown, Amistoso inicia sem fricção | Mecanismo viável como desenhado — seguir pra decisão de stack |
 | Cooldown de saída significativo, ou convite/Amistoso com fricção grande | Revisar o desenho: prazo maior na janela de confirmação, ou repensar o mecanismo |
 | **Teste 6 falha** (Amistoso exige os 11 humanos) | Grave — cai o piso de 8, cai a solução de cold start. Avaliar **Rush (5v5)** como plano B, que precisa de menos gente por desenho |
-| Teste 7 mostra nome de clube ambíguo | Reforçar validação com confirmação visual do capitão |
+| Teste 8 mostra nome de clube ambíguo | Reforçar validação com confirmação visual do capitão |
 
 Depois de rodar: anotar os resultados aqui mesmo, e atualizar [Mecânica](01-mecanica.md) trocando as premissas presumidas pelo que foi confirmado.

@@ -16,6 +16,12 @@ EA FC Pro Clubs **não tem API pública** — nenhuma integração automática c
   4. Ponta (LM, RM, LW, RW)
   5. Ataque (ST, CF)
 - Sem limite de recriação dentro de uma categoria — mas 1 personagem ativo por categoria.
+- **Personagem não é apagado, é inativado.** Criar um novo na categoria inativa o anterior, que fica guardado com o histórico. Motivo: o **elo pertence à categoria, não ao personagem** ([Ranking](02-ranking.md)) — se apagar levasse o elo embora, bastaria recriar pra fugir de elo baixo, que é smurf de graça dentro da própria conta.
+- **Troca de categoria só com zero partida.** Quem subiu print de goleiro no slot de ataque corrige sem perder nada, desde que não tenha jogado. Da 1ª partida em diante, trava: já existe elo naquela categoria, e mover seria transferir desempenho entre posições — exatamente o que o elo por categoria existe pra impedir.
+
+> **Ressalva sobre o modelo, pendente de teste em campo.** Estes 5 personagens são abstração **da plataforma**, não do jogo. O EA FC trabalha com **uma Virtual Pro por conta EA**, reconfigurável em posição e arquétipo — não um elenco de builds salvos. Então os 5 são, na prática, **5 snapshots verificados da mesma Virtual Pro em configurações diferentes**.
+>
+> Consequência que a plataforma não consegue fechar: quem entra na fila como goleiro precisa **estar** configurado como goleiro no console naquele momento, e nada aqui verifica isso — dá pra verificar um build forte e jogar com outro. Está no [checklist](../03-partida/05-checklist.md) como teste 7, com a possível mitigação (usar a posição e a nota que aparecem no print de fim de partida pra conferir que a pessoa jogou na categoria em que entrou).
 - Personagem fica vinculado à edição do jogo (ver [Escopo de plataforma, jogo e região](../05-produto/02-escopo.md)).
 
 ## Identidade da conta
