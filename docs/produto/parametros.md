@@ -141,3 +141,16 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 | Deleção de canal — teto | 3 h após lobby fechar | [Canais](../discord/02-canais.md) |
 | Faxina de canal órfão | de hora em hora | [Canais](../discord/02-canais.md) |
 | Alerta de limite de canais | acima de 400 (teto do Discord: 500) | [Canais](../discord/02-canais.md) |
+| Teto de 500 canais atingido | fila pausa (mesmo caminho da queda do Discord) | [RF-053](../requisitos/05-funcionais.md) |
+
+## Não-funcionais
+
+| Parâmetro | Valor | Onde é decidido |
+|---|---|---|
+| Lobbies simultâneos suportados | 10 (80 a 220 pessoas) | [RNF-004](../requisitos/07-nao-funcionais.md) |
+| Perda máxima de dado em desastre | 24 h | [RNF-007](../requisitos/07-nao-funcionais.md) |
+| Prazo de restauração | 24 h, com teste obrigatório | [RNF-007](../requisitos/07-nao-funcionais.md) |
+| Retenção do log de auditoria | 2 anos | [RNF-012](../requisitos/07-nao-funcionais.md) |
+| Navegadores suportados | 2 últimas versões de Chrome, Safari, Firefox, Edge — desktop e celular | [RNF-014](../requisitos/07-nao-funcionais.md) |
+| Resposta de ação comum | menos de 1 s (p95) | [RNF-001](../requisitos/07-nao-funcionais.md) |
+| Atualização do estado da fila | menos de 3 s | [RNF-003](../requisitos/07-nao-funcionais.md) |

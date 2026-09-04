@@ -16,7 +16,8 @@ Quem vai implementar segue esta pasta e consulta `produto/` quando quiser entend
 3. [Modelo de dados](03-dados.md) — entidades e atributos, gamertag por plataforma, o log que o rollback exige
 4. [Inventário de notificações](04-notificacoes.md) — todo evento, in-app x DM, o que é urgente
 5. [Requisitos funcionais](05-funcionais.md) — a lista numerada e rastreável, com critério de aceite
-6. [Piloto de OCR](06-piloto-ocr.md) — **bloqueador nº 2**: o único risco grande que exige código pra ser medido
+6. [Requisitos não-funcionais](07-nao-funcionais.md) — RNF-001 a RNF-020: desempenho, capacidade, recuperação, segurança, compatibilidade, operação
+7. [Piloto de OCR](06-piloto-ocr.md) — **bloqueador nº 2**: o único risco grande que exige código pra ser medido
 
 ## Como ler um requisito funcional
 
@@ -29,5 +30,7 @@ Aceite: o comportamento observável que prova que está implementado
 ```
 
 **Origem** é obrigatória. Requisito sem origem é requisito que alguém inventou — se aparecer um, o certo é decidir em `produto/` antes de implementar.
+
+O mesmo formato vale pros [não-funcionais](07-nao-funcionais.md), numerados como RNF.
 
 **Aceite** é escrito como observação, não como intenção: "a fila não fecha" em vez de "o sistema deve garantir que". Se não dá pra observar, não dá pra testar.

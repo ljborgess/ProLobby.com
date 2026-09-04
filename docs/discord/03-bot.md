@@ -35,6 +35,16 @@ O bot é o **motor único de automação** entre a plataforma (aplicação web) 
 | Banimento permanente aplicado | Revoga **também** Fundador, Apoiador e Beta, junto com o Verificado — sem devolver dinheiro (ver [Cargos](01-cargos.md)) |
 | Qualquer ação sensível (kick, ban, concessão/revogação de Verificado, ativação de plano) | Posta registro em **#log-moderacao** (ver [Canais](02-canais.md)) — auditável sem depender do audit log nativo |
 
+## O que o bot não faz
+
+- **Nenhum comando de jogador.** Nem `/fila`, nem `/perfil`, nem consulta. O bot só reage a evento da plataforma e a comando de moderador. Motivo: comando de jogador duplicaria a plataforma dentro do Discord — dois lugares pra fazer a mesma coisa, dobrando a superfície de bug — e contraria a divisão de que **regra vive na plataforma, execução no bot** ([Integração técnica](04-integracao.md)). Um link resolve o que uma consulta resolveria.
+- **Não move ninguém pra canal de voz.** Posta o link e pronto. Voz é opcional por decisão registrada ([Discord e lobby](../produto/03-partida/03-lobby.md)); arrastar torna obrigatória de fato, e tira quem está em outra call naquele momento.
+
+## Idioma das mensagens
+
+- **DM sai no idioma que a pessoa escolheu na plataforma** — o bot sabe quem é, porque o vínculo Discord é obrigatório pra fila.
+- **Mensagem em canal compartilhado sai nos dois idiomas**, curta. O canal do lobby reúne gente de idiomas diferentes, e a comunidade não é fragmentada por idioma ([Escopo](../produto/05-produto/02-escopo.md), [Canais](02-canais.md)).
+
 ## O que continua manual (mesmo com permissão total)
 
 - **Kick e ban**: bot tem o poder técnico, mas a ação só dispara por **comando explícito de um moderador humano** — nunca reação automática a suspensão/punição (ver [Ranking, reputação e punição](../produto/02-jogador/02-ranking.md)). Permissão total no bot não significa gatilho automático em toda ação sensível — kick/ban continua decisão humana, só executada via comando em vez de configuração manual do servidor.

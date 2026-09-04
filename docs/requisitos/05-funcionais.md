@@ -2,9 +2,11 @@
 
 Lista numerada e rastreável. Formato e regras em [README](README.md).
 
-**Status: 8 áreas levantadas, RF-001 a RF-046.** Nenhuma área permanece sem varredura de lacuna.
+**Status: 9 áreas levantadas, RF-001 a RF-062, RNF-001 a RNF-020.** Nenhuma área permanece sem varredura de lacuna.
 
-A lista é **amostra, não especificação exaustiva** — o dossiê tem mais regra decidida que RF escrito. Por decisão do time, os RFs restantes são escritos **por fatia, pouco antes de cada uma virar código**: três parâmetros do dossiê estão marcados como "a calibrar" e vão mudar com o retorno do [checklist no jogo](../produto/03-partida/05-checklist.md) e do [piloto de OCR](06-piloto-ocr.md). Escrever tudo agora garantiria reescrever parte.
+Cobre as 9 áreas do produto, mais os [não-funcionais](07-nao-funcionais.md) em arquivo próprio.
+
+> **Ressalva viva**: três parâmetros do dossiê estão marcados como "a calibrar" e vão mudar com o retorno do [checklist no jogo](../produto/03-partida/05-checklist.md) e do [piloto de OCR](06-piloto-ocr.md) — os 5 min de confirmação de convite, os 60 min de silêncio total, e se o modelo de 5 personagens sobrevive ao que o jogo oferece. Os RFs que dependem deles serão revisados, não reescritos do zero.
 
 A numeração é estável — **RF nunca é renumerado nem reaproveitado**. Requisito derrubado fica marcado como revogado, com o motivo, porque saber o que foi descartado vale tanto quanto saber o que vale.
 
@@ -19,7 +21,9 @@ Cobertura por área, pra saber onde ainda não se olhou:
 | Resultado e disputa | **levantado** |
 | Perfil, ranking e descoberta | **levantado** |
 | Moderação | **levantado** |
+| **Discord e bot** | **levantado** |
 | Notificação | coberto por [04-notificacoes.md](04-notificacoes.md) |
+| Não-funcionais | coberto por [07-nao-funcionais.md](07-nao-funcionais.md) |
 
 ---
 
@@ -278,3 +282,89 @@ Cobertura por área, pra saber onde ainda não se olhou:
 **Origem**: [produto/04-governanca/02-lgpd.md](../produto/04-governanca/02-lgpd.md)
 
 **Aceite**: resolver disputa, aplicar ou reverter punição, editar dado, acessar print e ativar plano ficam registrados com ator, alvo, horário e o que mudou. O log não é editável nem apagável pelo painel.
+
+---
+
+## Discord e bot
+
+### RF-047 · Bot não expõe comando de jogador
+**Origem**: decidido nesta rodada · [discord/03-bot.md](../discord/03-bot.md)
+
+**Aceite**: nenhum comando de barra voltado ao jogador existe — nem de consulta. O bot só reage a evento da plataforma (criar canal, conceder cargo, postar aviso, mandar DM) e a comando de moderador.
+
+Motivo: comando de jogador duplicaria a plataforma dentro do Discord, criando dois lugares pra fazer a mesma coisa e dobrando a superfície de bug — contra a decisão de que regra vive na plataforma e execução no bot ([Integração técnica](../discord/04-integracao.md)).
+
+### RF-048 · Kick e ban só por comando de Admin ou Moderador
+**Origem**: [discord/03-bot.md](../discord/03-bot.md)
+
+**Aceite**: o bot tem a permissão técnica, mas a ação só dispara por comando explícito de quem tem o cargo, verificado pela checagem nativa do Discord. Nenhuma punição da plataforma gera kick ou ban automático.
+
+### RF-049 · DM sai no idioma da conta; canal compartilhado sai bilíngue
+**Origem**: decidido nesta rodada · [produto/05-produto/02-escopo.md](../produto/05-produto/02-escopo.md)
+
+**Aceite**: DM usa o idioma escolhido pela pessoa na plataforma — o bot sabe quem é, porque o vínculo é obrigatório pra fila. Mensagem no canal de texto do lobby sai em português e espanhol, curta, porque o canal reúne gente dos dois idiomas e a comunidade não é fragmentada por idioma.
+
+### RF-050 · Bot avisa o canal de voz com link, nunca move ninguém
+**Origem**: decidido nesta rodada · [produto/03-partida/03-lobby.md](../produto/03-partida/03-lobby.md)
+
+**Aceite**: o bot posta o link do canal do time e não usa a permissão de mover membro. Voz é opcional por decisão registrada — arrastar alguém pra uma call sem pedir a torna obrigatória de fato, e tira quem está em outra call naquele momento.
+
+### RF-051 · Canais do lobby nascem só depois dos dois capitães confirmados
+**Origem**: [discord/03-bot.md](../discord/03-bot.md)
+
+**Aceite**: cascata de capitão esgotada nunca chega a criar canal. Confirmados os dois, o bot cria os 3 canais (2 de voz privados por time, 1 de texto compartilhado), posta os capitães com o nome do clube de cada lado e dispara o timer.
+
+### RF-052 · Canais são apagados pelos três gatilhos, e imediatamente em cancelamento
+**Origem**: [discord/02-canais.md](../discord/02-canais.md)
+
+**Aceite**: os 3 somem juntos quando as duas calls ficam vazias por 10 min, respeitando piso de 15 min e teto de 3 h desde o lobby fechar. **Lobby cancelado apaga na hora**, sem esperar o piso — não há partida pra proteger e o canal só ocuparia o teto de 500.
+
+### RF-053 · Acima de 400 canais alerta; no teto, a fila pausa
+**Origem**: decidido nesta rodada · [discord/02-canais.md](../discord/02-canais.md)
+
+**Aceite**: passando de 400 canais, o bot alerta em `#status-sistema`. Atingido o teto do Discord (500), a plataforma para de fechar lobby novo com aviso in-app — **mesmo caminho da queda do Discord**, porque a situação é a mesma: sem canal, o lobby não pode ser coordenado. Sem transbordar pra um segundo servidor, que fragmentaria a comunidade unificada.
+
+### RF-054 · Faxina horária apaga canal órfão
+**Origem**: [discord/02-canais.md](../discord/02-canais.md)
+
+**Aceite**: de hora em hora o bot varre e apaga canal temporário de lobby já terminal. Rede de segurança independente do fluxo normal de deleção.
+
+### RF-055 · Cargo Verificado tem gatilho duplo e é revogado por quatro motivos
+**Origem**: [discord/01-cargos.md](../discord/01-cargos.md)
+
+**Aceite**: concedido quando personagem verificado **e** Discord vinculado coexistem, em qualquer ordem de chegada. Revogado em suspensão (reconcedido ao fim), banimento (sem reconcessão), personagem arquivado por edição nova (reconcedido ao reverificar) e exclusão de conta.
+
+### RF-056 · Nickname sincroniza com o gamertag, com fallback por DM
+**Origem**: [discord/01-cargos.md](../discord/01-cargos.md)
+
+**Aceite**: ao conceder o Verificado, o bot ajusta o nickname do servidor pro gamertag verificado. Falhando (permissão, hierarquia de cargo, duplicidade), manda DM pedindo a troca manual — e não repete a tentativa em loop.
+
+### RF-057 · Toda ação sensível do bot entra em #log-moderacao
+**Origem**: [discord/02-canais.md](../discord/02-canais.md)
+
+**Aceite**: kick, ban, concessão e revogação de Verificado ficam registrados no canal privado, sem depender do audit log nativo do Discord.
+
+### RF-058 · Evento da plataforma pro bot tem retry e vira caso ao esgotar
+**Origem**: [discord/04-integracao.md](../discord/04-integracao.md)
+
+**Aceite**: sem confirmação em 10 s, a plataforma reenvia — 3 tentativas, em 10 s, 20 s e 40 s. Esgotado, abre caso na fila de moderação e a fila de partidas pausa (ver RNF-008).
+
+### RF-059 · Ações do mesmo evento rodam em sequência
+**Origem**: [discord/04-integracao.md](../discord/04-integracao.md)
+
+**Aceite**: criar os 3 canais, pingar os jogadores e postar a mensagem do lobby disparam uma após a outra, não em paralelo — respeita o rate limit do Discord sem infraestrutura de throttling própria.
+
+### RF-060 · Sair do servidor Discord bloqueia a fila até voltar
+**Origem**: [produto/03-partida/03-lobby.md](../produto/03-partida/03-lobby.md)
+
+**Aceite**: o bot detecta a saída pelo evento nativo, a conta é bloqueada de entrar na fila com aviso in-app explicando, e o desbloqueio é automático quando a pessoa retorna pelo link fixo. O vínculo OAuth2 não é desfeito.
+
+### RF-061 · Mensagem em #suporte-e-denuncia abre caso na plataforma
+**Origem**: [discord/03-bot.md](../discord/03-bot.md)
+
+**Aceite**: a mensagem cria caso na fila de moderação automaticamente, com painel único — sem ninguém precisar checar dois sistemas.
+
+### RF-062 · Servidor é criado à mão, nunca pelo bot
+**Origem**: [discord/04-integracao.md](../discord/04-integracao.md)
+
+**Aceite**: a criação do servidor não é automatizada, mesmo sendo possível via API — o bot viraria dono, contra a decisão de propriedade por conta separada não pessoal. O **Server Members Intent** precisa estar ativo no Developer Portal, sem o qual o cargo Verificado nunca é concedido e a falha é silenciosa.

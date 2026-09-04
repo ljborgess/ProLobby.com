@@ -35,3 +35,4 @@ Discord limita **500 canais por servidor** — a 3 canais por lobby, ~166 lobbie
 
 - Bot varre de hora em hora e apaga canal temporário órfão (lobby já encerrado, mas canal sobrou por falha).
 - Passando de **400 canais**, bot alerta em **#status-sistema** — margem pra agir antes de travar.
+- **Atingido o teto de 500, a fila pausa** — mesmo tratamento da queda do Discord ([Integração técnica](04-integracao.md)), porque a situação é a mesma: sem canal disponível, o lobby não pode ser coordenado, e fechá-lo mesmo assim deixaria gente confirmada sem capitão anunciado e sem lugar pra combinar. Sem transbordar pra um segundo servidor: resolveria a escala e fragmentaria a comunidade, contra a decisão de servidor unificado — e é problema de ~166 lobbies simultâneos, contra os 10 pra que o sistema é dimensionado ([RNF-004](../requisitos/07-nao-funcionais.md)).
