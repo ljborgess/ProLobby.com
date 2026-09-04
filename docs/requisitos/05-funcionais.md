@@ -2,7 +2,7 @@
 
 Lista numerada e rastreável. Formato e regras em [README](README.md).
 
-**Status: em construção.** Este arquivo cresce a cada rodada de levantamento. A numeração é estável — **RF nunca é renumerado nem reaproveitado**; requisito derrubado fica marcado como revogado, com o motivo, porque saber o que foi descartado vale tanto quanto saber o que vale.
+**Status: 8 áreas levantadas, RF-001 a RF-046.** Nenhuma área permanece sem varredura. Este arquivo cresce a cada rodada de levantamento. A numeração é estável — **RF nunca é renumerado nem reaproveitado**; requisito derrubado fica marcado como revogado, com o motivo, porque saber o que foi descartado vale tanto quanto saber o que vale.
 
 Cobertura por área, pra saber onde ainda não se olhou:
 
@@ -12,7 +12,7 @@ Cobertura por área, pra saber onde ainda não se olhou:
 | Personagem e verificação | **levantado** |
 | Fila e matchmaking | **levantado** |
 | Lobby | **levantado** |
-| Resultado e disputa | **parcial** — contestação levantada |
+| Resultado e disputa | **levantado** |
 | Perfil, ranking e descoberta | **levantado** |
 | Moderação | **levantado** |
 | Notificação | coberto por [04-notificacoes.md](04-notificacoes.md) |
@@ -181,6 +181,36 @@ Cobertura por área, pra saber onde ainda não se olhou:
 **Origem**: [produto/03-partida/04-resultado.md](../produto/03-partida/04-resultado.md)
 
 **Aceite**: partida em `nao_confirmado` (fila livre) passa a `em_disputa` e as contas envolvidas voltam a ficar bloqueadas até a moderação resolver — ver [estados](02-estados.md).
+
+### RF-041 · Placar do OCR prevalece sobre o digitado
+**Origem**: [produto/03-partida/04-resultado.md](../produto/03-partida/04-resultado.md)
+
+**Aceite**: divergindo os dois, o valor salvo é o lido pelo OCR, e a tela de confirmação mostra o que foi lido antes de salvar. O campo digitado nunca sobrescreve a leitura do print.
+
+### RF-042 · Report pode ser corrigido até o outro lado confirmar
+**Origem**: [produto/03-partida/04-resultado.md](../produto/03-partida/04-resultado.md)
+
+**Aceite**: com a partida em `aguardando_confirmacao`, quem enviou reenvia com placar corrigido. Depois de confirmada ou expirada, a correção é recusada e o caminho é contestação.
+
+### RF-043 · Um print só nunca confirma a partida
+**Origem**: [produto/03-partida/04-resultado.md](../produto/03-partida/04-resultado.md)
+
+**Aceite**: report de um lado só sempre resulta em `nao_confirmado` com 48 h de contestação, independente da confiança do OCR ou da reputação de quem enviou. Não existe caminho de auto-confirmação.
+
+### RF-044 · Disputa sem evidência decisiva anula a partida
+**Origem**: [produto/03-partida/04-resultado.md](../produto/03-partida/04-resultado.md)
+
+**Aceite**: a moderação marca a partida como anulada; elo é revertido pra todos os participantes via evento de rollback, nenhum evento de reputação é gerado, e as filas são liberadas. A partida continua consultável no histórico com o rótulo de anulada.
+
+### RF-045 · Print anterior ao piso de 5 min é recusado
+**Origem**: [produto/03-partida/04-resultado.md](../produto/03-partida/04-resultado.md)
+
+**Aceite**: envio antes de 5 min do fechamento do lobby é rejeitado sem consumir tentativa nem cooldown, com a mensagem dizendo quanto falta.
+
+### RF-046 · Nota individual 0.0 no print suspende a penalidade automática
+**Origem**: [produto/03-partida/04-resultado.md](../produto/03-partida/04-resultado.md)
+
+**Aceite**: ausência reportada contra alguém cuja nota no print é 0.0 não aplica os −8 automaticamente — abre caso de moderação marcado como possível falha do jogo.
 
 ---
 

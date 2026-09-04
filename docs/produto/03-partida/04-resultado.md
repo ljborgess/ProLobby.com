@@ -28,6 +28,13 @@ O prazo de **15 minutos** conta **desde o primeiro print válido aceito** naquel
 - **Não existe mais regra separada de "timestamps a até 10 minutos um do outro"** — era redundante com esta janela e, por ser mais curta, tornava os 15 minutos letra morta. Um número só, um marco só.
 - Se **ninguém** reportar, a contagem nunca começa — esse caso é coberto pelo zero-report de 36 h desde o lobby fechar (ver Casos de borda).
 
+## O print manda, o campo digitado é conveniência
+
+- **Divergindo o placar lido pelo OCR e o digitado pela pessoa, vale o OCR** — com a tela mostrando "lemos 3×1" antes de salvar, pra ela conferir. Discordando da leitura, reenvia print melhor.
+- Motivo: o print é a evidência; o campo digitado existe só pra a pessoa não esperar o OCR pra começar. Se o digitado prevalecesse, o print viraria decoração e placar falso com print verdadeiro passaria.
+- **Correção do próprio report é permitida enquanto o outro lado não confirmou** (partida em `aguardando_confirmacao` — ver [Estados](../../requisitos/02-estados.md)). O print é o mesmo, muda só o número digitado. Sem isso, erro de digitação viraria disputa — o caso mais bobo possível consumindo moderação, sendo conferível contra o print que já está lá.
+- **Não existe auto-confirmação com um print só.** Os dois lados veem a mesma tela de fim de partida, então um print sozinho não distingue print legítimo de adulterado ou de partida jogada fora do ProLobby. A confirmação cruzada é a única checagem independente que existe, e o hash só pega reuso do mesmo arquivo. Um lado sozinho continua virando "não confirmado" por 48 h.
+
 ## Validação cruzada
 
 - **Placar bate** entre os dois lados, com o segundo report dentro da janela de 15 minutos acima.
@@ -39,6 +46,9 @@ O prazo de **15 minutos** conta **desde o primeiro print válido aceito** naquel
   - **Quem pode contestar: qualquer humano da partida, uma vez cada.** Não só o lado que não reportou — quem foi prejudicado pode estar no próprio time de quem mandou o print (placar digitado errado pelo companheiro). Limitar ao lado adversário travaria justamente esse caso.
   - **Uma contestação por pessoa por partida**, pra não reabrir o caso em série depois de perder. Contestação abre disputa e a conta volta a ficar bloqueada de fila até resolver (ver Incentivo estrutural abaixo).
 - Se os dois lados mandarem placares divergentes: cai em **disputa/moderação** (ver [Moderação](../04-governanca/01-moderacao.md)).
+  - **Disputa sem evidência decisiva — os dois prints parecem legítimos e se contradizem: a partida é anulada.** Elo revertido pra todos, nenhuma penalidade de reputação, fila liberada, e a partida sai do histórico competitivo (fica registrada como anulada, não apagada).
+  - É o único desfecho que não **inventa** um vencedor. Desempatar por ordem de chegada premiaria velocidade em vez de verdade; desempatar por reputação transformaria reputação em prova de fato e criaria incentivo pra farmá-la como escudo.
+  - Mecanicamente é barato: o log de evento de elo que o rollback já exige ([Modelo de dados](../../requisitos/03-dados.md)) torna a reversão uma operação normal, não um caso especial.
 - Se **nenhum humano da partida** reportar: o tratamento depende de a partida ter acontecido ou não — os dois casos existiam misturados antes, e penalizavam igual.
   - **Partida nunca começou** (convite não chegou em 5 min, ou silêncio total por 60 min — ver [Discord e lobby](03-lobby.md)): lobby encerrado, fila liberada, **sem penalidade nenhuma**. Não há o que reportar, e a culpa não é de quem esperou.
   - **Partida aconteceu e ninguém reportou** (todos confirmaram convite recebido): fica pendente — depois de **36 horas** sem nenhum report, sistema expira automaticamente e libera as contas envolvidas. **Não fica sem custo**: aplica **-3 pontos de reputação** pra todos eles (mesma métrica/valor de `03`, rateada — não dá pra saber quem "devia" ter reportado). Escala só em reincidência: **3 zero-reports em 30 dias** — igual ao threshold usado em não-confirmar-lobby de `03`, mesma métrica, mesmo padrão de escalada. Sem isso, o time perdedor teria incentivo estrutural de torcer pra ninguém reportar e escapar de graça.
