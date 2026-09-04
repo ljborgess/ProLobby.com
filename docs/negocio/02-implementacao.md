@@ -25,7 +25,7 @@ Motivo de fazer isso cedo: zero dependência de decisão de stack, dá pro time 
 
 ## 2. Núcleo da plataforma — sem isso nada funciona
 
-**Transversal, desde o primeiro item**: requisitos de segurança de [Dados pessoais e LGPD](../produto/04-governanca/02-lgpd.md#requisitos-de-segurança-independentes-de-stack) — criptografia de dado sensível em repouso e rate limiting na API própria entram junto com conta/autenticação (item 1), não depois. 2FA no painel e log de auditoria de moderador entram só quando o painel existir (item 5, Governança) — mas o schema de log já deveria contemplar isso desde o design do banco, pra não precisar migração retroativa.
+**Transversal, desde o primeiro item**: os [requisitos transversais](../produto/06-requisitos/01-transversais.md) — fuso UTC, janela móvel de 30 dias, papéis da plataforma, idempotência de envio, piso de acessibilidade — não são etapa, são base: retrofit de fuso ou de idempotência depois custa muito mais que nascer com eles. Idem os requisitos de segurança de [Dados pessoais e LGPD](../produto/04-governanca/02-lgpd.md#requisitos-de-segurança-independentes-de-stack) — criptografia de dado sensível em repouso e rate limiting na API própria entram junto com conta/autenticação (item 1), não depois. 2FA no painel e log de auditoria de moderador entram só quando o painel existir (item 5, Governança) — mas o schema de log já deveria contemplar isso desde o design do banco, pra não precisar migração retroativa.
 
 Ordem dentro da plataforma, cada item destrava o próximo:
 

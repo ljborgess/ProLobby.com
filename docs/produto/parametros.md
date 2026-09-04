@@ -96,7 +96,12 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 | Retenção de registro fiscal de transação | 5 anos (exceção à exclusão de conta) | [LGPD](04-governanca/02-lgpd.md) |
 | Meta de resposta — disputa e OCR | 24 h | [Moderação](04-governanca/01-moderacao.md) |
 | Meta de resposta — denúncia e apelação | 48 h | [Moderação](04-governanca/01-moderacao.md) |
-| Idiomas | português e espanhol | [Escopo](05-produto/02-escopo.md) |
+| Idiomas da interface | português e espanhol | [Escopo](05-produto/02-escopo.md) |
+| Idiomas que o OCR reconhece | português, espanhol e inglês (detecção automática) | [Personagens](02-jogador/01-verificacao.md) |
+| Fuso dos prazos e contadores | UTC interno, local na tela | [Requisitos transversais](06-requisitos/01-transversais.md) |
+| Contadores de "30 dias" | janela móvel, não mês do calendário | [Requisitos transversais](06-requisitos/01-transversais.md) |
+| Definição de conta ativa | 1+ partida completada nos últimos 30 dias | [Requisitos transversais](06-requisitos/01-transversais.md) |
+| Alvo de processamento do OCR | menos de 15 s, com progresso | [Requisitos transversais](06-requisitos/01-transversais.md) |
 
 ## Sustentabilidade
 
