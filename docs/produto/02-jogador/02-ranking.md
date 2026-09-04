@@ -29,6 +29,14 @@ Eventos automáticos (não reportar, não confirmar lobby, desconectar) não peg
 - Motivo do negativo não ter efeito direto: uma pessoa irritada sozinha não pune ninguém (efeito zero), e panelinha não funciona porque exige pessoas diferentes em partidas diferentes. Padrão real de toxicidade aparece; ruído isolado não. Punição continua sendo decisão humana.
 - Avaliação é **opcional** — não avaliar não gera penalidade nenhuma.
 
+## Recuperação de reputação
+
+A escada de punição abaixo tem degraus de saída, mas até aqui não havia **como subir de volta** — o único ganho era joinha de companheiro, +1 e opcional. Quem caísse a 40 precisaria de 15 joinhas pra voltar aos 55 e sair da fila lenta, estando justamente em prioridade pior no matchmaking. Punição desenhada como temporária virava permanente na prática.
+
+- **+1 por partida limpa**, até o teto de **70** (o valor inicial). Partida limpa = completada, com resultado reportado, sem desconexão e sem denúncia procedente contra você naquela partida.
+- **Acima de 70 só se chega por joinha.** Separação deliberada: jogar direito **reabilita**, elogio de companheiro **distingue**. Se partida limpa levasse a 100, a avaliação por pares perderia sentido.
+- Não existe recuperação por tempo passado sem jogar — premiaria sumir depois de se comportar mal, que é o sinal oposto ao desejado.
+
 ## Escada de punição
 
 1. **Reputação abaixo de 55** → fila mais lenta / prioridade pior na fila (fricção, sem bloqueio) — outros jogadores com reputação normal são priorizados no matchmaking quando há fila.

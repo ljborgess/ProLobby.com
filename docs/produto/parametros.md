@@ -31,7 +31,8 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 
 | Evento | Efeito | Onde é decidido |
 |---|---|---|
-| Joinha de companheiro | +1, direto | [Ranking](02-jogador/02-ranking.md) |
+| Partida limpa (sem incidente) | +1, teto em 70 | [Ranking](02-jogador/02-ranking.md) |
+| Joinha de companheiro | +1, direto (único caminho acima de 70) | [Ranking](02-jogador/02-ranking.md) |
 | Não confirmar lobby (3ª vez em 30 dias) | −3 | [Fila](03-partida/02-fila.md) |
 | Zero-report (3ª vez em 30 dias) | −3 | [Resultado](03-partida/04-resultado.md) |
 | Desconexão/rage quit confirmado | −8 | [Resultado](03-partida/04-resultado.md) |

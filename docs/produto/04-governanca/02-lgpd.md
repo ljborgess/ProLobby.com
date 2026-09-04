@@ -25,6 +25,9 @@ A monetização ([Sustentabilidade](../../negocio/03-sustentabilidade.md)) intro
 - Player pode pedir exclusão de conta e dados pessoais (direito LGPD) — inclui remoção (kick) do servidor Discord, já que é saída voluntária da plataforma inteira, diferente de suspensão/banimento (ver [docs/discord/](../../discord/README.md)).
 - **Exceção obrigatória — dado fiscal**: o registro mínimo de transação de quem apoiou/assinou **não é apagado** no pedido de exclusão, e fica retido pelos 5 anos legais (ver seção acima). A própria LGPD prevê retenção por cumprimento de obrigação legal, então não é descumprimento do direito de exclusão — mas **precisa estar escrito nos Termos** ([Termos de uso](03-termos.md)), sob pena de a plataforma prometer o que não pode entregar.
 - Histórico de elo/reputação pode ser mantido de forma **agregada e anonimizada** (sem vincular a print/foto/identidade), pra não perder integridade estatística da plataforma.
+- **No histórico dos outros participantes, o excluído vira "jogador removido".** Uma partida tem até 22 envolvidos: apagar o registro inteiro destruiria o histórico de gente que não pediu nada, e deixaria o elo já aplicado sem partida de origem — quebrando a auditabilidade do ranking. Então o **gamertag e qualquer identificador saem** e são substituídos por rótulo anônimo; placar, elo e o resto da partida continuam válidos.
+  - Cumpre o pedido de exclusão (a identidade desaparece de toda tela) sem transformar o direito de uma pessoa em perda para as outras sete do lado dela.
+  - Vale também pra avaliação por pares: a joinha que ela deu continua contando pro outro, sem registro de quem deu.
 
 ## Requisitos de segurança (independentes de stack)
 

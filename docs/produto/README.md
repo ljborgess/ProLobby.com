@@ -53,6 +53,7 @@ Limites do MVP e o que ficou pra depois.
 O que atravessa o produto inteiro e não pertence a um fluxo só.
 
 - [01 — Requisitos transversais](06-requisitos/01-transversais.md) — fuso, janela de 30 dias, papéis da plataforma, não-funcionais, idempotência, acessibilidade, inventário de telas
+- [02 — Estados do lobby e da partida](06-requisitos/02-estados.md) — os 12 estados, o que prende a fila, efeitos por transição
 
 ## Referência rápida
 
