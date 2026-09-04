@@ -13,6 +13,8 @@
 - Exceção de OCR (falha repetida no reconhecimento do print)
 - Denúncia (fraude, desconexão contestada, comportamento)
 - Apelação de punição (ver [Ranking, reputação e punição](../02-jogador/06-ranking-reputacao-e-punicao.md))
+- Abuso de capitão (recusa convidar sem motivo, remove alguém no meio da formação, trava a limpeza pós-jogo — ver [Mecânica real do EA FC Pro Clubs](../03-partida/00-mecanica-pro-clubs.md))
+- Retry de webhook plataforma↔bot esgotado (ver [Integração técnica](../../../discord/04-integracao-tecnica.md))
 
 ## Escala futura
 
