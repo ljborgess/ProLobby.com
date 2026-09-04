@@ -25,6 +25,8 @@ Os 3 somem juntos. Sinal principal: **as duas calls vazias por 10 minutos seguid
 - **Piso de 15 minutos** desde o lobby fechar — voz é opcional (ver [Discord e lobby](../produto/03-partida/03-lobby.md)), então "call vazia" é verdade desde o começo se ninguém entrar; sem o piso, o canal se apagaria antes de alguém usar.
 - **Teto de 3 horas** desde o lobby fechar — cobre quem esqueceu o Discord aberto e nunca "sai" da call.
 
+**Exceção ao piso**: lobby **cancelado** (convite não confirmado em 5 min, cascata de capitão esgotada, silêncio total de 60 min — ver [Discord e lobby](../produto/03-partida/03-lobby.md)) apaga os 3 canais **imediatamente**, sem esperar os 15 min. O piso existe pra proteger canal de partida que vai acontecer; se o lobby foi desfeito, não há nada pra proteger e o canal só ocuparia espaço do limite de 500.
+
 A vida do canal é **desacoplada do report de resultado**: o canal serve pra coordenar o início da partida; o report acontece na plataforma, não aqui. Não faz sentido segurar canal por 36h esperando o zero-report expirar.
 
 ### Faxina periódica (rede de segurança)

@@ -36,6 +36,26 @@ Como saber se funcionou, sem esperar "sentir no feeling":
 
 Sem dashboard sofisticado — só acordo prévio do que conta como "funcionou", pra não decidir depois olhando pro número que dá na telha.
 
+### Meta numérica — proposta, a confirmar entre os 4
+
+Métrica sem número não decide nada: "partidas por semana" sem um valor-alvo é exatamente o "olhar pro número que dá na telha" que o parágrafo acima quis evitar. Proposta de corte, medida **90 dias depois do primeiro usuário externo**:
+
+| Métrica | Funcionou | Ambíguo | Não funcionou |
+|---|---|---|---|
+| Partidas completadas por semana | 10+ | 3 a 9 | menos de 3 |
+| Resultado confirmado sem disputa | 85%+ | 70% a 84% | abaixo de 70% |
+| Voltou pra uma 2ª partida | 40%+ | 25% a 39% | abaixo de 25% |
+
+Racional dos números: 10 partidas/semana significa a fila fechando quase todo dia — o mínimo pra alguém entrar e encontrar gente. Abaixo de 3, a plataforma está tecnicamente viva e socialmente morta. 40% de retenção é padrão de produto de comunidade que pegou; abaixo de 25% quer dizer que a partida em si decepcionou, e o problema não é aquisição.
+
+### Critério de desistir
+
+O que nenhum documento tinha: **quando parar**. Sem isso, projeto sem tração não morre — só consome tempo indefinidamente.
+
+- **Zona "não funcionou" nas 3 métricas aos 90 dias, com o teste no jogo já aprovado e o produto completo no ar**: o desenho não é o problema, a demanda é. Parar, ou reduzir a um servidor Discord de organização manual (que custa zero e mantém a comunidade).
+- **Zona ambígua**: mais 90 dias, com uma frente de crescimento ativa (parceria com criador de conteúdo) — não mais que isso sem revisão.
+- Decisão é dos 4 em conjunto, mas com o critério escrito **antes** de haver apego ao que foi construído.
+
 ## Entidade legal — pendência
 
 Termos de Uso ([03-termos.md](../produto/04-governanca/03-termos.md)) precisam existir antes do primeiro usuário externo — mas **não existe CNPJ/MEI formado ainda**. Não bloqueia MVP gratuito com poucos usuários de teste, mas é pré-requisito real antes de: (a) o próprio ToS ter peso jurídico de verdade, (b) qualquer monetização futura (assinatura/prioridade/cosmético — já adiada no [backlog](../produto/05-produto/03-backlog.md)), já que pagamento exige CNPJ. Registrado aqui como pendência, não decisão tomada.

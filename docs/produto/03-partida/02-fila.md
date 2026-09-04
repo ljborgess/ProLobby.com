@@ -42,6 +42,7 @@
 
 - Depois do lobby fechado (todos os humanos confirmados), **cada time vota** a formação (ex.: 4-3-3, 4-4-2, 4-2-3-1) dentro de um conjunto compatível com a distribuição fixa de categoria acima — não muda quem tá no time, só o esquema tático em campo.
 - Não afeta matchmaking nem elo — é coordenação/flavor pro time decidir junto antes de entrar na partida.
+- **Prazo de 60 segundos** pra votar, desde o bot criar os canais. Toda outra etapa do fluxo tem prazo (30s de confirmação do jogador, 30s do capitão) — sem um aqui, o lobby fica esperando voto que pode nunca vir. Quem não votou no prazo simplesmente não conta; a formação sai dos votos recebidos, e se **ninguém** votar, o capitão escolhe.
 - **Empate na votação**: capitão do time decide (ver [Discord e lobby](03-lobby.md)) — reaproveita o papel já definido por reputação/dono do clube usado, sem critério novo.
 
 ## Timeout de fila

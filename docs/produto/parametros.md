@@ -53,6 +53,11 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 | Timeout de fila | 10 min (aviso repete a cada 5 min) | [Fila](03-partida/02-fila.md) |
 | Janela de confirmação do jogador | 30 s | [Fila](03-partida/02-fila.md) |
 | Janela de confirmação do capitão | 30 s (separada, após a dos jogadores) | [Discord e lobby](03-partida/03-lobby.md) |
+| Janela de confirmação de convite recebido | 5 min após o lobby fechar | [Discord e lobby](03-partida/03-lobby.md) |
+| Cancelamento por silêncio total | 60 min após o lobby fechar (a calibrar com o teste 5) | [Discord e lobby](03-partida/03-lobby.md) |
+| Prazo de votação de formação | 60 s | [Fila](03-partida/02-fila.md) |
+| Contas da plataforma por Discord ID | 1 (exclusivo) | [Discord e lobby](03-partida/03-lobby.md) |
+| Validade de reivindicação de gamertag não verificada | 7 dias | [Personagens](02-jogador/01-verificacao.md) |
 | Filas simultâneas por conta | 1 | [Fila](03-partida/02-fila.md) |
 | Canais temporários por lobby | 3 (2 voz por time + 1 texto compartilhado) | [Discord e lobby](03-partida/03-lobby.md) |
 
@@ -77,7 +82,7 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 | Janela de report do 2º lado | 15 min a partir do 1º print aceito | [Resultado](03-partida/04-resultado.md) |
 | Placar válido | inteiro, 0–20 por lado | [Resultado](03-partida/04-resultado.md) |
 | Janela de contestação | 48 h | [Resultado](03-partida/04-resultado.md) |
-| Expiração por zero-report | 36 h | [Resultado](03-partida/04-resultado.md) |
+| Expiração por zero-report (partida que aconteceu) | 36 h | [Resultado](03-partida/04-resultado.md) |
 | Assinatura do bug de perda de controle | nota individual 0.0 | [Resultado](03-partida/04-resultado.md) |
 
 ## Conta e governança

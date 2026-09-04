@@ -21,6 +21,9 @@ EA FC Pro Clubs **não tem API pública** — nenhuma integração automática c
 ## Identidade da conta
 
 - Gamertag/PSN ID é único por **combinação (plataforma + gamertag)** — não gamertag isolado. Mesmo gamertag em plataformas diferentes (PS/Xbox/PC) são contas diferentes garantidamente (ecossistemas separados); mesmo gamertag na mesma plataforma não é permitido (conflito real).
+- **A exclusividade só nasce com a verificação, não com a digitação.** Enquanto nenhum print aprovou aquele gamertag, a reivindicação é **provisória** e não bloqueia mais ninguém — várias contas podem ter digitado o mesmo gamertag ao mesmo tempo, e **a primeira que verificar leva**; as outras são notificadas e precisam corrigir o campo. Reivindicação provisória que fica **7 dias sem verificação** é liberada automaticamente.
+  - Motivo: exclusividade no momento da digitação criaria bloqueio de identidade por squatting — bastava digitar o gamertag de outra pessoa e nunca verificar pra impedir o dono real de se cadastrar, sem nenhuma via de saída além de chamado de moderação. O print é a prova de posse; antes dele, não há nada pra proteger.
+  - Caso raro que sobra: alguém verifica com print falsificado antes do dono real. Cai no fluxo de **troca de gamertag/fraude** ([Moderação](../04-governanca/01-moderacao.md)), com o dono real provando posse pelo mesmo mecanismo de print in-game novo já usado na recuperação de conta ([Onboarding](../05-produto/01-onboarding.md)).
 
 ## Clube EA (auto-declaração, opcional)
 

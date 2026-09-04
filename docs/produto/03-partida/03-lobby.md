@@ -12,6 +12,8 @@ Estrutura do servidor (cargos, canais, permissões do bot) documentada à parte,
 
 ## Vínculo obrigatório
 
+- **1 Discord = 1 conta da plataforma, exclusivo.** Um Discord ID já vinculado não vincula a uma segunda conta. Motivo: o banimento é vinculado à combinação Discord ID + gamertag (ver [Ranking, reputação e punição](../02-jogador/02-ranking.md)) — se um Discord servisse pra várias contas, o vínculo viraria decoração e o smurfing ficaria trivial. Custo: quem joga em dois consoles de verdade precisa de dois Discords — caso raro, e os 5 personagens por conta já cobrem a necessidade de posições diferentes.
+- **Sair do servidor Discord derruba o acesso à fila.** O vínculo existe porque o bot precisa alcançar a pessoa; quem não está mais no servidor não pode ser coordenado. Bot detecta a saída (evento nativo do Discord), avisa por notificação in-app, e a conta volta a poder entrar na fila assim que retornar pelo link fixo — o vínculo OAuth2 em si não é desfeito, só o acesso à fila é bloqueado enquanto ela estiver fora.
 - Vínculo de conta Discord **não é obrigatório pra criar conta** — jogador pode navegar a plataforma (perfil, histórico, ranking) sem vincular. É **obrigatório só pra entrar na fila**, porque a coordenação do lobby (criar canal, pingar os jogadores, gerenciar cargo Verificado) depende do bot. Ninguém é obrigado a usar chamada de voz — vincular é sobre o bot ter como te alcançar/coordenar, não sobre entrar em call.
 
 ## Fluxo do bot
@@ -30,9 +32,21 @@ Lobby fecha quando todos os humanos confirmam entrada — mas os canais só nasc
 - **Se a cascata esgotar** (nenhum dos humanos do lado tem clube/vaga confirmados): lobby desfaz, todos voltam pra fila sem penalidade de reputação — caso raro, sem culpa de comportamento, é falta de recurso disponível. **É raro por desenho**: o lobby só fecha se cada lado já tiver ao menos 1 candidato com clube declarado com vaga (ver [Fila e matchmaking](02-fila.md)) — a cascata só esgota se essa declaração estiver desatualizada e o candidato recusar na confirmação de 30s. Diferente de zero-report (ver [Resultado de partida](04-resultado.md)): aqui a partida nem chegou a existir, não há o que reportar.
 - **Consentimento**: declarar clube com vaga é coberto pelos [Termos de Uso](../04-governanca/03-termos.md) — jogador é avisado explicitamente que, ao declarar, autoriza até 10 jogadores de outro lobby serem convidados temporariamente pro clube quando ele for escolhido capitão.
 - Capitão convida os outros humanos do próprio lado pro clube dele, aplica a formação votada, coordena o Amistoso Online com o capitão do outro lado.
-- **Confirmação de convite recebido**: cada jogador marca na plataforma se recebeu o convite pro clube. Sem isso, o capitão poderia **excluir alguém invisivelmente** — convidar menos gente de propósito e deixar a IA cobrir a vaga, com a partida acontecendo normalmente e o excluído sem prova nenhuma (problema que só existe porque a IA preenche vaga vazia — antes, faltar gente deixava o time incompleto e visível). Quem não recebeu sinaliza ali mesmo, e isso vira caso de **abuso de capitão** ([Moderação](../04-governanca/01-moderacao.md)).
+- **Confirmação de convite recebido**: cada jogador marca na plataforma se recebeu o convite pro clube, dentro de uma janela de **5 minutos** desde o lobby fechar (convidar leva ~2 min; o número exato sai do teste 1 do [checklist](05-checklist.md)). Se ao fim da janela alguém do lado ainda não recebeu, **o lobby é cancelado**: fila liberada na hora, **sem penalidade nenhuma** pra quem esperou, e o capitão cai em caso de abuso ([Moderação](../04-governanca/01-moderacao.md)). Sem isso, o capitão poderia **excluir alguém invisivelmente** — convidar menos gente de propósito e deixar a IA cobrir a vaga, com a partida acontecendo normalmente e o excluído sem prova nenhuma (problema que só existe porque a IA preenche vaga vazia — antes, faltar gente deixava o time incompleto e visível). Quem não recebeu sinaliza ali mesmo, e isso vira caso de **abuso de capitão** ([Moderação](../04-governanca/01-moderacao.md)).
 - Depois da partida, capitão remove os convidados do próprio clube. Se travar, vira **caso de moderação** (ver [Moderação](../04-governanca/01-moderacao.md)). Bot manda DM lembrando o capitão de fazer a limpeza (bot não alcança o clube EA diretamente, sem API, mas pode lembrar via Discord).
 - Capitão continua sendo um jogador normal do lobby — tem elo/reputação normal, o papel de capitão é só uma função extra, não uma vaga separada.
+
+## Lobby que nunca vira partida
+
+Toda etapa antes daqui tem prazo (30s de confirmação do jogador, 30s do capitão, 10 min de fila). Entre "lobby fechado" e "partida aconteceu" não havia nenhum — e o vácuo tinha consequência séria: se a partida não acontecesse, ninguém teria print pra reportar, e o zero-report de 36 h ([Resultado de partida](04-resultado.md)) manteria **as 8 pessoas bloqueadas de nova fila esse tempo inteiro, com −3 de reputação cada**, por algo que não fizeram.
+
+Dois gatilhos, porque são dois problemas diferentes:
+
+1. **Convite não chegou (5 min)** — trata o capitão que confirma e não convida. Coberto na janela de confirmação de convite acima: cancela rápido, sem penalidade, porque o sinal é explícito e não exige esperar nada.
+2. **Silêncio total (60 min)** — rede de segurança pro resto (o Amistoso não engatou, o jogo caiu, o grupo desistiu no meio). Se **todos** confirmaram convite recebido mas **nenhum print** chegou em 60 minutos desde o lobby fechar, o lobby é encerrado e a fila liberada **sem penalidade**.
+   - Por que 60 e não menos: a partida em si consome ~15-18 min de relógio real (2 tempos de 6 min, mais intervalo e cutscene), e o ciclo de convite/Amistoso vem antes. Prazo curto cancelaria partida legitimamente em andamento. **Número a calibrar com o teste 5** do [checklist](05-checklist.md), que mede exatamente o ciclo do convite até a bola rolar.
+
+**O zero-report de 36 h continua existindo, pra outro caso**: partida que *aconteceu* (convites confirmados, tempo compatível) e ninguém reportou. Aí a penalidade de −3 se justifica — houve negligência coletiva. Se a partida nunca começou, não houve.
 
 ## Notificação
 
