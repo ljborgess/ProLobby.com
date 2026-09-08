@@ -13,12 +13,11 @@
 
 ## Próximos passos concretos
 
-1. Criar servidor Discord manualmente (RF-062), ativar Server Members Intent no Developer Portal.
-2. Criar aplicação/bot em discord.com/developers com conta separada não-pessoal (ver [README](README.md)).
-3. Scaffold do monorepo: `pnpm init`, workspaces, `apps/bot` com discord.js + TypeScript, `packages/shared` com schema zod do evento webhook.
-4. Implementar login do bot + endpoint webhook recebendo evento (fake via curl até `apps/web` existir).
-5. Implementar RF-047 a RF-062 incrementalmente, cada um testável isolado via evento fake.
-6. **Rodar o [checklist de teste no jogo](../produto/03-partida/05-checklist.md) assim que possível** — não bloqueia mais o início, mas RF-051/052/055 precisam ser revisados com o resultado (especialmente testes 5, 6 e 7).
+1. ~~Scaffold do monorepo~~ — **feito (2026-09-08)**: Turborepo + pnpm workspaces, `apps/web` (Next.js), `apps/api` (NestJS+MikroORM), `apps/bot` (Node.js+TypeScript+discord.js) com login stub e endpoint `/events` recebendo evento fake, testado via Jest+Supertest.
+2. Criar servidor Discord manualmente (RF-062), ativar Server Members Intent no Developer Portal.
+3. Criar aplicação/bot em discord.com/developers com conta separada não-pessoal (ver [README](README.md)).
+4. Implementar RF-047 a RF-062 incrementalmente, cada um testável isolado via evento fake — 1 issue do GitHub por RF (ver [ADR-006](../adr/006-backend-separado-e-tooling.md)).
+5. **Rodar o [checklist de teste no jogo](../produto/03-partida/05-checklist.md) assim que possível** — não bloqueia mais o início, mas RF-051/052/055 precisam ser revisados com o resultado (especialmente testes 5, 6 e 7).
 
 ## Riscos
 

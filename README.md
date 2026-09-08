@@ -4,9 +4,9 @@
 
 **Matchmaking e comunidade competitiva pra EA FC Pro Clubs**
 
-![Status](https://img.shields.io/badge/STATUS-DESIGN%20DE%20PRODUTO-0c1322?style=for-the-badge&labelColor=070b14&color=22c55e)
+![Status](https://img.shields.io/badge/STATUS-SCAFFOLD-0c1322?style=for-the-badge&labelColor=070b14&color=22c55e)
 ![Fase](https://img.shields.io/badge/FASE-MVP-0c1322?style=for-the-badge&labelColor=070b14&color=f5b841)
-![Stack](https://img.shields.io/badge/STACK-A%20DEFINIR-0c1322?style=for-the-badge&labelColor=070b14&color=6b7a94)
+![Stack](https://img.shields.io/badge/STACK-NEXT.JS%20%2B%20NESTJS%20%2B%20DISCORD.JS-0c1322?style=for-the-badge&labelColor=070b14&color=6b7a94)
 
 `fila` → `lobby` → `capitão` → `partida` → `resultado` → `ranking` → `antifraude`
 
@@ -135,7 +135,7 @@ telas são do projeto de origem, servindo só de referência de estilo:
 <tr><td><a href="docs/README.md"><code>docs/</code></a></td><td>Índice geral</td></tr>
 <tr><td><a href="docs/produto/README.md"><code>docs/produto/</code></a></td><td>Decisões de produto e o motivo de cada uma, por domínio</td></tr>
 <tr><td><a href="docs/produto/parametros.md"><code>parametros.md</code></a></td><td>Todos os números do sistema num lugar só (elo, reputação, prazos, limites)</td></tr>
-<tr><td><a href="docs/requisitos/README.md"><code>docs/requisitos/</code></a></td><td>O que o sistema faz: RF-001 a RF-070, RNF-001 a RNF-020, estados, modelo de dados</td></tr>
+<tr><td><a href="docs/requisitos/README.md"><code>docs/requisitos/</code></a></td><td>O que o sistema faz: RF-001 a RF-073, RNF-001 a RNF-020, estados, modelo de dados, checklist de segurança</td></tr>
 <tr><td><a href="docs/adr/README.md"><code>docs/adr/</code></a></td><td>Decisão de arquitetura, com supersessão explícita — só o que custa refatoração pra desfazer</td></tr>
 <tr><td><a href="docs/negocio/README.md"><code>docs/negocio/</code></a></td><td>Tese de mercado, sustentabilidade, ordem de implementação e plano de lançamento</td></tr>
 <tr><td><a href="docs/discord/README.md"><code>docs/discord/</code></a></td><td>Estrutura do servidor Discord e do bot</td></tr>
@@ -146,22 +146,27 @@ telas são do projeto de origem, servindo só de referência de estilo:
 
 ## Estado atual
 
-Design de produto e requisitos fechados — sem código de aplicação ainda.
-Nove áreas levantadas, com RF e RNF numerados e rastreáveis em
+Design de produto e requisitos fechados. Stack decidida ([ADR-005](docs/adr/005-stack-tecnica.md),
+[ADR-006](docs/adr/006-backend-separado-e-tooling.md)) e scaffold do monorepo criado —
+`apps/web` (Next.js), `apps/api` (NestJS + MikroORM), `apps/bot` (Node.js + discord.js),
+Turborepo + pnpm workspaces, testes (Vitest/Jest/Playwright) e CI (GitHub Actions) rodando.
+Nenhum RF implementado ainda — é fundação, não funcionalidade.
+
+Nove áreas de requisito levantadas, com RF e RNF numerados e rastreáveis em
 [`docs/requisitos/`](docs/requisitos/README.md).
 
-**Dois bloqueadores, e nenhum é escrever plataforma:**
+**Dois bloqueadores, decisão de seguir com a stack antes deles rodarem
+([ADR-005](docs/adr/005-stack-tecnica.md)):**
 
 1. **[Checklist no jogo](docs/produto/03-partida/05-checklist.md)** — 8 testes,
    custa minutos, valida o mecanismo de capitão/clube em que todo o fluxo de
-   partida se apoia.
+   partida se apoia. RF-051/052/055 podem exigir retrabalho quando rodar.
 2. **[Piloto de OCR](docs/requisitos/06-piloto-ocr.md)** — um script sobre 50
    prints reais de estranhos, sem conta e sem banco. Dos cinco riscos do
    projeto, é o único grande que exige código pra ser medido.
 
-Só depois deles a stack faz sentido: o retorno dos dois muda três parâmetros
-já marcados como "a calibrar". Divisão de papéis no time já fechada — sem
-papel fixo, trabalho em conjunto.
+Divisão de papéis no time já fechada — sem papel fixo, trabalho em conjunto.
+Desenvolvimento de código é solo.
 
 Trabalho corre em `dev`; `main` só recebe merge quando o time decidir
 promover.
