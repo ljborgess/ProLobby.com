@@ -47,6 +47,7 @@ O que passa a ser verdade, incluindo o que fica pior.
 | [002](002-log-de-evento.md) | Elo e reputação como log de evento | aceita |
 | [003](003-webhook-nao-polling.md) | Plataforma empurra pro bot via webhook | aceita |
 | [004](004-utc.md) | UTC internamente, local na exibição | aceita |
-| [005](005-stack-tecnica.md) | Stack técnica: Next.js/TypeScript, Postgres self-hosted, Oracle Free Tier | aceita |
+| [005](005-stack-tecnica.md) | Stack técnica: Next.js/TypeScript, Postgres self-hosted, Oracle Free Tier | aceita, 3 linhas corrigidas por 006 |
+| [006](006-backend-separado-e-tooling.md) | Backend separado (NestJS/MikroORM/JWT) e ferramentas de repo (Turborepo, testes, CI) | aceita |
 
 **Decidida antes dos bloqueadores retornarem (2026-09-08)**, com risco aceito conscientemente: RF-051/052/055 (produto, não tecnologia) podem exigir retrabalho quando o [checklist](../produto/03-partida/05-checklist.md) rodar. Motor de OCR final (Tesseract vs. pago) ainda depende do [piloto](../requisitos/06-piloto-ocr.md) — o piloto usa Tesseract primeiro.

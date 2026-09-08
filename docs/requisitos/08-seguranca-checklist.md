@@ -20,10 +20,10 @@ Nenhum `.env`, chave ou token commitado, nem no histórico. Usar `.gitignore` de
 Print, foto, Discord ID, gamertag — não em texto puro no banco nem no storage. Já é [RNF-009](07-nao-funcionais.md#rnf-009--dado-sensível-criptografado-em-repouso).
 
 ## 6 · Auth server-side
-Decisão de "está autenticado" e "tem permissão" nunca confia em dado vindo do client (token, role, ID em cookie legível). Validação sempre no servidor, mesmo que o client já filtre a UI.
+**Atualizado (2026-09-08, [ADR-006](../adr/006-backend-separado-e-tooling.md))**: auth mora inteira no NestJS (JWT via `@nestjs/jwt`), não no Next.js. Decisão de "está autenticado" e "tem permissão" nunca confia em dado vindo do client (token, role, ID em cookie legível) — Next.js só guarda o token (cookie `HttpOnly`) e repassa pra API, nunca decide sozinho.
 
 ## 7 · Restringir acessos
-Toda rota/endpoint checa se quem chama pode fazer aquilo — moderador vs. jogador comum, dono do recurso vs. terceiro. Nenhum endpoint assume que "só quem sabe a URL" é controle de acesso.
+Toda rota/endpoint do NestJS checa se quem chama pode fazer aquilo — moderador vs. jogador comum, dono do recurso vs. terceiro. Sem RLS (item 4), esta é a **única** camada de autorização — nenhum endpoint assume que "só quem sabe a URL" é controle de acesso.
 
 ## 8 · Bloquear mass assignment
 Endpoint de update aceita só os campos que o formulário expõe — nunca serializa o body inteiro pro model (ex.: alguém mandar `{"reputacao": 100}` no update de perfil não pode funcionar).

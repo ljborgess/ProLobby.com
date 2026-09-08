@@ -1,6 +1,6 @@
 # ADR-005 · Stack técnica: Next.js/TypeScript, Postgres self-hosted, Oracle Free Tier
 
-**Status**: aceita
+**Status**: aceita, com 3 linhas corrigidas por [ADR-006](006-backend-separado-e-tooling.md) (núcleo, ORM, autenticação — ver tabela abaixo)
 **Data**: 2026-09-08
 
 ## Contexto
@@ -13,14 +13,14 @@ Stack técnica estava deliberadamente adiada até os [dois bloqueadores](../../H
 
 | Camada | Escolha |
 |---|---|
-| Núcleo da plataforma (web) | **Next.js + TypeScript** — frontend e API routes no mesmo framework, roda inteiro numa VM só |
+| Núcleo da plataforma (web) | ~~Next.js + TypeScript, frontend e API routes no mesmo framework~~ — **corrigido por [ADR-006](006-backend-separado-e-tooling.md): Next.js só frontend, backend separado em NestJS** |
 | Bot do Discord | **Node.js + TypeScript + discord.js** — mesma linguagem do núcleo, processo próprio (mantém conexão persistente com o gateway do Discord, não roda em serverless/edge) |
-| Banco de dados | **Postgres, self-hosted na mesma VM** — sem serviço gerenciado pago, sem RLS; autorização decidida no código da aplicação (Next.js), não em política de linha do banco |
-| ORM | **Prisma** — migration automática, tipagem gerada do schema, queries parametrizadas por padrão |
-| Autenticação | **Auth.js (NextAuth)** — e-mail+senha e OAuth2 Discord no mesmo lugar, cobre sessão/cookie/hash de senha |
+| Banco de dados | **Postgres, self-hosted na mesma VM** — sem serviço gerenciado pago, sem RLS; autorização decidida no código da aplicação, não em política de linha do banco |
+| ORM | ~~Prisma~~ — **corrigido por [ADR-006](006-backend-separado-e-tooling.md): MikroORM** |
+| Autenticação | ~~Auth.js (NextAuth) no Next.js~~ — **corrigido por [ADR-006](006-backend-separado-e-tooling.md): JWT no NestJS** |
 | OCR (piloto) | **Tesseract local** — script do piloto testa primeiro com motor gratuito; compara com Google Vision (free tier) nos mesmos 50 prints só se a taxa vier baixa |
 | Hospedagem | **Oracle Cloud Free Tier, região São Paulo ou Vinhedo** — dado nunca sai do Brasil (ver [Sustentabilidade](../negocio/03-sustentabilidade.md)) |
-| Estrutura de repositório | **Monorepo, pnpm workspaces** — `apps/web`, `apps/bot`, `packages/shared` (tipos do contrato de evento webhook) |
+| Estrutura de repositório | **Monorepo, pnpm workspaces** (+ Turborepo, ver [ADR-006](006-backend-separado-e-tooling.md)) — `apps/web`, `apps/api`, `apps/bot`, `packages/` compartilhados |
 
 ## Alternativas descartadas
 
