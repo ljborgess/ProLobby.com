@@ -133,7 +133,7 @@ Competição por habilidade com inscrição e premiação — regime jurídico d
 
 ### 3 · Apoiador mensal de R$ 9,90 — disponível, não empurrado
 
-Existe desde o lançamento, sem paywall e sem insistência. Converte de verdade no gatilho de ~300 contas ativas; antes disso é troco.
+Existe desde o lançamento, sem paywall e sem insistência. Converte de verdade no gatilho de ~700 contas ativas (ME no Simples, ver [Dia 1](#dia-1-zerar-por-engenharia-não-por-receita)); antes disso é troco.
 
 ### Como cobrar: PIX manual, sem gateway
 
@@ -164,7 +164,7 @@ Ressalva factual, não reabertura da decisão: mesmo enquadrado como apoio, apoi
 
 ## Por onde começar (horas, não semanas — e nada de cobrança)
 
-Vale pra monetização de volume (assinatura no gatilho de 300). O que entra **no lançamento** está na seção acima.
+Vale pra monetização de volume (assinatura no gatilho de 700). O que entra **no lançamento** está na seção acima.
 
 1. **A linha vermelha registrada** — este arquivo. É a decisão difícil de reverter depois.
 2. **Schema nasce preparado**: campo de plano na conta e tabela de evento de pagamento, junto do aceite versionado de Termos que já está desenhado ([Onboarding](../produto/05-produto/01-onboarding.md)). Fazer isso como migração retroativa é o que custa caro.

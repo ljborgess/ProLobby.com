@@ -2,7 +2,7 @@
 
 Lista numerada e rastreável. Formato e regras em [README](README.md).
 
-**Status: 9 áreas levantadas, RF-001 a RF-072, RNF-001 a RNF-020.** Nenhuma área permanece sem varredura de lacuna.
+**Status: 9 áreas levantadas, RF-001 a RF-073, RNF-001 a RNF-020.** Nenhuma área permanece sem varredura de lacuna.
 
 Cobre as 9 áreas do produto, mais os [não-funcionais](07-nao-funcionais.md) em arquivo próprio.
 
@@ -437,3 +437,10 @@ Mitiga o furo aberto pela ressalva da Virtual Pro única: nada impedia verificar
 **Origem**: decidido em 2026-09-08 · [negocio/03-sustentabilidade.md](../negocio/03-sustentabilidade.md)
 
 **Aceite**: aproximando-se do teto de qualquer recurso do free tier (chamadas de OCR no mês, capacidade da VM pros 10 lobbies simultâneos), novo cadastro é recusado com mensagem de fila de espera, e a pessoa é avisada quando reabrir. Não existe caminho automático que gere custo — passar do free tier nunca vira cobrança sem decisão humana explícita dos 4 sócios. Vale enquanto a ideia não estiver validada (critério de saída do beta, ver [Lançamento](../negocio/04-lancamento.md)); revisar quando decidirem pagar por infra conscientemente.
+
+**Reconciliação com o critério de desistir de 90 dias ([tese de mercado](../negocio/01-mercado.md))**: a meta de sucesso do MVP (10 partidas/semana, ~80-100 chamadas OCR/mês) fica ~10x abaixo do teto do free tier (1000 OCR/mês) — na escala-alvo, RF-072 não deveria disparar durante a janela de medição. **Se disparar mesmo assim, é sinal de demanda muito acima do esperado, não de fracasso** — nesse cenário os 4 decidem conscientemente pagar por infra (a mesma decisão que RF-072 já reserva pra eles), em vez de deixar o critério de desistir confundir capacidade truncada com falta de demanda.
+
+### RF-073 · Correção manual de OCR pela moderação, campo a campo
+**Origem**: decidido em 2026-09-08 · [produto/02-jogador/01-verificacao.md](../produto/02-jogador/01-verificacao.md)
+
+**Aceite**: no chamado aberto por falha repetida de OCR, o moderador digita os mesmos campos que o OCR extrairia (overall, posição, atributos, gamertag), vendo o print diretamente — não é um simples aprovar/rejeitar. A ação fica registrada no `LogAuditoria` como ação de moderador ([RF-040](#rf-040--toda-ação-de-moderador-entra-no-log-de-auditoria)), distinta de extração automática.

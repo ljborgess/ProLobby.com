@@ -23,7 +23,7 @@
 ## Riscos
 
 - Token do bot como ponto único de falha — **decidido (2026-09-08)**: sem rotação periódica agendada, rotaciona só sob suspeita de vazamento (ver [RNF-013](../requisitos/07-nao-funcionais.md#rnf-013--token-do-bot-só-em-variável-de-ambiente)).
-- Região de hospedagem / transferência internacional de dado — não verificado, ainda sem dono.
+- Região de hospedagem — **decidido (2026-09-08)**: Oracle Cloud, São Paulo/Vinhedo (ver [Sustentabilidade](../negocio/03-sustentabilidade.md)).
 
 ## Referências
 

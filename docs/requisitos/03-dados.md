@@ -73,6 +73,8 @@ Ao excluir a conta de quem avaliou, `de_conta` é anonimizado e a joinha continu
 
 `conta` (ou `personagem`, no elo) · `delta` · `motivo` · `lobby` · `criado_em` · `revertido_em`
 
+**Retenção: indefinida, igual ao histórico de partida (decidido em 2026-09-08)** — o log é o que sustenta o valor atual de elo/reputação e os contadores de reincidência; apagá-lo quebra a rastreabilidade do próprio número corrente, não é dado efêmero como o print.
+
 Três regras do dossiê dependem desse log, não só o rollback:
 
 - **Contadores de janela móvel de 30 dias** (3 faltas, 3 zero-reports, 5 negativas) precisam de eventos com data pra serem contados — valor atual não responde "quantos nos últimos 30 dias".

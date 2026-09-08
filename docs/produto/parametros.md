@@ -104,6 +104,7 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 | Sessões simultâneas por conta | sem limite | [Onboarding](05-produto/01-onboarding.md) |
 | Retenção de prints (imagem) | 90 dias (limpeza diária automática) | [LGPD](04-governanca/02-lgpd.md) |
 | Retenção de histórico de partida | indefinida | [LGPD](04-governanca/02-lgpd.md) |
+| Retenção de log de evento (elo/reputação) | indefinida | [LGPD](04-governanca/02-lgpd.md) |
 | Retenção de comprovante de pagamento | nenhuma — descartado na confirmação | [LGPD](04-governanca/02-lgpd.md) |
 | Retenção de registro fiscal de transação | 5 anos (exceção à exclusão de conta) | [LGPD](04-governanca/02-lgpd.md) |
 | Reincidência: 2ª suspensão em 180 dias | banimento permanente | [Moderação](04-governanca/01-moderacao.md) |

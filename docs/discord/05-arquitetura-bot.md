@@ -37,7 +37,7 @@ Gerenciador: pnpm workspaces.
 - **Fila de retry (RF-058):** fila em memória é suficiente no início (volume esperado: dezenas de lobbies simultâneos, não milhares). Migrar pra Redis/BullMQ só se o volume justificar sobreviver a restart do processo sem perder evento — não decidir isso agora (YAGNI).
 - **Webhook receiver:** stateless dentro do `apps/bot`, escala horizontal (múltiplas instâncias atrás de load balancer) se necessário — não é necessidade do dia 1.
 
-## Riscos já identificados, sem solução decidida ainda
+## Riscos
 
-- Token do bot como ponto único de falha, sem rotação periódica prevista (`docs/research/investigacao-design-2026-09-04.md`).
-- Região de hospedagem / transferência internacional de dado ainda não verificada.
+- Token do bot como ponto único de falha — **decidido (2026-09-08)**: sem rotação periódica agendada, rotaciona só sob suspeita de vazamento (ver [RNF-013](../requisitos/07-nao-funcionais.md#rnf-013--token-do-bot-só-em-variável-de-ambiente)).
+- Região de hospedagem — **decidido (2026-09-08)**: Oracle Cloud, São Paulo/Vinhedo, dado nunca sai do Brasil (ver [Sustentabilidade](../negocio/03-sustentabilidade.md)).
