@@ -30,6 +30,10 @@ Reavaliado: pra 1 pessoa construindo sozinha um domínio complexo (73 RFs, máqu
   - `apps/bot`: Jest (unit) — sem e2e formal, testado via evento fake (curl) como já previsto em [HANDOFF-bot.md](../discord/HANDOFF-bot.md).
 - **Lint/format**: ESLint + Prettier + Husky + lint-staged + commitlint (conventional commits), mesmo padrão.
 - **CI**: **GitHub Actions** (equivalente ao GitLab CI de lá — o repo está no GitHub, não GitLab), rodando lint/test/e2e a cada push.
+- **Escopo npm dos packages internos**: `@prolobby/*` (`@prolobby/eslint-config`, `@prolobby/tsconfig`, `@prolobby/types`).
+- **Postgres local**: Docker Compose (`docker-compose.yml` na raiz, mesmo padrão do `plataforma-b2ml`) — isola dado de teste, sem instalar Postgres direto na máquina.
+- **Fluxo de git**: feature branch por issue/RF (`feat/rf-019-cadastro`, etc.), merge em `dev` via PR — CI roda no PR antes de mergear, mesmo com desenvolvimento solo. Histórico fica rastreável por RF.
+- **Issues do GitHub**: 1 issue por RF/RNF (ou fatia menor de RF grande), com 3 dimensões de label — **área** (fila, lobby, bot, ocr, moderação...), **tipo** (feat/fix/chore/test/docs, mesma taxonomia do commitlint) — e **milestone** por fase de [`negocio/02-implementacao.md`](../negocio/02-implementacao.md) (0 a 6). Sub-issues (nativo do GitHub) quebram RF grande em tarefa técnica.
 - **SonarQube: pulado por enquanto.** SonarCloud é grátis só pra repo público (a confirmar se `ProLobby.com` é/vira público); self-hosted custa infra extra, contra a regra de R$0 ([RF-072](../requisitos/05-funcionais.md#rf-072--cadastro-pausa-perto-do-teto-do-free-tier-sem-gasto-automático)). ESLint + [checklist de segurança](../requisitos/08-seguranca-checklist.md) cobrem boa parte sem custo. Revisitar se o repo abrir pra mais gente.
 
 ## Alternativas descartadas
