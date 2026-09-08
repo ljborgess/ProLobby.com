@@ -38,7 +38,7 @@ O dossiê tratava o custo como não estimado, e o OCR como "o item mais imprevis
 
 Então o dia 1 vem de custo, não de renda:
 
-- **Stack em free tier**: VM permanentemente gratuita (Oracle Cloud Free Tier dá 4 OCPU / 24 GB ARM, folgado pra app + bot + Postgres juntos), CDN/proxy grátis, OCR no free tier. Sobra o domínio, ~R$ 3/mês — ou zero, usando subdomínio gratuito no começo.
+- **Stack em free tier**: VM permanentemente gratuita — **Oracle Cloud Free Tier, região São Paulo ou Vinhedo (decidido em 2026-09-08)**, resolve a pendência de transferência internacional de dado sem precisar de cláusula padrão nem decisão de adequação da ANPD, porque o dado nunca sai do Brasil. **Capacidade corrigida (2026-09-08)**: Oracle cortou o Always Free ARM de 4 OCPU/24 GB pra **2 OCPU/12 GB** em junho/2026 — ainda deve caber app + bot + Postgres na carga de 10 lobbies, mas com bem menos folga do que a estimativa original presumia; revisar de novo quando a stack for decidida de verdade. CDN/proxy grátis, OCR no free tier. Sobra o domínio, ~R$ 3/mês — ou zero, usando subdomínio gratuito no começo.
 - **Consequência pra decisão de stack** (deliberadamente adiada, ver [backlog](../produto/05-produto/03-backlog.md)): o teto de custo mensal a combinar entre os 4 é, na prática, **R$ 0 no MVP** — o que favorece stack que roda inteira num host só, sem serviço gerenciado pago.
 - **Apoio voluntário** (PIX, cargo de Apoiador no Discord) entra quando houver comunidade de verdade, não no lançamento — pedir dinheiro antes de entregar partida boa queima credibilidade. Cobre o domínio com folga.
 

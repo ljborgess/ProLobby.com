@@ -82,7 +82,6 @@ Tabela completa em `produto/05-produto/03-backlog.md`. Nenhuma é de requisito:
 | Titular das contas e rateio entre os 4 | acordo entre sócios, antes do 1º gasto recorrente |
 | Consulta jurídica | três assuntos numa consulta: redação de apoio/CDC, LGPD 16-17, entidade legal |
 | Desenho de torneio/liga | adiado por decisão: validar o núcleo primeiro |
-| Região do free tier x transferência internacional | verificar se há região BR |
 
 ## Riscos aceitos conscientemente — não são lacunas
 
@@ -90,6 +89,7 @@ Tabela completa em `produto/05-produto/03-backlog.md`. Nenhuma é de requisito:
 - **Smurf com investimento**: conta EA nova + Discord novo + console novo passa. O vínculo pega recriação preguiçosa, não quem investe.
 - **Dependência da mecânica da EA**: sem API nem contrato, qualquer patch pode mudar a base do produto. Mitigação é disciplina operacional, não engenharia.
 - **Sem reembolso** no apoio de Fundador, se houver cobrança.
+- **Região de hospedagem**: Oracle Cloud Free Tier, São Paulo ou Vinhedo — dado nunca sai do Brasil, sem precisar de cláusula padrão/adequação ANPD pra LGPD. Capacidade Always Free ARM foi cortada de 4 OCPU/24GB pra 2 OCPU/12GB em junho/2026, revisar de novo quando a stack for decidida (ver [Sustentabilidade](docs/negocio/03-sustentabilidade.md)).
 - **[RF-033](docs/requisitos/05-funcionais.md#rf-033--clube-em-uso-não-é-candidato-em-outro-lobby)**: trava a conta inteira quando 1 dos até 3 clubes simultâneos (FC26) está em uso, mesmo os outros 2 livres. Mudar exigiria cadastro/OCR de 3 clubes por conta — escopo grande demais pro ganho.
 - **Rotação de token do bot**: sem agenda periódica, só sob suspeita de vazamento (ver [RNF-013](docs/requisitos/07-nao-funcionais.md#rnf-013--token-do-bot-só-em-variável-de-ambiente)) — custo operacional desproporcional pra 4 sócios part-time.
 

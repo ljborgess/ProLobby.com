@@ -26,7 +26,7 @@ Itens explicitamente adiados — mencionados ou identificados, mas sem desenho d
 
 ## Lacunas abertas — o que falta decidir ou verificar
 
-Estado da varredura mais recente: **~91% dos pontos de decisão do dossiê estão fechados e justificados.** O que resta, com o que cada item bloqueia:
+Estado da varredura mais recente (2026-09-08): **região do free tier fechada** (Oracle Cloud, São Paulo/Vinhedo — ver [Sustentabilidade](../../negocio/03-sustentabilidade.md)), saiu da lista. O que resta, com o que cada item bloqueia:
 
 | Aberto | Bloqueia | Natureza |
 |---|---|---|
@@ -37,7 +37,6 @@ Estado da varredura mais recente: **~91% dos pontos de decisão do dossiê estã
 | **Titular das contas e rateio entre os 4** ([tese de mercado](../../negocio/01-mercado.md)) | primeiro gasto recorrente | acordo entre sócios |
 | **Consulta jurídica** — redação Fundador/CDC, LGPD 16-17, entidade legal | receber dinheiro | três assuntos, uma consulta |
 | **Desenho de torneio/liga** — formato, no-show, arbitragem, premiação | receita de torneio (adiada) | grelha própria, depois do núcleo |
-| **Região do free tier vs. transferência internacional de dado** | abrir pra externo | verificar se há região BR |
 | **Preço do Fundador com pacote reduzido** ([Sustentabilidade](../../negocio/03-sustentabilidade.md)) | nada — a pré-venda mede | revisar se R$ 49 sustenta |
 
 Riscos aceitos conscientemente, não lacunas: [conluio de resultado](../02-jogador/02-ranking.md), dependência estrutural da mecânica da EA e ausência de reembolso ([tese de mercado](../../negocio/01-mercado.md)).
