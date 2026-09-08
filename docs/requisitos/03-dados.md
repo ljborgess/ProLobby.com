@@ -2,7 +2,9 @@
 
 **Fase: MVP**
 
-Consolidação das entidades que o produto exige, derivadas das decisões já tomadas — **não é esquema de banco** (isso depende da stack, deliberadamente não decidida). Serve pra duas coisas: verificar que toda regra do dossiê tem onde se apoiar, e evitar migração retroativa em campo que já se sabe necessário.
+Consolidação das entidades que o produto exige, derivadas das decisões já tomadas — **não é esquema de banco**, é o inventário de campo que o esquema precisa contemplar. Serve pra duas coisas: verificar que toda regra do dossiê tem onde se apoiar, e evitar migração retroativa em campo que já se sabe necessário.
+
+O esquema concreto vive em `apps/api` (MikroORM, [ADR-006](../adr/006-backend-separado-e-tooling.md)) — quando os dois divergirem, este arquivo é a fonte do **que precisa existir** e a migration é a fonte do **como está implementado**.
 
 Estados de cada entidade em [Estados do lobby e da partida](02-estados.md).
 
@@ -22,7 +24,10 @@ Quem migra de PS5 pra PC — caso que o escopo trata explicitamente, preservando
 ### Conta
 Reputação e identidade da pessoa. Uma por Discord ID.
 
-`email` · `senha` (hash) · `email_verificado` · `data_nascimento` · `pergunta_seguranca` + `resposta` (hash) · `discord_id` (único, exclusivo) · `reputacao` (0–100, inicia 70) · `estado` · `criado_em`
+`email` · `senha` (hash) · `email_verificado` · `data_nascimento` · `pergunta_seguranca` + `resposta` (hash) · `discord_id` (único, exclusivo) · `papel` · `reputacao` (0–100, inicia 70) · `plano` · `estado` · `criado_em`
+
+- **`papel` — gap fechado em 2026-09-08**: os quatro papéis da plataforma (Visitante / Usuário / Moderador / Admin) estavam definidos em [Requisitos transversais](01-transversais.md#papéis-dentro-da-plataforma) e não tinham onde morar. Sem o campo, três requisitos ficam sem apoio — [RF-035](05-funcionais.md#rf-035--moderador-parte-do-caso-é-travado-decidem-os-outros-3), [RF-039](05-funcionais.md#rf-039--moderador-só-acessa-print-anexado-ao-caso-que-trata) e [RF-040](05-funcionais.md#rf-040--toda-ação-de-moderador-entra-no-log-de-auditoria) — e o item 7 do [checklist de segurança](08-seguranca-checklist.md) (restringir acessos) fica sem base, já que é a **única** camada de autorização na stack sem RLS. Visitante é ausência de conta, não valor persistido.
+- **`plano` — gap fechado em 2026-09-08**: [Ordem de implementação](../negocio/02-implementacao.md) já mandava o schema nascer com o campo, e ele não constava aqui. Nada de cobrança implementada, só o espaço reservado — fazer isso como migração retroativa é o que custa caro ([Sustentabilidade](../negocio/03-sustentabilidade.md)).
 
 ### GamertagPlataforma
 `conta` · `plataforma` (PS5 / Xbox Series / PC) · `gamertag` · `verificado_em` (nulo = reivindicação provisória) — único em (plataforma, gamertag) quando verificado.
@@ -97,6 +102,13 @@ Os tipos são os já enumerados em [Moderação](../produto/04-governanca/01-mod
 ### Notificacao
 `conta` · `tipo` · `payload` · `lida_em` · `criada_em` — ver [inventário de notificações](04-notificacoes.md).
 
+### EventoPagamento
+`conta` · `tipo` (fundador / apoiador) · `valor` · `confirmado_por` · `confirmado_em` · `criado_em`
+
+**Gap fechado em 2026-09-08**, mesmo motivo do campo `plano` na Conta: [Ordem de implementação](../negocio/02-implementacao.md) manda a tabela nascer junto com o schema e ela não constava aqui. **Nada de cobrança implementada no MVP** — a confirmação é manual por PIX, feita no painel de moderação e registrada também no `LogAuditoria` ([Sustentabilidade](../negocio/03-sustentabilidade.md)). O espaço existe pra não precisar de migração retroativa quando o lançamento chegar.
+
 ## O que a modelagem confirmou que falta em nenhum lugar
 
 Nada além da inconsistência de gamertag e das duas entidades de evento acima. Toda outra regra do dossiê encontrou onde se apoiar — o que é o resultado esperado depois das rodadas anteriores de auditoria, e o motivo de valer a pena ter feito este exercício mesmo sendo consolidação.
+
+**Auditoria de 2026-09-08 (contra o scaffold do monorepo)** encontrou mais três: o campo `papel` da Conta, o campo `plano` e a entidade `EventoPagamento` acima — todos eram decisão já tomada em outro documento que nunca chegou até aqui. Corrigidos no mesmo dia, antes da primeira migration existir.

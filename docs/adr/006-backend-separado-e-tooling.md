@@ -9,6 +9,8 @@ Ao planejar o início do código, o desenvolvimento era solo (1 pessoa), com exp
 
 **Atualização (2026-09-08, mesmo dia)**: Rafael entra como 2º desenvolvedor. Luciano continua líder técnico de fato (mais investido no projeto, dono do contexto completo do dossiê) — isso muda fluxo de git e revisão, não a stack.
 
+**Atualização (2026-09-08)**: Felipe entra como 3º desenvolvedor, mesma função do Rafael — coda, abre PR, Luciano revisa antes de subir pra `dev`.
+
 Reavaliado: pra 1 pessoa construindo sozinha um domínio complexo (73 RFs, máquina de estado de 12 estados, log de eventos de elo/reputação com rollback, retry com backoff, escada de punição), familiaridade com o stack pesa mais que reduzir de 2 processos pra 1 — Turborepo já orquestra os dois com um comando.
 
 ## Decisão
@@ -36,8 +38,8 @@ Reavaliado: pra 1 pessoa construindo sozinha um domínio complexo (73 RFs, máqu
 - **Postgres local**: Docker Compose (`docker-compose.yml` na raiz, mesmo padrão do `plataforma-b2ml`) — isola dado de teste, sem instalar Postgres direto na máquina.
 - **Fluxo de git**: feature branch por issue/RF (`feat/rf-019-cadastro`, etc.), merge em `dev` via PR. Histórico fica rastreável por RF.
 - **Issues do GitHub**: 1 issue por RF/RNF (ou fatia menor de RF grande), com 3 dimensões de label — **área** (fila, lobby, bot, ocr, moderação...), **tipo** (feat/fix/chore/test/docs, mesma taxonomia do commitlint) — e **milestone** por fase de [`negocio/02-implementacao.md`](../negocio/02-implementacao.md) (0 a 6). Sub-issues (nativo do GitHub) quebram RF grande em tarefa técnica.
-- **Atribuição de issue (decidido 2026-09-08, com Rafael entrando)**: campo `Assignee` nativo do GitHub, não label/prefixo de nome. **Luciano atribui** — tem o contexto completo do dossiê, evita Rafael pegar RF fora de ordem de dependência sem saber do resto.
-- **Revisão de PR (decidido 2026-09-08)**: branch protection em `dev` exige **1 approval**. PR do Rafael precisa de aprovação do Luciano (contexto do dossiê pega desvio de regra de negócio que o CI não pega). PR do Luciano **mergeia direto** após CI verde — exigir aprovação do Rafael aqui seria gargalo sem revisor com contexto suficiente pra avaliar decisão arquitetural.
+- **Atribuição de issue (decidido 2026-09-08, com Rafael e depois Felipe entrando)**: campo `Assignee` nativo do GitHub, não label/prefixo de nome. **Luciano atribui** — tem o contexto completo do dossiê, evita Rafael/Felipe pegar RF fora de ordem de dependência sem saber do resto.
+- **Revisão de PR (decidido 2026-09-08)**: branch protection em `dev` exige **1 approval**. PR do Rafael ou do Felipe precisa de aprovação do Luciano (contexto do dossiê pega desvio de regra de negócio que o CI não pega). PR do Luciano **mergeia direto** após CI verde — exigir aprovação de quem não tem contexto suficiente pra avaliar decisão arquitetural aqui seria gargalo.
 - **SonarQube: pulado por enquanto.** SonarCloud é grátis só pra repo público (a confirmar se `ProLobby.com` é/vira público); self-hosted custa infra extra, contra a regra de R$0 ([RF-072](../requisitos/05-funcionais.md#rf-072--cadastro-pausa-perto-do-teto-do-free-tier-sem-gasto-automático)). ESLint + [checklist de segurança](../requisitos/08-seguranca-checklist.md) cobrem boa parte sem custo. Revisitar se o repo abrir pra mais gente.
 
 ## Alternativas descartadas

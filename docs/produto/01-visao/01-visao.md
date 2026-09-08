@@ -8,7 +8,7 @@ Plataforma de matchmaking/comunidade pra EA FC Pro Clubs: player cadastra seu(s)
 
 ## Relação com o projeto `escalacao-brasileirao`
 
-Projeto novo e independente — domínios diferentes (um é dado real de campeonato via API, o outro é matchmaking/comunidade de Pro Clubs). Stack decidida em 2026-09-08 — Next.js/TypeScript, ver [ADR-005](../../adr/005-stack-tecnica.md).
+Projeto novo e independente — domínios diferentes (um é dado real de campeonato via API, o outro é matchmaking/comunidade de Pro Clubs). Stack decidida em 2026-09-08 — Next.js/TypeScript no frontend, NestJS no backend, ver [ADR-005](../../adr/005-stack-tecnica.md) e [ADR-006](../../adr/006-backend-separado-e-tooling.md).
 
 Reaproveitamento aprovado: **identidade visual (design system) do front-end atual** — não o backend/dados.
 

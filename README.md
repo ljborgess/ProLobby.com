@@ -166,7 +166,8 @@ Nove áreas de requisito levantadas, com RF e RNF numerados e rastreáveis em
    projeto, é o único grande que exige código pra ser medido.
 
 Divisão de papéis no time já fechada — sem papel fixo, trabalho em conjunto.
-Desenvolvimento de código é solo.
+No código especificamente, Luciano, Rafael e Felipe desenvolvem; Luciano
+atribui issue e revisa PR.
 
 Trabalho corre em `dev`; `main` só recebe merge quando o time decidir
 promover.

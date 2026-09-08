@@ -4,7 +4,7 @@ Uso interno dos 4. Ordem sugerida com base nas dependências já mapeadas no dos
 
 ## 0. Stack decidida antes dos bloqueadores — risco aceito conscientemente
 
-**Stack técnica decidida em 2026-09-08** ([ADR-005](../adr/005-stack-tecnica.md)): Next.js/TypeScript, bot Node.js/TypeScript/discord.js, Postgres self-hosted, Prisma, Auth.js, Oracle Cloud Free Tier (São Paulo/Vinhedo). Decidido antes do [checklist no jogo](../produto/03-partida/05-checklist.md) rodar, porque o checklist não tinha previsão de acontecer no curto prazo — travar toda decisão técnica indefinidamente custava mais que o risco identificado.
+**Stack técnica decidida em 2026-09-08** ([ADR-005](../adr/005-stack-tecnica.md), corrigida no mesmo dia pelo [ADR-006](../adr/006-backend-separado-e-tooling.md)): Next.js/TypeScript **só no frontend** (`apps/web`) + **NestJS** (`apps/api`) com toda regra de negócio, **MikroORM**, **JWT** (`@nestjs/jwt`), bot Node.js/TypeScript/discord.js, Postgres self-hosted, Oracle Cloud Free Tier (São Paulo/Vinhedo). Decidido antes do [checklist no jogo](../produto/03-partida/05-checklist.md) rodar, porque o checklist não tinha previsão de acontecer no curto prazo — travar toda decisão técnica indefinidamente custava mais que o risco identificado.
 
 **O que ainda depende do checklist, especificamente**: RF-051, RF-052 e RF-055 (canais do lobby, prazos de deleção, gatilho do cargo Verificado) — são decisão de **produto** (tamanho de lobby, premissa de verificação), não de tecnologia, e podem exigir retrabalho quando o teste 6 (IA cobrindo vaga) ou o teste 7 (Virtual Pro única) rodarem. A stack em si não muda por causa disso.
 

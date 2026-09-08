@@ -6,11 +6,60 @@ Pra quem (Claude Code, outra sessão/máquina) for continuar este projeto a part
 
 Ver [`README.md`](README.md). Origem: ideia nasceu numa sessão sobre o projeto `escalacao-brasileirao` (Django, escalação de Brasileirão via API), mas ProLobby é **projeto novo e independente** — só a identidade visual (design system) foi herdada de lá, nada de backend/dados.
 
-## Estado atual (2026-09-04)
+## Estado atual (2026-09-08)
 
-- **Fase**: design de produto **e requisitos**, ambos fechados. Zero código de aplicação.
+- **Fase**: design de produto e requisitos fechados; **engenharia começou**. Scaffold do monorepo commitado (Turborepo + pnpm: `apps/web` Next.js, `apps/api` NestJS+MikroORM, `apps/bot` discord.js) — ainda é esqueleto, sem regra de negócio.
+- **Primeira leva de issues escrita e fechada de propósito** (#1 a #5). Decisão de 2026-09-08: **não abrir trabalho pro time enquanto o desenho não estiver fechado** — o conteúdo delas está pronto e continua válido, é só reabrir quando a definição estiver madura. Não recriar do zero. Fluxo de PR descrito em [`CONTRIBUTING.md`](CONTRIBUTING.md).
 - **Branches**: só `main` e `dev`. Trabalho corre em `dev`; `main` só recebe merge quando o time decidir promover.
 - Todo o conteúdo abaixo está commitado em `dev`.
+
+## Retomada — auditoria de 2026-09-08, o que ficou aberto
+
+Varredura do dossiê contra o scaffold. Foram 20 achados: **11 corrigidos** no mesmo dia, **9 continuam abertos** e estão listados aqui. Ler esta seção antes de pegar qualquer issue.
+
+### Decisão que só o time pode tomar (bloqueia processo)
+
+**Branch protection em `dev` é inexequível hoje.** O [ADR-006](docs/adr/006-backend-separado-e-tooling.md) decide que PR de Rafael/Felipe exige 1 approval do Luciano — mas `gh api repos/ljborgess/ProLobby.com/branches/dev/protection` devolve `403: Upgrade to GitHub Pro or make this repository public`. O repo é privado no plano Free, e quem tem permissão `push` **pode mergear o próprio PR sem aprovação de ninguém**. Hoje a regra é honra, não trava técnica.
+
+Três saídas, nenhuma tomada ainda:
+
+| Saída | Custo | Efeito colateral |
+|---|---|---|
+| Tornar o repo **público** | R$ 0 | destrava branch protection **e** SonarCloud (pergunta que o ADR-006 já deixou aberta); expõe dossiê de negócio, monetização e estratégia |
+| **GitHub Pro** | ~US$ 4/usuário/mês | colide com a regra de custo zero ([RF-072](docs/requisitos/05-funcionais.md#rf-072--cadastro-pausa-perto-do-teto-do-free-tier-sem-gasto-automático)) |
+| Assumir que é **convenção** | R$ 0 | registrar no ADR-006 que a regra é disciplina e não trava, pra ninguém confiar em garantia que não existe |
+
+### Aberto no código (já viraram issue)
+
+- **[#4] Webhook do bot sem autenticação** — `apps/bot/src/webhook-server.ts` aceita qualquer requisição em `POST /events`. Inofensivo hoje (nenhum handler faz nada), perigoso no dia do primeiro handler: o endpoint comanda kick/ban ([RF-048](docs/requisitos/05-funcionais.md#rf-048--kick-e-ban-só-por-comando-de-admin-ou-moderador)) e canal de lobby. Itens 6 e 7 do [checklist de segurança](docs/requisitos/08-seguranca-checklist.md). Inclui tipar o `platformEventSchema`, hoje `payload: z.record(z.unknown())`.
+- **[#5] CI não sobe Postgres** — `.github/workflows/ci.yml` sem `services:`. Quebra no PR da #1, que é o que fundamenta todo o resto. Mesma issue cobre a falta de template de PR/issue, que é o que faria o checklist de segurança ser olhado na hora certa.
+
+### Aberto no código (ainda sem issue — entram junto da fatia que os usa)
+
+- **`apps/api` não tem `class-validator`/`class-transformer` nem `ValidationPipe` global** com `whitelist`/`forbidNonWhitelisted`. Itens 8 e 14 do checklist ficam sem base. Está escrito no corpo da issue #2, que é onde a peça nasce.
+- **`@nestjs/throttler` instalado mas não plugado** no `AppModule` (item 11), e nada de cookie `HttpOnly`/`Secure`/`SameSite` nem CORS (item 9). Também na #2.
+- **`apps/web` é boilerplate puro do create-next-app**: fonte Geist onde o design system pede `Sora`/`Inter`, paleta branca onde o design system é escuro (`#070b14`, ver [visão](docs/produto/01-visao/01-visao.md)), `lang="en"` no `layout.tsx` e `<title>Create Next App</title>`. **Decidido em 2026-09-08**: o front segue o artefato de preview em React, e o desenho de view fica pra depois — mas **tokens do design system e i18n pt/es ([RNF-016](docs/requisitos/07-nao-funcionais.md#rnf-016--interface-e-mensagens-em-português-e-espanhol)) são baratos agora e caros como retrofit**, então entram junto da primeira tela real.
+- **Nenhuma das 13 telas** do inventário ([transversais](docs/requisitos/01-transversais.md)) existe. Esperado nesta fase, registrado pra não parecer esquecimento.
+
+### Corrigido nesta rodada — não reabrir
+
+- `03-dados.md`: entidade `Conta` ganhou **`papel`** (os 4 papéis existiam em `01-transversais.md` e não tinham onde morar — sem isso o item 7 do checklist não tem base) e **`plano`**; entidade **`EventoPagamento`** criada. Os três eram decisão já tomada em outro documento que nunca chegou ao modelo de dados.
+- `03-dados.md` dizia que o esquema "depende da stack, deliberadamente não decidida" — stack decidida desde 2026-09-08.
+- `08-seguranca-checklist.md` se contradizia: linhas de topo e os itens 3 e 4 diziam "API do Next.js" enquanto os itens 6 e 7 já apontavam pro NestJS.
+- Stack velha (Prisma/Auth.js/API routes) propagada em `negocio/02-implementacao.md`, `produto/05-produto/03-backlog.md`, `discord/HANDOFF-bot.md`, `discord/05-arquitetura-bot.md` (a árvore do monorepo nem tinha `apps/api`) e `produto/01-visao/01-visao.md`.
+- `README.md` dizia "desenvolvimento de código é solo".
+- Issues #1–#3 tinham erro de conteúdo: a #1 descrevia `Conta` com campos que não batiam com `03-dados.md` e tratava `AceiteTos` como campo em vez de entidade; a #2 não citava a **RF-072**, que é exceção explícita da própria RF-019 que ela implementa.
+
+### Ordem sugerida pra retomar
+
+As issues #1–#5 estão **fechadas de propósito**, não canceladas — o texto delas já está escrito e revisado. Reabrir, não recriar.
+
+1. Terminar o **desenho** que motivou a pausa: enquanto ele não fechar, não faz sentido distribuir issue pro time.
+2. Decidir **repo público vs. Pro vs. convenção** (tabela acima) — destrava branch protection e SonarCloud de uma vez, e não depende do desenho.
+3. Reabrir **#5** (CI com Postgres) antes da #1, senão o primeiro PR de verdade quebra o CI.
+4. Reabrir **#1** (schema) — bloqueia #2 e #3.
+5. **#4** (webhook do bot) a qualquer momento, mas antes do primeiro handler de RF.
+6. Convidar o **Felipe** de novo se o convite tiver expirado (`LipeLou`, mandado em 2026-09-08, ainda pendente) e passar a #3 pra ele — hoje está atribuída ao Rafael.
 
 ## Os dois bloqueadores — leia isto antes de qualquer coisa
 
@@ -97,4 +146,4 @@ Tabela completa em `produto/05-produto/03-backlog.md`. Nenhuma é de requisito:
 
 Os 4 (Luciano, Rafael, João, Felipe) trabalham em conjunto, sem papel fixo por disciplina. Não é pendência, é decisão tomada.
 
-**Recorte de código (2026-09-08)**: dentro da parte de desenvolvimento especificamente, Luciano e Rafael codam; Luciano lidera de fato (mais investido, dono do contexto completo do dossiê) — atribui issue, revisa e aprova PR do Rafael. Não reabre a decisão acima sobre papel fixo no projeto como um todo, só descreve como o fluxo de código funciona (ver [ADR-006](docs/adr/006-backend-separado-e-tooling.md)).
+**Recorte de código (2026-09-08)**: dentro da parte de desenvolvimento especificamente, Luciano, Rafael e Felipe codam; Luciano lidera de fato (mais investido, dono do contexto completo do dossiê) — atribui issue, revisa e aprova PR de Rafael e Felipe. Não reabre a decisão acima sobre papel fixo no projeto como um todo, só descreve como o fluxo de código funciona (ver [ADR-006](docs/adr/006-backend-separado-e-tooling.md)).

@@ -2,7 +2,7 @@
 
 **Regra permanente, não fase do dossiê.** Entra em vigor na primeira linha de código de backend/auth/banco, independente de quando isso acontecer (depois dos [dois bloqueadores](../../HANDOFF.md#os-dois-bloqueadores--leia-isto-antes-de-qualquer-coisa)). Consultar antes de qualquer PR que toque autenticação, banco, upload ou API.
 
-**Atualizado (2026-09-08, [ADR-005](../adr/005-stack-tecnica.md))**: stack decidida é Postgres self-hosted **sem RLS** — client nunca fala direto com o banco, tudo passa pela API do Next.js. Isso muda os itens 3 e 4 abaixo: não têm política de linha pra manter, mas o **princípio continua valendo com peso redobrado nos itens 6 e 7** (auth server-side, restringir acessos), porque não existe camada de banco fazendo esse trabalho.
+**Atualizado (2026-09-08, [ADR-005](../adr/005-stack-tecnica.md) + [ADR-006](../adr/006-backend-separado-e-tooling.md))**: stack decidida é Postgres self-hosted **sem RLS** — client nunca fala direto com o banco, tudo passa pela **API do NestJS** (`apps/api`); o Next.js é só frontend e não decide autorização. Isso muda os itens 3 e 4 abaixo: não têm política de linha pra manter, mas o **princípio continua valendo com peso redobrado nos itens 6 e 7** (auth server-side, restringir acessos), porque não existe camada de banco fazendo esse trabalho.
 
 ## 1 · Esconder API keys
 Nenhuma chave (OCR pago, Discord, provedor de e-mail, storage) exposta no client. Só server-side ou variável de ambiente do backend. Cobre [RNF-013](07-nao-funcionais.md#rnf-013--token-do-bot-só-em-variável-de-ambiente) (token do bot) — estender pra toda chave de terceiro, não só Discord.
@@ -11,10 +11,10 @@ Nenhuma chave (OCR pago, Discord, provedor de e-mail, storage) exposta no client
 Nenhum `.env`, chave ou token commitado, nem no histórico. Usar `.gitignore` desde o primeiro commit de código; se vazar, revogar a chave (não basta remover o commit — histórico do git persiste).
 
 ## 3 · Não expor acesso direto ao banco
-**N/A na stack decidida (Postgres self-hosted, sem RLS)** — o client (browser/app) nunca fala direto com o banco, só com a API do Next.js. Se algum dia mudar pra um banco com client-side access (ex.: Supabase com anon key), essa chave só pode fazer o que a política de linha permite (item 4) — nunca tratar a chave pública como equivalente a autenticado.
+**N/A na stack decidida (Postgres self-hosted, sem RLS)** — o client (browser/app) nunca fala direto com o banco, só com a API do NestJS (`apps/api`). Se algum dia mudar pra um banco com client-side access (ex.: Supabase com anon key), essa chave só pode fazer o que a política de linha permite (item 4) — nunca tratar a chave pública como equivalente a autenticado.
 
 ## 4 · RLS (row-level security)
-**N/A na stack decidida** — sem RLS, autorização é 100% responsabilidade do item 7 (restringir acessos) e do item 6 (auth server-side), no código do Next.js. Se algum dia migrar pra Postgres gerenciado com RLS, reativar este item: toda tabela com dado de usuário teria RLS ligado, sem exceção "por enquanto".
+**N/A na stack decidida** — sem RLS, autorização é 100% responsabilidade do item 7 (restringir acessos) e do item 6 (auth server-side), no código do NestJS, apoiada no campo `papel` da Conta ([Modelo de dados](03-dados.md#conta)). Se algum dia migrar pra Postgres gerenciado com RLS, reativar este item: toda tabela com dado de usuário teria RLS ligado, sem exceção "por enquanto".
 
 ## 5 · Criptografia de dados
 Print, foto, Discord ID, gamertag — não em texto puro no banco nem no storage. Já é [RNF-009](07-nao-funcionais.md#rnf-009--dado-sensível-criptografado-em-repouso).

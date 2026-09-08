@@ -7,25 +7,30 @@ Complementa [Bot: permissões e integração com moderação](03-bot.md) e [Inte
 ## Estrutura: monorepo
 
 ```
-prolobby/
+ProLobby.com/
 ├── apps/
-│   ├── web/          # Next.js + TypeScript — frontend + API routes
+│   ├── web/          # Next.js + TypeScript — só frontend
+│   ├── api/          # NestJS + MikroORM + JWT — toda regra de negócio, auth e banco
 │   └── bot/          # Node.js + TypeScript + discord.js
 ├── packages/
-│   └── shared/       # tipos TS do contrato de evento webhook (RF-058), enums de cargo/canal
+│   ├── types/        # tipos TS do contrato de evento webhook (RF-058), enums de cargo/canal
+│   ├── eslint-config/
+│   └── tsconfig/
 ```
 
-Gerenciador: pnpm workspaces.
+Gerenciador: pnpm workspaces + Turborepo. A separação `web`/`api` veio do [ADR-006](../adr/006-backend-separado-e-tooling.md), depois deste documento — antes dele o backend morava em API routes do Next.js.
 
 **Por que monorepo:** custo de montar é baixo (workspaces), evita separar depois quando `web` e `bot` precisarem compartilhar o contrato do evento webhook.
 
-**Por que `apps/bot` separado de `apps/web`:** o bot mantém conexão persistente com o gateway do Discord (websocket) — não roda em ambiente serverless/edge do Next.js. Processo próprio na mesma VM Oracle Cloud (São Paulo/Vinhedo) que roda `web` e Postgres. `web` chama o `bot` via HTTP (webhook) quando um evento de negócio acontece.
+**Por que `apps/bot` separado dos outros:** o bot mantém conexão persistente com o gateway do Discord (websocket) — não roda em ambiente serverless/edge. Processo próprio na mesma VM Oracle Cloud (São Paulo/Vinhedo) que roda `web`, `api` e Postgres. Quem chama o bot via HTTP (webhook) é a **`api`**, não o `web` — é ela que decide regra de negócio ([ADR-006](../adr/006-backend-separado-e-tooling.md)).
 
 ## Ordem de implementação
 
 1. `apps/bot`, isolado e testável via evento fake (curl) simulando o webhook que a plataforma ainda não existe pra mandar. RF-051/052/055 implementados com a premissa atual (revisar quando o checklist rodar).
 2. `apps/web` fica stub até o piloto de OCR destravar perfil/fila.
-3. `packages/shared` nasce como stub (schema do evento com zod, por exemplo) e cresce junto com `bot`.
+3. `packages/types` nasce como stub (schema do evento com zod) e cresce junto com `bot` e `api`.
+
+**Antes de qualquer handler de RF nascer**, o endpoint `/events` precisa autenticar quem chama (segredo compartilhado/HMAC entre `api` e `bot`) — ele comanda kick/ban ([RF-048](../requisitos/05-funcionais.md#rf-048--kick-e-ban-só-por-comando-de-admin-ou-moderador)) e criação/remoção de canal, e no scaffold aceita qualquer requisição que alcance a porta. Itens 6 e 7 do [checklist de segurança](../requisitos/08-seguranca-checklist.md).
 
 ## Escalabilidade e desempenho
 

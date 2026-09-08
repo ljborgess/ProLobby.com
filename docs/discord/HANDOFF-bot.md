@@ -4,8 +4,8 @@
 
 ## Decidido ([05-arquitetura-bot.md](05-arquitetura-bot.md))
 
-- Monorepo pnpm workspaces: `apps/web` (Next.js/TypeScript), `apps/bot` (Node.js + TypeScript + discord.js), `packages/shared`.
-- Postgres self-hosted, Prisma, Auth.js — na mesma VM Oracle Cloud (São Paulo/Vinhedo).
+- Monorepo pnpm workspaces + Turborepo: `apps/web` (Next.js/TypeScript, só frontend), `apps/api` (NestJS, toda regra de negócio), `apps/bot` (Node.js + TypeScript + discord.js), `packages/types` (contrato do evento webhook).
+- Postgres self-hosted, MikroORM, JWT no NestJS — na mesma VM Oracle Cloud (São Paulo/Vinhedo). Ver [ADR-006](../adr/006-backend-separado-e-tooling.md), que corrige o ADR-005 nesses três pontos.
 - Escalabilidade: sharding desnecessário (1 servidor só), rate limit resolvido por execução sequencial (RF-059), fila de retry em memória no início.
 - Protocolo webhook, não polling — [ADR-003](../adr/003-webhook-nao-polling.md).
 - Escopo e permissões do bot — RF-047 a RF-062, [docs/discord/03-bot.md](03-bot.md).
