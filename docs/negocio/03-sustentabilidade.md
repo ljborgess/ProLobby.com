@@ -126,7 +126,7 @@ Entra quando o núcleo estiver rodando de fato, e aí vale a grelha completa. O 
 
 **É o único modelo de receita que melhora o cold start em vez de piorar.** Torneio tem data marcada, e data marcada concentra gente numa janela — exatamente a "largada coordenada" que a [tese de mercado](01-mercado.md) já prescreve como organização social. Cobra e gera liquidez no mesmo movimento, ao contrário de assinatura, que taxa a liquidez.
 
-4 times × 8 humanos = 32 inscritos × R$ 10 = **R$ 320**. Premiação 70% (R$ 224), plataforma retém 30% (R$ 96). Mensal, cobre MEI e hospedagem sozinho.
+**Estimativa de viabilidade, não decisão** (rebaixado em 2026-09-08 — o torneio não tem desenho completo, ver acima): 4 times × 8 humanos = 32 inscritos × R$ 10 = **R$ 320**. Premiação 70% (R$ 224), plataforma retém 30% (R$ 96). Se a conta fechar assim, cobre MEI e hospedagem sozinho — mas R$ 10 e o split 70/30 travam só quando o resto do desenho (chave, no-show, arbitragem) estiver pronto.
 
 Competição por habilidade com inscrição e premiação — regime jurídico distinto de aposta de quota fixa (ver seção final), mas exige CNPJ e orientação contábil.
 

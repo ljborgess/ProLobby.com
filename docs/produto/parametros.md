@@ -129,8 +129,8 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 | Fundador — janela | 30 dias ou 50 pessoas (o que vier primeiro) | [Sustentabilidade](../negocio/03-sustentabilidade.md) |
 | Fundador — pré-venda | última semana do beta, aos ~24 convidados, preço cheio | [Lançamento](../negocio/04-lancamento.md) |
 | Apoiador — mensalidade | R$ 9,90 | [Sustentabilidade](../negocio/03-sustentabilidade.md) |
-| Torneio — inscrição | R$ 10 por pessoa (adiado, fora do lançamento) | [Sustentabilidade](../negocio/03-sustentabilidade.md) |
-| Torneio — divisão | 70% premiação / 30% plataforma | [Sustentabilidade](../negocio/03-sustentabilidade.md) |
+| Torneio — inscrição | **estimativa** de viabilidade, não decidido — R$ 10 por pessoa (torneio sem desenho completo ainda: formato de chave, no-show, arbitragem) | [Sustentabilidade](../negocio/03-sustentabilidade.md) |
+| Torneio — divisão | **estimativa** de viabilidade, não decidido — 70% premiação / 30% plataforma | [Sustentabilidade](../negocio/03-sustentabilidade.md) |
 | Gatilho de assinatura recorrente | 300 contas ativas (≈700 se a entidade legal for ME, não MEI), ou custo estourar o free tier | [Sustentabilidade](../negocio/03-sustentabilidade.md) |
 | Reembolso | nenhum (enquadrado como apoio; banimento revoga cargo sem devolver) | [Termos](04-governanca/03-termos.md) |
 

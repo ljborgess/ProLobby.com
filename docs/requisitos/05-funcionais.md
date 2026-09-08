@@ -259,7 +259,7 @@ Cobertura por área, pra saber onde ainda não se olhou:
 ### RF-035 · Moderador parte do caso é travado, decidem os outros 3
 **Origem**: [produto/04-governanca/01-moderacao.md](../produto/04-governanca/01-moderacao.md)
 
-**Aceite**: moderador que é alvo da denúncia, autor dela, ou participante da partida em disputa não consegue abrir nem decidir o caso — a ação é recusada pelo sistema, não apenas desencorajada. Restando menos de 2 moderadores elegíveis, o caso fica pendente em vez de ser decidido por um só.
+**Aceite**: moderador que é alvo da denúncia, autor dela, ou participante da partida em disputa não consegue abrir nem decidir o caso — a ação é recusada pelo sistema, não apenas desencorajada. **O caso só é decidido com os 3 moderadores elegíveis presentes** — corrigido em 2026-09-08: restando 2 elegíveis o caso também fica pendente, porque 2 pessoas podem empatar 1×1 sem critério de desempate definido. Restando menos de 3, o caso espera até haver 3.
 
 ### RF-036 · Denunciado nunca vê quem denunciou
 **Origem**: [produto/04-governanca/01-moderacao.md](../produto/04-governanca/01-moderacao.md)
@@ -419,7 +419,7 @@ Mitiga o furo aberto pela ressalva da Virtual Pro única: nada impedia verificar
 ### RF-069 · Denúncia reincidente sem fundamento vira caso de conduta
 **Origem**: [produto/04-governanca/01-moderacao.md](../produto/04-governanca/01-moderacao.md)
 
-**Aceite**: padrão de denúncias arquivadas como improcedentes abre caso contra quem denunciou, avaliado pela moderação como qualquer outro.
+**Aceite**: **3 denúncias arquivadas como improcedentes em 30 dias** (janela móvel) abrem caso de conduta contra quem denunciou, avaliado pela moderação como qualquer outro. Número decidido em 2026-09-08 — o texto original não especificava quantidade nem janela.
 
 ### RF-070 · Tela nunca revela se um e-mail tem conta
 **Origem**: [produto/05-produto/01-onboarding.md](../produto/05-produto/01-onboarding.md)

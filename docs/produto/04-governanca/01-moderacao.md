@@ -7,7 +7,7 @@
 - Fase 1 (MVP): moderação feita pelos 4 (Luciano, Rafael, João, Felipe), com painel simples de fila de casos pendentes. Requisitos de segurança do painel (2FA obrigatório pros 4, log de auditoria de toda ação de moderador) documentados em [Dados pessoais e LGPD](02-lgpd.md#requisitos-de-segurança-independentes-de-stack) — o painel é o alvo de maior risco se comprometido (poder de kick/ban/editar disputa).
 - **Conflito de interesse — regra formal, não mais bom senso.** O sistema **bloqueia tecnicamente** a ação do moderador sobre um caso em que ele é parte: alvo da denúncia, autor dela, ou participante da partida em disputa ([Requisitos transversais](../../requisitos/01-transversais.md)). **Decidem os outros 3.**
   - O desenho anterior dizia que os 4 decidiam juntos mesmo assim, apostando no bom senso do grupo. Isso era exatamente o que um usuário contestaria — e numa comunidade BR de Pro Clubs pequena, esse tipo de história circula rápido. A trava custa pouco e não depende de confiança.
-  - Com 3 decidindo, empate não existe. Se sobrar apenas 1 moderador elegível (caso raro, dois sócios envolvidos), o caso espera até haver 2 — melhor atrasar que decidir sozinho num caso que envolve sócio.
+  - Com 3 decidindo, empate não existe. **Correção (2026-09-08)**: com 2 moderadores elegíveis ainda dá empate 1×1, sem critério de desempate — então o caso **só é decidido com os 3 elegíveis presentes**. Restando 2 ou menos (caso raro, dois sócios envolvidos no mesmo caso), o caso espera até haver 3 — melhor atrasar que decidir com risco de empate ou sozinho num caso que envolve sócio.
 
 ## Casos que caem em moderação
 
@@ -27,7 +27,7 @@
 
 - É limite de **casos em aberto**, não cota por período. Quem tem problema real raramente tem 3 simultâneos; quem quer inundar fica travado no terceiro.
 - Sem isso, uma pessoa dedicada derruba a capacidade dos 4 moderadores part-time sozinha — e a mensagem em `#suporte-e-denuncia` abre caso **automaticamente** ([Bot](../../discord/03-bot.md)), então não havia freio nenhum. A avaliação negativa por pares já tinha trava (5 de pessoas diferentes em partidas diferentes); a denúncia direta não tinha.
-- **Denúncia reincidente sem fundamento vira, ela mesma, caso de conduta** — o mecanismo não é só de vazão, é de responsabilidade.
+- **Denúncia reincidente sem fundamento vira, ela mesma, caso de conduta**: **3 denúncias arquivadas como improcedentes em 30 dias** (janela móvel, mesmo padrão dos outros contadores do dossiê) abrem caso de conduta contra quem denunciou — [RF-069](../../requisitos/05-funcionais.md#rf-069--denúncia-reincidente-sem-fundamento-vira-caso-de-conduta). O mecanismo não é só de vazão, é de responsabilidade.
 
 ## Denúncia é anônima pro denunciado
 

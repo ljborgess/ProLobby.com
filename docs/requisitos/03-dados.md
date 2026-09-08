@@ -80,9 +80,11 @@ Três regras do dossiê dependem desse log, não só o rollback:
 - **Reverter uma penalidade sem deixar rastro no histórico de reincidência** exige marcar o evento como revertido, não apagá-lo.
 
 ### CasoModeracao
-`tipo` · `estado` · `aberto_em` · `origem` (sistema / usuário / mensagem no Discord) · `lobby` · `conta_alvo` · `resolvido_por` · `resolvido_em` · `decisao`
+`tipo` · `estado` · `aberto_em` · `origem` (sistema / usuário / mensagem no Discord) · `lobby` · `conta_alvo` · `aberto_por` · `resolvido_por` · `resolvido_em` · `decisao`
 
 Os tipos são os já enumerados em [Moderação](../produto/04-governanca/01-moderacao.md), incluindo os abertos automaticamente.
+
+**`aberto_por` — gap fechado em 2026-09-08**: conta que abriu o caso (denunciante, contestante), ou `sistema` nos casos automáticos (acúmulo de avaliação negativa, retry de webhook esgotado). Sem esse campo, três requisitos não têm onde se apoiar: [RF-036](05-funcionais.md#rf-036--denunciado-nunca-vê-quem-denunciou) (painel precisa ver quem denunciou), [RF-068](05-funcionais.md#rf-068--máximo-de-3-denúncias-abertas-por-conta) (contar denúncias abertas por conta) e [RF-012](05-funcionais.md#rf-012--qualquer-humano-da-partida-contesta-uma-vez-cada) (bloquear 2ª contestação da mesma pessoa).
 
 ### LogAuditoria
 `ator` · `acao` · `alvo` · `detalhe` · `criado_em` — toda ação de moderador, inclusive **acesso a print de terceiro** ([Requisitos transversais](01-transversais.md)).
