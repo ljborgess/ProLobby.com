@@ -96,3 +96,5 @@ Tabela completa em `produto/05-produto/03-backlog.md`. Nenhuma é de requisito:
 ## Decidido: sem divisão de papéis
 
 Os 4 (Luciano, Rafael, João, Felipe) trabalham em conjunto, sem papel fixo por disciplina. Não é pendência, é decisão tomada.
+
+**Recorte de código (2026-09-08)**: dentro da parte de desenvolvimento especificamente, Luciano e Rafael codam; Luciano lidera de fato (mais investido, dono do contexto completo do dossiê) — atribui issue, revisa e aprova PR do Rafael. Não reabre a decisão acima sobre papel fixo no projeto como um todo, só descreve como o fluxo de código funciona (ver [ADR-006](docs/adr/006-backend-separado-e-tooling.md)).

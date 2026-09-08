@@ -15,10 +15,31 @@ build/
 apps/web/AGENTS.md
 apps/web/CLAUDE.md
 
-# env
+# env / segredo
 .env
 .env.local
 .env.*.local
+!.env.example
+*.pem
+*.key
+*.p12
+*.cert
+*.crt
+*credentials*.json
+*.sqlite
+*.sqlite3
+*.db
+
+# dado real de gente (piloto de OCR, docs/requisitos/06-piloto-ocr.md) —
+# prints de estranhos nunca são commitados, medidos e apagados no fim
+apps/*/piloto-ocr/prints/
+apps/*/piloto-ocr/*.csv
+**/*.local.png
+**/*.local.jpg
+
+# uploads locais de dev (print de verificação/resultado)
+apps/api/uploads/
+apps/*/tmp/
 
 # logs
 *.log
