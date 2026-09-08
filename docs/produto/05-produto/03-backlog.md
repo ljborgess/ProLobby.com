@@ -32,7 +32,7 @@ Estado da varredura mais recente: **~91% dos pontos de decisão do dossiê estã
 |---|---|---|
 | **Teste no jogo** ([checklist](../03-partida/05-checklist.md)) | escrever código | execução, bloqueador nº 1 |
 | **Piloto de OCR** ([06-piloto-ocr.md](../../requisitos/06-piloto-ocr.md)) | a plataforma, e a escolha de OCR | bloqueador nº 2 — único risco grande que exige código pra medir |
-| **Stack técnica** | escrever código | decisão adiada de propósito |
+| **Stack técnica** | escrever código | decisão adiada de propósito. Rascunho de hipótese pro bot (não decidido) em [docs/discord/05-arquitetura-bot.md](../../discord/05-arquitetura-bot.md) |
 | **MEI aceita a atividade?** ([Sustentabilidade](../../negocio/03-sustentabilidade.md)) | entidade legal, e o gatilho de preço | pergunta pra contador |
 | **Titular das contas e rateio entre os 4** ([tese de mercado](../../negocio/01-mercado.md)) | primeiro gasto recorrente | acordo entre sócios |
 | **Consulta jurídica** — redação Fundador/CDC, LGPD 16-17, entidade legal | receber dinheiro | três assuntos, uma consulta |

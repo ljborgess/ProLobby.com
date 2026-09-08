@@ -1,8 +1,10 @@
-# Arquitetura do bot — implementação
+# Arquitetura do bot — hipótese, não decisão
 
-Complementa [Bot: permissões e integração com moderação](03-bot.md) e [Integração técnica plataforma ↔ bot](04-integracao.md), que definem *o quê* e *o protocolo* (webhook, RF-047 a RF-062, ADR-003). Este doc registra *como* — a decisão de stack e estrutura de projeto, adiada de propósito até aqui (ver `docs/discord/03-bot.md`, `docs/produto/05-produto/03-backlog.md`).
+**Status: hipótese registrada, não decidida. Bloqueada pelos [dois bloqueadores](../../HANDOFF.md#os-dois-bloqueadores--leia-isto-antes-de-qualquer-coisa) do projeto** (checklist de mecânica + piloto de OCR) — a mesma regra de "stack só depois" que vale pro resto da plataforma vale aqui: RF-051, RF-052 e RF-055 (canais do lobby, prazos de deleção, gatilho do cargo Verificado) dependem diretamente do resultado dos testes 5, 6 e 7 do [checklist](../produto/03-partida/05-checklist.md) e do critério de aprovação do [piloto de OCR](../requisitos/06-piloto-ocr.md). Decidir stack do bot agora corre o risco de precisar refazer justamente as partes que mais mudam.
 
-## Estrutura: monorepo
+Complementa [Bot: permissões e integração com moderação](03-bot.md) e [Integração técnica plataforma ↔ bot](04-integracao.md), que definem *o quê* e *o protocolo* (webhook, RF-047 a RF-062, ADR-003) — essas partes já decididas continuam valendo. Este doc é rascunho de *como*, pra não perder o raciocínio, não uma decisão de stack (essa continua em `docs/discord/03-bot.md` como "fora de escopo, deliberadamente não decidido").
+
+## Estrutura hipotética: monorepo
 
 ```
 prolobby/
@@ -19,11 +21,13 @@ Gerenciador: pnpm workspaces.
 
 **Por que `apps/bot` separado de `apps/web`:** o bot mantém conexão persistente com o gateway do Discord (websocket) — não roda em ambiente serverless/edge do Next.js. Precisa ser processo próprio (VPS, Railway, Fly.io, container). `web` chama o `bot` via HTTP (webhook) quando um evento de negócio acontece.
 
-## Ordem de implementação
+## Ordem de implementação, se e quando os bloqueadores liberarem
 
-1. **`apps/bot` primeiro**, isolado e testável via evento fake (curl) simulando o webhook que a plataforma ainda não existe pra mandar.
-2. **`apps/web` fica stub** até o piloto de OCR (bloqueador n2) destravar perfil/fila — não há o que implementar em `web` antes disso.
-3. **`packages/shared`** nasce como stub (schema do evento com zod, por exemplo) e cresce junto com `bot`.
+1. `apps/bot`, isolado e testável via evento fake (curl) simulando o webhook que a plataforma ainda não existe pra mandar — só depois de RF-051/052/055 revisados com o resultado do checklist e do piloto de OCR.
+2. `apps/web` fica stub até o piloto de OCR destravar perfil/fila.
+3. `packages/shared` nasce como stub (schema do evento com zod, por exemplo) e cresce junto com `bot`.
+
+**Não codar nada disto antes dos dois bloqueadores rodarem** — ver [Handoff do bot](HANDOFF-bot.md).
 
 ## Escalabilidade e desempenho
 

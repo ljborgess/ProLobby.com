@@ -8,7 +8,7 @@ Plataforma de matchmaking/comunidade pra EA FC Pro Clubs: player cadastra seu(s)
 
 ## Relação com o projeto `escalacao-brasileirao`
 
-Projeto novo e independente — domínios diferentes (um é dado real de campeonato via API, o outro é matchmaking/comunidade de Pro Clubs). Nenhuma decisão de stack tomada ainda, deliberadamente adiada (ver [Backlog](../05-produto/03-backlog.md)).
+Projeto novo e independente — domínios diferentes (um é dado real de campeonato via API, o outro é matchmaking/comunidade de Pro Clubs). Nenhuma decisão de stack tomada ainda, deliberadamente adiada (ver [Backlog](../05-produto/03-backlog.md)) — só existe rascunho de hipótese pro bot do Discord, não decidido ([docs/discord/05-arquitetura-bot.md](../../discord/05-arquitetura-bot.md)).
 
 Reaproveitamento aprovado: **identidade visual (design system) do front-end atual** — não o backend/dados.
 

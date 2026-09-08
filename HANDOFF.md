@@ -76,7 +76,7 @@ Tabela completa em `produto/05-produto/03-backlog.md`. Nenhuma é de requisito:
 | Aberto | Natureza |
 |---|---|
 | Os dois bloqueadores acima | execução |
-| Stack técnica | adiada de propósito, depende dos bloqueadores |
+| Stack técnica | adiada de propósito, depende dos bloqueadores. Rascunho de hipótese pro bot (não decidido) em [docs/discord/05-arquitetura-bot.md](docs/discord/05-arquitetura-bot.md) |
 | MEI aceita a atividade de software? | pergunta pra contador — muda o gatilho de preço |
 | Titular das contas e rateio entre os 4 | acordo entre sócios, antes do 1º gasto recorrente |
 | Consulta jurídica | três assuntos numa consulta: redação de apoio/CDC, LGPD 16-17, entidade legal |

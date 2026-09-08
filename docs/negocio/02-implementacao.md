@@ -6,7 +6,7 @@ Uso interno dos 4. Ordem sugerida com base nas dependências já mapeadas no dos
 
 **Teste prático do mecanismo Pro Clubs** ([checklist completo](../produto/03-partida/05-checklist.md)) — custo quase zero (minutos, sem código), e decide se boa parte do desenho de lobby/Discord sobrevive como está. Fazer isso primeiro é a decisão de maior alavancagem possível: gastar tempo de engenharia no fluxo de capitão/clube antes de confirmar que ele funciona na prática é o jeito mais caro de descobrir que precisa mudar.
 
-Só depois disso faz sentido decidir **stack técnica** (deliberadamente adiada até aqui) — a resposta do teste pode influenciar decisão de stack (ex.: se o ciclo de convite for lento, importa mais ter backend que lida bem com espera assíncrona/fila do que outra coisa).
+Só depois disso faz sentido decidir **stack técnica** (deliberadamente adiada até aqui) — a resposta do teste pode influenciar decisão de stack (ex.: se o ciclo de convite for lento, importa mais ter backend que lida bem com espera assíncrona/fila do que outra coisa). Existe rascunho de hipótese pro bot do Discord ([docs/discord/05-arquitetura-bot.md](../discord/05-arquitetura-bot.md)), não decidido — bloqueado pela mesma regra.
 
 **O teto de custo já está resolvido**: R$ 0 no MVP, via free tier (ver [Sustentabilidade](03-sustentabilidade.md)). Isso restringe a stack — favorece o que roda inteiro num host só, sem serviço gerenciado pago. E desarma a escolha "OCR pago vs. biblioteca local": o volume do MVP cabe no free tier do provedor, então nessa escala nenhuma das duas custa nada, e a decisão passa a ser técnica em vez de financeira.
 

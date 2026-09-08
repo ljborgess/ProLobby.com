@@ -48,4 +48,4 @@ O que passa a ser verdade, incluindo o que fica pior.
 | [003](003-webhook-nao-polling.md) | Plataforma empurra pro bot via webhook | aceita |
 | [004](004-utc.md) | UTC internamente, local na exibição | aceita |
 
-Vazio a partir daqui até os bloqueadores retornarem. As primeiras a entrar serão **stack** e **motor de OCR** — a segunda decidida pelo [piloto](../requisitos/06-piloto-ocr.md).
+Vazio a partir daqui até os bloqueadores retornarem. As primeiras a entrar serão **stack** e **motor de OCR** — a segunda decidida pelo [piloto](../requisitos/06-piloto-ocr.md). Existe rascunho de hipótese de stack pro bot do Discord ([docs/discord/05-arquitetura-bot.md](../discord/05-arquitetura-bot.md)), mas não é ADR — não decidido, bloqueado como o resto.
