@@ -32,6 +32,7 @@ RNF é o que o sistema tem que **ser**, não o que tem que **fazer**. Vive separ
 - Cabe folgado numa VM de free tier, coerente com o teto de custo de R$ 0 no MVP ([Sustentabilidade](../negocio/03-sustentabilidade.md)).
 - Acima disso, o gargalo que aparece primeiro **não é o servidor**: 10 lobbies são 30 canais, e o teto do Discord é 500 (ver RF-053).
 - Não dimensionar pra 50: seria otimizar pra escala hipotética, princípio que o dossiê rejeita.
+- **Regra de custo (2026-09-08)**: aproximando do teto do free tier antes disso (capacidade Always Free caiu pra 2 OCPU/12GB em jun/2026), o sistema **pausa cadastro** em vez de forçar upgrade pago — [RF-072](05-funcionais.md#rf-072--cadastro-pausa-perto-do-teto-do-free-tier-sem-gasto-automático). Ideia ainda não validada não justifica gasto automático.
 
 ### RNF-005 · Crescimento de armazenamento limitado pela retenção
 **Origem**: [produto/04-governanca/02-lgpd.md](../produto/04-governanca/02-lgpd.md)

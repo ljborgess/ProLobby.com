@@ -2,7 +2,7 @@
 
 Lista numerada e rastreável. Formato e regras em [README](README.md).
 
-**Status: 9 áreas levantadas, RF-001 a RF-071 (RF-071 reservado, sem aceite), RNF-001 a RNF-020.** Nenhuma área permanece sem varredura de lacuna.
+**Status: 9 áreas levantadas, RF-001 a RF-072, RNF-001 a RNF-020.** Nenhuma área permanece sem varredura de lacuna.
 
 Cobre as 9 áreas do produto, mais os [não-funcionais](07-nao-funcionais.md) em arquivo próprio.
 
@@ -34,6 +34,8 @@ Cobertura por área, pra saber onde ainda não se olhou:
 **Origem**: [produto/05-produto/01-onboarding.md](../produto/05-produto/01-onboarding.md)
 
 **Aceite**: qualquer pessoa com e-mail válido e 16 anos ou mais completa o cadastro sem intervenção de ninguém. Nenhum campo de código de convite existe.
+
+**Exceção (2026-09-08)**: perto do teto do free tier, o cadastro pausa por [RF-072](#rf-072--cadastro-pausa-perto-do-teto-do-free-tier-sem-gasto-automático) — não é intervenção discricionária, é regra de capacidade automática e igual pra todos.
 
 ### RF-020 · Um e-mail, uma conta
 **Origem**: [produto/05-produto/01-onboarding.md](../produto/05-produto/01-onboarding.md)
@@ -430,3 +432,8 @@ Mitiga o furo aberto pela ressalva da Virtual Pro única: nada impedia verificar
 **Origem**: gap encontrado em auditoria, decidido em 2026-09-08 · [produto/03-partida/04-resultado.md](../produto/03-partida/04-resultado.md)
 
 **Aceite**: 1ª e 2ª ocorrência de zero-report em 30 dias aplicam −3 de reputação (já coberto por [Resultado](../produto/03-partida/04-resultado.md)). Da 3ª ocorrência em diante, dentro da mesma janela móvel de 30 dias, o valor sobe **+3 a cada nova ocorrência**: 3ª → −6, 4ª → −9, 5ª → −12, e assim por diante. Contador de reincidência zera quando a ocorrência mais antiga sai da janela móvel de 30 dias — mesmo mecanismo do contador de timeout de fila ([Requisitos transversais](01-transversais.md)).
+
+### RF-072 · Cadastro pausa perto do teto do free tier, sem gasto automático
+**Origem**: decidido em 2026-09-08 · [negocio/03-sustentabilidade.md](../negocio/03-sustentabilidade.md)
+
+**Aceite**: aproximando-se do teto de qualquer recurso do free tier (chamadas de OCR no mês, capacidade da VM pros 10 lobbies simultâneos), novo cadastro é recusado com mensagem de fila de espera, e a pessoa é avisada quando reabrir. Não existe caminho automático que gere custo — passar do free tier nunca vira cobrança sem decisão humana explícita dos 4 sócios. Vale enquanto a ideia não estiver validada (critério de saída do beta, ver [Lançamento](../negocio/04-lancamento.md)); revisar quando decidirem pagar por infra conscientemente.
