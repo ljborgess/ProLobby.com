@@ -59,3 +59,8 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 .idea/
+
+# agent skills instaladas localmente (caveman etc) - nao versionadas
+.agents/
+.claude/skills/
+skills-lock.json
