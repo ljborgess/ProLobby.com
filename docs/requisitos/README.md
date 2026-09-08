@@ -18,6 +18,7 @@ Quem vai implementar segue esta pasta e consulta `produto/` quando quiser entend
 5. [Requisitos funcionais](05-funcionais.md) — a lista numerada e rastreável, com critério de aceite
 6. [Requisitos não-funcionais](07-nao-funcionais.md) — RNF-001 a RNF-020: desempenho, capacidade, recuperação, segurança, compatibilidade, operação
 7. [Piloto de OCR](06-piloto-ocr.md) — **bloqueador nº 2**: o único risco grande que exige código pra ser medido
+8. [Checklist de segurança](08-seguranca-checklist.md) — 18 itens de implementação, regra permanente a partir da 1ª linha de código de backend
 
 ## Como ler um requisito funcional
 

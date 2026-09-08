@@ -59,6 +59,8 @@ Ter o número escrito é o que transforma "tem backup" em compromisso verificáv
 
 ## Segurança
 
+> Ver também [checklist de segurança](08-seguranca-checklist.md) — 18 itens de prática de implementação, aplicados a partir da 1ª linha de código de backend, não só os RNFs abaixo.
+
 ### RNF-009 · Dado sensível criptografado em repouso
 **Origem**: [produto/04-governanca/02-lgpd.md](../produto/04-governanca/02-lgpd.md)
 

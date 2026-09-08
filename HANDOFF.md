@@ -34,9 +34,10 @@ docs/
 │   └── 05-produto/   01-onboarding · 02-escopo · 03-backlog
 ├── requisitos/   O QUE o sistema faz — comportamento verificável
 │   ├── 01-transversais · 02-estados · 03-dados · 04-notificacoes
-│   ├── 05-funcionais       RF-001 a RF-070
+│   ├── 05-funcionais       RF-001 a RF-071
 │   ├── 06-piloto-ocr       bloqueador nº 2
-│   └── 07-nao-funcionais   RNF-001 a RNF-020
+│   ├── 07-nao-funcionais   RNF-001 a RNF-020
+│   └── 08-seguranca-checklist   18 itens, aplicar desde a 1ª linha de código de backend
 ├── adr/          decisão técnica difícil de reverter (001 a 004; stack entra aqui)
 ├── discord/      01-cargos · 02-canais · 03-bot · 04-integracao
 └── negocio/      01-mercado · 02-implementacao · 03-sustentabilidade · 04-lancamento
