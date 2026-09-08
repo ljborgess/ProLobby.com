@@ -52,4 +52,4 @@ O bot é o **motor único de automação** entre a plataforma (aplicação web) 
 
 ## Fora de escopo aqui
 
-- Qual plataforma/framework de bot, hospedagem, linguagem — isso é **stack técnica**, deliberadamente não decidido ainda (ver [Backlog](../produto/05-produto/03-backlog.md)). Este arquivo define responsabilidade e permissão, não implementação. Existe rascunho de hipótese não decidida em [05-arquitetura-bot.md](05-arquitetura-bot.md), bloqueado pelos mesmos dois bloqueadores.
+- Qual plataforma/framework de bot, hospedagem, linguagem — isso é **stack técnica**, decidida em 2026-09-08 (ver [ADR-005](../adr/005-stack-tecnica.md) e [05-arquitetura-bot.md](05-arquitetura-bot.md)). Este arquivo define responsabilidade e permissão, não implementação.

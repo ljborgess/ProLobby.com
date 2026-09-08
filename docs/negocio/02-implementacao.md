@@ -2,17 +2,17 @@
 
 Uso interno dos 4. Ordem sugerida com base nas dependências já mapeadas no dossiê — não é cronograma com data, é sequência lógica (o que trava o quê).
 
-## 0. Antes de escrever qualquer código
+## 0. Stack decidida antes dos bloqueadores — risco aceito conscientemente
 
-**Teste prático do mecanismo Pro Clubs** ([checklist completo](../produto/03-partida/05-checklist.md)) — custo quase zero (minutos, sem código), e decide se boa parte do desenho de lobby/Discord sobrevive como está. Fazer isso primeiro é a decisão de maior alavancagem possível: gastar tempo de engenharia no fluxo de capitão/clube antes de confirmar que ele funciona na prática é o jeito mais caro de descobrir que precisa mudar.
+**Stack técnica decidida em 2026-09-08** ([ADR-005](../adr/005-stack-tecnica.md)): Next.js/TypeScript, bot Node.js/TypeScript/discord.js, Postgres self-hosted, Prisma, Auth.js, Oracle Cloud Free Tier (São Paulo/Vinhedo). Decidido antes do [checklist no jogo](../produto/03-partida/05-checklist.md) rodar, porque o checklist não tinha previsão de acontecer no curto prazo — travar toda decisão técnica indefinidamente custava mais que o risco identificado.
 
-Só depois disso faz sentido decidir **stack técnica** (deliberadamente adiada até aqui) — a resposta do teste pode influenciar decisão de stack (ex.: se o ciclo de convite for lento, importa mais ter backend que lida bem com espera assíncrona/fila do que outra coisa). Existe rascunho de hipótese pro bot do Discord ([docs/discord/05-arquitetura-bot.md](../discord/05-arquitetura-bot.md)), não decidido — bloqueado pela mesma regra.
+**O que ainda depende do checklist, especificamente**: RF-051, RF-052 e RF-055 (canais do lobby, prazos de deleção, gatilho do cargo Verificado) — são decisão de **produto** (tamanho de lobby, premissa de verificação), não de tecnologia, e podem exigir retrabalho quando o teste 6 (IA cobrindo vaga) ou o teste 7 (Virtual Pro única) rodarem. A stack em si não muda por causa disso.
 
-**O teto de custo já está resolvido**: R$ 0 no MVP, via free tier (ver [Sustentabilidade](03-sustentabilidade.md)). Isso restringe a stack — favorece o que roda inteiro num host só, sem serviço gerenciado pago. E desarma a escolha "OCR pago vs. biblioteca local": o volume do MVP cabe no free tier do provedor, então nessa escala nenhuma das duas custa nada, e a decisão passa a ser técnica em vez de financeira.
+**O teto de custo já está resolvido**: R$ 0 no MVP, via free tier (ver [Sustentabilidade](03-sustentabilidade.md)) — Next.js + Postgres + bot cabem na mesma VM Oracle. E desarma a escolha "OCR pago vs. biblioteca local" no início: o piloto testa primeiro com Tesseract (grátis), comparando com Google Vision (free tier) só se a taxa vier baixa.
 
-**Primeiro trabalho de engenharia: o [piloto de OCR](../requisitos/06-piloto-ocr.md)** — bloqueador nº 2. Dos cinco riscos do projeto, quatro se resolvem jogando ou com gente; o OCR é o único que exige código pra ser medido, e roda isolado (um script sobre 50 prints reais, sem conta, sem banco, sem tela). Vem antes de qualquer parte da plataforma, em paralelo ao checklist.
+**Primeiro trabalho de engenharia: o [piloto de OCR](../requisitos/06-piloto-ocr.md)** — bloqueador nº 2. Continua sendo a única coisa que exige código pra medir um risco real (taxa de acerto do OCR em print de estranho); roda isolado, sem conta, sem banco, sem tela, antes de qualquer parte da plataforma.
 
-> A ordem por dependência abaixo continua correta pra responder *o que dá pra construir*. Ela não responde *o que construir primeiro*, que é ordenado por risco.
+> A ordem por dependência abaixo continua correta pra responder *o que dá pra construir*. O checklist no jogo segue valendo a pena rodar assim que possível — não trava mais o começo da engenharia, mas trava a implementação final do item 3 (fechamento do lobby).
 
 ## 1. Discord primeiro (configuração, não código)
 
@@ -68,6 +68,6 @@ Produto pronto não vai direto pro público: roda **beta fechado gratuito** com 
 
 ## Resumo — o que fazer essa semana
 
-1. Rodar o [checklist de teste no jogo](../produto/03-partida/05-checklist.md) (item 0) — zero código, alguém dos 4 só precisa jogar.
-2. Montar o servidor Discord (item 1) — configuração manual, pode rodar em paralelo com o teste.
-3. Só depois: decidir stack e começar o núcleo da plataforma (item 2).
+1. Stack já decidida ([ADR-005](../adr/005-stack-tecnica.md)) — pode começar o piloto de OCR e o núcleo da plataforma (item 2) já.
+2. Montar o servidor Discord (item 1) — configuração manual, em paralelo com o resto.
+3. Rodar o [checklist de teste no jogo](../produto/03-partida/05-checklist.md) assim que possível — não bloqueia mais o início, mas bloqueia a implementação final do fechamento de lobby (item 3).

@@ -19,7 +19,7 @@ Ver [`README.md`](README.md). Origem: ideia nasceu numa sessão sobre o projeto 
 1. **[Checklist no jogo](docs/produto/03-partida/05-checklist.md)** — 8 testes, custa minutos e nenhum dinheiro. Valida o mecanismo de capitão/clube em que todo o fluxo de partida se apoia. O teste 6 é o mais crítico do projeto: se o Amistoso Online **não** aceitar a IA cobrindo vaga, o piso de 8 humanos cai e a solução de cold start inteira vai com ele.
 2. **[Piloto de OCR](docs/requisitos/06-piloto-ocr.md)** — um script sobre 50 prints reais **de estranhos**, sem conta, sem banco, sem tela. É o único risco grande que exige código pra ser medido, e decide de quebra a escolha entre OCR pago e local.
 
-Os dois rodam em paralelo. **Stack técnica só depois** — o retorno deles muda três parâmetros marcados como "a calibrar" (os 5 min de confirmação de convite, os 60 min de silêncio total, e se o modelo de 5 personagens sobrevive ao que o jogo oferece).
+Os dois rodam em paralelo, mas ainda não rodaram — **stack técnica foi decidida mesmo assim (2026-09-08, [ADR-005](docs/adr/005-stack-tecnica.md))**, risco aceito porque o checklist não tinha previsão de acontecer no curto prazo. O que ainda espera o retorno dos bloqueadores: três parâmetros marcados como "a calibrar" (os 5 min de confirmação de convite, os 60 min de silêncio total, e se o modelo de 5 personagens sobrevive ao que o jogo oferece) e a implementação de RF-051/052/055.
 
 ## Estrutura da documentação
 
@@ -38,7 +38,7 @@ docs/
 │   ├── 06-piloto-ocr       bloqueador nº 2
 │   ├── 07-nao-funcionais   RNF-001 a RNF-020
 │   └── 08-seguranca-checklist   18 itens, aplicar desde a 1ª linha de código de backend
-├── adr/          decisão técnica difícil de reverter (001 a 004; stack entra aqui)
+├── adr/          decisão técnica difícil de reverter (001 a 005; 005 é a stack)
 ├── discord/      01-cargos · 02-canais · 03-bot · 04-integracao
 └── negocio/      01-mercado · 02-implementacao · 03-sustentabilidade · 04-lancamento
 ```
@@ -64,9 +64,9 @@ Se você só puder ler cinco coisas, leia estas:
 
 ## Como continuar
 
-1. **Rodar os dois bloqueadores acima.** Nada mais tem prioridade sobre isso.
-2. Anotar os resultados **no próprio checklist** e atualizar `produto/03-partida/01-mecanica.md`, trocando as premissas presumidas pelo que foi confirmado.
-3. Só então: decidir stack e começar pela ordem de `negocio/02-implementacao.md`.
+1. **Stack decidida** ([ADR-005](docs/adr/005-stack-tecnica.md)) — dá pra começar o `apps/bot` e o esqueleto de `apps/web` já, seguindo a ordem de `negocio/02-implementacao.md`.
+2. **Rodar os dois bloqueadores continua prioridade pra RF-051/052/055 e pros 3 parâmetros "a calibrar"** — não bloqueiam mais o resto da stack, mas bloqueiam essas partes específicas.
+3. Anotar os resultados **no próprio checklist** quando rodar, e atualizar `produto/03-partida/01-mecanica.md`, trocando as premissas presumidas pelo que foi confirmado.
 4. Se for seguir levantando requisito: use a skill `grill-me`. As lacunas abertas estão tabeladas em `produto/05-produto/03-backlog.md` — não regrilar item já marcado como adiado de propósito sem motivo novo.
 5. Front-end: design system em `produto/01-visao/01-visao.md`.
 
@@ -77,7 +77,7 @@ Tabela completa em `produto/05-produto/03-backlog.md`. Nenhuma é de requisito:
 | Aberto | Natureza |
 |---|---|
 | Os dois bloqueadores acima | execução |
-| Stack técnica | adiada de propósito, depende dos bloqueadores. Rascunho de hipótese pro bot (não decidido) em [docs/discord/05-arquitetura-bot.md](docs/discord/05-arquitetura-bot.md) |
+| Stack técnica | **decidida em 2026-09-08**, antes dos bloqueadores (ver [ADR-005](docs/adr/005-stack-tecnica.md)) — risco aceito: RF-051/052/055 podem exigir retrabalho quando o checklist rodar |
 | Titular das contas e rateio entre os 4 | acordo entre sócios, antes do 1º gasto recorrente |
 | Consulta jurídica | três assuntos numa consulta: redação de apoio/CDC, LGPD 16-17, entidade legal |
 | Desenho de torneio/liga | adiado por decisão: validar o núcleo primeiro |

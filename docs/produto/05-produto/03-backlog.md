@@ -14,6 +14,7 @@ Itens explicitamente adiados — mencionados ou identificados, mas sem desenho d
 ## Saiu do backlog — já decidido
 
 - **Monetização** — deixou de ser ideia solta: [Sustentabilidade](../../negocio/03-sustentabilidade.md) desenha **Fundador** (R$ 49, pagamento único, janela de 30 dias ou 50 pessoas, no lançamento) e **Apoiador** (R$ 9,90/mês, disponível desde o lançamento, converte de verdade só no gatilho de ~700 contas ativas — ME no Simples, MEI descartado); torneio com inscrição rebaixado a estimativa de viabilidade, sem desenho completo ainda. MVP segue **100% gratuito**, sem paywall. A **linha vermelha** que saiu disso é decisão fixa e não revisável do produto: *nada que altere fila, elo, escolha de capitão ou resultado é vendável* — o que inclui **prioridade de fila paga**, descartada por colidir com a escada de punição ([Ranking, reputação e punição](../02-jogador/02-ranking.md)), que já usa prioridade de fila como moeda de bom comportamento.
+- **Stack técnica** — decidida em 2026-09-08, antes dos bloqueadores por decisão do time (checklist sem previsão de acontecer no curto prazo). Ver [ADR-005](../../adr/005-stack-tecnica.md): Next.js/TypeScript, Postgres self-hosted, Prisma, Auth.js, Oracle Cloud (São Paulo/Vinhedo). Risco aceito: RF-051/052/055 podem exigir retrabalho quando o checklist rodar.
 - **Aposta em dinheiro por jogador/lobby** — **descartado, não adiado.** A Lei 14.790/2023 exige autorização federal com outorga de R$ 30 milhões pra operar aposta de quota fixa; não existe versão pequena nem caminho informal, e operar sem autorização tem exposição criminal pessoal. Substituído pelo item de torneio com inscrição acima.
 
 ## Fase 2
@@ -32,17 +33,12 @@ Estado da varredura mais recente (2026-09-08): **região do free tier** (Oracle 
 |---|---|---|
 | **Teste no jogo** ([checklist](../03-partida/05-checklist.md)) | escrever código | execução, bloqueador nº 1 |
 | **Piloto de OCR** ([06-piloto-ocr.md](../../requisitos/06-piloto-ocr.md)) | a plataforma, e a escolha de OCR | bloqueador nº 2 — único risco grande que exige código pra medir |
-| **Stack técnica** | escrever código | decisão adiada de propósito. Rascunho de hipótese pro bot (não decidido) em [docs/discord/05-arquitetura-bot.md](../../discord/05-arquitetura-bot.md) |
 | **Titular das contas e rateio entre os 4** ([tese de mercado](../../negocio/01-mercado.md)) | primeiro gasto recorrente | acordo entre sócios |
 | **Consulta jurídica** — redação Fundador/CDC, LGPD 16-17, entidade legal | receber dinheiro | três assuntos, uma consulta |
 | **Desenho de torneio/liga** — formato, no-show, arbitragem, premiação | receita de torneio (adiada) | grelha própria, depois do núcleo |
 | **Preço do Fundador com pacote reduzido** ([Sustentabilidade](../../negocio/03-sustentabilidade.md)) | nada — a pré-venda mede | revisar se R$ 49 sustenta |
 
 Riscos aceitos conscientemente, não lacunas: [conluio de resultado](../02-jogador/02-ranking.md), dependência estrutural da mecânica da EA e ausência de reembolso ([tese de mercado](../../negocio/01-mercado.md)).
-
-## Deliberadamente não decidido
-
-- **Stack técnica** (backend, banco, infra) — adiado até o dossiê de produto fechar.
 
 ## Decidido: sem divisão formal
 
