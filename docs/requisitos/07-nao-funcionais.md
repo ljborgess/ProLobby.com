@@ -88,6 +88,8 @@ Por que 2 anos e não "para sempre": o log **liga pessoa a denúncia e punição
 
 **Aceite**: o token não aparece em repositório, log nem mensagem de erro. Token commitado permanece no histórico do git mesmo depois de removido.
 
+**Rotação (decidido em 2026-09-08)**: sem rotação periódica agendada — MVP com 4 sócios, baixo risco de vazamento por processo, e rotação agendada é custo operacional sem benefício proporcional nesse tamanho de time. Rotaciona só sob suspeita ou confirmação de vazamento: regenerar o token no Developer Portal, atualizar a variável de ambiente, revisar `#log-moderacao` em busca de ação não reconhecida no período suspeito.
+
 ## Compatibilidade e acesso
 
 ### RNF-014 · Duas últimas versões dos navegadores atuais, celular incluído

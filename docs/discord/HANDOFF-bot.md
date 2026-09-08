@@ -20,10 +20,10 @@
 3. `produto/03-partida/01-mecanica.md` atualizado com o resultado, e RF-051/052/055 revisados conforme.
 4. Só então: decidir stack de verdade (pode confirmar a hipótese acima ou mudar) e configurar servidor Discord manualmente ([README](README.md), RF-062).
 
-## Riscos ainda sem dono
+## Riscos
 
-- Token do bot como ponto único de falha, sem rotação periódica prevista (`docs/research/investigacao-design-2026-09-04.md`).
-- Região de hospedagem / transferência internacional de dado — não verificado.
+- Token do bot como ponto único de falha — **decidido (2026-09-08)**: sem rotação periódica agendada, rotaciona só sob suspeita de vazamento (ver [RNF-013](../requisitos/07-nao-funcionais.md#rnf-013--token-do-bot-só-em-variável-de-ambiente)).
+- Região de hospedagem / transferência internacional de dado — não verificado, ainda sem dono.
 
 ## Referências
 

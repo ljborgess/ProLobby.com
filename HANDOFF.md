@@ -90,6 +90,8 @@ Tabela completa em `produto/05-produto/03-backlog.md`. Nenhuma é de requisito:
 - **Smurf com investimento**: conta EA nova + Discord novo + console novo passa. O vínculo pega recriação preguiçosa, não quem investe.
 - **Dependência da mecânica da EA**: sem API nem contrato, qualquer patch pode mudar a base do produto. Mitigação é disciplina operacional, não engenharia.
 - **Sem reembolso** no apoio de Fundador, se houver cobrança.
+- **[RF-033](docs/requisitos/05-funcionais.md#rf-033--clube-em-uso-não-é-candidato-em-outro-lobby)**: trava a conta inteira quando 1 dos até 3 clubes simultâneos (FC26) está em uso, mesmo os outros 2 livres. Mudar exigiria cadastro/OCR de 3 clubes por conta — escopo grande demais pro ganho.
+- **Rotação de token do bot**: sem agenda periódica, só sob suspeita de vazamento (ver [RNF-013](docs/requisitos/07-nao-funcionais.md#rnf-013--token-do-bot-só-em-variável-de-ambiente)) — custo operacional desproporcional pra 4 sócios part-time.
 
 ## Decidido: sem divisão de papéis
 

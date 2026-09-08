@@ -172,7 +172,7 @@ Cobertura por área, pra saber onde ainda não se olhou:
 
 **Aceite**: enquanto um lobby não terminal usa o clube de uma conta, ela é excluída da cascata de capitão em qualquer outro lobby. Encerrado o lobby, volta a ser candidata.
 
-> **Gap conhecido, sem dono**: desde FC26 uma conta pode ter até 3 clubes simultâneos ([Mecânica](../produto/03-partida/01-mecanica.md)), mas este RF trava a **conta inteira**, não só o clube em uso — mais conservador do que o jogo permitiria (a conta poderia ceder um dos outros 2 clubes livres). Identificado em `docs/research/investigacao-design-2026-09-04.md` (seção 3) e confirmado em auditoria (2026-09-08), sem decisão registrada em nenhuma das duas vezes. Mudar a regra exigiria a plataforma saber quais dos 3 clubes de uma conta estão livres — dado que não existe hoje. Não resolver sem decisão explícita.
+> **Decisão consciente (2026-09-08), não gap**: desde FC26 uma conta pode ter até 3 clubes simultâneos ([Mecânica](../produto/03-partida/01-mecanica.md)), e este RF trava a **conta inteira**, não só o clube em uso — mais conservador do que o jogo permitiria (a conta poderia ceder um dos outros 2 clubes livres). Identificado em `docs/research/investigacao-design-2026-09-04.md` (seção 3), confirmado em auditoria (2026-09-08) e **mantido como está**: mudar exigiria pedir e validar por OCR os 3 clubes no cadastro de personagem em vez de 1, e repensar a cascata de capitão inteira — escopo grande demais pro ganho, fora do MVP. Revisar só se o volume de "cascata esgotada por clube ocupado" mostrar que é gargalo real.
 
 ### RF-034 · Votação de formação só conta voto de humano do próprio lado
 **Origem**: [produto/03-partida/02-fila.md](../produto/03-partida/02-fila.md)
@@ -426,7 +426,7 @@ Mitiga o furo aberto pela ressalva da Virtual Pro única: nada impedia verificar
 
 **Aceite**: cadastro e recuperação de senha devolvem a mesma resposta independente de o endereço existir. A distinção chega por e-mail, para a pessoa que é dona dele.
 
-### RF-071 · Reservado — escalada de zero-report reincidente
-**Origem**: gap encontrado em auditoria (2026-09-08) · [produto/parametros.md](../produto/parametros.md)
+### RF-071 · Zero-report reincidente dobra a penalidade
+**Origem**: gap encontrado em auditoria, decidido em 2026-09-08 · [produto/03-partida/04-resultado.md](../produto/03-partida/04-resultado.md)
 
-**Status**: número reservado, sem aceite ainda. [Resultado de partida](../produto/03-partida/04-resultado.md) diz que zero-report aplica −3 de reputação por evento e "escala só em reincidência" na 3ª vez em 30 dias, sem especificar em quê consiste a escalada (mais pontos? suspensão? outro efeito?). Decidir a regra e escrever o aceite antes de implementar qualquer penalidade de zero-report.
+**Aceite**: 1ª e 2ª ocorrência de zero-report em 30 dias aplicam −3 de reputação (já coberto por [Resultado](../produto/03-partida/04-resultado.md)). Da 3ª ocorrência em diante, dentro da mesma janela móvel de 30 dias, o valor sobe **+3 a cada nova ocorrência**: 3ª → −6, 4ª → −9, 5ª → −12, e assim por diante. Contador de reincidência zera quando a ocorrência mais antiga sai da janela móvel de 30 dias — mesmo mecanismo do contador de timeout de fila ([Requisitos transversais](01-transversais.md)).
