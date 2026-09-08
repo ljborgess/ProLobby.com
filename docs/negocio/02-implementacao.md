@@ -56,7 +56,7 @@ Não bloqueia desenvolvimento interno/teste com os 4, mas bloqueia abrir pra for
 - Painel de moderação com **2FA obrigatório** e **log de auditoria de toda ação** ([Moderação](../produto/04-governanca/01-moderacao.md)) — maior alvo de risco se comprometido.
 - Termos de Uso + Política de Privacidade publicados ([Termos de uso](../produto/04-governanca/03-termos.md)).
 - Retenção automática de dados (LGPD, [02-lgpd.md](../produto/04-governanca/02-lgpd.md)).
-- Entidade legal aberta **antes da pré-venda** (fim do beta menos 7 dias), não antes da abertura pública. **Confirmar com contador se MEI aceita a atividade** — se não, é ME no Simples e o custo sobe de ~R$ 76 pra R$ 200-300/mês, mudando o gatilho de assinatura (ver [Sustentabilidade](03-sustentabilidade.md)).
+- Entidade legal aberta **antes da pré-venda** (fim do beta menos 7 dias), não antes da abertura pública. **MEI não aceita a atividade** (confirmado por CNAE, 2026-09-08) — é ME no Simples, custo R$ 200-300/mês em vez de R$ 76, gatilho de assinatura em ~700 contas ativas (ver [Sustentabilidade](03-sustentabilidade.md)).
 - **Tela de contagem no painel** com os 4 números do critério de saída do beta e as 3 métricas de sucesso, direto do banco, sem ferramenta de terceiro (ver [Lançamento](04-lancamento.md)).
 - **Cobrança de lançamento**, que é dias de trabalho e não semanas, porque não tem gateway: chave PIX com confirmação manual, ação "ativar plano" no painel de moderação (mesmo log de auditoria), cargo Fundador/Apoiador via a esteira de bot já existente, e uma página de venda com o risco dito antes do pagamento. Redação revisada junto com os Termos ([Termos de uso](../produto/04-governanca/03-termos.md)) — o enquadramento de apoio depende dela.
 

@@ -24,7 +24,7 @@ Motivo: sem isso você chega na abertura pública apostando um preço que ningu�
 - Quem compra vira **taxa de conversão real** pra projetar na abertura. 5 de 24 é 21%, e isso dimensiona o quanto esperar das 50 vagas.
 - **Preço cheio, sem desconto** — coerente com a decisão de não dar Fundador de graça nem barato a quem testou ([recompensa do beta](#o-que-o-grupo-recebe)). O que o beta ganha é o cargo Beta; o Fundador ele compra como qualquer um.
 - Gasta ~5 das 50 vagas. Barato pelo que informa.
-- Exige **MEI/entidade legal e Termos já prontos** antes dessa semana — não é o fim do beta, é o fim menos sete dias. Isso antecipa a formalização no cronograma.
+- Exige **entidade legal (ME no Simples, não MEI) e Termos já prontos** antes dessa semana — não é o fim do beta, é o fim menos sete dias. Isso antecipa a formalização no cronograma.
 
 ### Por que o beta existe
 
@@ -103,8 +103,7 @@ Dispara quando o critério de saída fecha. Tudo ao mesmo tempo:
 | Núcleo da plataforma + lobby + resultado | o desenvolvimento em si | beta |
 | Recrutamento dos ~24 convidados | trabalho de comunidade, paralelo ao desenvolvimento | beta |
 | **Beta fechado, gratuito** | tempo indeterminado, até o critério bater | abertura |
-| Consulta com contador (MEI serve? ver [Sustentabilidade](03-sustentabilidade.md)) | uma conversa | entidade legal, e o modelo de preço |
-| Entidade legal + página de venda + Termos revisados | dias | **pré-venda**, que é o fim do beta menos 7 dias |
+| Entidade legal — ME no Simples (MEI descartado, ver [Sustentabilidade](03-sustentabilidade.md)) + página de venda + Termos revisados | dias | **pré-venda**, que é o fim do beta menos 7 dias |
 | **Pré-venda do Fundador aos 24 do beta** | última semana do beta | dimensionar a abertura |
 | **Abertura pública + janela de Fundador** | — | — |
 

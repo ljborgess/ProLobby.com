@@ -26,14 +26,13 @@ Itens explicitamente adiados — mencionados ou identificados, mas sem desenho d
 
 ## Lacunas abertas — o que falta decidir ou verificar
 
-Estado da varredura mais recente (2026-09-08): **região do free tier fechada** (Oracle Cloud, São Paulo/Vinhedo — ver [Sustentabilidade](../../negocio/03-sustentabilidade.md)), saiu da lista. O que resta, com o que cada item bloqueia:
+Estado da varredura mais recente (2026-09-08): **região do free tier** (Oracle Cloud, São Paulo/Vinhedo) e **MEI** (não aceita a atividade, confirmado por CNAE) saíram da lista — ver [Sustentabilidade](../../negocio/03-sustentabilidade.md). O que resta, com o que cada item bloqueia:
 
 | Aberto | Bloqueia | Natureza |
 |---|---|---|
 | **Teste no jogo** ([checklist](../03-partida/05-checklist.md)) | escrever código | execução, bloqueador nº 1 |
 | **Piloto de OCR** ([06-piloto-ocr.md](../../requisitos/06-piloto-ocr.md)) | a plataforma, e a escolha de OCR | bloqueador nº 2 — único risco grande que exige código pra medir |
 | **Stack técnica** | escrever código | decisão adiada de propósito. Rascunho de hipótese pro bot (não decidido) em [docs/discord/05-arquitetura-bot.md](../../discord/05-arquitetura-bot.md) |
-| **MEI aceita a atividade?** ([Sustentabilidade](../../negocio/03-sustentabilidade.md)) | entidade legal, e o gatilho de preço | pergunta pra contador |
 | **Titular das contas e rateio entre os 4** ([tese de mercado](../../negocio/01-mercado.md)) | primeiro gasto recorrente | acordo entre sócios |
 | **Consulta jurídica** — redação Fundador/CDC, LGPD 16-17, entidade legal | receber dinheiro | três assuntos, uma consulta |
 | **Desenho de torneio/liga** — formato, no-show, arbitragem, premiação | receita de torneio (adiada) | grelha própria, depois do núcleo |

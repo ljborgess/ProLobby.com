@@ -22,19 +22,19 @@ O dossiê tratava o custo como não estimado, e o OCR como "o item mais imprevis
 
 **Cobrança não resolve o dia 1, e a matemática é direta**: o DAS do MEI em serviços está em torno de **R$ 76/mês** — mais que a plataforma inteira custa. Formalizar pra poder cobrar dobra o custo que se quer eliminar. Só fecha a conta quando a receita cobre a plataforma **e** o custo de existir formalmente.
 
-> ### Verificação pendente que muda esta conta — a de maior alavancagem hoje
+> ### Confirmado (2026-09-08) — sem contador acessível pro projeto, fechado por regra pública de CNAE
 >
-> **MEI provavelmente não aceita a atividade.** A lista de ocupações permitidas ao MEI exclui desenvolvimento e licenciamento de software, e uma plataforma de matchmaking com assinatura tende a cair aí — não em prestação de serviço genérica.
+> **MEI não aceita a atividade.** Os dois CNAEs relevantes pra ProLobby são vedados ao MEI: **6201-5/01** (desenvolvimento de programas de computador sob encomenda) e **6209-1/00** (suporte técnico e outros serviços em TI) — atividade de natureza intelectual, fora da lista permitida. Regra pública e objetiva, não depende de interpretação de caso — fechado sem consulta a contador porque o projeto não tem um disponível; não dispensa acompanhamento profissional na hora de abrir a empresa de verdade.
 >
-> Se confirmar, a formalização não custa R$ 76/mês: vira **ME no Simples Nacional, com contador, algo entre R$ 200 e R$ 300/mês**. O efeito em cascata:
+> Formalização não custa R$ 76/mês: vira **ME no Simples Nacional, com contador, algo entre R$ 200 e R$ 300/mês**. O efeito em cascata:
 >
-> | | MEI (R$ 76) | ME (R$ 250) |
+> | | MEI (R$ 76, descartado) | **ME (R$ 250) — cenário real** |
 > |---|---|---|
-> | Assinantes pra fechar a conta | 13 | ~30 |
-> | Contas ativas necessárias (2–5% de conversão) | ~300 | ~700 |
-> | Fôlego que R$ 980 de Fundador compram | mais de 1 ano | ~4 meses |
+> | Assinantes pra fechar a conta | 13 | **~30** |
+> | Contas ativas necessárias (2–5% de conversão) | ~300 | **~700** |
+> | Fôlego que R$ 980 de Fundador compram | mais de 1 ano | **~4 meses** |
 >
-> **Não é afirmação, é pergunta pra contador** — e é a verificação de maior alavancagem que existe agora, porque decide se o modelo de receita fecha como desenhado. Custa uma conversa e vem antes de qualquer decisão de preço.
+> Planejar em cima da coluna ME — é o cenário confirmado, não o otimista.
 
 Então o dia 1 vem de custo, não de renda:
 
@@ -78,9 +78,9 @@ Plano de teste/trial não se aplica: trial pressupõe que o estado pago é o nor
 
 ### Gatilho de ativação
 
-R$ 9,90/mês precisa cobrir MEI (~R$ 76) + hospedagem, uns R$ 126/mês — **13 assinantes**. Com conversão típica de 2–5% em plano de status, isso pede **300 a 650 contas ativas**, ~10x a meta de MVP.
+R$ 9,90/mês precisa cobrir ME no Simples (~R$ 250) + hospedagem, uns R$ 300/mês — **~30 assinantes**. Com conversão típica de 2–5% em plano de status, isso pede **~700 contas ativas**, mais que 10x a meta de MVP.
 
-**Ativa quando**: 300+ contas ativas, **ou** o custo mensal estourar o free tier — o que vier primeiro.
+**Ativa quando**: 700+ contas ativas, **ou** o custo mensal estourar o free tier — o que vier primeiro.
 
 ## Receita no lançamento — cobrança única, não assinatura
 
@@ -109,14 +109,14 @@ Motivo de cortar os dois: vender benefício que não existe é o jeito mais ráp
 
 **Correção de uma conta que este arquivo fazia errado**: a versão anterior dizia "mais de um ano de fôlego", comparando os R$ 980 com o custo de ~R$ 3/mês do free tier. Isso é impossível, porque **o próprio ato de vender Fundador cria o custo que invalida a comparação** — receber dinheiro exige entidade legal aberta, e aí o custo mensal deixa de ser R$ 3.
 
-O fôlego real depende do enquadramento, que é a [verificação pendente com o contador](#dia-1-zerar-por-engenharia-não-por-receita):
+O fôlego real depende do enquadramento — **confirmado como ME** (ver [MEI não aceita a atividade](#dia-1-zerar-por-engenharia-não-por-receita)):
 
 | Enquadramento | Custo mensal | Fôlego de R$ 980 |
 |---|---|---|
-| MEI (se aceitar a atividade) | ~R$ 79 | ~12 meses |
-| ME no Simples, com contador | R$ 200–300 | ~4 meses |
+| ~~MEI~~ (descartado — atividade vedada) | ~R$ 79 | ~12 meses |
+| **ME no Simples, com contador** | R$ 200–300 | **~4 meses** |
 
-Ou seja: entre 4 e 12 meses, não "mais de um ano". E os R$ 3/mês de free tier só valem no cenário **sem cobrança nenhuma** — que é uma escolha legítima, mas não é este.
+Planejar com ~4 meses de fôlego, não "mais de um ano". E os R$ 3/mês de free tier só valem no cenário **sem cobrança nenhuma** — que é uma escolha legítima, mas não é este.
 
 ### 2 · Torneio mensal com inscrição — adiado, não descartado
 
@@ -143,7 +143,7 @@ Existe desde o lançamento, sem paywall e sem insistência. Converte de verdade 
 3. **Schema**: campo de plano na conta + tabela de evento de pagamento (já previsto na [ordem de implementação](02-implementacao.md)).
 4. **Bot concede o cargo** no evento de plano ativado — a esteira plataforma → webhook → bot já existe inteira ([Bot](../discord/03-bot.md)), é só mais uma linha na tabela de responsabilidades.
 5. **Uma página** com o que é, o PIX, o que a pessoa recebe, e "zero vantagem dentro da partida" em destaque.
-6. **MEI aberto antes do primeiro real recebido** — a receita de Fundador paga com folga, e sem ele é receita recebida como PF sem nota.
+6. **ME aberta antes do primeiro real recebido** (MEI descartado — atividade vedada) — a receita de Fundador paga com folga, e sem ela é receita recebida como PF sem nota.
 
 Gateway de verdade entra junto com o gatilho de volume, não antes.
 
