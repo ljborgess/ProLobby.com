@@ -1,6 +1,6 @@
 # 4. Integração técnica plataforma ↔ bot
 
-Decisões de arquitetura (não implementação/stack — ver [Bot: permissões e integração com moderação](03-bot.md) pra responsabilidade, e [Backlog](../produto/05-produto/03-backlog.md) pra stack, deliberadamente não decidida).
+Decisões de arquitetura (não implementação/stack — ver [Bot: permissões e integração com moderação](03-bot.md) pra responsabilidade, e [ADR-005](../adr/005-stack-tecnica.md)/[ADR-006](../adr/006-backend-separado-e-tooling.md) pra stack, decidida em 2026-09-08).
 
 ## Como o bot sabe que um evento aconteceu
 

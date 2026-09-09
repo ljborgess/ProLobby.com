@@ -75,9 +75,9 @@ prático em
 
 Detalhado por fase (MVP / Fase 2 / Futuro) no
 [dossiê de produto](docs/produto/README.md). Itens deliberadamente
-adiados — moderador comunitário, fila por time pré-formado, torneio, stack
-técnica — no
-[backlog](docs/produto/05-produto/03-backlog.md).
+adiados — moderador comunitário, fila por time pré-formado, torneio — no
+[backlog](docs/produto/05-produto/03-backlog.md). Stack técnica já decidida
+([ADR-005](docs/adr/005-stack-tecnica.md), [ADR-006](docs/adr/006-backend-separado-e-tooling.md)).
 
 <br>
 

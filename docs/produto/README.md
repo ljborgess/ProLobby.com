@@ -6,7 +6,7 @@ Numeração indica **ordem de leitura** dentro de cada pasta — as pastas tamb�
 
 Time: Luciano, Rafael, João, Felipe — sem divisão fixa de papéis (decisão registrada, ver backlog).
 
-Status: design de produto, sem código de aplicação. Stack técnica deliberadamente não decidida.
+Status: design de produto fechado. Stack técnica decidida em 2026-09-08 ([ADR-005](../adr/005-stack-tecnica.md), [ADR-006](../adr/006-backend-separado-e-tooling.md)), scaffold de código já criado (`apps/`, `packages/`) — nenhum RF implementado ainda.
 
 ## 01 · Visão
 
