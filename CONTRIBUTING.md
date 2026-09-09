@@ -48,16 +48,23 @@ src/
 │   └── security/        # ValidationPipe global, throttler, helmet/CORS
 └── modules/
     ├── conta/           # RF-019 a RF-026, RF-070, RF-072
-    ├── ocr/             # RF-027 a RF-031, RF-063 a RF-065, RF-073
+    ├── personagem/      # RF-027 a RF-031, RF-063 a RF-065, RF-073 (cadastro/ciclo de vida + verificação por OCR)
     ├── fila/            # RF-001 a RF-011, RF-034
     ├── lobby/           # RF-032, RF-033, RF-051, RF-052
     ├── resultado/       # RF-012, RF-013, RF-041 a RF-046, RF-066, RF-067
     ├── ranking/         # RF-014 a RF-018, RF-071
     ├── moderacao/       # RF-035 a RF-040, RF-068, RF-069
-    └── bot-integration/ # RF-047 a RF-062, RF-058 (webhook outbound pro apps/bot)
+    └── bot-integration/ # RF-058, RF-059 — só entrega de evento (retry, sequência, idempotência)
 ```
 
 Dentro de um módulo: `*.controller.ts`, `*.service.ts`, `*.module.ts` e `*.spec.ts` ficam **flat na raiz do módulo** (sem pasta `controllers/`, `services/`); DTOs entram em `dto/`. Sub-recurso do próprio domínio ganha subpasta só quando crescer o suficiente pra justificar (mesmo critério do b2ml: `modules/user/collaborator/`).
+
+**Comunicação entre módulos (decidido em 2026-09-09)** — vale pra qualquer módulo, não só os de agora:
+
+- **Comandar outro módulo** (fazer algo acontecer nele): emitir **evento de domínio** (`EventEmitter2` do Nest, ou equivalente), nunca chamar `Service`/`Repository` de outro módulo pra escrever. Ex.: `resultado` não chama `filaService.liberar()` direto — emite `partida.anulada`, e `fila` escuta e reage. Desacopla: mudar `fila` não quebra `resultado` sem aviso.
+- **Ler outro módulo**: chamar **método público do `Service`** dele (ex.: `contaService.getPendencias(contaId)`), nunca acessar `Repository`/`Entity` de outro módulo direto.
+- **RF-047 a RF-062 (exceto 058/059)**: cada RF é emitida como evento pelo módulo de domínio dono do gatilho (ex.: `lobby` emite quando cria/apaga canal, `moderacao` emite quando aplica punição), e `bot-integration` escuta qualquer evento marcado pra ir pro Discord e entrega via webhook — não decide regra de negócio nenhuma, reforça o que [ADR-003](docs/adr/003-webhook-nao-polling.md) já dizia (bot burro, regra na plataforma). **Qual módulo de domínio é dono de cada RF específica dessa faixa fica pra quando a Fase 3 abrir** — decidir agora seria documentar fase futura em detalhe antes da hora, o mesmo erro que já corrigimos com as issues #1-#5.
+- **RF-047, RF-048, RF-062 não têm código em `apps/api`** — são ausência de feature (047), checagem nativa do Discord.js (048) ou processo operacional + checagem no boot do bot (062). Não procurar controller/service pra elas na API.
 
 ### `apps/web` (Next.js App Router)
 
@@ -112,7 +119,7 @@ Mais simples que `modules/` da api de propósito: bot não expõe endpoint próp
 
 ## Labels
 
-- **Área**: `area:conta`, `area:fila`, `area:lobby`, `area:bot`, `area:ocr`, `area:moderacao`, `area:ranking`, `area:governanca`, `area:seguranca`, `area:i18n`, `area:infra`.
+- **Área**: `area:conta`, `area:fila`, `area:lobby`, `area:bot`, `area:personagem`, `area:moderacao`, `area:ranking`, `area:governanca`, `area:seguranca`, `area:i18n`, `area:infra`.
 - **Tipo**: `tipo:feat`, `tipo:fix`, `tipo:chore`, `tipo:test`, `tipo:docs` (espelha o Conventional Commits).
 - **Milestone**: uma por fase de [`docs/negocio/02-implementacao.md`](docs/negocio/02-implementacao.md).
 
