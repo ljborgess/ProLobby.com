@@ -1,5 +1,5 @@
-import { createDiscordClient } from './discord-client'
-import { createWebhookServer } from './webhook-server'
+import { createDiscordClient } from './discord/client'
+import { createWebhookServer } from './webhook/server'
 
 async function main() {
   const client = createDiscordClient()

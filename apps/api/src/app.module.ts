@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
-import { HealthController } from './health/health.controller'
+import { HealthController } from './common/health/health.controller'
 
 // MikroORM entra aqui (@mikro-orm/nestjs) quando a primeira entidade nascer —
 // ver docs/requisitos/03-dados.md e ADR-006.

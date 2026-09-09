@@ -4,7 +4,7 @@ Referência rápida do fluxo decidido no [ADR-006](docs/adr/006-backend-separado
 
 ## Time
 
-Luciano, Rafael e Felipe codam. Luciano lidera de fato (contexto completo do dossiê): atribui issue, revisa e aprova PR de Rafael/Felipe. Ver [HANDOFF.md](HANDOFF.md#decidido-sem-divisão-de-papéis).
+Luciano e Rafael codam. Felipe foi convidado (`LipeLou`), ainda não entrou — quando entrar, mesma função do Rafael. Luciano lidera de fato (contexto completo do dossiê): atribui issue, revisa e aprova PR do Rafael (e do Felipe, quando ativo). Ver [HANDOFF.md](HANDOFF.md#decidido-sem-divisão-de-papéis).
 
 ## Antes de codar
 
@@ -28,9 +28,67 @@ Sem exceção, em qualquer PR:
 3. Commit no padrão Conventional Commits (`commitlint.config.js` valida via Husky) — `feat:`, `fix:`, `chore:`, `test:`, `docs:`.
 4. Abrir PR contra `dev`, referenciando a issue (`Closes #N`), **deixado aberto pra review** — quem coda não faz merge sozinho, exceto Luciano.
 5. **Review**:
-   - PR do Rafael ou do Felipe → precisa de **1 approval do Luciano** antes de mergear (branch protection em `dev`).
+   - PR do Rafael (ou do Felipe, quando ativo) → precisa de **1 approval do Luciano** antes de mergear. **É convenção, não trava técnica** — repo privado no plano Free não suporta branch protection com review obrigatório (confirmado via API, 2026-09-08). Quem tem `push` consegue mergear sem aprovação; a regra depende de disciplina, não do GitHub bloquear.
    - PR do Luciano → mergeia direto após CI verde.
 6. CI (`.github/workflows/ci.yml`) precisa estar verde: lint, test, build.
+
+## Estrutura de código
+
+Espelha o `plataforma-b2ml` (mesma empresa, mesmo padrão já validado): **módulo por domínio, não por tipo de arquivo**. Nomes de domínio = mesmos das `area:*` labels.
+
+### `apps/api` (NestJS)
+
+```
+src/
+├── common/              # transversal, não é regra de negócio de nenhum domínio
+│   ├── auth/            # JWT guard, decorators, hash de senha
+│   ├── config/
+│   ├── database/        # mikro-orm.config.ts, migrations
+│   ├── health/          # health.controller.ts
+│   └── security/        # ValidationPipe global, throttler, helmet/CORS
+└── modules/
+    ├── conta/           # RF-019 a RF-026, RF-070, RF-072
+    ├── ocr/             # RF-027 a RF-031, RF-063 a RF-065, RF-073
+    ├── fila/            # RF-001 a RF-011, RF-034
+    ├── lobby/           # RF-032, RF-033, RF-051, RF-052
+    ├── resultado/       # RF-012, RF-013, RF-041 a RF-046, RF-066, RF-067
+    ├── ranking/         # RF-014 a RF-018, RF-071
+    ├── moderacao/       # RF-035 a RF-040, RF-068, RF-069
+    └── bot-integration/ # RF-047 a RF-062, RF-058 (webhook outbound pro apps/bot)
+```
+
+Dentro de um módulo: `*.controller.ts`, `*.service.ts`, `*.module.ts` e `*.spec.ts` ficam **flat na raiz do módulo** (sem pasta `controllers/`, `services/`); DTOs entram em `dto/`. Sub-recurso do próprio domínio ganha subpasta só quando crescer o suficiente pra justificar (mesmo critério do b2ml: `modules/user/collaborator/`).
+
+### `apps/web` (Next.js App Router)
+
+```
+src/
+├── app/
+│   ├── (public)/    # cadastro, login — sem sessão
+│   └── (private)/   # fila, perfil, lobby — exige sessão
+├── common/
+│   ├── api/          # client HTTP pra apps/api
+│   ├── auth/          # guarda de rota, contexto de sessão
+│   ├── providers/
+│   └── ui/            # componente compartilhado entre domínios
+├── content/            # texto traduzido pt/es por domínio (RNF-016) — sem lib externa de i18n
+├── hooks/
+└── modules/            # componente/lógica por domínio, mesmos nomes da api
+```
+
+`app/` só tem rota (route groups `(public)`/`(private)` não mudam a URL, só organizam). Lógica de UI/domínio mora em `modules/`, importada pela página.
+
+### `apps/bot` (Node.js + discord.js)
+
+```
+src/
+├── discord/    # client.ts + ações reutilizáveis (conceder cargo, criar/apagar canal, DM)
+└── webhook/
+    ├── server.ts
+    └── handlers/   # 1 arquivo por área — lobby.ts, moderacao.ts, conta.ts...
+```
+
+Mais simples que `modules/` da api de propósito: bot não expõe endpoint próprio nem tem DTO, só reage a evento — handler por área já basta, sem controller/service.
 
 ## Labels
 

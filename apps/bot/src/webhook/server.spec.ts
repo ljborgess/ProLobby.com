@@ -1,5 +1,5 @@
 import request from 'supertest'
-import { createWebhookServer } from './webhook-server'
+import { createWebhookServer } from './server'
 
 describe('webhook server', () => {
   const app = createWebhookServer()
