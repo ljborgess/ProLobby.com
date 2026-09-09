@@ -90,6 +90,26 @@ src/
 
 Mais simples que `modules/` da api de propósito: bot não expõe endpoint próprio nem tem DTO, só reage a evento — handler por área já basta, sem controller/service.
 
+## Dependência entre issues — regra de destravamento
+
+**Issue bloqueada não começa**, mesmo que pareça simples ou esteja atribuída a você. É a garantia contra pegar RF fora de ordem e ter que refazer.
+
+- Dependência é registrada de verdade no GitHub (Issue Dependencies nativo, não só texto/comentário) — a issue bloqueada mostra um selo **"Blocked"** e lista quem bloqueia, na barra lateral direita da issue (seção "Blocked by").
+- **Como adicionar uma dependência nova**: na issue que vai ficar bloqueada, barra lateral → **Blocked by** → busca a issue que bloqueia e vincula. Não precisa de CLI. Alternativa via `gh`: `gh api repos/ljborgess/ProLobby.com/issues/<N>/dependencies/blocked_by -X POST -F issue_id=<database id da issue bloqueadora>` — o `issue_id` é o id interno (não o número `#N`); pegar com `gh api repos/ljborgess/ProLobby.com/issues/<N> -q .id`.
+- **Regra**: quem abre uma issue nova identifica as dependências na hora (RF que ela usa, schema que ela precisa) e já vincula. Não deixar pra descobrir depois que já começou.
+- **Grafo atual** (fase 2.1 — Núcleo: Conta e autenticação):
+
+  ```
+  #5 (CI sobe Postgres)
+    └─▶ #1 (schema base)
+          ├─▶ #2 (cadastro, sessão, Termos)
+          └─▶ #3 (recuperação de senha)
+
+  #4 (auth do webhook do bot) — sem dependência, roda em paralelo
+  ```
+
+- Issue de fase futura (2.2 em diante) nasce já com as dependências da fase anterior vinculadas, mesmo que a issue-alvo ainda não exista — cria a issue bloqueadora primeiro, mesmo que "vazia" (título + `## O quê` mínimo), se a ordem exigir.
+
 ## Labels
 
 - **Área**: `area:conta`, `area:fila`, `area:lobby`, `area:bot`, `area:ocr`, `area:moderacao`, `area:ranking`, `area:governanca`, `area:seguranca`, `area:i18n`, `area:infra`.
