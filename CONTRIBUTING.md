@@ -97,25 +97,48 @@ src/
 
 Mais simples que `modules/` da api de propósito: bot não expõe endpoint próprio nem tem DTO, só reage a evento — handler por área já basta, sem controller/service.
 
-## Dependência entre issues — regra de destravamento
+## Hierarquia — PRD → issue → sub-issue
 
-**Issue bloqueada não começa**, mesmo que pareça simples ou esteja atribuída a você. É a garantia contra pegar RF fora de ordem e ter que refazer.
+Toda fatia de fase (ex.: "Núcleo: Conta e autenticação") nasce em 3 níveis, todos no GitHub (Issue Dependencies + Sub-issues nativos, nada em planilha ou doc externo):
 
-- Dependência é registrada de verdade no GitHub (Issue Dependencies nativo, não só texto/comentário) — a issue bloqueada mostra um selo **"Blocked"** e lista quem bloqueia, na barra lateral direita da issue (seção "Blocked by").
+1. **PRD** — 1 issue-mãe por fatia (`tipo:docs`), aberta só quando a fatia vai começar de verdade (mesma disciplina que já vale pra issue: não adiantar fase futura). Contexto, problema, objetivo, **fora de escopo explícito**, RFs cobertos, critério de sucesso da fatia inteira. Título: `PRD: <nome da fatia>`.
+2. **Issue** — 1 por peça grande da fatia (schema, cadastro, recuperação de senha, auth do webhook, CI...), sub-issue do PRD. O quê, RFs, checklist de segurança aplicável, critério de aceite, origem — formato já usado em `#1` a `#5`.
+3. **Sub-issue** — 1 por entidade/endpoint/arquivo de config, sub-issue da issue. Granularidade pequena o bastante pra virar 1 PR revisável.
+
+**Exemplo real (fatia 2.1 — Núcleo: Conta e autenticação)**:
+
+```
+#24 PRD: Núcleo — Conta e autenticação
+├── #1 Schema base
+│   ├── #6 Entidade Conta          (primeiro — todas as outras entidades dependem dela)
+│   ├── #7 Entidade AceiteTos       ─┐
+│   ├── #8 EventoReputacao/Elo      ─┼─ blocked by #6
+│   ├── #9 EventoPagamento          ─┘
+│   └── #10 Teste de migration e2e  — blocked by #6, #7, #8, #9
+├── #2 Cadastro, sessão, Termos     — blocked by #1
+│   ├── #11 Endpoint de cadastro    — blocked by #6
+│   ├── #12 Login e sessão JWT      — blocked by #11
+│   ├── #13 Aceite de Termos        — blocked by #7, #12
+│   └── #14 Tela de cadastro (web)  — blocked by #11
+├── #3 Recuperação de senha         — blocked by #1
+│   ├── #15 Verificação de e-mail   — blocked by #11
+│   ├── #16 Link de redefinição     — blocked by #12
+│   └── #17 Recuperação 2 fatores   — blocked by #11
+├── #4 Auth do webhook do bot       — sem dependência, paralelo
+│   ├── #18 Assinatura HMAC
+│   ├── #19 Rate limit              — blocked by #18
+│   └── #20 Contrato de evento tipado
+└── #5 CI + templates               — bloqueia #1 na prática (CI precisa existir antes do PR de schema passar)
+    ├── #21 Postgres no CI          — blocked by #10
+    ├── #22 Template de PR
+    └── #23 Template de issue
+```
+
+- Dependência é registrada de verdade no GitHub (Issue Dependencies nativo, não só texto/comentário) — a issue/sub-issue bloqueada mostra um selo **"Blocked"** e lista quem bloqueia, na barra lateral direita.
 - **Como adicionar uma dependência nova**: na issue que vai ficar bloqueada, barra lateral → **Blocked by** → busca a issue que bloqueia e vincula. Não precisa de CLI. Alternativa via `gh`: `gh api repos/ljborgess/ProLobby.com/issues/<N>/dependencies/blocked_by -X POST -F issue_id=<database id da issue bloqueadora>` — o `issue_id` é o id interno (não o número `#N`); pegar com `gh api repos/ljborgess/ProLobby.com/issues/<N> -q .id`.
-- **Regra**: quem abre uma issue nova identifica as dependências na hora (RF que ela usa, schema que ela precisa) e já vincula. Não deixar pra descobrir depois que já começou.
-- **Grafo atual** (fase 2.1 — Núcleo: Conta e autenticação):
-
-  ```
-  #5 (CI sobe Postgres)
-    └─▶ #1 (schema base)
-          ├─▶ #2 (cadastro, sessão, Termos)
-          └─▶ #3 (recuperação de senha)
-
-  #4 (auth do webhook do bot) — sem dependência, roda em paralelo
-  ```
-
-- Issue de fase futura (2.2 em diante) nasce já com as dependências da fase anterior vinculadas, mesmo que a issue-alvo ainda não exista — cria a issue bloqueadora primeiro, mesmo que "vazia" (título + `## O quê` mínimo), se a ordem exigir.
+- **Como linkar uma sub-issue ao pai**: `gh api repos/ljborgess/ProLobby.com/issues/<pai>/sub_issues -X POST -F sub_issue_id=<database id da sub-issue>`.
+- **Regra**: quem abre issue ou sub-issue nova identifica as dependências finas na hora (não só "depende da issue pai" — depende de qual peça específica) e já vincula. Não deixar pra descobrir depois que já começou.
+- Fatia de fase futura (2.2 em diante) ganha PRD + issues + sub-issues próprios quando abrir — não documentado agora.
 
 ## Labels
 
