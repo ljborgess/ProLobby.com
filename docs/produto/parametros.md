@@ -15,7 +15,7 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 | K-factor — calibrando | 32 (primeiras 9 partidas na categoria) | [Ranking](02-jogador/02-ranking.md) |
 | K-factor — estabilizado | 20 (a partir da 10ª) | [Ranking](02-jogador/02-ranking.md) |
 | Granularidade | por personagem/categoria (não por conta) | [Ranking](02-jogador/02-ranking.md) |
-| Decaimento por inatividade | −25/mês após 60 dias parado, piso no seed | [Ranking](02-jogador/02-ranking.md) |
+| Decaimento por inatividade | −25 a cada 30 dias corridos após 60 dias parado (1º desconto no dia 90), piso no seed | [RF-017](../requisitos/05-funcionais.md) |
 
 ## Reputação
 
@@ -56,7 +56,7 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 | Janela de confirmação do jogador | 30 s | [Fila](03-partida/02-fila.md) |
 | Timeout progressivo por recusa | 5 min · 15 min · 30 min · 2 h | [Fila](03-partida/02-fila.md) |
 | Zeramento do timeout | 12 h sem recusa, ou 1 partida completada | [Fila](03-partida/02-fila.md) |
-| Fila visível ao jogador | faixa de movimento, não número exato | [Fila](03-partida/02-fila.md) |
+| Fila visível ao jogador | faixa: <5 "pouca gente" · 5-15 "movimentada" · >15 "cheia" | [RF-008](../requisitos/05-funcionais.md) |
 | Janela de confirmação do capitão | 30 s (separada, após a dos jogadores) | [Discord e lobby](03-partida/03-lobby.md) |
 | Janela de confirmação de convite recebido | 5 min após o lobby fechar | [Discord e lobby](03-partida/03-lobby.md) |
 | Cancelamento por silêncio total | 60 min após o lobby fechar (a calibrar com o teste 5) | [Discord e lobby](03-partida/03-lobby.md) |
@@ -79,7 +79,7 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 | Nome de clube — limite | 20 caracteres | [Personagens](02-jogador/01-verificacao.md) |
 | Anti-reuso de print | hash do arquivo, checado **antes** do OCR | [Resultado](03-partida/04-resultado.md) |
 | Teto de uploads por conta | 10 por hora | [Personagens](02-jogador/01-verificacao.md) |
-| Pré-checagens antes do OCR | hash, dimensão mínima, nível de foco | [Personagens](02-jogador/01-verificacao.md) |
+| Pré-checagens antes do OCR | hash, dimensão mínima **800×600px**, nível de foco (variância de Laplaciano, threshold a calibrar no piloto) | [RF-064](../requisitos/05-funcionais.md) |
 | Validação do roster no print final | gamertags conferidos contra o lobby | [Resultado](03-partida/04-resultado.md) |
 
 ## Resultado de partida
@@ -120,6 +120,7 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 | Contadores de "30 dias" | janela móvel, não mês do calendário | [Requisitos transversais](../requisitos/01-transversais.md) |
 | Definição de conta ativa | 1+ partida completada nos últimos 30 dias | [Requisitos transversais](../requisitos/01-transversais.md) |
 | Alvo de processamento do OCR | menos de 15 s, com progresso | [Requisitos transversais](../requisitos/01-transversais.md) |
+| Threshold de pausa de cadastro (free tier) | 90% do teto de qualquer recurso (900/1000 chamadas OCR, 9/10 lobbies) | [RF-072](../requisitos/05-funcionais.md) |
 
 ## Sustentabilidade
 

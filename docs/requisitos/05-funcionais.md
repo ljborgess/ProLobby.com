@@ -33,7 +33,7 @@ Cobertura por área, pra saber onde ainda não se olhou:
 ### RF-019 · Cadastro aberto, sem convite nem aprovação
 **Origem**: [produto/05-produto/01-onboarding.md](../produto/05-produto/01-onboarding.md)
 
-**Aceite**: qualquer pessoa com e-mail válido e 16 anos ou mais completa o cadastro sem intervenção de ninguém. Nenhum campo de código de convite existe.
+**Aceite**: qualquer pessoa com e-mail válido e 16 anos ou mais completa o cadastro sem intervenção de ninguém. Nenhum campo de código de convite existe. Formulário inclui **pergunta e resposta de segurança, obrigatórias** — ver [RF-025](#rf-025--recuperação-sem-e-mail-e-sem-discord-exige-dois-fatores).
 
 **Exceção (2026-09-08)**: perto do teto do free tier, o cadastro pausa por [RF-072](#rf-072--cadastro-pausa-perto-do-teto-do-free-tier-sem-gasto-automático) — não é intervenção discricionária, é regra de capacidade automática e igual pra todos.
 
@@ -52,6 +52,8 @@ Cobertura por área, pra saber onde ainda não se olhou:
 
 **Aceite**: login novo não derruba sessão existente. Duas sessões da mesma conta veem o mesmo estado de fila e de lobby, e a trava de uma fila ativa continua valendo por conta.
 
+**Conflito entre dispositivos (decidido em 2026-09-09)**: confirmando num dispositivo e recusando em outro dentro da mesma janela (ex.: os 30s de [RF-009](#rf-009--recusar-ou-não-confirmar-gera-timeout-progressivo-de-fila)), **a confirmação vence** — coerente com RF-011 (recusa nunca afeta reputação) e o princípio de dar benefício da dúvida.
+
 ### RF-023 · Fechar o navegador não sai do lobby
 **Origem**: [produto/05-produto/01-onboarding.md](../produto/05-produto/01-onboarding.md)
 
@@ -66,6 +68,8 @@ Cobertura por área, pra saber onde ainda não se olhou:
 **Origem**: [produto/05-produto/01-onboarding.md](../produto/05-produto/01-onboarding.md)
 
 **Aceite**: o caso abre chamado de moderação e só é aprovado com **resposta da pergunta de segurança** e **print in-game novo** mostrando o gamertag da conta. Um fator sozinho não basta.
+
+**Pré-requisito (decidido em 2026-09-09)**: pergunta e resposta de segurança são **obrigatórias no cadastro** (RF-019), não configuráveis depois — sem isso, quem perde e-mail e Discord ao mesmo tempo fica sem nenhum caminho de recuperação, o pior cenário de suporte possível.
 
 ### RF-026 · Aceite de Termos é versionado e mudança material exige novo aceite
 **Origem**: [produto/04-governanca/03-termos.md](../produto/04-governanca/03-termos.md)
@@ -84,7 +88,7 @@ Cobertura por área, pra saber onde ainda não se olhou:
 ### RF-002 · Entrada na fila exige e-mail verificado, personagem verificado e Discord vinculado
 **Origem**: [produto/05-produto/01-onboarding.md](../produto/05-produto/01-onboarding.md), [produto/03-partida/03-lobby.md](../produto/03-partida/03-lobby.md)
 
-**Aceite**: faltando qualquer uma das três, a entrada é recusada e a mensagem diz **qual** falta. Conta suspensa, banida, ou fora do servidor Discord também é recusada, com o motivo próprio.
+**Aceite**: faltando qualquer uma das três, a entrada é recusada e a mensagem diz **quais** faltam — **lista todas as pendentes numa resposta só**, na ordem e-mail → personagem → Discord (decidido em 2026-09-09; evita a pessoa corrigir uma e descobrir a próxima só na tentativa seguinte). Conta suspensa, banida, ou fora do servidor Discord também é recusada, com o motivo próprio.
 
 ### RF-003 · Banda de elo abre com o tempo
 **Origem**: [produto/03-partida/02-fila.md](../produto/03-partida/02-fila.md)
@@ -104,7 +108,7 @@ Cobertura por área, pra saber onde ainda não se olhou:
 ### RF-006 · Lobby só fecha com candidato a capitão em cada lado
 **Origem**: [produto/03-partida/02-fila.md](../produto/03-partida/02-fila.md)
 
-**Aceite**: se nenhum humano escalado de um dos lados tem clube declarado com vaga, o lobby não é criado e os jogadores seguem na fila.
+**Aceite**: se nenhum humano escalado de um dos lados tem clube declarado com vaga, o lobby não é criado e os jogadores seguem na fila. **"Vaga" = qualquer vaga livre no clube (maior que zero)**, não precisa cobrir o número de humanos escalados pro lado — decidido em 2026-09-09, coerente com a IA do jogo cobrindo humano faltante dentro do próprio clube, não só entre os 2 lados.
 
 ### RF-007 · Timeout de fila avisa o que falta
 **Origem**: [produto/03-partida/02-fila.md](../produto/03-partida/02-fila.md)
@@ -114,7 +118,7 @@ Cobertura por área, pra saber onde ainda não se olhou:
 ### RF-008 · Fila mostra faixa de movimento, nunca número exato
 **Origem**: [produto/03-partida/02-fila.md](../produto/03-partida/02-fila.md)
 
-**Aceite**: cada categoria exibe "pouca gente", "movimentada" ou "cheia". Em nenhuma tela ou resposta de API aparece a contagem de pessoas na fila.
+**Aceite**: cada categoria exibe "pouca gente" (menos de 5 pessoas), "movimentada" (5 a 15) ou "cheia" (mais de 15) — faixas fixas, decididas em 2026-09-09, calibráveis depois com dado real de uso. Em nenhuma tela ou resposta de API aparece a contagem exata de pessoas na fila.
 
 ### RF-009 · Recusar ou não confirmar gera timeout progressivo de fila
 **Origem**: [produto/03-partida/02-fila.md](../produto/03-partida/02-fila.md)
@@ -174,6 +178,8 @@ Cobertura por área, pra saber onde ainda não se olhou:
 
 **Aceite**: enquanto um lobby não terminal usa o clube de uma conta, ela é excluída da cascata de capitão em qualquer outro lobby. Encerrado o lobby, volta a ser candidata.
 
+**Concorrência (decidido em 2026-09-09)**: a checagem e a reserva do clube no fechamento do lobby são **atômicas** (transação/lock no momento de confirmar o candidato) — sem isso, dois lobbies fechando quase ao mesmo tempo podem eleger o mesmo clube antes que o primeiro grave a reserva.
+
 > **Decisão consciente (2026-09-08), não gap**: desde FC26 uma conta pode ter até 3 clubes simultâneos ([Mecânica](../produto/03-partida/01-mecanica.md)), e este RF trava a **conta inteira**, não só o clube em uso — mais conservador do que o jogo permitiria (a conta poderia ceder um dos outros 2 clubes livres). Identificado em `docs/research/investigacao-design-2026-09-04.md` (seção 3), confirmado em auditoria (2026-09-08) e **mantido como está**: mudar exigiria pedir e validar por OCR os 3 clubes no cadastro de personagem em vez de 1, e repensar a cascata de capitão inteira — escopo grande demais pro ganho, fora do MVP. Revisar só se o volume de "cascata esgotada por clube ocupado" mostrar que é gargalo real.
 
 ### RF-034 · Votação de formação só conta voto de humano do próprio lado
@@ -209,6 +215,8 @@ Cobertura por área, pra saber onde ainda não se olhou:
 **Origem**: [produto/03-partida/04-resultado.md](../produto/03-partida/04-resultado.md)
 
 **Aceite**: report de um lado só sempre resulta em `nao_confirmado` com 48 h de contestação, independente da confiança do OCR ou da reputação de quem enviou. Não existe caminho de auto-confirmação.
+
+**Janela do 2º lado e expiração (números já em [parametros.md](../produto/parametros.md), ausentes deste RF até 2026-09-09)**: o 2º lado tem **15 min a partir do 1º print aceito** pra reportar também. Se ninguém completar o report da partida em **36 h** desde o fechamento do lobby, expira por zero-report — encerra sem dado, penalidade de reputação conforme [RF-071](#rf-071--zero-report-reincidente-dobra-a-penalidade), fila de todos os envolvidos liberada.
 
 ### RF-044 · Disputa sem evidência decisiva anula a partida
 **Origem**: [produto/03-partida/04-resultado.md](../produto/03-partida/04-resultado.md)
@@ -247,7 +255,7 @@ Cobertura por área, pra saber onde ainda não se olhou:
 ### RF-017 · Elo decai após 60 dias de inatividade, com piso no seed
 **Origem**: [produto/02-jogador/02-ranking.md](../produto/02-jogador/02-ranking.md)
 
-**Aceite**: personagem sem partida por 60 dias perde 25 de elo por mês subsequente, parando no valor do seed original. Jogar uma partida interrompe o decaimento; o elo perdido não é devolvido.
+**Aceite**: personagem sem partida por 60 dias perde 25 de elo a cada **30 dias corridos adicionais** (mesma janela móvel usada nos outros contadores do sistema, não mês de calendário — decidido em 2026-09-09), primeiro desconto no dia 90 (60 + 30), parando no valor do seed original. Jogar uma partida interrompe o decaimento; o elo perdido não é devolvido.
 
 ### RF-018 · Histórico de partida não expira
 **Origem**: [produto/04-governanca/02-lgpd.md](../produto/04-governanca/02-lgpd.md)
@@ -354,6 +362,8 @@ Motivo: comando de jogador duplicaria a plataforma dentro do Discord, criando do
 
 **Aceite**: sem confirmação em 10 s, a plataforma reenvia — 3 tentativas, em 10 s, 20 s e 40 s. Esgotado, abre caso na fila de moderação e a fila de partidas pausa (ver RNF-008).
 
+**Idempotência (decidido em 2026-09-09)**: cada evento carrega uma chave única (id do evento). O bot descarta silenciosamente reenvio com o mesmo id já processado — sem isso, reenvio por ACK perdido (não por falha real) duplica ação: cria os 3 canais duas vezes, kicka duas vezes, etc. Mesmo princípio de [RNF-018](07-nao-funcionais.md#rnf-018--envio-com-efeito-é-idempotente).
+
 ### RF-059 · Ações do mesmo evento rodam em sequência
 **Origem**: [discord/04-integracao.md](../discord/04-integracao.md)
 
@@ -388,7 +398,7 @@ Requisitos vindos de uma revisão adversarial do fluxo inteiro — procurando br
 ### RF-064 · Pré-checagens locais barram lixo antes de custar chamada
 **Origem**: [produto/02-jogador/01-verificacao.md](../produto/02-jogador/01-verificacao.md)
 
-**Aceite**: imagem abaixo da dimensão mínima ou completamente desfocada é rejeitada localmente, sem chamada de OCR, com mensagem dizendo o que corrigir.
+**Aceite**: imagem abaixo de **800×600px**, ou com variância de Laplaciano abaixo do limiar de nitidez (método padrão de detecção de blur; **valor exato calibrado durante o [piloto de OCR](06-piloto-ocr.md)**, não decidido a priori), é rejeitada localmente, sem chamada de OCR, com mensagem dizendo o que corrigir. Decidido em 2026-09-09.
 
 ### RF-065 · Teto de 10 uploads por hora por conta
 **Origem**: [produto/02-jogador/01-verificacao.md](../produto/02-jogador/01-verificacao.md)
@@ -436,11 +446,11 @@ Mitiga o furo aberto pela ressalva da Virtual Pro única: nada impedia verificar
 ### RF-072 · Cadastro pausa perto do teto do free tier, sem gasto automático
 **Origem**: decidido em 2026-09-08 · [negocio/03-sustentabilidade.md](../negocio/03-sustentabilidade.md)
 
-**Aceite**: aproximando-se do teto de qualquer recurso do free tier (chamadas de OCR no mês, capacidade da VM pros 10 lobbies simultâneos), novo cadastro é recusado com mensagem de fila de espera, e a pessoa é avisada quando reabrir. Não existe caminho automático que gere custo — passar do free tier nunca vira cobrança sem decisão humana explícita dos 4 sócios. Vale enquanto a ideia não estiver validada (critério de saída do beta, ver [Lançamento](../negocio/04-lancamento.md)); revisar quando decidirem pagar por infra conscientemente.
+**Aceite**: **90% do teto** de qualquer recurso do free tier (900 de 1000 chamadas de OCR no mês, 9 de 10 lobbies simultâneos ocupados) — número decidido em 2026-09-09, 10% de folga pra reagir antes de bater o limite exato. Atingido, novo cadastro é recusado com mensagem de fila de espera, e a pessoa é avisada quando reabrir. Não existe caminho automático que gere custo — passar do free tier nunca vira cobrança sem decisão humana explícita dos 4 sócios. Vale enquanto a ideia não estiver validada (critério de saída do beta, ver [Lançamento](../negocio/04-lancamento.md)); revisar quando decidirem pagar por infra conscientemente.
 
 **Reconciliação com o critério de desistir de 90 dias ([tese de mercado](../negocio/01-mercado.md))**: a meta de sucesso do MVP (10 partidas/semana, ~80-100 chamadas OCR/mês) fica ~10x abaixo do teto do free tier (1000 OCR/mês) — na escala-alvo, RF-072 não deveria disparar durante a janela de medição. **Se disparar mesmo assim, é sinal de demanda muito acima do esperado, não de fracasso** — nesse cenário os 4 decidem conscientemente pagar por infra (a mesma decisão que RF-072 já reserva pra eles), em vez de deixar o critério de desistir confundir capacidade truncada com falta de demanda.
 
 ### RF-073 · Correção manual de OCR pela moderação, campo a campo
 **Origem**: decidido em 2026-09-08 · [produto/02-jogador/01-verificacao.md](../produto/02-jogador/01-verificacao.md)
 
-**Aceite**: no chamado aberto por falha repetida de OCR, o moderador digita os mesmos campos que o OCR extrairia (overall, posição, atributos, gamertag), vendo o print diretamente — não é um simples aprovar/rejeitar. A ação fica registrada no `LogAuditoria` como ação de moderador ([RF-040](#rf-040--toda-ação-de-moderador-entra-no-log-de-auditoria)), distinta de extração automática.
+**Aceite**: no chamado aberto por falha repetida de OCR, o moderador digita os mesmos campos que o OCR extrairia — overall, posição, gamertag e a lista de atributos que o pipeline de OCR extrai (**enumeração exata sai do [piloto de OCR](06-piloto-ocr.md)**, não inventada aqui — não decidir nome de atributo de jogo sem confirmar o que o pipeline real lê). Moderador vê o print diretamente — não é um simples aprovar/rejeitar. A ação fica registrada no `LogAuditoria` como ação de moderador ([RF-040](#rf-040--toda-ação-de-moderador-entra-no-log-de-auditoria)), distinta de extração automática.
