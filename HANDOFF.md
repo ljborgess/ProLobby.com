@@ -6,10 +6,10 @@ Pra quem (Claude Code, outra sessão/máquina) for continuar este projeto a part
 
 Ver [`README.md`](README.md). Origem: ideia nasceu numa sessão sobre o projeto `escalacao-brasileirao` (Django, escalação de Brasileirão via API), mas ProLobby é **projeto novo e independente** — só a identidade visual (design system) foi herdada de lá, nada de backend/dados.
 
-## Estado atual (2026-09-08)
+## Estado atual (2026-09-10)
 
 - **Fase**: design de produto e requisitos fechados; **engenharia começou**. Scaffold do monorepo commitado (Turborepo + pnpm: `apps/web` Next.js, `apps/api` NestJS+MikroORM, `apps/bot` discord.js) — ainda é esqueleto, sem regra de negócio.
-- **Issues #1 a #5 reabertas (2026-09-08, mesmo dia)** — foram pausadas até o desenho fechar; fechou depois de 4 rodadas de auditoria adversarial no dossiê + no scaffold. Ordem: #5 (CI com Postgres) → #1 (schema, bloqueia #2/#3) → #4 (auth do webhook, paralelo) → #2/#3 (cadastro/recuperação). Fluxo de PR descrito em [`CONTRIBUTING.md`](CONTRIBUTING.md).
+- **Issues do GitHub reformuladas em 2026-09-10**: as antigas #1–#24 foram fechadas (histórico preservado, cada uma com comentário apontando pra substituta) e recriadas como **#25–#61**, com numeração refletindo a ordem real de execução, seção "Fluxo de desbloqueio" (Depende de/Desbloqueia) em cada issue, e checklist "Passo a passo" nas sub-issues técnicas. Índice completo: **[#49 — PRD Mestre: Roadmap de fases](https://github.com/ljborgess/ProLobby.com/issues/49)**, que lista as 13 fatias em ordem (Núcleo de conta em #25 até Beta em #61).
 - **Branches**: só `main` e `dev`. Trabalho corre em `dev`; `main` só recebe merge quando o time decidir promover.
 - Todo o conteúdo abaixo está commitado em `dev`.
 
@@ -17,13 +17,52 @@ Ver [`README.md`](README.md). Origem: ideia nasceu numa sessão sobre o projeto 
 
 Varredura do dossiê contra o scaffold rodou 4 vezes no total (a de 2026-09-08 achou 20 pontos, 11 corrigidos na hora, 9 fechados na retomada abaixo). Estado final:
 
-- **Branch protection decidido: convenção, não trava técnica** (repo privado no Free não suporta review obrigatório — `403 Upgrade to GitHub Pro or make this repository public`). Sem GitHub Pro, sem tornar público. Registrado no [ADR-006](docs/adr/006-backend-separado-e-tooling.md).
-- **Issues #1, #4, #5 reabertas e atribuídas ao Luciano; #2, #3 ao Rafael** — ordem de dependência: #5 (CI com Postgres) → #1 (schema) → #4 (auth do webhook, paralelo) → #2/#3.
-- **#2 recebeu adendo**: tokens do design system (Sora/Inter, paleta escura) entram junto com i18n pt/es, é a primeira tela real de `apps/web`.
-- **`apps/api` sem `class-validator`/`ValidationPipe`, `@nestjs/throttler` não plugado, sem cookie seguro/CORS** — tudo já coberto no corpo da #2, nasce ali.
-- **`apps/web` ainda é boilerplate puro** (fonte Geist, paleta clara, `lang="en"`, título "Create Next App") — corrigido dentro da #2, não antes.
-- **Nenhuma das 13 telas do inventário** existe ainda — esperado nesta fase.
-- Felipe convidado (`LipeLou`), ainda não entrou no repo — só Luciano e Rafael codam por enquanto.
+> **Nota de 2026-09-10**: os números de issue citados nesta seção (`#1`–`#5`) são os **antigos**, fechados e substituídos na reformulação de 2026-09-10 (ver seção "Estado atual" acima). Mapeamento: #1→#30, #2→#40, #3→#45, #4→#36, #5→#26. O conteúdo/achados abaixo continuam válidos, só a numeração mudou.
+
+### Decisão que só o time pode tomar (bloqueia processo)
+
+**Branch protection em `dev` é inexequível hoje.** O [ADR-006](docs/adr/006-backend-separado-e-tooling.md) decide que PR de Rafael/Felipe exige 1 approval do Luciano — mas `gh api repos/ljborgess/ProLobby.com/branches/dev/protection` devolve `403: Upgrade to GitHub Pro or make this repository public`. O repo é privado no plano Free, e quem tem permissão `push` **pode mergear o próprio PR sem aprovação de ninguém**. Hoje a regra é honra, não trava técnica.
+
+Três saídas, nenhuma tomada ainda:
+
+| Saída | Custo | Efeito colateral |
+|---|---|---|
+| Tornar o repo **público** | R$ 0 | destrava branch protection **e** SonarCloud (pergunta que o ADR-006 já deixou aberta); expõe dossiê de negócio, monetização e estratégia |
+| **GitHub Pro** | ~US$ 4/usuário/mês | colide com a regra de custo zero ([RF-072](docs/requisitos/05-funcionais.md#rf-072--cadastro-pausa-perto-do-teto-do-free-tier-sem-gasto-automático)) |
+| Assumir que é **convenção** | R$ 0 | registrar no ADR-006 que a regra é disciplina e não trava, pra ninguém confiar em garantia que não existe |
+
+### Aberto no código (já viraram issue)
+
+- **[#4] Webhook do bot sem autenticação** — `apps/bot/src/webhook-server.ts` aceita qualquer requisição em `POST /events`. Inofensivo hoje (nenhum handler faz nada), perigoso no dia do primeiro handler: o endpoint comanda kick/ban ([RF-048](docs/requisitos/05-funcionais.md#rf-048--kick-e-ban-só-por-comando-de-admin-ou-moderador)) e canal de lobby. Itens 6 e 7 do [checklist de segurança](docs/requisitos/08-seguranca-checklist.md). Inclui tipar o `platformEventSchema`, hoje `payload: z.record(z.unknown())`.
+- **[#5] CI não sobe Postgres** — `.github/workflows/ci.yml` sem `services:`. Quebra no PR da #1, que é o que fundamenta todo o resto. Mesma issue cobre a falta de template de PR/issue, que é o que faria o checklist de segurança ser olhado na hora certa.
+
+### Aberto no código (ainda sem issue — entram junto da fatia que os usa)
+
+- **`apps/api` não tem `class-validator`/`class-transformer` nem `ValidationPipe` global** com `whitelist`/`forbidNonWhitelisted`. Itens 8 e 14 do checklist ficam sem base. Está escrito no corpo da issue #2, que é onde a peça nasce.
+- **`@nestjs/throttler` instalado mas não plugado** no `AppModule` (item 11), e nada de cookie `HttpOnly`/`Secure`/`SameSite` nem CORS (item 9). Também na #2.
+- **`apps/web` é boilerplate puro do create-next-app**: fonte Geist onde o design system pede `Sora`/`Inter`, paleta branca onde o design system é escuro (`#070b14`, ver [visão](docs/produto/01-visao/01-visao.md)), `lang="en"` no `layout.tsx` e `<title>Create Next App</title>`. **Decidido em 2026-09-08**: o front segue o artefato de preview em React, e o desenho de view fica pra depois — mas **tokens do design system e i18n pt/es ([RNF-016](docs/requisitos/07-nao-funcionais.md#rnf-016--interface-e-mensagens-em-português-e-espanhol)) são baratos agora e caros como retrofit**, então entram junto da primeira tela real.
+- **Nenhuma das 13 telas** do inventário ([transversais](docs/requisitos/01-transversais.md)) existe. Esperado nesta fase, registrado pra não parecer esquecimento.
+
+### Corrigido nesta rodada — não reabrir
+
+- `03-dados.md`: entidade `Conta` ganhou **`papel`** (os 4 papéis existiam em `01-transversais.md` e não tinham onde morar — sem isso o item 7 do checklist não tem base) e **`plano`**; entidade **`EventoPagamento`** criada. Os três eram decisão já tomada em outro documento que nunca chegou ao modelo de dados.
+- `03-dados.md` dizia que o esquema "depende da stack, deliberadamente não decidida" — stack decidida desde 2026-09-08.
+- `08-seguranca-checklist.md` se contradizia: linhas de topo e os itens 3 e 4 diziam "API do Next.js" enquanto os itens 6 e 7 já apontavam pro NestJS.
+- Stack velha (Prisma/Auth.js/API routes) propagada em `negocio/02-implementacao.md`, `produto/05-produto/03-backlog.md`, `discord/HANDOFF-bot.md`, `discord/05-arquitetura-bot.md` (a árvore do monorepo nem tinha `apps/api`) e `produto/01-visao/01-visao.md`.
+- `README.md` dizia "desenvolvimento de código é solo".
+- Issues #1–#3 tinham erro de conteúdo: a #1 descrevia `Conta` com campos que não batiam com `03-dados.md` e tratava `AceiteTos` como campo em vez de entidade; a #2 não citava a **RF-072**, que é exceção explícita da própria RF-019 que ela implementa.
+
+### Ordem sugerida pra retomar
+
+As issues atuais (#25–#61, ver [#49 — Roadmap](https://github.com/ljborgess/ProLobby.com/issues/49)) já nascem **abertas e na ordem certa de desbloqueio** — não é mais preciso "reabrir", só seguir a ordem.
+
+1. Terminar o **desenho** que motivou a pausa original: enquanto uma fase não fechar o desenho, não faz sentido distribuir issue dela pro time (ver [CONTRIBUTING.md](CONTRIBUTING.md)).
+2. Decidir **repo público vs. Pro vs. convenção** (tabela acima) — destrava branch protection e SonarCloud de uma vez, e não depende do desenho.
+3. **[#27](https://github.com/ljborgess/ProLobby.com/issues/27)** (Postgres no CI) antes de **[#30](https://github.com/ljborgess/ProLobby.com/issues/30)** (schema), senão o primeiro PR de verdade quebra o CI.
+4. **[#30](https://github.com/ljborgess/ProLobby.com/issues/30)** (schema) — bloqueia **[#40](https://github.com/ljborgess/ProLobby.com/issues/40)** e **[#45](https://github.com/ljborgess/ProLobby.com/issues/45)**.
+5. **[#36](https://github.com/ljborgess/ProLobby.com/issues/36)** (webhook do bot) a qualquer momento, mas antes do primeiro handler de RF.
+6. Convidar o **Felipe** de novo se o convite tiver expirado (`LipeLou`, mandado em 2026-09-08, ainda pendente) e só então voltar a incluí-lo na distribuição de issues (ver [#45](https://github.com/ljborgess/ProLobby.com/issues/45) — antiga #3, hoje sem assignee).
+7. Depois do Núcleo ([#25](https://github.com/ljborgess/ProLobby.com/issues/25)) fechar: seguir o roadmap em [#49](https://github.com/ljborgess/ProLobby.com/issues/49) — piloto de OCR e config do Discord podem rodar em paralelo, o resto das fases (personagem → elo → Discord OAuth → fila → lobby → resultado → punição → perfil → governança → beta) segue em ordem, uma destrava a próxima.
 
 ## Os dois bloqueadores — leia isto antes de qualquer coisa
 
