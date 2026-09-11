@@ -13,6 +13,19 @@ import type { ThrottlerModuleOptions } from '@nestjs/throttler'
  * Endpoints opt into the strict buckets with `@Throttle({ login: {} })`;
  * anything that says nothing gets `default`.
  */
+/**
+ * Disables rate limiting — for tests of *other* rules, which would otherwise
+ * fail by volume instead of by the rule they check.
+ *
+ * Refuses to work in production: a switch that turns off a security control
+ * must not be one environment variable away from being on in the place it
+ * matters. Rate limiting itself is proven in security.e2e-spec, which builds
+ * its own module and never goes through here.
+ */
+export function throttlingDisabled(): boolean {
+  return process.env.NODE_ENV !== 'production' && process.env.THROTTLE_DISABLED === 'true'
+}
+
 export const throttlerConfig: ThrottlerModuleOptions = {
   throttlers: [
     {
@@ -27,6 +40,19 @@ export const throttlerConfig: ThrottlerModuleOptions = {
       name: 'login',
       ttl: 60_000,
       limit: 5,
+    },
+    {
+      // Sign-up. Measured per *hour*, not per minute, because the threat here
+      // is account farming and farming is counted by the day — the login
+      // bucket (5/min) would allow 300 accounts an hour from one address while
+      // looking strict. A real person creates one account, maybe two.
+      //
+      // This is the crude per-IP guard only; item 12 of the security checklist
+      // (proof the caller is not automated) is a separate concern, because
+      // farming from many addresses walks straight past any per-IP limit.
+      name: 'signup',
+      ttl: 3_600_000,
+      limit: 10,
     },
     {
       // Screenshot upload. RF-065 caps 10 uploads per hour per *account*,

@@ -1,15 +1,21 @@
+import { MikroOrmModule } from '@mikro-orm/nestjs'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { APP_GUARD } from '@nestjs/core'
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
 
+import mikroOrmConfig from './common/database/mikro-orm.config'
 import { HealthController } from './common/health/health.controller'
-import { throttlerConfig } from './common/security/throttler.config'
+import { throttlerConfig, throttlingDisabled } from './common/security/throttler.config'
+import { AccountModule } from './modules/account/account.module'
 
-// MikroORM lands here (@mikro-orm/nestjs) when the first endpoint needs the
-// database — see docs/requisitos/03-dados.md and ADR-006.
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), ThrottlerModule.forRoot(throttlerConfig)],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    MikroOrmModule.forRoot(mikroOrmConfig),
+    ThrottlerModule.forRoot({ ...throttlerConfig, skipIf: throttlingDisabled }),
+    AccountModule,
+  ],
   controllers: [HealthController],
   providers: [
     // Global guard, not per-controller: rate limiting that has to be remembered
