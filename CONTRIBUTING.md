@@ -47,6 +47,17 @@ As duas são registradas no próprio PR (comentário ou approval), não em conve
 - PR do Rafael ou do Felipe → aprovação do Luciano nas duas dimensões antes do merge.
 - PR do Luciano → **também fica aberto**: pede code review e security review a outra pessoa do time. CI verde não substitui revisão humana, e quem escreveu o código é a pior pessoa pra revisar o próprio recorte de segurança.
 - Exceção única: correção de emergência com produção no ar — que não existe ainda, e quando existir vira ADR própria.
+#### Quem revisa enquanto o time é de uma pessoa (decidido em 2026-09-11)
+
+Hoje só o Luciano está ativo: o Rafael ainda não começou e o Felipe nem aceitou o convite. Escrever "outra pessoa revisa" nesse cenário produz **regra impossível de cumprir** — e regra que ninguém consegue seguir é a que ninguém lê quando finalmente importa. Foi o que aconteceu no [#71](https://github.com/ljborgess/ProLobby.com/pull/71), mergeado no mesmo dia em que a regra foi escrita.
+
+Enquanto durar o período de um dev ativo:
+
+- **O agente (Claude Code) faz o code review e o security review** e publica os dois **como comentário no próprio PR**, antes do merge — achados classificados por severidade e o recorte do checklist de segurança conferido item a item.
+- **O Luciano lê, contesta ou aceita**, e é quem merge. A responsabilidade final continua humana; o que muda é que nenhum PR entra sem uma leitura adversarial registrada.
+- Achado que o autor discorda **fica escrito no PR com o motivo da recusa**. Discordância registrada vale mais que achado ignorado em silêncio.
+
+**Gatilho de saída**: com um segundo dev ativo, a segunda revisão passa a ser dele e esta seção vira histórico. O agente continua revisando — como camada extra, nunca como substituto de gente.
 
 ### Rodando os testes localmente
 

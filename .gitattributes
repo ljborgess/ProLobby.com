@@ -1,0 +1,22 @@
+# Fim de linha LF em tudo, inclusive na cópia de trabalho no Windows.
+#
+# Sem isto, o Git converte pra CRLF ao dar checkout no Windows e o
+# `prettier --check` (que assume LF por padrão) acusa arquivo fora do padrão
+# localmente enquanto o mesmo commit passa no CI, que roda em Linux. O
+# resultado é `pnpm format:check` falhando na máquina de quem desenvolve e
+# passando no pipeline — o pior tipo de divergência, porque ensina a ignorar
+# o comando.
+#
+# Também elimina o aviso "LF will be replaced by CRLF" em cada `git add`.
+* text=auto eol=lf
+
+# Binário: nunca normalizar.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary
+*.mp4 binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
