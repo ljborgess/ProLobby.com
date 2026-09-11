@@ -5,3 +5,4 @@
 - [requisitos/](requisitos/README.md) — o que o sistema precisa fazer: transversais, estados, modelo de dados, notificações e requisitos funcionais rastreáveis.
 - [adr/](adr/README.md) — decisão técnica difícil de reverter: mecanismo de partida, log de evento, webhook, UTC, stack técnica (005/006, decidida em 2026-09-08 antes dos bloqueadores).
 - [negocio/](negocio/README.md) — tese de mercado: oportunidade, concorrência, crescimento, risco.
+- [research/](research/auditoria-2026-09-11.md) — auditorias do dossiê: [investigação de design (2026-09-04)](research/investigacao-design-2026-09-04.md) e [auditoria de fluxo (2026-09-11)](research/auditoria-2026-09-11.md), que mudou regra de comportamento (RF-074 a RF-080), não só texto.

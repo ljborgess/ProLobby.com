@@ -13,9 +13,9 @@ O bot é o **motor único de automação** entre a plataforma (aplicação web) 
 | Calls do lobby vazias por 10 min (piso 15 min / teto 3 h após o lobby fechar) | Deleta os 3 canais temporários — ver [Canais](02-canais.md) |
 | Partida termina (relatório processado) | Manda DM lembrando os 2 capitães de remover os convidados do próprio clube (bot não alcança o clube EA diretamente, sem API — só lembra) |
 | Varredura de hora em hora | Apaga canal temporário órfão de lobby já encerrado; alerta em **#status-sistema** se o servidor passar de 400 canais (limite do Discord é 500) |
-| Cascata de capitão esgota (nenhum candidato de um lado tem clube/vaga) | Desfaz o lobby, notifica todos que voltam pra fila sem penalidade |
+| Cascata de capitão esgota, ou passa do teto de 5 min ([RF-080](../requisitos/05-funcionais.md)) | Desfaz o lobby, notifica todos que voltam pra fila sem penalidade |
 | Convite pro clube não confirmado por alguém em 5 min | Desfaz o lobby e apaga os 3 canais **na hora** (sem esperar o piso de 15 min), notifica todos que voltam pra fila **sem penalidade**, abre caso de abuso de capitão (ver [Discord e lobby](../produto/03-partida/03-lobby.md)) |
-| Silêncio total — 60 min do lobby fechar sem nenhum print | Encerra o lobby e libera a fila de todos **sem penalidade** — partida que não começou não gera zero-report (ver [Discord e lobby](../produto/03-partida/03-lobby.md)) |
+| Zero-report — 60 min do lobby fechar sem nenhum print, com convites confirmados | Notifica todos os humanos da partida (encerrada sem dado, −3 de reputação pra cada um) + manda DM lembrando os 2 capitães de remover os convidados do clube (ver [Resultado de partida](../produto/03-partida/04-resultado.md)) |
 | Membro vinculado sai do servidor Discord | Bloqueia o acesso à fila da conta vinculada + notificação in-app explicando; desbloqueia sozinho quando a pessoa voltar pelo link fixo (ver [Discord e lobby](../produto/03-partida/03-lobby.md)) |
 | Fila fechou / lobby formado / disputa resolvida / punição aplicada | Notifica via DM do bot + notificação in-app na plataforma |
 | Disputa cai em moderação / suspensão aplicada | Notifica as partes envolvidas |
@@ -24,7 +24,6 @@ O bot é o **motor único de automação** entre a plataforma (aplicação web) 
 | Banimento permanente aplicado | Revoga cargo Verificado — sem reconcessão futura |
 | Exclusão de conta (pedido LGPD) | **Kick do servidor** — diferente de suspensão/ban, é saída voluntária da plataforma inteira |
 | Personagem arquivado (edição nova do jogo) | Revoga cargo Verificado até reverificar a edição nova (ver [Cargos e verificação](01-cargos.md)) |
-| Zero-report expira (36h sem ninguém reportar) | Notifica todos os humanos da partida (encerrada sem dado, penalidade leve de reputação aplicada — ver [Resultado de partida](../produto/03-partida/04-resultado.md)) + manda DM lembrando os 2 capitães de remover os convidados do próprio clube — mesmo lembrete de limpeza do evento "Partida termina", pra não deixar estranhos parados no clube quando ninguém reporta |
 | Resultado de partida confirmado (sem disputa) | Notifica todos os humanos da partida que elo/reputação foram atualizados + convida a avaliar os companheiros humanos de time (opcional — ver [Ranking, reputação e punição](../produto/02-jogador/02-ranking.md)) |
 | Acúmulo de 5 avaliações negativas (30 dias, pessoas/partidas diferentes) | Cria caso automático na fila de moderação — sem punição automática |
 | Rollback retroativo (disputa revertida pela moderação) | Notifica todos os humanos envolvidos que elo/reputação foram recalculados (ver [Ranking, reputação e punição](../produto/02-jogador/02-ranking.md)) |

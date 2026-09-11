@@ -34,7 +34,7 @@ EA FC Pro Clubs **não tem API pública** — nenhuma integração automática c
 
 ## Clube EA (auto-declaração, opcional)
 
-- Campo opcional no perfil: **"tenho clube EA com vaga disponível?"** (sim/não) + nome do clube — jogador atualiza quando quiser. Sem API da EA, é a única forma da plataforma saber quem pode ser candidato a **capitão** (ver [Discord e lobby](../03-partida/03-lobby.md) e [Mecânica real do EA FC Pro Clubs](../03-partida/01-mecanica.md)) — filtra candidatos plausíveis, mas é reconfirmado no momento do lobby (dado pode ficar desatualizado).
+- Campo opcional no perfil: **nome do clube + quantas vagas livres ele tem** (0 a 10) — jogador atualiza quando quiser. Era um sim/não até 2026-09-11; virou contagem porque o fechamento de lobby precisa saber se cabe **todo mundo do lado**, não se cabe alguém ([RF-006](../../requisitos/05-funcionais.md#rf-006--lobby-só-fecha-com-candidato-a-capitão-em-cada-lado)). Sem API da EA, é a única forma da plataforma saber quem pode ser candidato a **capitão** (ver [Discord e lobby](../03-partida/03-lobby.md) e [Mecânica real do EA FC Pro Clubs](../03-partida/01-mecanica.md)) — filtra candidatos plausíveis, mas é reconfirmado no momento do lobby (dado pode ficar desatualizado).
 - Campo de nome do clube limitado a **20 caracteres** (limite real de nome completo de clube no EA FC) — validação de tamanho evita entrada inválida que nunca vai bater com o que aparece na tela do jogo.
 - **Consentimento explícito**: ao marcar "sim", jogador é avisado que autoriza até 10 jogadores de outro lobby serem convidados temporariamente pro clube quando for escolhido capitão — coberto pelos [Termos de Uso](../04-governanca/03-termos.md), mesmo padrão já usado pra consentimento de print/foto/Discord ID.
 

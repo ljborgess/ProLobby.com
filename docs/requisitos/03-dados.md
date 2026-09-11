@@ -24,18 +24,24 @@ Quem migra de PS5 pra PC — caso que o escopo trata explicitamente, preservando
 ### Conta
 Reputação e identidade da pessoa. Uma por Discord ID.
 
-`email` · `senha` (hash) · `email_verificado` · `data_nascimento` · `pergunta_seguranca` + `resposta` (hash) · `discord_id` (único, exclusivo) · `papel` · `reputacao` (0–100, inicia 70) · `plano` · `estado` · `criado_em`
+`email` · `senha` (hash) · `email_verificado` · `data_nascimento` · `pergunta_seguranca` + `resposta` (hash) · `discord_id` (único, exclusivo) · `papel` · `reputacao` (0–100, inicia 70) · `plano` · `estado` · `suspensao_termina_em` · `criado_em`
+
+- **`suspensao_termina_em` — gap fechado em 2026-09-11**: a suspensão dura 7 dias e termina com reputação restaurada em 45 ([RF-074](05-funcionais.md#rf-074--fim-de-suspensão-restaura-a-reputação-para-45)), o que exige um job saber **quando** cada uma vence. Sem o campo, o fim da pena dependia de varrer o log de eventos atrás da última punição.
 
 - **`papel` — gap fechado em 2026-09-08**: os quatro papéis da plataforma (Visitante / Usuário / Moderador / Admin) estavam definidos em [Requisitos transversais](01-transversais.md#papéis-dentro-da-plataforma) e não tinham onde morar. Sem o campo, três requisitos ficam sem apoio — [RF-035](05-funcionais.md#rf-035--moderador-parte-do-caso-é-travado-decidem-os-outros-3), [RF-039](05-funcionais.md#rf-039--moderador-só-acessa-print-anexado-ao-caso-que-trata) e [RF-040](05-funcionais.md#rf-040--toda-ação-de-moderador-entra-no-log-de-auditoria) — e o item 7 do [checklist de segurança](08-seguranca-checklist.md) (restringir acessos) fica sem base, já que é a **única** camada de autorização na stack sem RLS. Visitante é ausência de conta, não valor persistido.
 - **`plano` — gap fechado em 2026-09-08**: [Ordem de implementação](../negocio/02-implementacao.md) já mandava o schema nascer com o campo, e ele não constava aqui. Nada de cobrança implementada, só o espaço reservado — fazer isso como migração retroativa é o que custa caro ([Sustentabilidade](../negocio/03-sustentabilidade.md)).
 
 ### GamertagPlataforma
-`conta` · `plataforma` (PS5 / Xbox Series / PC) · `gamertag` · `verificado_em` (nulo = reivindicação provisória) — único em (plataforma, gamertag) quando verificado.
+`conta` · `plataforma` (PS5 / Xbox Series / PC) · `gamertag_cifrado` · `gamertag_hash` · `verificado_em` (nulo = reivindicação provisória) — único em (plataforma, `gamertag_hash`) quando verificado.
+
+- **Dois campos, não um (decidido em 2026-09-11)**: [RNF-009](07-nao-funcionais.md#rnf-009--dado-sensível-criptografado-em-repouso) manda o gamertag não ficar em texto puro, mas ele é **chave de unicidade global**, alvo de comparação do OCR e origem do nickname do Discord ([RF-056](05-funcionais.md#rf-056--nickname-sincroniza-com-o-gamertag-com-fallback-por-dm)) — cifra não-determinística torna índice único e lookup impossíveis. `gamertag_hash` é HMAC determinístico com segredo do servidor (unicidade e comparação), `gamertag_cifrado` guarda o valor pra exibir. Sem essa separação, o requisito de criptografia e o de unicidade se cancelavam.
 
 ### ClubeDeclarado
 Auto-declaração que habilita a pessoa a ser capitão.
 
-`conta` · `tem_vaga` (bool) · `nome_clube` (≤20 caracteres) · `atualizado_em`
+`conta` · `vagas_livres` (0–10) · `nome_clube` (≤20 caracteres) · `atualizado_em`
+
+- **`vagas_livres` substitui o `tem_vaga` booleano (2026-09-11)**: [RF-006](05-funcionais.md#rf-006--lobby-só-fecha-com-candidato-a-capitão-em-cada-lado) passou a exigir vagas suficientes pros humanos do lado, não "pelo menos uma". Booleano deixava fechar lobby que não tinha como convidar todo mundo, e o estouro caía como abuso no capitão.
 
 ### Personagem
 `conta` · `categoria` (GK / zaga-lateral / meio / ponta / ataque) · `plataforma` · `edicao_jogo` · `nome` · `foto` · `overall` · `atributos` · `elo` · `partidas_na_categoria` · `estado` · `criado_em`
@@ -52,12 +58,32 @@ Auto-declaração que habilita a pessoa a ser capitão.
 ### EntradaFila
 `conta` · `personagem` · `categoria` · `elo_no_momento` · `entrou_em` — uma ativa por conta.
 
-`elo_no_momento` é congelado na entrada: a banda de busca (±150 abrindo a ±400) precisa de referência estável, senão o alvo se move durante a própria busca.
+`elo_no_momento` é congelado na entrada: a banda de busca (±150 abrindo a ±400) precisa de referência estável, senão o alvo se move durante a própria busca. É também o valor que entra na média de cada lado no cálculo de elo ([RF-077](05-funcionais.md#rf-077--expectativa-de-elo-usa-a-média-dos-humanos-de-cada-lado)).
+
+### OcorrenciaRecusaFila
+`conta` · `lobby` · `criado_em` — uma linha por recusa explícita ou por estouro dos 30 s.
+
+**Gap fechado em 2026-09-11.** O timeout progressivo de fila ([RF-009](05-funcionais.md#rf-009--recusar-ou-não-confirmar-gera-timeout-progressivo-de-fila): 5/15/30 min, 2 h) e o zeramento ([RF-010](05-funcionais.md#rf-010--contador-de-timeout-zera-com-12-h-limpas-ou-uma-partida-completada): 12 h limpas ou 1 partida completada) não tinham **onde** ser contados: recusa não gera evento de reputação por decisão explícita ([RF-011](05-funcionais.md#rf-011--recusar-não-altera-reputação)), e o log de elo/reputação era o único registro datado do sistema. Sem esta tabela, as duas regras eram inimplementáveis.
+
+O bloqueio corrente é **derivado**, não guardado: conta as ocorrências desde o mais recente entre (agora − 12 h) e a última partida completada, e aplica a escada. Estado derivado não dessincroniza.
 
 ### Lobby
-`estado` · `criado_em` · `capitao_lado_a` · `capitao_lado_b` · `clube_a` · `clube_b` · `formacao_a` · `formacao_b`
+`estado` · `criado_em` · `fechado_em` · `encerrado_em` · `capitao_lado_a` · `capitao_lado_b` · `clube_a` · `clube_b` · `formacao_a` · `formacao_b` · `placar_a` · `placar_b` · `anulada` · `canal_texto_id` · `canal_voz_a_id` · `canal_voz_b_id`
 
 `clube_a` / `clube_b` guardam o **nome do clube capturado no momento da escolha do capitão** — é o par esperado que o OCR de resultado valida, e muda a cada lobby ([Mecânica](../produto/03-partida/01-mecanica.md)).
+
+**Campos acrescentados em 2026-09-11**, todos por requisito que não tinha apoio:
+
+- **`fechado_em`** — *todo* prazo do fluxo conta "desde o lobby fechar" (5 min de convite, 60 min de zero-report, piso de 15 min e teto de 3 h de deleção de canal) e só existia `criado_em`, que é outro instante: o lobby é criado ao fechar o roster e "fecha" quando os dois capitães confirmam. `encerrado_em` marca a entrada em estado terminal, base da faxina de canal órfão.
+- **`placar_a` / `placar_b` / `anulada`** — o resultado **confirmado** não tinha casa. `Report` guarda o que cada lado enviou; o valor que vale, que alimenta elo e o histórico indefinido de [RF-018](05-funcionais.md#rf-018--histórico-de-partida-não-expira), ficava sem campo, e o rótulo de partida anulada de [RF-044](05-funcionais.md#rf-044--disputa-sem-evidência-decisiva-anula-a-partida) também.
+- **`canal_*_id`** — [RF-052](05-funcionais.md#rf-052--canais-são-apagados-pelos-três-gatilhos-e-imediatamente-em-cancelamento) e [RF-054](05-funcionais.md#rf-054--faxina-horária-apaga-canal-órfão) mandam apagar os 3 canais e varrer órfão, e o bot não tem banco — sem os ids gravados aqui, "apagar os canais daquele lobby" dependia de memória de processo.
+
+### EstatisticaPartida
+`participacao_lobby` · `nota` · `gols` · `assistencias` · `posicao_lida` · `extraida_de` (envio de print)
+
+**Gap fechado em 2026-09-11.** Duas regras já decididas dependiam desses campos e nenhuma tinha onde gravá-los: [RF-046](05-funcionais.md#rf-046--nota-individual-00-no-print-suspende-a-penalidade-automática) (nota individual 0.0 suspende os −8 automáticos, proteção contra o bug de perda de controle) e a estatística individual exibida no perfil público ([Perfil](../produto/02-jogador/03-perfil.md)). `posicao_lida` é o que [RF-067](05-funcionais.md#rf-067--print-final-confere-a-categoria-jogada) compara com a categoria da fila.
+
+Não pesa no elo, por decisão ([Ranking](../produto/02-jogador/02-ranking.md)) — é histórico e insumo de moderação.
 
 ### ParticipacaoLobby
 `lobby` · `conta` · `personagem` · `lado` · `posicao` · `confirmou_entrada` · `confirmou_convite_recebido` · `voto_formacao`
@@ -93,6 +119,16 @@ Os tipos são os já enumerados em [Moderação](../produto/04-governanca/01-mod
 
 **`aberto_por` — gap fechado em 2026-09-08**: conta que abriu o caso (denunciante, contestante), ou `sistema` nos casos automáticos (acúmulo de avaliação negativa, retry de webhook esgotado). Sem esse campo, três requisitos não têm onde se apoiar: [RF-036](05-funcionais.md#rf-036--denunciado-nunca-vê-quem-denunciou) (painel precisa ver quem denunciou), [RF-068](05-funcionais.md#rf-068--máximo-de-3-denúncias-abertas-por-conta) (contar denúncias abertas por conta) e [RF-012](05-funcionais.md#rf-012--qualquer-humano-da-partida-contesta-uma-vez-cada) (bloquear 2ª contestação da mesma pessoa).
 
+### EntregaEvento
+`id_evento` (único) · `tipo` · `payload` · `alvo` (lobby ou conta) · `tentativas` · `entregue_em` · `criado_em`
+
+**Gap fechado em 2026-09-11.** [RF-058](05-funcionais.md#rf-058--evento-da-plataforma-pro-bot-tem-retry-e-vira-caso-ao-esgotar) exige retry com backoff (10s/20s/40s) e descarte de reenvio duplicado por id — e a [arquitetura do bot](../discord/05-arquitetura-bot.md) colocava as duas coisas **em memória, no bot**, que não tem banco e perde tudo em restart (justo quando o retry importa). O registro passa a viver na API, que é quem retenta; o bot fica idempotente checando o estado real no Discord antes de agir.
+
+### IdentidadeBloqueada
+`discord_id_hash` · `gamertag_hash` · `plataforma` · `motivo` · `caso` · `criado_em`
+
+**Gap fechado em 2026-09-11** ([RF-079](05-funcionais.md#rf-079--banimento-sobrevive-à-exclusão-de-conta)). O banimento era vinculado a Discord ID + gamertag guardados **na Conta**, e a exclusão por LGPD apaga a conta e libera o e-mail — bastava pedir exclusão depois do ban pra voltar limpo com a mesma identidade. Guarda só hash (mesmo HMAC de `GamertagPlataforma`), então sobrevive à exclusão sem reter dado pessoal legível.
+
 ### LogAuditoria
 `ator` · `acao` · `alvo` · `detalhe` · `criado_em` — toda ação de moderador, inclusive **acesso a print de terceiro** ([Requisitos transversais](01-transversais.md)).
 
@@ -110,5 +146,7 @@ Os tipos são os já enumerados em [Moderação](../produto/04-governanca/01-mod
 ## O que a modelagem confirmou que falta em nenhum lugar
 
 Nada além da inconsistência de gamertag e das duas entidades de evento acima. Toda outra regra do dossiê encontrou onde se apoiar — o que é o resultado esperado depois das rodadas anteriores de auditoria, e o motivo de valer a pena ter feito este exercício mesmo sendo consolidação.
+
+**Auditoria de 2026-09-11** encontrou seis, todos de regra já decidida que não tinha campo: `EstatisticaPartida` (nota 0.0 de RF-046 e estatística do perfil), `OcorrenciaRecusaFila` (timeout progressivo de RF-009/RF-010), `EntregaEvento` (retry e idempotência de RF-058), `IdentidadeBloqueada` (RF-079), os campos novos de `Lobby` (prazos, placar final, ids de canal) e a separação hash/cifra do gamertag. Relatório em [research/auditoria-2026-09-11.md](../research/auditoria-2026-09-11.md).
 
 **Auditoria de 2026-09-08 (contra o scaffold do monorepo)** encontrou mais três: o campo `papel` da Conta, o campo `plano` e a entidade `EventoPagamento` acima — todos eram decisão já tomada em outro documento que nunca chegou até aqui. Corrigidos no mesmo dia, antes da primeira migration existir.

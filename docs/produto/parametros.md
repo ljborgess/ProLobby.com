@@ -33,8 +33,9 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 | Evento | Efeito | Onde é decidido |
 |---|---|---|
 | Partida limpa (sem incidente) | +1, teto em 70 | [Ranking](02-jogador/02-ranking.md) |
+| Fim de suspensão cumprida | reputação **definida em 45** | [RF-074](../requisitos/05-funcionais.md) |
 | Joinha de companheiro | +1, direto (único caminho acima de 70) | [Ranking](02-jogador/02-ranking.md) |
-| Zero-report — 1ª e 2ª vez em 30 dias | −3 | [Resultado](03-partida/04-resultado.md) |
+| Zero-report — 1ª e 2ª vez em 30 dias | −3 **por pessoa** da partida | [Resultado](03-partida/04-resultado.md) |
 | Zero-report — 3ª vez em diante (30 dias) | −6, −9, −12... (+3 por ocorrência) | [RF-071](../requisitos/05-funcionais.md) |
 | Desconexão/rage quit confirmado | −8 | [Resultado](03-partida/04-resultado.md) |
 | Não-joinha (report de companheiro) | 0 direto — acumula, 5 em 30 dias (pessoas/partidas diferentes) abre caso de moderação | [Ranking](02-jogador/02-ranking.md) |
@@ -47,7 +48,8 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 | Mínimo de humanos por lado | 4 (8 no total) | [Fila](03-partida/02-fila.md) |
 | Máximo de humanos por lado | 11 | [Fila](03-partida/02-fila.md) |
 | Simetria entre os lados | obrigatória **por categoria** (não só pelo total) | [Fila](03-partida/02-fila.md) |
-| Candidatos a capitão pra fechar lobby | ao menos 1 por lado (clube declarado com vaga) | [Fila](03-partida/02-fila.md) |
+| Candidatos a capitão pra fechar lobby | ao menos 1 por lado, com **vagas livres ≥ humanos do lado − 1** | [RF-006](../requisitos/05-funcionais.md) |
+| Teto total da cascata de capitão | 5 min | [RF-080](../requisitos/05-funcionais.md) |
 | Vagas restantes | preenchidas pela IA do próprio jogo | [Mecânica](03-partida/01-mecanica.md) |
 | Banda de elo inicial | ±150 por categoria | [Fila](03-partida/02-fila.md) |
 | Expansão da banda | +50 a cada 2 min, desde o início | [Fila](03-partida/02-fila.md) |
@@ -59,7 +61,7 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 | Fila visível ao jogador | faixa: <5 "pouca gente" · 5-15 "movimentada" · >15 "cheia" | [RF-008](../requisitos/05-funcionais.md) |
 | Janela de confirmação do capitão | 30 s (separada, após a dos jogadores) | [Discord e lobby](03-partida/03-lobby.md) |
 | Janela de confirmação de convite recebido | 5 min após o lobby fechar | [Discord e lobby](03-partida/03-lobby.md) |
-| Cancelamento por silêncio total | 60 min após o lobby fechar (a calibrar com o teste 5) | [Discord e lobby](03-partida/03-lobby.md) |
+| Expiração por zero-report (todos confirmaram convite, nenhum print) | 60 min após o lobby fechar (a calibrar com o teste 5) | [Discord e lobby](03-partida/03-lobby.md) |
 | Prazo de votação de formação | 60 s | [Fila](03-partida/02-fila.md) |
 | Contas da plataforma por Discord ID | 1 (exclusivo) | [Discord e lobby](03-partida/03-lobby.md) |
 | Validade de reivindicação de gamertag não verificada | 7 dias | [Personagens](02-jogador/01-verificacao.md) |
@@ -77,6 +79,7 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 | Cooldown entre atualizações aceitas | 24 h | [Personagens](02-jogador/01-verificacao.md) |
 | Personagens por conta | até 5 (1 por categoria) | [Personagens](02-jogador/01-verificacao.md) |
 | Nome de clube — limite | 20 caracteres | [Personagens](02-jogador/01-verificacao.md) |
+| Vagas livres declaradas no clube | 0 a 10 (contagem, não sim/não) | [RF-006](../requisitos/05-funcionais.md) |
 | Anti-reuso de print | hash do arquivo, checado **antes** do OCR | [Resultado](03-partida/04-resultado.md) |
 | Teto de uploads por conta | 10 por hora | [Personagens](02-jogador/01-verificacao.md) |
 | Pré-checagens antes do OCR | hash, dimensão mínima **800×600px**, nível de foco (variância de Laplaciano, threshold a calibrar no piloto) | [RF-064](../requisitos/05-funcionais.md) |
@@ -91,7 +94,6 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 | Placar válido | inteiro, 0–20 por lado | [Resultado](03-partida/04-resultado.md) |
 | Janela de contestação | 48 h | [Resultado](03-partida/04-resultado.md) |
 | Quem pode contestar | qualquer humano da partida, 1 vez cada | [Resultado](03-partida/04-resultado.md) |
-| Expiração por zero-report (partida que aconteceu) | 36 h | [Resultado](03-partida/04-resultado.md) |
 | Assinatura do bug de perda de controle | nota individual 0.0 | [Resultado](03-partida/04-resultado.md) |
 
 ## Conta e governança
@@ -120,7 +122,11 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 | Contadores de "30 dias" | janela móvel, não mês do calendário | [Requisitos transversais](../requisitos/01-transversais.md) |
 | Definição de conta ativa | 1+ partida completada nos últimos 30 dias | [Requisitos transversais](../requisitos/01-transversais.md) |
 | Alvo de processamento do OCR | menos de 15 s, com progresso | [Requisitos transversais](../requisitos/01-transversais.md) |
-| Threshold de pausa de cadastro (free tier) | 90% do teto de qualquer recurso (900/1000 chamadas OCR, 9/10 lobbies) | [RF-072](../requisitos/05-funcionais.md) |
+| Threshold de pausa de **cadastro** (free tier) | 90% do teto acumulativo: 900 de 1000 chamadas OCR no mês | [RF-072](../requisitos/05-funcionais.md) |
+| Threshold de pausa de **fila** (capacidade instantânea) | 9 de 10 lobbies simultâneos ocupados | [RNF-008](../requisitos/07-nao-funcionais.md) |
+| Quórum de moderação | 3 elegíveis; com menos, 48 h pra unanimidade e então desfecho neutro | [RF-075](../requisitos/05-funcionais.md) |
+| Entrada na fila durante o beta fechado | exige cargo Beta no Discord | [RF-076](../requisitos/05-funcionais.md) |
+| Expectativa de elo da partida | média do elo dos humanos de cada lado (IA não conta) | [RF-077](../requisitos/05-funcionais.md) |
 
 ## Sustentabilidade
 

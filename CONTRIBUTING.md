@@ -47,13 +47,13 @@ src/
 │   ├── health/          # health.controller.ts
 │   └── security/        # ValidationPipe global, throttler, helmet/CORS
 └── modules/
-    ├── conta/           # RF-019 a RF-026, RF-070, RF-072
+    ├── conta/           # RF-019 a RF-026, RF-070, RF-072, RF-074, RF-078
     ├── personagem/      # RF-027 a RF-031, RF-063 a RF-065, RF-073 (cadastro/ciclo de vida + verificação por OCR)
-    ├── fila/            # RF-001 a RF-011, RF-034
-    ├── lobby/           # RF-032, RF-033, RF-051, RF-052
+    ├── fila/            # RF-001 a RF-011, RF-034, RF-076
+    ├── lobby/           # RF-032, RF-033, RF-051, RF-052, RF-080
     ├── resultado/       # RF-012, RF-013, RF-041 a RF-046, RF-066, RF-067
-    ├── ranking/         # RF-014 a RF-018, RF-071
-    ├── moderacao/       # RF-035 a RF-040, RF-068, RF-069
+    ├── ranking/         # RF-014 a RF-018, RF-071, RF-077
+    ├── moderacao/       # RF-035 a RF-040, RF-068, RF-069, RF-075, RF-079
     └── bot-integration/ # RF-058, RF-059 — só entrega de evento (retry, sequência, idempotência)
 ```
 
@@ -63,7 +63,7 @@ Dentro de um módulo: `*.controller.ts`, `*.service.ts`, `*.module.ts` e `*.spec
 
 - **Comandar outro módulo** (fazer algo acontecer nele): emitir **evento de domínio** (`EventEmitter2` do Nest, ou equivalente), nunca chamar `Service`/`Repository` de outro módulo pra escrever. Ex.: `resultado` não chama `filaService.liberar()` direto — emite `partida.anulada`, e `fila` escuta e reage. Desacopla: mudar `fila` não quebra `resultado` sem aviso.
 - **Ler outro módulo**: chamar **método público do `Service`** dele (ex.: `contaService.getPendencias(contaId)`), nunca acessar `Repository`/`Entity` de outro módulo direto.
-- **RF-047 a RF-062 (exceto 058/059)**: cada RF é emitida como evento pelo módulo de domínio dono do gatilho (ex.: `lobby` emite quando cria/apaga canal, `moderacao` emite quando aplica punição), e `bot-integration` escuta qualquer evento marcado pra ir pro Discord e entrega via webhook — não decide regra de negócio nenhuma, reforça o que [ADR-003](docs/adr/003-webhook-nao-polling.md) já dizia (bot burro, regra na plataforma). **Qual módulo de domínio é dono de cada RF específica dessa faixa fica pra quando a Fase 3 abrir** — decidir agora seria documentar fase futura em detalhe antes da hora, o mesmo erro que já corrigimos com as issues #1-#5.
+- **RF-047 a RF-062 (exceto 058/059)**: cada RF é emitida como evento pelo módulo de domínio dono do gatilho (ex.: `lobby` emite quando cria/apaga canal, `moderacao` emite quando aplica punição), e `bot-integration` escuta qualquer evento marcado pra ir pro Discord e entrega via webhook — não decide regra de negócio nenhuma, reforça o que [ADR-003](docs/adr/003-webhook-nao-polling.md) já dizia (bot burro, regra na plataforma). **Qual módulo de domínio é dono de cada RF específica dessa faixa fica pra quando a Fase 3 abrir** — decidir agora seria documentar fase futura em detalhe antes da hora, o mesmo erro que já corrigimos quando as issues #1-#5 foram fechadas e reabertas em PRD/issue/sub-issue.
 - **RF-047, RF-048, RF-062 não têm código em `apps/api`** — são ausência de feature (047), checagem nativa do Discord.js (048) ou processo operacional + checagem no boot do bot (062). Não procurar controller/service pra elas na API.
 
 ### `apps/web` (Next.js App Router)
@@ -102,36 +102,37 @@ Mais simples que `modules/` da api de propósito: bot não expõe endpoint próp
 Toda fatia de fase (ex.: "Núcleo: Conta e autenticação") nasce em 3 níveis, todos no GitHub (Issue Dependencies + Sub-issues nativos, nada em planilha ou doc externo):
 
 1. **PRD** — 1 issue-mãe por fatia (`tipo:docs`), aberta só quando a fatia vai começar de verdade (mesma disciplina que já vale pra issue: não adiantar fase futura). Contexto, problema, objetivo, **fora de escopo explícito**, RFs cobertos, critério de sucesso da fatia inteira. Título: `PRD: <nome da fatia>`.
-2. **Issue** — 1 por peça grande da fatia (schema, cadastro, recuperação de senha, auth do webhook, CI...), sub-issue do PRD. O quê, RFs, checklist de segurança aplicável, critério de aceite, origem — formato já usado em `#1` a `#5`.
+2. **Issue** — 1 por peça grande da fatia (schema, cadastro, recuperação de senha, auth do webhook, CI...), sub-issue do PRD. O quê, RFs, checklist de segurança aplicável, critério de aceite, origem — formato já usado em #26, #30, #36, #40 e #45.
 3. **Sub-issue** — 1 por entidade/endpoint/arquivo de config, sub-issue da issue. Granularidade pequena o bastante pra virar 1 PR revisável.
 
-**Exemplo real (fatia 2.1 — Núcleo: Conta e autenticação)**:
+**Grafo vivo (fatia 2.1 — Núcleo: Conta e autenticação)** — estado corrente do tracker, conferido em 2026-09-11. As issues #1 a #24 foram fechadas como `not planned` e reabertas nesta numeração; não usar os números antigos como referência:
 
 ```
-#24 PRD: Núcleo — Conta e autenticação
-├── #1 Schema base
-│   ├── #6 Entidade Conta          (primeiro — todas as outras entidades dependem dela)
-│   ├── #7 Entidade AceiteTos       ─┐
-│   ├── #8 EventoReputacao/Elo      ─┼─ blocked by #6
-│   ├── #9 EventoPagamento          ─┘
-│   └── #10 Teste de migration e2e  — blocked by #6, #7, #8, #9
-├── #2 Cadastro, sessão, Termos     — blocked by #1
-│   ├── #11 Endpoint de cadastro    — blocked by #6
-│   ├── #12 Login e sessão JWT      — blocked by #11
-│   ├── #13 Aceite de Termos        — blocked by #7, #12
-│   └── #14 Tela de cadastro (web)  — blocked by #11
-├── #3 Recuperação de senha         — blocked by #1
-│   ├── #15 Verificação de e-mail   — blocked by #11
-│   ├── #16 Link de redefinição     — blocked by #12
-│   └── #17 Recuperação 2 fatores   — blocked by #11
-├── #4 Auth do webhook do bot       — sem dependência, paralelo
-│   ├── #18 Assinatura HMAC
-│   ├── #19 Rate limit              — blocked by #18
-│   └── #20 Contrato de evento tipado
-└── #5 CI + templates               — bloqueia #1 na prática (CI precisa existir antes do PR de schema passar)
-    ├── #21 Postgres no CI          — blocked by #10
-    ├── #22 Template de PR
-    └── #23 Template de issue
+#49 PRD Mestre: roadmap de fases  (PRDs de fase: #50 a #61)
+└── #25 PRD: Núcleo — Conta e autenticação
+    ├── #26 CI com Postgres e templates de processo
+    │   ├── #27 Postgres no CI
+    │   ├── #28 Template de PR
+    │   └── #29 Template de issue
+    ├── #30 Schema base
+    │   ├── #31 Entidade Conta          (primeiro — todas as outras dependem dela)
+    │   ├── #32 Entidade AceiteTos       ─┐
+    │   ├── #33 EventoReputacao/Elo      ─┼─ blocked by #31
+    │   ├── #34 EventoPagamento          ─┘
+    │   └── #35 Teste de migration e2e   — blocked by #31-#34, #27
+    ├── #36 Auth do webhook do bot       — sem dependência, paralelo
+    │   ├── #37 Assinatura HMAC
+    │   ├── #38 Rate limit               — blocked by #37
+    │   └── #39 Contrato de evento tipado
+    ├── #40 Cadastro, sessão, Termos
+    │   ├── #41 Endpoint de cadastro     — blocked by #31
+    │   ├── #42 Login e sessão JWT       — blocked by #41
+    │   ├── #43 Aceite de Termos         — blocked by #32, #42
+    │   └── #44 Tela de cadastro (web)   — blocked by #41
+    └── #45 Recuperação de acesso
+        ├── #46 Verificação de e-mail    — blocked by #41
+        ├── #47 Link de redefinição      — blocked by #42
+        └── #48 Recuperação 2 fatores    — blocked by #33, #41
 ```
 
 - Dependência é registrada de verdade no GitHub (Issue Dependencies nativo, não só texto/comentário) — a issue/sub-issue bloqueada mostra um selo **"Blocked"** e lista quem bloqueia, na barra lateral direita.

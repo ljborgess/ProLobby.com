@@ -59,6 +59,8 @@ Ter o número escrito é o que transforma "tem backup" em compromisso verificáv
 
 **Aceite**: sem coordenação disponível, a plataforma continua servindo perfil, histórico e report de resultado; só o fechamento de lobby novo para, com aviso in-app. Partida em andamento não é afetada.
 
+**Terceiro gatilho, acrescentado em 2026-09-11**: ocupação de **9 dos 10 lobbies simultâneos** (RNF-004) pausa o fechamento de lobby pelo mesmo caminho. É a alavanca correta pra teto de capacidade instantânea — [RF-072](05-funcionais.md#rf-072--cadastro-pausa-perto-do-teto-do-free-tier-sem-gasto-automático) usava esse número pra pausar **cadastro**, que não libera lobby nenhum e pune quem não tem relação com o pico.
+
 ## Segurança
 
 > Ver também [checklist de segurança](08-seguranca-checklist.md) — 18 itens de prática de implementação, aplicados a partir da 1ª linha de código de backend, não só os RNFs abaixo.
@@ -67,6 +69,8 @@ Ter o número escrito é o que transforma "tem backup" em compromisso verificáv
 **Origem**: [produto/04-governanca/02-lgpd.md](../produto/04-governanca/02-lgpd.md)
 
 **Aceite**: print, foto, Discord ID e gamertag não ficam em texto puro no banco nem no storage.
+
+**Como isso convive com unicidade e busca (fechado em 2026-09-11)**: gamertag e Discord ID são **chave** (unicidade global do par plataforma+gamertag, Discord ID exclusivo por conta) e alvo de comparação do OCR — cifra não-determinística impede índice único e lookup, então o requisito se cancelava com o de unicidade. Cada um guarda **dois campos**: `*_hash` (HMAC determinístico com segredo do servidor, usado pra unicidade, comparação e lista de bloqueio) e `*_cifrado` (valor exibível). Ver [Modelo de dados](03-dados.md#gamertagplataforma).
 
 ### RNF-010 · Painel de moderação exige 2FA
 **Origem**: [produto/04-governanca/02-lgpd.md](../produto/04-governanca/02-lgpd.md)
@@ -122,6 +126,8 @@ Por que 2 anos e não "para sempre": o log **liga pessoa a denúncia e punição
 **Origem**: [01-transversais.md](01-transversais.md)
 
 **Aceite**: reenviar o mesmo print, confirmação, voto ou avaliação não duplica o efeito. Duplo clique não gera dois reports do mesmo lado — o que a validação cruzada leria como divergência, criando disputa artificial.
+
+**Vale igual pro evento plataforma → bot**, com mecanismo declarado desde 2026-09-11: registro de entrega e retry ficam na API (`EntregaEvento`, ver [Modelo de dados](03-dados.md#entregaevento)) e o bot é idempotente **checando o estado no Discord antes de agir**. Idempotência guardada em memória de processo não vale — some no restart, que é exatamente quando o retry acontece.
 
 ### RNF-019 · Contadores de reincidência e recuperação exigem log de evento
 **Origem**: [03-dados.md](03-dados.md)

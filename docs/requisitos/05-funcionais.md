@@ -2,11 +2,13 @@
 
 Lista numerada e rastreável. Formato e regras em [README](README.md).
 
-**Status: 9 áreas levantadas, RF-001 a RF-073, RNF-001 a RNF-020.** Nenhuma área permanece sem varredura de lacuna.
+**Status: 9 áreas levantadas, RF-001 a RF-080, RNF-001 a RNF-020.** Nenhuma área permanece sem varredura de lacuna.
+
+> **Auditoria de 2026-09-11**: varredura de fluxo ponta a ponta fechou 24 achados — 6 quebras de fluxo (entre elas um estado inalcançável e um loop de suspensão que virava banimento), 6 lacunas de modelo de dados, 7 ambiguidades e 5 de processo/repo. RF-074 a RF-080 nasceram daí; RF-006, RF-034, RF-035, RF-043, RF-058, RF-066, RF-071 e RF-072 foram corrigidos no lugar. Relatório completo em [research/auditoria-2026-09-11.md](../research/auditoria-2026-09-11.md).
 
 Cobre as 9 áreas do produto, mais os [não-funcionais](07-nao-funcionais.md) em arquivo próprio.
 
-> **Ressalva viva**: três parâmetros do dossiê estão marcados como "a calibrar" e vão mudar com o retorno do [checklist no jogo](../produto/03-partida/05-checklist.md) e do [piloto de OCR](06-piloto-ocr.md) — os 5 min de confirmação de convite, os 60 min de silêncio total, e se o modelo de 5 personagens sobrevive ao que o jogo oferece. Os RFs que dependem deles serão revisados, não reescritos do zero.
+> **Ressalva viva**: três parâmetros do dossiê estão marcados como "a calibrar" e vão mudar com o retorno do [checklist no jogo](../produto/03-partida/05-checklist.md) e do [piloto de OCR](06-piloto-ocr.md) — os 5 min de confirmação de convite, os 60 min de expiração por zero-report, e se o modelo de 5 personagens sobrevive ao que o jogo oferece. Os RFs que dependem deles serão revisados, não reescritos do zero.
 
 A numeração é estável — **RF nunca é renumerado nem reaproveitado**. Requisito derrubado fica marcado como revogado, com o motivo, porque saber o que foi descartado vale tanto quanto saber o que vale.
 
@@ -76,6 +78,13 @@ Cobertura por área, pra saber onde ainda não se olhou:
 
 **Aceite**: cada conta guarda a versão aceita e a data. Publicada uma versão marcada como material, a conta é barrada de usar a plataforma até aceitar a nova.
 
+### RF-078 · Aviso de cadastro pausado e de reabertura sai por e-mail
+**Origem**: gap encontrado em auditoria, decidido em 2026-09-11 · [RF-072](#rf-072--cadastro-pausa-perto-do-teto-do-free-tier-sem-gasto-automático)
+
+**Aceite**: recusado o cadastro por teto de free tier, a tela pede o e-mail pra fila de espera e o aviso de reabertura é enviado **por e-mail**, uma vez, sem nenhum outro conteúdo. O endereço da fila de espera não cria conta e é descartado quando o cadastro reabre ou em 90 dias, o que vier primeiro.
+
+Por que precisou de RF próprio: [RF-072](#rf-072--cadastro-pausa-perto-do-teto-do-free-tier-sem-gasto-automático) prometia "a pessoa é avisada quando reabrir" e **nenhum canal podia cumprir** — quem foi recusado não tem conta, então não existe notificação in-app nem DM do bot, e o [inventário de notificações](04-notificacoes.md) proíbe e-mail pra evento de produto. Este é o caso de fronteira que a proibição não previa: é transacional de conta (a conta que não pôde nascer), não engajamento.
+
 ---
 
 ## Fila e matchmaking
@@ -89,6 +98,8 @@ Cobertura por área, pra saber onde ainda não se olhou:
 **Origem**: [produto/05-produto/01-onboarding.md](../produto/05-produto/01-onboarding.md), [produto/03-partida/03-lobby.md](../produto/03-partida/03-lobby.md)
 
 **Aceite**: faltando qualquer uma das três, a entrada é recusada e a mensagem diz **quais** faltam — **lista todas as pendentes numa resposta só**, na ordem e-mail → personagem → Discord (decidido em 2026-09-09; evita a pessoa corrigir uma e descobrir a próxima só na tentativa seguinte). Conta suspensa, banida, ou fora do servidor Discord também é recusada, com o motivo próprio.
+
+**Durante o beta fechado há um quarto pré-requisito**, o cargo Beta — ver [RF-076](#rf-076--beta-fechado-é-trava-na-fila-não-só-cargo-de-canal).
 
 ### RF-003 · Banda de elo abre com o tempo
 **Origem**: [produto/03-partida/02-fila.md](../produto/03-partida/02-fila.md)
@@ -108,7 +119,11 @@ Cobertura por área, pra saber onde ainda não se olhou:
 ### RF-006 · Lobby só fecha com candidato a capitão em cada lado
 **Origem**: [produto/03-partida/02-fila.md](../produto/03-partida/02-fila.md)
 
-**Aceite**: se nenhum humano escalado de um dos lados tem clube declarado com vaga, o lobby não é criado e os jogadores seguem na fila. **"Vaga" = qualquer vaga livre no clube (maior que zero)**, não precisa cobrir o número de humanos escalados pro lado — decidido em 2026-09-09, coerente com a IA do jogo cobrindo humano faltante dentro do próprio clube, não só entre os 2 lados.
+**Aceite**: se nenhum humano escalado de um dos lados tem clube declarado com vagas suficientes, o lobby não é criado e os jogadores seguem na fila. **"Vagas suficientes" = `vagas_livres` declaradas ≥ número de humanos do lado menos 1** (o capitão já é membro do próprio clube).
+
+**Correção de 2026-09-11 — revoga o critério de "qualquer vaga maior que zero"** (decidido em 2026-09-09). Aquele critério quebrava o fluxo logo adiante: capitão com 1 vaga livre e 4 humanos no lado só conseguia convidar um, os outros 3 estouravam a janela de 5 min de [confirmação de convite](../produto/03-partida/03-lobby.md), o lobby caía em `cancelado_por_capitao` e **abria caso de abuso contra quem não fez nada errado**. A justificativa original (a IA cobre humano faltante dentro do clube) confundia duas coisas: a IA cobre vaga **que o lobby deixou vazia de propósito**, não humano escalado que ficou de fora por falta de espaço — esse é exatamente o caso de exclusão invisível que a janela de 5 min foi desenhada pra pegar.
+
+Consequência: a auto-declaração passa a guardar **número de vagas livres (0 a 10)**, não um sim/não ([Personagens](../produto/02-jogador/01-verificacao.md), [Modelo de dados](03-dados.md#clubedeclarado)). Declaração desatualizada continua possível — o capitão informa a vaga que encheu na confirmação de 30 s ou na janela de convite, e o lobby cai em `cancelado_sem_culpa`, **sem** caso de abuso ([Estados](02-estados.md)).
 
 ### RF-007 · Timeout de fila avisa o que falta
 **Origem**: [produto/03-partida/02-fila.md](../produto/03-partida/02-fila.md)
@@ -134,6 +149,15 @@ Cobertura por área, pra saber onde ainda não se olhou:
 **Origem**: [produto/03-partida/02-fila.md](../produto/03-partida/02-fila.md)
 
 **Aceite**: nenhuma recusa ou não-confirmação, em qualquer quantidade, gera evento de reputação. **Revoga o desenho anterior** de −3 na 3ª falta em 30 dias — o timeout substituiu.
+
+**Onde o contador mora (fechado em 2026-09-11)**: justamente por não gerar evento de reputação, a recusa não tinha onde ser registrada — e sem registro, nem o timeout progressivo de [RF-009](#rf-009--recusar-ou-não-confirmar-gera-timeout-progressivo-de-fila) nem o zeramento de [RF-010](#rf-010--contador-de-timeout-zera-com-12-h-limpas-ou-uma-partida-completada) são calculáveis. Passa a existir a entidade `OcorrenciaRecusaFila` ([Modelo de dados](03-dados.md#ocorrenciarecusafila)), e o bloqueio é **derivado** dela, não guardado como estado.
+
+### RF-076 · Beta fechado é trava na fila, não só cargo de canal
+**Origem**: gap encontrado em auditoria, decidido em 2026-09-11 · [negocio/04-lancamento.md](../negocio/04-lancamento.md)
+
+**Aceite**: com o modo de beta fechado ligado, a entrada na fila exige — além dos três pré-requisitos de [RF-002](#rf-002--entrada-na-fila-exige-e-mail-verificado-personagem-verificado-e-discord-vinculado) — que o Discord vinculado tenha o **cargo Beta**. Sem o cargo, a recusa explica que a plataforma está em beta fechado. Desligado o modo, a checagem some sem migração. Cadastro, verificação de personagem e vínculo de Discord continuam abertos a qualquer um durante o beta.
+
+Por que precisou existir: [Lançamento](../negocio/04-lancamento.md) afirmava que "quem controla o acesso no beta é o cargo do Discord", mas o cargo só controla **visibilidade de canal** — a fila roda na plataforma e só checava e-mail, personagem e vínculo. Qualquer estranho que achasse o site entrava na fila e furava o beta inteiro, que é justamente o que mede se a fila fecha sozinha com 24 pessoas. A trava reusa o vínculo Discord já obrigatório, sem código de convite (que o [Onboarding](../produto/05-produto/01-onboarding.md) descartou por virar campo morto depois).
 
 ---
 
@@ -187,6 +211,15 @@ Cobertura por área, pra saber onde ainda não se olhou:
 
 **Aceite**: prazo de 60 s; quem não votou não conta; empate é decidido pelo capitão daquele lado; nenhum voto vem de vaga de IA nem do lado adversário. Zero votos no prazo, o capitão escolhe.
 
+**Quando a votação acontece (ambiguidade fechada em 2026-09-11)**: os 60 s começam quando o **bot cria os canais**, ou seja, no estado `aguardando_convite`, **depois** dos dois capitães confirmados — corre em paralelo com a janela de 5 min do convite. [Fila](../produto/03-partida/02-fila.md) dizia "depois do lobby fechado (todos os humanos confirmados)", o que colocava a votação **antes** da confirmação de capitão; era incompatível com o empate ser decidido pelo capitão (que ainda não existia) e com a formação ser aplicada por ele dentro do clube. Não gera estado novo na [máquina de estados](02-estados.md): é efeito colateral da transição 3 → 4.
+
+### RF-080 · Cascata de capitão tem teto de 5 min
+**Origem**: gap encontrado em auditoria, decidido em 2026-09-11 · [produto/03-partida/03-lobby.md](../produto/03-partida/03-lobby.md)
+
+**Aceite**: a cascata de capitão dos dois lados tem **teto total de 5 min** desde o lobby entrar em `aguardando_capitao`. Estourado o teto, o lobby vai pra `cancelado_sem_culpa` e todos voltam pra fila sem penalidade, mesmo que ainda houvesse candidato na fila de cascata.
+
+Por que precisou existir: cada candidato tem 30 s, mas nada limitava **quantos** candidatos a cascata percorria — com até 11 por lado e os dois lados correndo, o lobby podia ficar minutos em `aguardando_capitao` com 8 pessoas paradas olhando a tela. Toda outra etapa do fluxo tem teto declarado ([Lobby](../produto/03-partida/03-lobby.md)); esta não tinha.
+
 ---
 
 ## Resultado e disputa
@@ -216,7 +249,9 @@ Cobertura por área, pra saber onde ainda não se olhou:
 
 **Aceite**: report de um lado só sempre resulta em `nao_confirmado` com 48 h de contestação, independente da confiança do OCR ou da reputação de quem enviou. Não existe caminho de auto-confirmação.
 
-**Janela do 2º lado e expiração (números já em [parametros.md](../produto/parametros.md), ausentes deste RF até 2026-09-09)**: o 2º lado tem **15 min a partir do 1º print aceito** pra reportar também. Se ninguém completar o report da partida em **36 h** desde o fechamento do lobby, expira por zero-report — encerra sem dado, penalidade de reputação conforme [RF-071](#rf-071--zero-report-reincidente-dobra-a-penalidade), fila de todos os envolvidos liberada.
+**Janela do 2º lado e expiração (números já em [parametros.md](../produto/parametros.md), ausentes deste RF até 2026-09-09)**: o 2º lado tem **15 min a partir do 1º print aceito** pra reportar também. Se **nenhum** print chegar em **60 min** desde o fechamento do lobby, a partida expira por zero-report — encerra sem dado, penalidade de reputação conforme [RF-071](#rf-071--zero-report-reincidente-dobra-a-penalidade), fila de todos os envolvidos liberada.
+
+**Prazo único desde 2026-09-11**: as 36 h de zero-report foram revogadas e substituídas pelos 60 min que já existiam como "silêncio total". Os dois prazos tinham a mesma precondição (todos confirmaram convite, nenhum print), então o de 60 min disparava sempre primeiro e sem penalidade — ver [Estados](02-estados.md) pro raciocínio completo.
 
 ### RF-044 · Disputa sem evidência decisiva anula a partida
 **Origem**: [produto/03-partida/04-resultado.md](../produto/03-partida/04-resultado.md)
@@ -262,6 +297,13 @@ Cobertura por área, pra saber onde ainda não se olhou:
 
 **Aceite**: placar, elo aplicado e escalação de qualquer partida seguem consultáveis indefinidamente. Só a **imagem** do print é apagada aos 90 dias — o registro do envio (hash, confiança, idioma) sobrevive.
 
+### RF-077 · Expectativa de elo usa a média dos humanos de cada lado
+**Origem**: ambiguidade fechada em 2026-09-11 · [produto/02-jogador/02-ranking.md](../produto/02-jogador/02-ranking.md)
+
+**Aceite**: a probabilidade esperada de vitória sai da fórmula Elo padrão aplicada sobre a **média aritmética do elo dos humanos de cada lado**, congelado na entrada da fila; vagas de IA não entram na conta. O ganho/perda resultante é aplicado a cada personagem com o **K-factor dele** (32 até a 9ª partida na categoria, 20 da 10ª) — lados iguais na média podem, portanto, mover elos diferentes.
+
+Por que precisou ser dito: [Ranking](../produto/02-jogador/02-ranking.md) falava em "diferença de elo entre os dois lados" sem definir o agregado, e o matchmaking parea **categoria contra categoria** — média do time e pareamento por categoria dão números diferentes pra mesma partida. Média foi escolhida por ser a única que continua definida quando os lados têm composição de categoria idêntica mas elos distribuídos de formas diferentes, que é o caso normal.
+
 ---
 
 ## Moderação
@@ -269,7 +311,9 @@ Cobertura por área, pra saber onde ainda não se olhou:
 ### RF-035 · Moderador parte do caso é travado, decidem os outros 3
 **Origem**: [produto/04-governanca/01-moderacao.md](../produto/04-governanca/01-moderacao.md)
 
-**Aceite**: moderador que é alvo da denúncia, autor dela, ou participante da partida em disputa não consegue abrir nem decidir o caso — a ação é recusada pelo sistema, não apenas desencorajada. **O caso só é decidido com os 3 moderadores elegíveis presentes** — corrigido em 2026-09-08: restando 2 elegíveis o caso também fica pendente, porque 2 pessoas podem empatar 1×1 sem critério de desempate definido. Restando menos de 3, o caso espera até haver 3.
+**Aceite**: moderador que é alvo da denúncia, autor dela, ou participante da partida em disputa não consegue abrir nem decidir o caso — a ação é recusada pelo sistema, não apenas desencorajada. **O caso é decidido por 3 moderadores elegíveis** sempre que houver 3.
+
+**Correção de 2026-09-11 — "espera até haver 3" era deadlock, não espera.** São 4 moderadores no total; com 2 deles envolvidos no mesmo caso sobram 2 elegíveis **permanentemente**, e nada faz aparecer um terceiro. O caso ficava pendente pra sempre e as contas envolvidas presas em `em_disputa` (fila bloqueada) junto. Restando menos de 3 elegíveis, vale [RF-075](#rf-075--caso-sem-3-moderadores-elegíveis-resolve-em-desfecho-neutro).
 
 ### RF-036 · Denunciado nunca vê quem denunciou
 **Origem**: [produto/04-governanca/01-moderacao.md](../produto/04-governanca/01-moderacao.md)
@@ -295,6 +339,20 @@ Cobertura por área, pra saber onde ainda não se olhou:
 **Origem**: [produto/04-governanca/02-lgpd.md](../produto/04-governanca/02-lgpd.md)
 
 **Aceite**: resolver disputa, aplicar ou reverter punição, editar dado, acessar print e ativar plano ficam registrados com ator, alvo, horário e o que mudou. O log não é editável nem apagável pelo painel.
+
+### RF-074 · Fim de suspensão restaura a reputação para 45
+**Origem**: gap encontrado em auditoria, decidido em 2026-09-11 · [produto/02-jogador/02-ranking.md](../produto/02-jogador/02-ranking.md)
+
+**Aceite**: cumpridos os 7 dias de suspensão, a conta volta a `ativa`, o cargo Verificado é reconcedido e a reputação é **definida em 45** por um `EventoReputacao` com motivo próprio — nunca abaixo disso, e sem alterar quem já estava acima. A suspensão é disparada pelo **cruzamento** do limiar de 40 (evento registrado), não pelo valor corrente estar abaixo dele.
+
+Por que precisou existir: nada restaurava a reputação ao fim da pena, e a recuperação desenhada (+1 por partida limpa, [Ranking](../produto/02-jogador/02-ranking.md)) **exige jogar**. A conta voltava com 39, o valor corrente disparava a suspensão de novo na primeira tentativa de fila, e a 2ª suspensão em 180 dias é banimento permanente ([RF-038](#rf-038--2ª-suspensão-em-180-dias-vira-banimento)) — a punição temporária virava terminal sem nenhuma conduta nova. 45 põe a conta acima do limiar de suspensão (40) e abaixo do de prioridade (55): sai da punição, continua na fila lenta até se recuperar jogando.
+
+### RF-075 · Caso sem 3 moderadores elegíveis resolve em desfecho neutro
+**Origem**: gap encontrado em auditoria, decidido em 2026-09-11 · [produto/04-governanca/01-moderacao.md](../produto/04-governanca/01-moderacao.md)
+
+**Aceite**: restando menos de 3 moderadores elegíveis ([RF-035](#rf-035--moderador-parte-do-caso-é-travado-decidem-os-outros-3)), o caso fica aberto por **48 h** aguardando decisão unânime dos elegíveis que sobraram. Sem unanimidade nesse prazo — ou sem nenhum elegível — o sistema aplica o **desfecho neutro** e encerra: disputa de placar vira partida anulada (elo revertido pra todos, nenhuma penalidade de reputação, fila liberada, mesmo tratamento de [RF-044](#rf-044--disputa-sem-evidência-decisiva-anula-a-partida)), e denúncia ou apelação é arquivada sem punição. O desfecho neutro entra no log de auditoria com motivo "sem quórum".
+
+Por que precisou existir: com 4 moderadores e 2 deles envolvidos no mesmo caso, sobram 2 elegíveis **permanentemente** — "esperar até haver 3" nunca termina, e as contas envolvidas ficam presas em `em_disputa` com a fila bloqueada junto. O desfecho neutro nunca pune sem quórum, então o pior caso é um resultado anulado, não uma punição injusta.
 
 ---
 
@@ -342,6 +400,8 @@ Motivo: comando de jogador duplicaria a plataforma dentro do Discord, criando do
 
 **Aceite**: de hora em hora o bot varre e apaga canal temporário de lobby já terminal. Rede de segurança independente do fluxo normal de deleção.
 
+**Como o bot sabe o que é órfão (fechado em 2026-09-11)**: os ids dos 3 canais são gravados no `Lobby` no momento da criação ([Modelo de dados](03-dados.md#lobby)), e a varredura pergunta à API quais lobbies estão em estado terminal — o bot não deduz nada por nome de canal nem guarda a lista em memória, que não sobrevive a restart.
+
 ### RF-055 · Cargo Verificado tem gatilho duplo e é revogado por quatro motivos
 **Origem**: [discord/01-cargos.md](../discord/01-cargos.md)
 
@@ -362,7 +422,9 @@ Motivo: comando de jogador duplicaria a plataforma dentro do Discord, criando do
 
 **Aceite**: sem confirmação em 10 s, a plataforma reenvia — 3 tentativas, em 10 s, 20 s e 40 s. Esgotado, abre caso na fila de moderação e a fila de partidas pausa (ver RNF-008).
 
-**Idempotência (decidido em 2026-09-09)**: cada evento carrega uma chave única (id do evento). O bot descarta silenciosamente reenvio com o mesmo id já processado — sem isso, reenvio por ACK perdido (não por falha real) duplica ação: cria os 3 canais duas vezes, kicka duas vezes, etc. Mesmo princípio de [RNF-018](07-nao-funcionais.md#rnf-018--envio-com-efeito-é-idempotente).
+**Idempotência (decidido em 2026-09-09, mecanismo fechado em 2026-09-11)**: cada evento carrega uma chave única (id do evento). Sem isso, reenvio por ACK perdido (não por falha real) duplica ação: cria os 3 canais duas vezes, kicka duas vezes, etc. Mesmo princípio de [RNF-018](07-nao-funcionais.md#rnf-018--envio-com-efeito-é-idempotente).
+
+**Quem lembra o quê**: a fila de retry e o registro de entrega vivem na **API** (entidade `EntregaEvento`, ver [Modelo de dados](03-dados.md#entregaevento)), não no bot — a API é quem retenta, e é o único dos dois processos que tem banco. O bot é idempotente **checando o estado real no Discord antes de agir** (canal com aquele nome/id já existe → não cria; cargo já concedido → não concede), não guardando lista de ids em memória. Memória não sobrevive a restart, e era esse o buraco: o scaffold assumia dedup e fila de retry em memória no bot ([arquitetura do bot](../discord/05-arquitetura-bot.md)).
 
 ### RF-059 · Ações do mesmo evento rodam em sequência
 **Origem**: [discord/04-integracao.md](../discord/04-integracao.md)
@@ -410,7 +472,11 @@ Os três juntos fecham o vetor: a regra de rejeição não consumir cooldown tra
 ### RF-066 · Gamertags do print final conferem contra o roster do lobby
 **Origem**: [produto/03-partida/04-resultado.md](../produto/03-partida/04-resultado.md)
 
-**Aceite**: o OCR extrai os gamertags da tela de fim de partida. Nome humano que não consta no roster do lobby **derruba o resultado** e abre caso de abuso de capitão. Vagas de IA não contam.
+**Aceite**: o OCR extrai os gamertags da tela de fim de partida. Nome humano que não consta no roster do lobby **segura o resultado** — a partida vai pra `em_disputa`, elo e reputação **não são aplicados**, e abre caso de abuso de capitão pra moderação decidir. Vagas de IA não contam.
+
+**Correção de 2026-09-11 — "derruba o resultado" automaticamente punia capitão legítimo.** O próprio desenho aceita que o clube do capitão tem os parceiros de sempre como membros e que **membro humano entra antes da IA** ([Resultado](../produto/03-partida/04-resultado.md)) — foi por isso que exigir clube sem outros humanos foi descartado. Ou seja: um parceiro do clube entrando numa partida normal produz exatamente o sinal que este RF trata como fraude, e o capitão não controla isso de fora do jogo. Derrubar na hora tornaria a regra um gerador de falso positivo em partida legítima.
+
+Segurar em vez de derrubar mantém o furo fechado (nenhuma partida com gente de fora aplica elo silenciosamente) sem punir sozinho, e não inventa mecanismo: reusa `em_disputa` e o rollback que o [log de evento](03-dados.md#eventoreputacao-e-eventoelo--as-entidades-que-o-rollback-exige) já sustenta. Se o volume de falso positivo for alto, a saída é pedir ao capitão que esvazie o clube antes — decisão que só faz sentido com o dado do [teste 6](../produto/03-partida/05-checklist.md).
 
 > **Premissa não verificada deste requisito**: ele assume que dá pra **distinguir nome de IA de gamertag humano** na tela final. Ninguém confirmou isso. Se a IA aparecer com nome plausível e indistinguível, a validação não funciona como escrita e precisa de outro sinal. Entrou no [checklist](../produto/03-partida/05-checklist.md) como parte do teste 6.
 
@@ -441,14 +507,23 @@ Mitiga o furo aberto pela ressalva da Virtual Pro única: nada impedia verificar
 ### RF-071 · Zero-report reincidente dobra a penalidade
 **Origem**: gap encontrado em auditoria, decidido em 2026-09-08 · [produto/03-partida/04-resultado.md](../produto/03-partida/04-resultado.md)
 
-**Aceite**: 1ª e 2ª ocorrência de zero-report em 30 dias aplicam −3 de reputação (já coberto por [Resultado](../produto/03-partida/04-resultado.md)). Da 3ª ocorrência em diante, dentro da mesma janela móvel de 30 dias, o valor sobe **+3 a cada nova ocorrência**: 3ª → −6, 4ª → −9, 5ª → −12, e assim por diante. Contador de reincidência zera quando a ocorrência mais antiga sai da janela móvel de 30 dias — mesmo mecanismo do contador de timeout de fila ([Requisitos transversais](01-transversais.md)).
+**Aceite**: 1ª e 2ª ocorrência de zero-report em 30 dias aplicam −3 de reputação **a cada humano da partida** (não −3 rateados entre eles — ambiguidade fechada em 2026-09-11; a escala de reincidência abaixo é por conta, então o valor base também precisa ser por conta pra ser somável). Da 3ª ocorrência em diante, dentro da mesma janela móvel de 30 dias, o valor sobe **+3 a cada nova ocorrência**: 3ª → −6, 4ª → −9, 5ª → −12, e assim por diante. Contador de reincidência zera quando a ocorrência mais antiga sai da janela móvel de 30 dias — mesmo mecanismo do contador de timeout de fila ([Requisitos transversais](01-transversais.md)).
 
 ### RF-072 · Cadastro pausa perto do teto do free tier, sem gasto automático
 **Origem**: decidido em 2026-09-08 · [negocio/03-sustentabilidade.md](../negocio/03-sustentabilidade.md)
 
-**Aceite**: **90% do teto** de qualquer recurso do free tier (900 de 1000 chamadas de OCR no mês, 9 de 10 lobbies simultâneos ocupados) — número decidido em 2026-09-09, 10% de folga pra reagir antes de bater o limite exato. Atingido, novo cadastro é recusado com mensagem de fila de espera, e a pessoa é avisada quando reabrir. Não existe caminho automático que gere custo — passar do free tier nunca vira cobrança sem decisão humana explícita dos 4 sócios. Vale enquanto a ideia não estiver validada (critério de saída do beta, ver [Lançamento](../negocio/04-lancamento.md)); revisar quando decidirem pagar por infra conscientemente.
+**Aceite**: **90% do teto de recurso acumulativo** do free tier (900 de 1000 chamadas de OCR no mês) — número decidido em 2026-09-09, 10% de folga pra reagir antes de bater o limite exato. Atingido, novo cadastro é recusado com mensagem de fila de espera, e a pessoa é avisada quando reabrir ([RF-078](#rf-078--aviso-de-cadastro-pausado-e-de-reabertura-sai-por-e-mail)).
+
+**Correção de 2026-09-11 — ocupação de lobby não pausa cadastro.** O critério anterior misturava dois tipos de teto: chamada de OCR é **acumulativa no mês** (barrar entrada nova reduz mesmo o consumo), enquanto lobby simultâneo é **ocupação instantânea** que se resolve em minutos — barrar cadastro ali não libera um único lobby e pune quem nada tem a ver com o pico. A alavanca certa pra capacidade instantânea é **pausar o fechamento de lobby novo**, que já existe em [RF-053](#rf-053--acima-de-400-canais-alerta-no-teto-a-fila-pausa) e [RNF-008](07-nao-funcionais.md#rnf-008--queda-do-discord-ou-teto-de-canais-pausa-a-fila-não-derruba-a-plataforma): atingidos 9 de 10 lobbies simultâneos ([RNF-004](07-nao-funcionais.md#rnf-004--10-lobbies-simultâneos)), a fila pausa com aviso in-app e volta sozinha quando um lobby encerra. Cadastro segue aberto. Não existe caminho automático que gere custo — passar do free tier nunca vira cobrança sem decisão humana explícita dos 4 sócios. Vale enquanto a ideia não estiver validada (critério de saída do beta, ver [Lançamento](../negocio/04-lancamento.md)); revisar quando decidirem pagar por infra conscientemente.
 
 **Reconciliação com o critério de desistir de 90 dias ([tese de mercado](../negocio/01-mercado.md))**: a meta de sucesso do MVP (10 partidas/semana, ~80-100 chamadas OCR/mês) fica ~10x abaixo do teto do free tier (1000 OCR/mês) — na escala-alvo, RF-072 não deveria disparar durante a janela de medição. **Se disparar mesmo assim, é sinal de demanda muito acima do esperado, não de fracasso** — nesse cenário os 4 decidem conscientemente pagar por infra (a mesma decisão que RF-072 já reserva pra eles), em vez de deixar o critério de desistir confundir capacidade truncada com falta de demanda.
+
+### RF-079 · Banimento sobrevive à exclusão de conta
+**Origem**: gap encontrado em auditoria, decidido em 2026-09-11 · [produto/04-governanca/02-lgpd.md](../produto/04-governanca/02-lgpd.md)
+
+**Aceite**: ao banir uma conta, o sistema grava o **hash** (HMAC com segredo do servidor) do Discord ID e do par (plataforma, gamertag) numa lista de bloqueio própria, sem guardar o valor legível. Cadastro, vínculo de Discord e verificação de personagem consultam essa lista. A exclusão de conta por pedido LGPD apaga a conta e anonimiza o histórico como já previsto, **e não apaga a lista de bloqueio**.
+
+Por que precisou existir: o banimento era vinculado a Discord ID + gamertag guardados **na própria conta** ([Ranking](../produto/02-jogador/02-ranking.md)), e a exclusão LGPD apaga a identidade e libera o e-mail ([RF-020](#rf-020--um-e-mail-uma-conta)) — então bastava pedir exclusão logo após o banimento pra recriar tudo limpo, com o mesmo Discord e o mesmo gamertag. Guardar hash em vez de valor mantém o bloqueio funcionando sem manter dado pessoal legível de quem pediu exclusão; a base legal é exercício regular de direito, e a ressalva entra nos [Termos](../produto/04-governanca/03-termos.md) junto com a do registro fiscal.
 
 ### RF-073 · Correção manual de OCR pela moderação, campo a campo
 **Origem**: decidido em 2026-09-08 · [produto/02-jogador/01-verificacao.md](../produto/02-jogador/01-verificacao.md)

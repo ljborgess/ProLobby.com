@@ -17,6 +17,7 @@ Os Termos precisam cobrir o que a [Sustentabilidade](../../negocio/03-sustentabi
 - **Nada comprado altera fila, elo, escolha de capitão ou resultado** — a linha vermelha entra no texto dos Termos, não só no dossiê interno.
 - **Banimento permanente revoga os cargos de apoio sem devolver dinheiro** ([Cargos](../../discord/01-cargos.md)) — precisa estar dito, não presumido.
 - **Exclusão de conta não apaga o registro fiscal da transação**, retido por 5 anos por obrigação legal ([LGPD](02-lgpd.md)). Sem essa ressalva escrita, a plataforma promete exclusão total e não pode cumprir.
+- **Exclusão de conta também não levanta banimento**: o identificador de quem foi banido permanece em lista de bloqueio, guardado como hash ([RF-079](../../requisitos/05-funcionais.md#rf-079--banimento-sobrevive-à-exclusão-de-conta)). Mesma lógica da ressalva acima — precisa estar escrito, ou a plataforma promete apagar tudo e mantém algo.
 - Ativar cobrança é **mudança material**, então exige novo aceite versionado de quem já usava.
 
 **Ressalva jurídica**: apoio **com contrapartida** pode ser lido como contrato de serviço sob o CDC — o Código de Defesa do Consumidor não deixa de valer porque o vendedor chamou de doação. A redação da página de venda entra na mesma consulta jurídica das pendências abaixo.

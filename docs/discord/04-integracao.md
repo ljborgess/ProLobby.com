@@ -14,6 +14,7 @@ Decisões de arquitetura (não implementação/stack — ver [Bot: permissões e
 ## Falha de comunicação (bot fora do ar)
 
 - **Fila de retry simples**: se o bot não responder/confirmar recebimento de um evento em **10 segundos**, plataforma reenvia — **3 tentativas no total**, intervalo dobrando a cada uma (10s, 20s, 40s) — antes de desistir. Evita perda silenciosa de evento por queda momentânea do bot — não exige infraestrutura de fila pesada (Kafka/RabbitMQ) pro MVP, só retry simples.
+- **Onde a fila e o registro de entrega moram (decidido em 2026-09-11)**: na **plataforma**, tabela `EntregaEvento` ([Modelo de dados](../requisitos/03-dados.md#entregaevento)) — é ela quem retenta, e é o único dos dois processos com banco. O bot não guarda fila nem lista de ids processados: **ele é idempotente checando o estado real no Discord antes de agir** (canal já existe, cargo já concedido → não repete). Estado em memória de processo não sobrevive a restart, que é exatamente quando o retry acontece.
 - **Retry esgotado**: vira caso automático na fila de moderação da plataforma (mesmo painel já usado pra chamados de OCR/gamertag/apelação, ver [Moderação](../produto/04-governanca/01-moderacao.md)) — sem sistema de alerta separado.
 
 ## Discord indisponível (queda do próprio Discord)

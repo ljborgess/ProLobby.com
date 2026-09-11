@@ -41,10 +41,16 @@ Três parâmetros estão marcados como estimativa no dossiê e só o beta resolv
 | Parâmetro | Valor atual | O que o beta mede |
 |---|---|---|
 | Confirmação de convite recebido — 5 min | estimado | quanto tempo o capitão leva de fato pra convidar todo mundo ([Lobby](../produto/03-partida/03-lobby.md)) |
-| Cancelamento por silêncio total — 60 min | estimado | ciclo real do convite até o resultado reportado |
+| Expiração por zero-report — 60 min | estimado | ciclo real do convite até o resultado reportado |
 | Simetria por categoria | decidido, não medido | se a fila consegue fechar exigindo par de mesma categoria com base pequena ([Fila](../produto/03-partida/02-fila.md)) |
 
 Se a simetria por categoria travar a fila no beta, é decisão de produto pra reabrir — com dado, não com achismo.
+
+### O que segura o público fora (corrigido em 2026-09-11)
+
+O beta é fechado por uma **trava na entrada da fila**: com o modo ligado, só entra na fila quem tem o **cargo Beta** no Discord vinculado ([RF-076](../requisitos/05-funcionais.md#rf-076--beta-fechado-é-trava-na-fila-não-só-cargo-de-canal)). Cadastro, verificação de personagem e vínculo de Discord seguem abertos.
+
+Antes disso, o dossiê afirmava que "quem controla o acesso no beta é o cargo do Discord" — e o cargo só controla **visibilidade de canal**. A fila roda na plataforma e checava apenas e-mail, personagem e Discord vinculado: qualquer pessoa que achasse o site entrava na fila e furava o beta inteiro, que é justamente o que mede se a fila fecha sozinha com ~24 pessoas. A trava reusa o vínculo já obrigatório, sem código de convite (descartado no [Onboarding](../produto/05-produto/01-onboarding.md) por virar campo morto depois do beta).
 
 ### Quem participa: metade conhecido, metade estranho
 
