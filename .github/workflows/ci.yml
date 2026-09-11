@@ -39,6 +39,9 @@ jobs:
 
     env:
       DATABASE_URL: postgres://prolobby:prolobby@localhost:5432/prolobby
+      # Descartavel e efemero no runner. O segredo real vive em variavel de
+      # ambiente do deploy e forja sessao de qualquer conta (RNF-021).
+      JWT_SECRET: ci-secret-not-the-placeholder
 
     steps:
       - uses: actions/checkout@v4
