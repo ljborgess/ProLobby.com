@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Só abrir issue da **fase corrente**. Fase futura existe como milestone e como linha da tabela do [PRD Mestre](../../issues/64) — issue aberta cedo demais envelhece antes de virar código.
+        Só abrir issue da **fase corrente**. Fase futura existe como milestone e como linha da tabela do [PRD Mestre](https://github.com/ljborgess/ProLobby.com/issues/64) — issue aberta cedo demais envelhece antes de virar código.
 
   - type: textarea
     id: o-que

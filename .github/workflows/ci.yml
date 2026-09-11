@@ -5,6 +5,11 @@ on:
     branches: [dev, main]
   pull_request:
 
+# Nada neste pipeline escreve no repositório — só lê, instala e testa.
+# Menor privilégio: um action comprometido não consegue push.
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -47,6 +52,12 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # Item 2 do checklist de segurança (docs/requisitos/08-seguranca-checklist.md):
+      # dependência vulnerável entra pelo lockfile, não pelo código do PR.
+      # --prod: o que roda em produção bloqueia o merge; advisory de dev dep
+      # (vitest/vite) vira manutenção normal, não trava PR de regra de negócio.
+      - run: pnpm audit --prod --audit-level=high
+
       - run: pnpm format:check
 
       - run: pnpm turbo lint
@@ -61,9 +72,3 @@ jobs:
         working-directory: apps/web
 
       - run: pnpm turbo e2e
-
-      # Item 2 do checklist de segurança (docs/requisitos/08-seguranca-checklist.md):
-      # dependência vulnerável entra pelo lockfile, não pelo código do PR.
-      # --prod: o que roda em produção bloqueia o merge; advisory de dev dep
-      # (vitest/vite) vira manutenção normal, não trava PR de regra de negócio.
-      - run: pnpm audit --prod --audit-level=high
