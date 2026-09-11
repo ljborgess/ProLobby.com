@@ -4,6 +4,7 @@ import { Test } from '@nestjs/testing'
 import request from 'supertest'
 
 import { AppModule } from '../src/app.module'
+import { HashService } from '../src/common/auth/hash.service'
 import { AllowStates } from '../src/common/auth/auth.decorators'
 import { SESSION_TTL_MS } from '../src/common/auth/session.constants'
 import { applySecurity } from '../src/common/security/security.config'
@@ -170,35 +171,33 @@ describe('sessions', () => {
       expect(JSON.stringify(unknownEmail.body)).not.toMatch(/exist|found|unknown|email/i)
     })
 
-    it('takes comparable time for a wrong password and an unknown email', async () => {
-      await request(app.getHttpServer()).post('/accounts').send(signUpBody('timing@test.local'))
+    it('verifies a hash even when the email does not exist', async () => {
+      await request(app.getHttpServer()).post('/accounts').send(signUpBody('spy-known@test.local'))
 
-      const measure = async (email: string): Promise<number> => {
-        const started = process.hrtime.bigint()
-        await request(app.getHttpServer())
-          .post('/sessions')
-          .send({ email, password: 'wrong-but-long-enough' })
-        return Number(process.hrtime.bigint() - started) / 1_000_000
-      }
+      const hashService = app.get(HashService)
+      const spy = jest.spyOn(hashService, 'matches')
 
-      const median = (samples: number[]): number =>
-        [...samples].sort((a, b) => a - b)[Math.floor(samples.length / 2)] ?? 0
+      await request(app.getHttpServer())
+        .post('/sessions')
+        .send({ email: 'spy-known@test.local', password: 'wrong-but-long-enough' })
+      const onKnownEmail = spy.mock.calls.length
 
-      await measure('timing@test.local')
+      spy.mockClear()
+      await request(app.getHttpServer())
+        .post('/sessions')
+        .send({ email: 'ghost@test.local', password: 'wrong-but-long-enough' })
+      const onUnknownEmail = spy.mock.calls.length
 
-      const known: number[] = []
-      const unknown: number[] = []
+      spy.mockRestore()
 
-      for (let round = 0; round < 5; round += 1) {
-        known.push(await measure('timing@test.local'))
-        unknown.push(await measure(`ghost-${round}@test.local`))
-      }
-
-      // Without the decoy hash, the unknown-email path would skip argon2 and
-      // answer in microseconds — enumerating accounts with a stopwatch.
-      const ratio = median(known) / median(unknown)
-      expect(ratio).toBeGreaterThan(0.5)
-      expect(ratio).toBeLessThan(2)
+      // The decoy hash is what makes this true. Without it the unknown-email
+      // path would skip argon2 entirely and answer in microseconds, and
+      // accounts could be enumerated with a stopwatch.
+      //
+      // Counted rather than timed, on purpose: the wall-clock version of this
+      // test was flaky, and a flaky test teaches people to ignore the pipeline.
+      expect(onUnknownEmail).toBe(onKnownEmail)
+      expect(onKnownEmail).toBeGreaterThan(0)
     })
   })
 

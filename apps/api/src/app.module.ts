@@ -10,6 +10,7 @@ import { AuthModule } from './common/auth/auth.module'
 import { SessionGuard } from './common/auth/session.guard'
 import mikroOrmConfig from './common/database/mikro-orm.config'
 import { HealthController } from './common/health/health.controller'
+import { MailModule } from './common/mail/mail.module'
 import { globalValidationPipe } from './common/security/security.config'
 import { throttlerConfig, throttlingDisabled } from './common/security/throttler.config'
 import { AccountModule } from './modules/account/account.module'
@@ -20,6 +21,7 @@ import { AccountModule } from './modules/account/account.module'
     MikroOrmModule.forRoot(mikroOrmConfig),
     ThrottlerModule.forRoot({ ...throttlerConfig, skipIf: throttlingDisabled }),
     AuthModule,
+    MailModule,
     AccountModule,
   ],
   controllers: [HealthController],

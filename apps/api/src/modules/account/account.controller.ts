@@ -5,10 +5,15 @@ import { Public } from '../../common/auth/auth.decorators'
 
 import { AccountService } from './account.service'
 import { SignUpDto } from './dto/sign-up.dto'
+import { VerifyEmailDto } from './dto/verify-email.dto'
+import { EmailVerificationService } from './email-verification.service'
 
 @Controller('accounts')
 export class AccountController {
-  constructor(private readonly accountService: AccountService) {}
+  constructor(
+    private readonly accountService: AccountService,
+    private readonly emailVerificationService: EmailVerificationService,
+  ) {}
 
   /**
    * Sign-up — RF-019.
@@ -29,5 +34,24 @@ export class AccountController {
     await this.accountService.signUp(dto)
 
     return { message: 'check_your_email' }
+  }
+
+  /**
+   * Verifies an address — the gate RF-002 puts in front of the queue.
+   *
+   * POST, not GET, and deliberately: a GET that changes state would be
+   * reachable by any link the person clicks elsewhere, and `SameSite: lax`
+   * lets top-level GET navigation carry the session cookie. That is the exact
+   * condition item 9b of the security checklist depends on staying true.
+   *
+   * It also keeps email scanners from consuming the token: plenty of corporate
+   * mail gateways follow every link in a message before the human sees it.
+   */
+  @Public()
+  @Post('verifications')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Throttle({ login: {} })
+  async verifyEmail(@Body() dto: VerifyEmailDto): Promise<void> {
+    await this.emailVerificationService.verify(dto.token)
   }
 }
