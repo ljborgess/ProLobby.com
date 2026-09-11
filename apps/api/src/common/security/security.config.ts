@@ -43,8 +43,11 @@ export function applySecurity(app: INestApplication): void {
       // `@Type(() => Date)` and numeric coercion work at all.
       transform: true,
       transformOptions: { enableImplicitConversion: false },
-      // Item 15: validation errors say which field failed, never why the value
-      // was rejected in terms that leak internals.
+      // Detailed messages are kept on purpose — a legitimate client needs to
+      // know *which* field failed. This is the Nest default; it is spelled out
+      // so nobody "hardens" it later without noticing the trade-off. What keeps
+      // item 15 satisfied is that no DTO carries a sensitive field name, not
+      // this flag.
       disableErrorMessages: false,
     }),
   )

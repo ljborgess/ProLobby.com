@@ -132,9 +132,11 @@ describe('transversal security', () => {
         statuses.push(res.status)
       }
 
-      // Five go through, the rest are refused — a legitimate person does not
-      // sign in six times a minute, and this is where guessing pays off.
-      expect(statuses.filter((status) => status === 429).length).toBeGreaterThan(0)
+      // The shape matters, not just "some request was refused": asserting only
+      // that a 429 exists would also pass with a limit of 1, which would lock
+      // out anyone who mistypes a password once — and the test would stay green.
+      expect(statuses.slice(0, 5).every((status) => status < 400)).toBe(true)
+      expect(statuses.slice(5).every((status) => status === 429)).toBe(true)
     })
   })
 
