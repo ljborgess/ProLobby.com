@@ -14,11 +14,16 @@ import {
 } from '../src/modules/account/email-verification.service'
 import { EmailVerification } from '../src/modules/account/email-verification.entity'
 
-/** Captures what would have been sent, so tests can read the token. */
+/** Captures what would have been sent, and can be told to fail. */
 class CapturingMailSender extends MailSender {
   readonly sent: OutgoingEmail[] = []
+  failNext = false
 
   async send(email: OutgoingEmail): Promise<void> {
+    if (this.failNext) {
+      this.failNext = false
+      throw new Error('provider unavailable')
+    }
     this.sent.push(email)
   }
 
@@ -28,6 +33,7 @@ class CapturingMailSender extends MailSender {
 
   clear(): void {
     this.sent.length = 0
+    this.failNext = false
   }
 }
 
@@ -44,8 +50,21 @@ describe('email verification', () => {
   let orm: MikroORM
   let mail: CapturingMailSender
 
-  const signUp = (email: string) =>
-    request(app.getHttpServer()).post('/accounts').send(signUpBody(email))
+  /**
+   * Lets the fire-and-forget send settle.
+   *
+   * Delivery is deliberately not awaited by the request (see
+   * EmailVerificationService), so the response can return before the mail
+   * reaches the capturing sender. One turn of the event loop is enough here
+   * because the test sender does no real I/O.
+   */
+  const flushMail = () => new Promise((resolve) => setImmediate(resolve))
+
+  const signUp = async (email: string) => {
+    const res = await request(app.getHttpServer()).post('/accounts').send(signUpBody(email))
+    await flushMail()
+    return res
+  }
 
   /**
    * The pending verification of a given account.
@@ -230,6 +249,117 @@ describe('email verification', () => {
       // verification is not a door out of a ban.
       expect(after.emailVerified).toBe(true)
       expect(after.state).toBe(AccountState.BANNED)
+    })
+  })
+
+  describe('when the email provider is down', () => {
+    it('still creates the account instead of failing the sign-up', async () => {
+      mail.failNext = true
+
+      const res = await signUp('provider-down@test.local')
+
+      // A delivery failure must not undo a sign-up that already committed.
+      // Answering 500 here would leave the person with an account they
+      // cannot reach: retrying hits the "already taken" branch, and that
+      // branch also depends on sending email.
+      expect(res.status).toBe(202)
+      await expect(
+        orm.em.fork().count(Account, { email: 'provider-down@test.local' }),
+      ).resolves.toBe(1)
+    })
+
+    it('lets the person ask for a new link afterwards', async () => {
+      mail.failNext = true
+      await signUp('recovered@test.local')
+      mail.clear()
+
+      const res = await request(app.getHttpServer())
+        .post('/accounts/verifications/resend')
+        .send({ email: 'recovered@test.local' })
+      await flushMail()
+
+      expect(res.status).toBe(202)
+
+      // This is the only way out of a failed delivery, which is why the
+      // resend route had to ship together with swallowing the error.
+      const token = tokenFrom()
+      expect(token).toBeTruthy()
+
+      const verified = await request(app.getHttpServer())
+        .post('/accounts/verifications')
+        .send({ token })
+      expect(verified.status).toBe(204)
+    })
+  })
+
+  describe('resending', () => {
+    it('answers the same for unknown, verified and pending addresses', async () => {
+      await signUp('pending@test.local')
+
+      await signUp('alreadydone@test.local')
+      await request(app.getHttpServer())
+        .post('/accounts/verifications')
+        .send({ token: tokenFrom() })
+
+      const responses = await Promise.all(
+        ['pending@test.local', 'alreadydone@test.local', 'nobody-at-all@test.local'].map((email) =>
+          request(app.getHttpServer()).post('/accounts/verifications/resend').send({ email }),
+        ),
+      )
+
+      // Differing here would make this endpoint the oracle the sign-up flow
+      // spends all its effort not being (RF-070) — and the easiest one to ask.
+      for (const res of responses) {
+        expect(res.status).toBe(202)
+        expect(res.body).toEqual(responses[0]?.body)
+      }
+    })
+
+    it('does not email an address that is already verified', async () => {
+      await signUp('nospam@test.local')
+      await request(app.getHttpServer())
+        .post('/accounts/verifications')
+        .send({ token: tokenFrom() })
+      mail.clear()
+
+      await request(app.getHttpServer())
+        .post('/accounts/verifications/resend')
+        .send({ email: 'nospam@test.local' })
+      await flushMail()
+
+      // Otherwise anyone could flood a stranger inbox by typing their
+      // address into the resend form.
+      expect(mail.sent).toHaveLength(0)
+    })
+
+    it('invalidates the old link when a new one is issued', async () => {
+      await signUp('resent@test.local')
+      const first = tokenFrom()
+
+      await request(app.getHttpServer())
+        .post('/accounts/verifications/resend')
+        .send({ email: 'resent@test.local' })
+      await flushMail()
+      const second = tokenFrom()
+
+      expect(second).not.toBe(first)
+
+      const stale = await request(app.getHttpServer())
+        .post('/accounts/verifications')
+        .send({ token: first })
+
+      // The old link is spent, not merely superseded: it answers 204 because
+      // a used token is indistinguishable from a second click, but it must
+      // not be what verifies the address.
+      expect(stale.status).toBe(204)
+
+      const account = await orm.em.fork().findOneOrFail(Account, { email: 'resent@test.local' })
+      expect(account.emailVerified).toBe(false)
+
+      const current = await request(app.getHttpServer())
+        .post('/accounts/verifications')
+        .send({ token: second })
+      expect(current.status).toBe(204)
     })
   })
 

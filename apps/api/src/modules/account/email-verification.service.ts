@@ -1,5 +1,5 @@
 import { EntityManager } from '@mikro-orm/postgresql'
-import { BadRequestException, Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable, Logger } from '@nestjs/common'
 import { createHash, randomBytes } from 'node:crypto'
 
 import { MailSender, TransactionalEmail } from '../../common/mail/mail.types'
@@ -27,6 +27,8 @@ export const UNVERIFIED_ACCOUNT_TTL_MS = 30 * 24 * 60 * 60 * 1000
 
 @Injectable()
 export class EmailVerificationService {
+  private readonly logger = new Logger(EmailVerificationService.name)
+
   constructor(
     private readonly em: EntityManager,
     private readonly mailSender: MailSender,
@@ -41,11 +43,18 @@ export class EmailVerificationService {
   async sendVerification(account: Account): Promise<void> {
     const em = this.em.fork()
 
-    await em.nativeUpdate(
+    const invalidated = await em.nativeUpdate(
       EmailVerification,
       { account: account.id, usedAt: null },
       { usedAt: new Date() },
     )
+
+    // Worth seeing: a steady stream of re-issues means links are not arriving,
+    // and a burst from one account means someone is hammering the resend.
+    // Neither is visible from anywhere else.
+    if (invalidated > 0) {
+      this.logger.log(`reissued verification for account ${account.id}, invalidated ${invalidated}`)
+    }
 
     // 32 bytes of CSPRNG. The value travels by email; only its hash is stored.
     const token = randomBytes(32).toString('base64url')
@@ -59,11 +68,44 @@ export class EmailVerificationService {
     )
     await em.flush()
 
-    await this.mailSender.send({
+    // Not awaited, for two reasons that point the same way.
+    //
+    // Security: awaiting makes the response time depend on whether there was
+    // anything to send. The resend endpoint answers immediately for an unknown
+    // address and would wait on a provider round-trip — hundreds of
+    // milliseconds — for a pending one. That difference enumerates accounts
+    // with a stopwatch, which is precisely what RF-070 spends the sign-up flow
+    // preventing.
+    //
+    // Behaviour: a delivery failure must not undo a sign-up that already
+    // committed. Throwing here would answer 500 with the account created, the
+    // person would retry, hit the "address already taken" branch, and end up
+    // owning an account they cannot reach.
+    void this.trySend({
       to: account.email,
       kind: TransactionalEmail.VERIFY_ADDRESS,
       data: { token },
     })
+  }
+
+  /**
+   * Sends, and never lets a delivery failure escape.
+   *
+   * Every caller here is in the middle of something that already succeeded —
+   * an account was created, a password was reset. Failing the whole operation
+   * because an email provider timed out trades a recoverable problem (no email
+   * yet) for an unrecoverable one (half-finished state).
+   */
+  private async trySend(email: Parameters<MailSender['send']>[0]): Promise<void> {
+    try {
+      await this.mailSender.send(email)
+    } catch (error) {
+      // Never log the payload: it carries the token.
+      this.logger.error(
+        `failed to deliver ${email.kind}`,
+        error instanceof Error ? error.stack : undefined,
+      )
+    }
   }
 
   /**
@@ -77,11 +119,37 @@ export class EmailVerificationService {
    * never sent.
    */
   async notifyAlreadyRegistered(email: string): Promise<void> {
-    await this.mailSender.send({
+    // Not awaited, same reasoning as sendVerification: the response must not
+    // reveal, by how long it took, which branch was taken.
+    void this.trySend({
       to: email,
       kind: TransactionalEmail.ADDRESS_ALREADY_REGISTERED,
       data: {},
     })
+  }
+
+  /**
+   * Re-issues the link for an address, if there is anything to re-issue.
+   *
+   * Answers nothing either way. Telling the caller whether the address has a
+   * pending account would hand over exactly what RF-070 spends the whole
+   * sign-up flow hiding — and this endpoint would be the easiest place to ask.
+   *
+   * This is the way out of a delivery failure: sign-up does not fail when the
+   * provider is down, so without a resend an account could exist with no link
+   * ever sent and no way to ask for another.
+   */
+  async resend(email: string): Promise<void> {
+    const account = await this.em.fork().findOne(Account, { email: email.trim().toLowerCase() })
+
+    // Nothing to do for an unknown address, or for one already verified.
+    // Re-sending to a verified account would let anyone spam a stranger
+    // inbox by typing their address.
+    if (!account || account.emailVerified) {
+      return
+    }
+
+    await this.sendVerification(account)
   }
 
   /**
@@ -134,6 +202,11 @@ export class EmailVerificationService {
    * can log it — a cleanup nobody can see is a cleanup nobody notices failing.
    */
   async deleteExpiredUnverified(now: Date = new Date()): Promise<number> {
+    // A hard delete, not the anonymisation the LGPD policy prescribes for
+    // account deletion — and correctly so: an unverified account has no match
+    // history, no elo and no reputation events, so there is nothing whose
+    // traceability could break. If an unverified account ever gains something
+    // attached to it, this choice has to be revisited.
     const em = this.em.fork()
 
     return em.nativeDelete(Account, {

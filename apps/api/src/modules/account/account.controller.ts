@@ -4,6 +4,7 @@ import { Throttle } from '@nestjs/throttler'
 import { Public } from '../../common/auth/auth.decorators'
 
 import { AccountService } from './account.service'
+import { ResendVerificationDto } from './dto/resend-verification.dto'
 import { SignUpDto } from './dto/sign-up.dto'
 import { VerifyEmailDto } from './dto/verify-email.dto'
 import { EmailVerificationService } from './email-verification.service'
@@ -47,6 +48,29 @@ export class AccountController {
    * It also keeps email scanners from consuming the token: plenty of corporate
    * mail gateways follow every link in a message before the human sees it.
    */
+  /**
+   * Asks for a new verification link.
+   *
+   * Always 202, whatever happened — unknown address, already verified, or a
+   * link on its way. Anything else would turn this into the oracle that the
+   * sign-up endpoint carefully is not (RF-070).
+   *
+   * It exists because sign-up does not fail when the email provider does: an
+   * account can be created with no link delivered, and this is the only way
+   * back from that.
+   */
+  @Public()
+  @Post('verifications/resend')
+  @HttpCode(HttpStatus.ACCEPTED)
+  // The login bucket, not the signup one: the cost here is an email to
+  // somebody else inbox, so the limit guards a stranger, not this server.
+  @Throttle({ login: {} })
+  async resendVerification(@Body() dto: ResendVerificationDto): Promise<{ message: string }> {
+    await this.emailVerificationService.resend(dto.email)
+
+    return { message: 'check_your_email' }
+  }
+
   @Public()
   @Post('verifications')
   @HttpCode(HttpStatus.NO_CONTENT)
