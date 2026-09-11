@@ -4,6 +4,7 @@ import { BadRequestException, Injectable, ServiceUnavailableException } from '@n
 import { HashService } from '../../common/auth/hash.service'
 import { isOldEnough } from './account.age'
 import { Account } from './account.entity'
+import { normaliseSecurityAnswer } from './account.security-answer'
 import { CapacityService } from './capacity.service'
 import type { SignUpDto } from './dto/sign-up.dto'
 
@@ -49,9 +50,15 @@ export class AccountService {
 
     const existing = await this.em.findOne(Account, { email: dto.email })
 
-    // The hashing happens either way. Skipping it when the address is taken
-    // would make the taken case answer measurably faster, and RF-070 would be
-    // defeated by a stopwatch rather than by the response body.
+    // Hashing runs on both paths. Skipping it for a taken address would make
+    // that case answer measurably faster, and RF-070 would fall to a stopwatch
+    // rather than to the response body.
+    //
+    // What this buys is *masking*, not constant time: the free path also runs
+    // an insert, so the two are not identical — argon2 simply dominates the
+    // total by enough that one query does not stand out. Genuinely constant
+    // time would need a fixed-duration response, which is a much bigger
+    // hammer than this threat deserves.
     const [passwordHash, securityAnswerHash] = await Promise.all([
       this.hashService.hash(dto.password),
       this.hashService.hash(normaliseSecurityAnswer(dto.securityAnswer)),
@@ -84,26 +91,6 @@ export class AccountService {
       throw error
     }
   }
-}
-
-/**
- * Folds case, accents and inner whitespace off a security answer.
- *
- * Without it, "São Paulo", "sao paulo" and " São  Paulo " hash differently, and
- * the legitimate person fails their own recovery factor — at the worst possible
- * moment, since reaching RF-025 means they already lost both email and Discord.
- *
- * Accent folding is deliberate and has a cost: it shrinks the search space for
- * someone guessing. Accepted, because the alternative is a recovery path that
- * only works if the person remembers how they typed an accent months ago.
- */
-export function normaliseSecurityAnswer(answer: string): string {
-  return answer
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
-    .toLowerCase()
-    .replace(/\s+/g, ' ')
-    .trim()
 }
 
 /** Postgres unique-violation SQLSTATE. */
