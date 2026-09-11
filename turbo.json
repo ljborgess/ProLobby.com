@@ -1,5 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalEnv": ["NODE_ENV", "CI"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
@@ -7,18 +8,32 @@
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      // Same rule as e2e: undeclared variables never reach the process.
+      "env": ["DATABASE_URL", "JWT_SECRET", "CORS_ORIGINS", "PORT", "DISCORD_BOT_TOKEN"]
     },
     "lint": {},
     "type-check": {
       "dependsOn": ["^build", "build"]
     },
     "test": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["^build"],
+      "env": ["THROTTLE_DISABLED"]
     },
     "e2e": {
       "cache": false,
-      "dependsOn": ["^build"]
+      // "build" and not only "^build": the caret form builds *dependencies*,
+      // and the Playwright suite needs this package own .next output. It used
+      // to work by accident, because CI happened to run `turbo build`
+      // as an earlier step — running `turbo e2e` alone failed.
+      "dependsOn": ["^build", "build"],
+      // Turborepo does not pass through environment variables a task has not
+      // declared — undeclared ones are invisible to the process, so the cache
+      // key stays honest. Anything the e2e suite needs at runtime goes here or
+      // it simply will not exist, and the failure looks like a bug in the code
+      // rather than a missing declaration: the CI log prints the variable while
+      // the process swears it is unset.
+      "env": ["DATABASE_URL", "JWT_SECRET", "CORS_ORIGINS", "THROTTLE_DISABLED"]
     }
   }
 }
