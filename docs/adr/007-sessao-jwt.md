@@ -59,6 +59,12 @@ Guard global: rota nova exige sessão e conta ativa. Quem quer público marca `@
 
 Sem RLS na stack ([ADR-005](005-stack-tecnica.md)), esta é a **única** camada de autorização — item 7 do [checklist de segurança](../requisitos/08-seguranca-checklist.md). Com default aberto, esquecer o decorator não produz erro nenhum: produz uma rota aberta que ninguém nota. Mesmo princípio do `forbidNonWhitelisted` na validação de entrada.
 
+### CSRF: coberto pelo `SameSite`, com uma condição que precisa continuar verdadeira
+
+Não há token anti-CSRF, e não precisa haver enquanto o cookie for `SameSite: lax`: um POST de outro site não carrega o cookie, então não existe requisição forjada com sessão.
+
+A condição é que **`lax` deixa passar navegação top-level por GET**. Enquanto nenhuma rota GET mudar estado, o vetor segue fechado — e essa passa a ser regra escrita, no [item 9b do checklist](../requisitos/08-seguranca-checklist.md). Uma rota GET com efeito colateral reabre o buraco sem que nada no código de sessão mude, que é o tipo de regressão impossível de ver num diff de outro módulo.
+
 ### `JWT_SECRET` é o botão de pânico
 
 Trocar o secret invalida **todos** os tokens de uma vez. É a única revogação em massa que este desenho tem, e a resposta a vazamento de banco ou suspeita de comprometimento em escala.

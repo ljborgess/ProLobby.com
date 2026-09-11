@@ -1,6 +1,8 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common'
 import { Throttle } from '@nestjs/throttler'
 
+import { Public } from '../../common/auth/auth.decorators'
+
 import { AccountService } from './account.service'
 import { SignUpDto } from './dto/sign-up.dto'
 
@@ -16,6 +18,7 @@ export class AccountController {
    * would say an account was created, which is precisely what must not be
    * observable from outside.
    */
+  @Public()
   @Post()
   @HttpCode(HttpStatus.ACCEPTED)
   // Its own bucket, counted per hour: the threat is account farming, and

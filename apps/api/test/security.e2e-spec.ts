@@ -1,14 +1,14 @@
 import { Body, Controller, Get, Post } from '@nestjs/common'
-import { APP_GUARD } from '@nestjs/core'
-import { Throttle, ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
+import { Throttle } from '@nestjs/throttler'
 import { Test } from '@nestjs/testing'
 import type { INestApplication } from '@nestjs/common'
 import { IsEmail, IsInt, Max, Min } from 'class-validator'
 import request from 'supertest'
 
+import { AppModule } from '../src/app.module'
+import { Public } from '../src/common/auth/auth.decorators'
 import { applySecurity } from '../src/common/security/security.config'
 import { SESSION_COOKIE_NAME, sessionCookieOptions } from '../src/common/security/session-cookie'
-import { throttlerConfig } from '../src/common/security/throttler.config'
 
 class SampleDto {
   @IsEmail()
@@ -21,26 +21,33 @@ class SampleDto {
 }
 
 /**
- * A controller that exists only for this spec. Testing the real endpoints
- * would couple these guarantees to whatever the account module happens to look
- * like — and these guarantees have to hold for *every* endpoint, including the
- * ones not written yet.
+ * A controller that exists only for this spec, mounted on the *real*
+ * AppModule.
+ *
+ * Testing the account endpoints instead would tie these guarantees to whatever
+ * that module happens to look like — and they must hold for every endpoint,
+ * including the ones not written yet. Mounting on a hand-built module would be
+ * worse still: it would prove the guarantees about an application nobody runs,
+ * which is exactly the gap that moving the pipe into AppModule closed.
  */
-@Controller('sample')
-class SampleController {
+@Controller('security-probe')
+class SecurityProbeController {
+  @Public()
   @Post()
   create(@Body() dto: SampleDto) {
     return { received: dto }
   }
 
-  @Get('cookie')
-  cookie(): { ok: true } {
+  @Public()
+  @Get('headers')
+  headers(): { ok: true } {
     return { ok: true }
   }
 
-  @Post('login')
+  @Public()
+  @Post('login-bucket')
   @Throttle({ login: { limit: 5, ttl: 60_000 } })
-  login() {
+  loginBucket() {
     return { ok: true }
   }
 }
@@ -49,16 +56,17 @@ describe('transversal security', () => {
   let app: INestApplication
 
   beforeAll(async () => {
+    process.env.JWT_SECRET ??= 'test-secret-not-the-placeholder'
+
     const moduleRef = await Test.createTestingModule({
-      imports: [ThrottlerModule.forRoot(throttlerConfig)],
-      controllers: [SampleController],
-      providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
+      imports: [AppModule],
+      controllers: [SecurityProbeController],
     }).compile()
 
     app = moduleRef.createNestApplication()
     applySecurity(app)
     await app.init()
-  })
+  }, 60_000)
 
   afterAll(async () => {
     await app.close()
@@ -67,7 +75,7 @@ describe('transversal security', () => {
   describe('input validation', () => {
     it('accepts a body that matches the DTO', async () => {
       const res = await request(app.getHttpServer())
-        .post('/sample')
+        .post('/security-probe')
         .send({ email: 'person@test.local', age: 20 })
 
       expect(res.status).toBe(201)
@@ -75,7 +83,7 @@ describe('transversal security', () => {
 
     it('rejects an unknown property instead of silently dropping it', async () => {
       const res = await request(app.getHttpServer())
-        .post('/sample')
+        .post('/security-probe')
         .send({ email: 'person@test.local', age: 20, reputation: 100 })
 
       // 400, not 201 with the field ignored: silent stripping would hide the
@@ -86,14 +94,14 @@ describe('transversal security', () => {
 
     it('rejects a value that breaks the rule', async () => {
       const res = await request(app.getHttpServer())
-        .post('/sample')
+        .post('/security-probe')
         .send({ email: 'not-an-email', age: 15 })
 
       expect(res.status).toBe(400)
     })
 
     it('does not leak a stack trace in the error body', async () => {
-      const res = await request(app.getHttpServer()).post('/sample').send({ age: 'twenty' })
+      const res = await request(app.getHttpServer()).post('/security-probe').send({ age: 'twenty' })
 
       expect(res.status).toBe(400)
       const body = JSON.stringify(res.body)
@@ -104,7 +112,7 @@ describe('transversal security', () => {
 
   describe('security headers', () => {
     it('sets the headers helmet is here for', async () => {
-      const res = await request(app.getHttpServer()).get('/sample/cookie')
+      const res = await request(app.getHttpServer()).get('/security-probe/headers')
 
       expect(res.headers['x-content-type-options']).toBe('nosniff')
       expect(res.headers['strict-transport-security']).toBeDefined()
@@ -115,7 +123,7 @@ describe('transversal security', () => {
     })
 
     it('does not advertise the framework', async () => {
-      const res = await request(app.getHttpServer()).get('/sample/cookie')
+      const res = await request(app.getHttpServer()).get('/security-probe/headers')
 
       // Knowing the stack makes picking a matching CVE trivial.
       expect(res.headers['x-powered-by']).toBeUndefined()
@@ -128,7 +136,7 @@ describe('transversal security', () => {
       const statuses: number[] = []
 
       for (let attempt = 0; attempt < 7; attempt += 1) {
-        const res = await request(server).post('/sample/login').send({})
+        const res = await request(server).post('/security-probe/login-bucket').send({})
         statuses.push(res.status)
       }
 
