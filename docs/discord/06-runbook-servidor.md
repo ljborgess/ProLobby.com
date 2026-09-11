@@ -1,6 +1,8 @@
 # 6. Runbook — montar o servidor do zero
 
-**Status: pendente de execução** ([#70](https://github.com/ljborgess/ProLobby.com/issues/70), Fase 1).
+**Status: executado em 2026-09-11** ([#70](https://github.com/ljborgess/ProLobby.com/issues/70), Fase 1 — fechada). O servidor existe, com conta separada, 2FA, modo Comunidade, cargos, canais, onboarding e bot convidado.
+
+Fica aqui como **procedimento**, não como pendência: serve pra reconstruir o servidor se ele for perdido, pra montar um servidor de teste separado do de produção, e pra conferir contra o real quando algo parecer configurado errado.
 
 Passo a passo pra sair de "nada existe" até "bot convidado e pronto pra receber evento". É configuração manual: **nenhuma etapa aqui é feita pelo bot**, por decisão registrada em [Integração técnica](04-integracao.md) — a API do Discord permitiria criar servidor via `POST /guilds`, mas o bot viraria dono, contra a propriedade por conta separada.
 
@@ -56,6 +58,8 @@ Categoria separada pros temporários ajuda a enxergar o teto de 500 canais, mas 
 
 ## 5 · Onboarding nativo
 
+**Pré-requisito**: o menu de onboarding (em português, **Integração**) só existe depois de **Ativar Comunidade** (Configurações do Servidor → Ativar Comunidade), que pede e-mail verificado obrigatório, filtro de conteúdo explícito, canal de regras e canal de novidades. Sem isso o menu não aparece — e o que aparece com nome parecido, **Integrações**, é a tela de webhooks, outra coisa.
+
 Usar **Onboarding/Screening do próprio Discord** (zero código) pra perguntar plataforma (PS5 / Xbox Series / PC) e objetivo, concedendo cargo social por botão.
 
 Os cargos sociais **não liberam canal funcional** — quem libera fila/lobby é o Verificado, concedido pelo bot. Misturar os dois é o erro que transformaria o onboarding social em porta de entrada da fila.
@@ -64,9 +68,11 @@ Os cargos sociais **não liberam canal funcional** — quem libera fila/lobby é
 
 No [Developer Portal](https://discord.com/developers/applications), logado na conta dona:
 
-1. **New Application** → nome do projeto.
-2. Aba **Bot** → gerar o token. **Copiar uma vez só**; ele não é exibido de novo.
-3. Aba **Bot** → ligar **Server Members Intent**.
+O portal é traduzido: os nomes em português vão entre parênteses.
+
+1. **New Application** (*Novo aplicativo*) → nome do projeto.
+2. Aba **Bot** → **Reset Token** (*Redefinir token*) → copiar **direto pro gerenciador de senhas**; não é exibido de novo, e não passa por chat, mensagem ou arquivo do repo.
+3. Aba **Bot** → **Privileged Gateway Intents** (*Intenções privilegiadas do gateway*) → ligar **Server Members Intent** (*Intenção de membros do servidor*). Desligar **Public Bot** (*Bot público*) na mesma tela.
 4. Aba **OAuth2** → gerar a URL de convite com escopos `bot` e `applications.commands`.
 
 ### Server Members Intent — a armadilha que custa um dia
@@ -108,6 +114,14 @@ Abrir a URL de convite pela conta dona, escolher o servidor, autorizar. Depois c
 - Não segmentar canal por plataforma ou posição: comunidade pequena com canal segmentado vira canal morto ([Canais](02-canais.md)).
 - Não criar canal separado por idioma — a comunidade é unificada, e mensagem em canal compartilhado sai bilíngue ([RF-049](../requisitos/05-funcionais.md)).
 - Não dar Administrator ao bot se o conjunto acima funcionar.
+
+## Lições da execução (2026-09-11)
+
+Três coisas que o runbook não previa e apareceram na hora:
+
+- **Onboarding exige modo Comunidade.** O menu "Integração" simplesmente não existe até ativar Comunidade (Configurações do Servidor → Ativar Comunidade), que por sua vez pede e-mail verificado, filtro de conteúdo, canal de regras e canal de novidades. Quem procura o menu antes disso acha "Integrações" (webhooks), que é outra coisa.
+- **O Developer Portal também é traduzido.** "Redefinir token", "Intenções privilegiadas do gateway", "Inserir links" (que é o `Embed Links`) — a lista de permissões do gerador de URL sai em português.
+- **Token vazou em canal de conversa durante o setup e foi regenerado antes do primeiro uso**, sem impacto. Reforça o que [Integração técnica](04-integracao.md) já mandava: regenerar é barato e imediato, e o custo real só existe se o bot já estiver agindo em algum servidor. Regra prática que vale repetir: **Application ID é público e pode circular; token é senha e só existe em gerenciador de senhas e em `.env` local**.
 
 ## Depois deste runbook
 
