@@ -23,6 +23,9 @@ Etapas 2 e 3 são independentes entre si (pode verificar personagem sem Discord 
 - **Login por e-mail + senha**, com Discord como vínculo separado (não é login social) — mantém o onboarding acima funcionando como desenhado: conta existe antes de Discord, e Discord entra só como pré-requisito de fila.
 - **E-mail serve só pra conta, nunca pra notificação de produto**: login, verificação de cadastro e recuperação de senha (transacional). Aviso de fila/lobby/resultado/punição continua exclusivamente Discord + in-app, como já decidido em [Discord e lobby](../03-partida/03-lobby.md) — ninguém recebe e-mail de partida.
 - **E-mail verificado antes de liberar a fila** — conta com e-mail não confirmado navega, mas não entra em fila (evita conta descartável ou erro de digitação travando recuperação depois).
+  - **Link vale 24 h, com reenvio** ([ADR-008](../../adr/008-provedor-de-email.md)) — bem mais que os 30 min do link de senha, e por motivo: link de verificação vazado só confirma um endereço, link de redefinição entrega a conta.
+  - **Conta que nunca verifica é apagada em 30 dias**, liberando o endereço. Sem isso, cadastrar com o e-mail de outra pessoa o prende pra sempre — e como a tela não revela nada, o dono real tentaria se cadastrar, receberia a mesma resposta de todo mundo e nunca receberia nada. Silencioso dos dois lados, e explorável de propósito.
+  - **O e-mail sai por provedor externo**, com a transferência internacional declarada na Política de Privacidade ([ADR-008](../../adr/008-provedor-de-email.md)). Base legal é execução de contrato, não consentimento — diferente do analytics descartado em [Lançamento](../../negocio/04-lancamento.md), aqui o envio *é* o serviço.
 - **Aceite de Termos versionado**: plataforma guarda qual versão do ToS cada jogador aceitou e quando. Mudança material nos Termos exige novo aceite antes de continuar usando (ver [Termos de uso e idade mínima](../04-governanca/03-termos.md)).
 
 ## Recuperação de conta

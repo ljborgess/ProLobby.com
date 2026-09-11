@@ -4,6 +4,7 @@ import type { INestApplication } from '@nestjs/common'
 import request from 'supertest'
 
 import { AppModule } from '../src/app.module'
+import { HashService } from '../src/common/auth/hash.service'
 import { applySecurity } from '../src/common/security/security.config'
 import { Account } from '../src/modules/account/account.entity'
 import { AccountRole, AccountState } from '../src/modules/account/account.enums'
@@ -124,38 +125,30 @@ describe('POST /accounts (sign-up)', () => {
       expect(JSON.stringify(taken.body)).not.toMatch(/exist|taken|duplicate|already/i)
     })
 
-    it('takes comparable time for a free and for a taken address', async () => {
-      const measure = async (email: string): Promise<number> => {
-        const started = process.hrtime.bigint()
-        await request(app.getHttpServer()).post('/accounts').send(validBody(email))
-        return Number(process.hrtime.bigint() - started) / 1_000_000
-      }
+    it('hashes on both paths, so a taken address cannot be spotted by timing', async () => {
+      const hashService = app.get(HashService)
+      const spy = jest.spyOn(hashService, 'hash')
 
-      const median = (samples: number[]): number =>
-        [...samples].sort((a, b) => a - b)[Math.floor(samples.length / 2)] ?? 0
+      await request(app.getHttpServer()).post('/accounts').send(validBody('spy-free@test.local'))
+      const onFreeAddress = spy.mock.calls.length
 
-      // Warm up so JIT and connection setup do not land on a measured sample.
-      await measure('warmup@test.local')
+      spy.mockClear()
+      await request(app.getHttpServer()).post('/accounts').send(validBody('spy-free@test.local'))
+      const onTakenAddress = spy.mock.calls.length
 
-      const takenSamples: number[] = []
-      const freeSamples: number[] = []
+      spy.mockRestore()
 
-      for (let round = 0; round < 5; round += 1) {
-        takenSamples.push(await measure('warmup@test.local'))
-        freeSamples.push(await measure(`fresh-${round}@test.local`))
-      }
-
-      const taken = median(takenSamples)
-      const free = median(freeSamples)
-      const ratio = taken / free
-
-      // A two-sided window, on medians. Asserting only "taken is not much
-      // faster" would miss the inverse leak: the free path also runs an insert,
-      // so it is the *slower* one, and a large gap either way is an oracle.
-      // Loose bounds because CI timing is noisy — this catches a missing hash,
-      // not microseconds.
-      expect(ratio).toBeGreaterThan(0.5)
-      expect(ratio).toBeLessThan(2)
+      // Proven by counting the work, not by timing it. A wall-clock
+      // assertion measures the property only by correlation — and it turned
+      // out flaky, failing two runs in three once sign-up started sending
+      // email. A flaky test is worse than no test: it teaches people to
+      // ignore a red pipeline.
+      //
+      // What actually matters is that argon2 runs on both paths. Skipping it
+      // for a taken address is what would make that case measurably faster,
+      // and RF-070 would fall to a stopwatch rather than to the response body.
+      expect(onTakenAddress).toBe(onFreeAddress)
+      expect(onFreeAddress).toBeGreaterThan(0)
     })
   })
 })

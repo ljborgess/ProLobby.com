@@ -50,5 +50,6 @@ O que passa a ser verdade, incluindo o que fica pior.
 | [005](005-stack-tecnica.md) | Stack técnica: Next.js/TypeScript, Postgres self-hosted, Oracle Free Tier | aceita, 3 linhas corrigidas por 006 |
 | [006](006-backend-separado-e-tooling.md) | Backend separado (NestJS/MikroORM/JWT) e ferramentas de repo (Turborepo, testes, CI) | aceita |
 | [007](007-sessao-jwt.md) | Sessão por JWT sem revogação, com papel e estado lidos do banco | aceita |
+| [008](008-provedor-de-email.md) | E-mail transacional por provedor externo, com transferência internacional declarada | aceita |
 
 **Decidida antes dos bloqueadores retornarem (2026-09-08)**, com risco aceito conscientemente: RF-051/052/055 (produto, não tecnologia) podem exigir retrabalho quando o [checklist](../produto/03-partida/05-checklist.md) rodar. Motor de OCR final (Tesseract vs. pago) ainda depende do [piloto](../requisitos/06-piloto-ocr.md) — o piloto usa Tesseract primeiro.

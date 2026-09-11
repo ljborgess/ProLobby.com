@@ -6,6 +6,7 @@ import { isOldEnough } from './account.age'
 import { Account } from './account.entity'
 import { normaliseSecurityAnswer } from './account.security-answer'
 import { CapacityService } from './capacity.service'
+import { EmailVerificationService } from './email-verification.service'
 import type { SignUpDto } from './dto/sign-up.dto'
 
 @Injectable()
@@ -14,6 +15,7 @@ export class AccountService {
     private readonly em: EntityManager,
     private readonly hashService: HashService,
     private readonly capacityService: CapacityService,
+    private readonly emailVerificationService: EmailVerificationService,
   ) {}
 
   /**
@@ -65,9 +67,10 @@ export class AccountService {
     ])
 
     if (existing) {
-      // RF-020 + RF-070: silence here, and an email to the owner of the
-      // address telling them an account already exists. Sending that email is
-      // issue #89; until then this branch simply does not create anything.
+      // RF-020 + RF-070: the screen says nothing, and the truth goes to the
+      // owner of the address. This email is the *only* way they ever learn an
+      // account already exists on it.
+      await this.emailVerificationService.notifyAlreadyRegistered(existing.email)
       return
     }
 
@@ -81,11 +84,17 @@ export class AccountService {
 
     try {
       await this.em.persistAndFlush(account)
+      await this.emailVerificationService.sendVerification(account)
     } catch (error) {
       // Two requests for the same address can both pass the findOne above and
       // reach the insert. The unique index is what actually enforces RF-020,
       // and losing that race must look exactly like the "already exists" case.
+      // Two requests for the same address can both pass the findOne above and
+      // reach the insert. The unique index is what actually enforces RF-020,
+      // and losing that race must look exactly like the "already exists" case
+      // — including the email to the owner.
       if (isUniqueViolation(error)) {
+        await this.emailVerificationService.notifyAlreadyRegistered(dto.email)
         return
       }
       throw error
