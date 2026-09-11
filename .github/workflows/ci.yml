@@ -24,6 +24,8 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - run: pnpm format:check
+
       - run: pnpm turbo lint
 
       - run: pnpm turbo type-check
@@ -36,3 +38,9 @@ jobs:
         working-directory: apps/web
 
       - run: pnpm turbo e2e
+
+      # Item 2 do checklist de segurança (docs/requisitos/08-seguranca-checklist.md):
+      # dependência vulnerável entra pelo lockfile, não pelo código do PR.
+      # --prod: o que roda em produção bloqueia o merge; advisory de dev dep
+      # (vitest/vite) vira manutenção normal, não trava PR de regra de negócio.
+      - run: pnpm audit --prod --audit-level=high

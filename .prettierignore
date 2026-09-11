@@ -6,3 +6,5 @@ coverage
 playwright-report
 pnpm-lock.yaml
 **/*.md
+apps/web/next-env.d.ts
+.claude/
