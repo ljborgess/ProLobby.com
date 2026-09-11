@@ -9,7 +9,7 @@ Ver [`README.md`](README.md). Origem: ideia nasceu numa sessão sobre o projeto 
 ## Estado atual (2026-09-11)
 
 - **Fase**: design de produto e requisitos fechados; **engenharia começou**. Scaffold do monorepo commitado (Turborepo + pnpm: `apps/web` Next.js, `apps/api` NestJS+MikroORM, `apps/bot` discord.js) — ainda é esqueleto, sem regra de negócio.
-- **Issues do GitHub reformuladas em 2026-09-10**: as antigas #1–#24 foram fechadas (histórico preservado, cada uma com comentário apontando pra substituta) e recriadas como **#25–#61**, com numeração refletindo a ordem real de execução, seção "Fluxo de desbloqueio" (Depende de/Desbloqueia) em cada issue, e checklist "Passo a passo" nas sub-issues técnicas. Índice completo: **[#49 — PRD Mestre: Roadmap de fases](https://github.com/ljborgess/ProLobby.com/issues/49)**, que lista as 13 fatias em ordem (Núcleo de conta em #25 até Beta em #61).
+- **Tracker reconstruído fase a fase (2026-09-11)**: índice vivo é **[#64 — PRD Mestre](https://github.com/ljborgess/ProLobby.com/issues/64)**, com as 13 fases em ordem de execução, a divisão de trabalho (Luciano no caminho crítico, Rafael no paralelo) e o mapeamento das issues antigas. Regra nova: **só a fase corrente tem issue**; fase futura existe como milestone e linha da tabela do #64. A **Fase 1** (infra de CI, processo de PR e servidor Discord) está aberta em #65–#70; as issues #25–#63 vão sendo fechadas como `not planned` conforme cada fase é reconstruída — já foram #26–#29, #49 e #51.
 - **Auditoria de fluxo de 2026-09-11**: varredura ponta a ponta do dossiê fechou **24 achados** — 6 quebras de fluxo (estado `expirada_sem_report` inalcançável, suspensão que virava banimento sozinha, capitão punido por falta de vaga, RF-066 disparando em partida legítima, deadlock de moderação, beta sem trava), 6 lacunas de modelo de dados, 7 ambiguidades e 5 de processo. Nasceram **RF-074 a RF-080** e 4 entidades novas; as 36 h de zero-report e o critério de "qualquer vaga > 0" foram revogados. **Ler [`docs/research/auditoria-2026-09-11.md`](docs/research/auditoria-2026-09-11.md) antes de implementar fila, lobby, resultado ou moderação** — várias regras mudaram de comportamento, não só de texto. Abriu também [#62](https://github.com/ljborgess/ProLobby.com/issues/62) (entidade `CasoModeracao`, sub-issue de #30) e [#63](https://github.com/ljborgess/ProLobby.com/issues/63) (rodar o checklist no jogo, que era o único bloqueador sem issue).
 - **Branches**: só `main` e `dev`. Trabalho corre em `dev`; `main` só recebe merge quando o time decidir promover.
 - Todo o conteúdo abaixo está commitado em `dev`.
@@ -55,16 +55,14 @@ Três saídas, nenhuma tomada ainda:
 
 ### Ordem sugerida pra retomar
 
-As issues atuais (#25–#61, ver [#49 — Roadmap](https://github.com/ljborgess/ProLobby.com/issues/49)) já nascem **abertas e na ordem certa de desbloqueio** — não é mais preciso "reabrir", só seguir a ordem.
+Sequência canônica agora vive em **[#64 — PRD Mestre](https://github.com/ljborgess/ProLobby.com/issues/64)**. O que fazer primeiro:
 
-1. Terminar o **desenho** que motivou a pausa original: enquanto uma fase não fechar o desenho, não faz sentido distribuir issue dela pro time (ver [CONTRIBUTING.md](CONTRIBUTING.md)).
-2. Decidir **repo público vs. Pro vs. convenção** (tabela acima) — destrava branch protection e SonarCloud de uma vez, e não depende do desenho.
-3. **[#27](https://github.com/ljborgess/ProLobby.com/issues/27)** (Postgres no CI) antes de **[#30](https://github.com/ljborgess/ProLobby.com/issues/30)** (schema), senão o primeiro PR de verdade quebra o CI.
-4. **[#30](https://github.com/ljborgess/ProLobby.com/issues/30)** (schema) — bloqueia **[#40](https://github.com/ljborgess/ProLobby.com/issues/40)** e **[#45](https://github.com/ljborgess/ProLobby.com/issues/45)**.
-5. **[#36](https://github.com/ljborgess/ProLobby.com/issues/36)** (webhook do bot) a qualquer momento, mas antes do primeiro handler de RF.
-6. Convidar o **Felipe** de novo se o convite tiver expirado (`LipeLou`, mandado em 2026-09-08, ainda pendente) e só então voltar a incluí-lo na distribuição de issues (ver [#45](https://github.com/ljborgess/ProLobby.com/issues/45) — antiga #3, hoje sem assignee).
-7. **[#63](https://github.com/ljborgess/ProLobby.com/issues/63)** (checklist no jogo) a qualquer momento — não bloqueia código novo, mas bloqueia RF-051/052/055 e três parâmetros "a calibrar".
-8. Depois do Núcleo ([#25](https://github.com/ljborgess/ProLobby.com/issues/25)) fechar: seguir o roadmap em [#49](https://github.com/ljborgess/ProLobby.com/issues/49) — piloto de OCR e config do Discord podem rodar em paralelo, o resto das fases (personagem → elo → Discord OAuth → fila → lobby → resultado → punição → perfil → governança → beta) segue em ordem, uma destrava a próxima.
+1. **[#66](https://github.com/ljborgess/ProLobby.com/issues/66)** — decidir repo público vs GitHub Pro vs convenção. É decisão de sócio, não de implementação, e o template de PR (#68) depende dela.
+2. **[#67](https://github.com/ljborgess/ProLobby.com/issues/67)** (Postgres no CI) — sem isso o primeiro PR de schema quebra por infraestrutura.
+3. **[#70](https://github.com/ljborgess/ProLobby.com/issues/70)** (servidor Discord) e **[#68](https://github.com/ljborgess/ProLobby.com/issues/68)**/**[#69](https://github.com/ljborgess/ProLobby.com/issues/69)** (templates) — correm em paralelo.
+4. **[#63](https://github.com/ljborgess/ProLobby.com/issues/63)** (checklist no jogo) a qualquer momento: não bloqueia código novo, mas bloqueia RF-051/052/055 e três parâmetros "a calibrar".
+5. Fechada a Fase 1, abrir a **Fase 2.1** (núcleo de conta) pelo mesmo caminho — PRD, issues, sub-issues — e fechar as antigas #30/#40/#45 e suas filhas apontando pras substitutas.
+6. Convidar o **Felipe** de novo se o convite tiver expirado (`LipeLou`, mandado em 2026-09-08, ainda pendente).
 
 ## Os dois bloqueadores — leia isto antes de qualquer coisa
 

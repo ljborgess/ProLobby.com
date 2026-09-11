@@ -4,7 +4,9 @@ Referência rápida do fluxo decidido no [ADR-006](docs/adr/006-backend-separado
 
 ## Time
 
-Luciano e Rafael codam. Felipe foi convidado (`LipeLou`), ainda não entrou — quando entrar, mesma função do Rafael. Luciano lidera de fato (contexto completo do dossiê): atribui issue, revisa e aprova PR do Rafael (e do Felipe, quando ativo). Ver [HANDOFF.md](HANDOFF.md#decidido-sem-divisão-de-papéis).
+Luciano (`@ljborgess`) e Rafael (`@rafaeljs08`) codam. Felipe (`LipeLou`) foi convidado, ainda não entrou — quando entrar, assume carga do trabalho paralelo. Luciano lidera de fato (contexto completo do dossiê): atribui issue, revisa e aprova PR dos outros. Ver [HANDOFF.md](HANDOFF.md#decidido-sem-divisão-de-papéis).
+
+A divisão por issue segue **caminho crítico x paralelo** — critério detalhado na [hierarquia de issues](#divisão-de-trabalho--caminho-crítico-x-paralelo) abaixo.
 
 ## Antes de codar
 
@@ -99,47 +101,50 @@ Mais simples que `modules/` da api de propósito: bot não expõe endpoint próp
 
 ## Hierarquia — PRD → issue → sub-issue
 
-Toda fatia de fase (ex.: "Núcleo: Conta e autenticação") nasce em 3 níveis, todos no GitHub (Issue Dependencies + Sub-issues nativos, nada em planilha ou doc externo):
+Toda fase nasce em 3 níveis, todos no GitHub (Sub-issues + Issue Dependencies nativos, nada em planilha ou doc externo):
 
-1. **PRD** — 1 issue-mãe por fatia (`tipo:docs`), aberta só quando a fatia vai começar de verdade (mesma disciplina que já vale pra issue: não adiantar fase futura). Contexto, problema, objetivo, **fora de escopo explícito**, RFs cobertos, critério de sucesso da fatia inteira. Título: `PRD: <nome da fatia>`.
-2. **Issue** — 1 por peça grande da fatia (schema, cadastro, recuperação de senha, auth do webhook, CI...), sub-issue do PRD. O quê, RFs, checklist de segurança aplicável, critério de aceite, origem — formato já usado em #26, #30, #36, #40 e #45.
-3. **Sub-issue** — 1 por entidade/endpoint/arquivo de config, sub-issue da issue. Granularidade pequena o bastante pra virar 1 PR revisável.
+1. **PRD** — 1 issue-mãe por fase (`tipo:docs` + `tipo:epic`), sub-issue do roadmap mestre. Contexto, problema, objetivo, **fora de escopo explícito**, RFs cobertos e critério de sucesso da fase inteira.
+2. **Issue** — 1 por peça grande da fase (schema, cadastro, auth do webhook, CI...), sub-issue do PRD. O quê, RFs, checklist de segurança aplicável, critério de aceite, origem no dossiê.
+3. **Sub-issue** — 1 por entidade/endpoint/tela/arquivo de config, sub-issue da issue. Granularidade pequena o bastante pra virar 1 PR revisável.
 
-**Grafo vivo (fatia 2.1 — Núcleo: Conta e autenticação)** — estado corrente do tracker, conferido em 2026-09-11. As issues #1 a #24 foram fechadas como `not planned` e reabertas nesta numeração; não usar os números antigos como referência:
+**Índice vivo: [#64 — PRD Mestre](https://github.com/ljborgess/ProLobby.com/issues/64)**, com as 13 fases em ordem de execução e o mapeamento das issues antigas.
+
+### Uma fase por vez — regra de reconstrução
+
+O tracker é reconstruído **fase a fase**, nunca de uma vez:
+
+- A **fase corrente** tem PRD + issues + sub-issues, com dependência fina registrada.
+- As **fases seguintes** existem só como **milestone** e como linha da tabela do #64. Nada de issue de fase futura: ela envelhece antes de virar código, e o dossiê muda embaixo dela (a auditoria de 2026-09-11 mudou 8 RFs de uma vez).
+- As issues do tracker anterior (#25–#63) são fechadas como `not planned` **no momento em que a fase que as cobre é reconstruída**, com comentário apontando pra substituta. Enquanto a fase não chega, a issue antiga fica aberta e vale como registro.
+- Quando uma fase fecha, a próxima é aberta pelo mesmo caminho: PRD primeiro, issues depois, sub-issues por último.
+
+### Divisão de trabalho — caminho crítico x paralelo
+
+- **Luciano (`@ljborgess`)** pega a cadeia que **bloqueia o resto**: schema, autenticação, elo, fila, lobby, resultado, disputa, painel de moderação.
+- **Rafael (`@rafaeljs08`)** pega o que **corre em paralelo sem bloquear ninguém**: infra de CI, auth do webhook do bot, pipeline de OCR, telas do `apps/web`, perfil/ranking, notificações, LGPD operacional.
+
+Não é "backend vs frontend" — é minimizar espera de um pelo outro. Quando a cadeia crítica trava esperando review, o paralelo continua andando. Felipe (`LipeLou`), quando entrar, assume carga do paralelo.
+
+### Grafo vivo — Fase 1 (infra, processo e Discord)
 
 ```
-#49 PRD Mestre: roadmap de fases  (PRDs de fase: #50 a #61)
-└── #25 PRD: Núcleo — Conta e autenticação
-    ├── #26 CI com Postgres e templates de processo
-    │   ├── #27 Postgres no CI
-    │   ├── #28 Template de PR
-    │   └── #29 Template de issue
-    ├── #30 Schema base
-    │   ├── #31 Entidade Conta          (primeiro — todas as outras dependem dela)
-    │   ├── #32 Entidade AceiteTos       ─┐
-    │   ├── #33 EventoReputacao/Elo      ─┼─ blocked by #31
-    │   ├── #34 EventoPagamento          ─┘
-    │   └── #35 Teste de migration e2e   — blocked by #31-#34, #27
-    ├── #36 Auth do webhook do bot       — sem dependência, paralelo
-    │   ├── #37 Assinatura HMAC
-    │   ├── #38 Rate limit               — blocked by #37
-    │   └── #39 Contrato de evento tipado
-    ├── #40 Cadastro, sessão, Termos
-    │   ├── #41 Endpoint de cadastro     — blocked by #31
-    │   ├── #42 Login e sessão JWT       — blocked by #41
-    │   ├── #43 Aceite de Termos         — blocked by #32, #42
-    │   └── #44 Tela de cadastro (web)   — blocked by #41
-    └── #45 Recuperação de acesso
-        ├── #46 Verificação de e-mail    — blocked by #41
-        ├── #47 Link de redefinição      — blocked by #42
-        └── #48 Recuperação 2 fatores    — blocked by #33, #41
+#64 PRD Mestre: roadmap de fases e ordem de execução
+└── #65 PRD Fase 1: infra de CI, processo de PR e servidor Discord   @rafaeljs08
+    ├── #66 Decisão: repo público vs Pro vs convenção                @ljborgess
+    ├── #67 Postgres como service no GitHub Actions                  @rafaeljs08
+    ├── #68 Template de Pull Request                                 @rafaeljs08  — blocked by #66
+    ├── #69 Template de issue                                        @rafaeljs08
+    └── #70 Configurar o servidor Discord                            @ljborgess
 ```
 
-- Dependência é registrada de verdade no GitHub (Issue Dependencies nativo, não só texto/comentário) — a issue/sub-issue bloqueada mostra um selo **"Blocked"** e lista quem bloqueia, na barra lateral direita.
-- **Como adicionar uma dependência nova**: na issue que vai ficar bloqueada, barra lateral → **Blocked by** → busca a issue que bloqueia e vincula. Não precisa de CLI. Alternativa via `gh`: `gh api repos/ljborgess/ProLobby.com/issues/<N>/dependencies/blocked_by -X POST -F issue_id=<database id da issue bloqueadora>` — o `issue_id` é o id interno (não o número `#N`); pegar com `gh api repos/ljborgess/ProLobby.com/issues/<N> -q .id`.
-- **Como linkar uma sub-issue ao pai**: `gh api repos/ljborgess/ProLobby.com/issues/<pai>/sub_issues -X POST -F sub_issue_id=<database id da sub-issue>`.
-- **Regra**: quem abre issue ou sub-issue nova identifica as dependências finas na hora (não só "depende da issue pai" — depende de qual peça específica) e já vincula. Não deixar pra descobrir depois que já começou.
-- Fatia de fase futura (2.2 em diante) ganha PRD + issues + sub-issues próprios quando abrir — não documentado agora.
+Fases 0 e 2.1 em diante: milestone criado, issues abertas quando a fase começar.
+
+### Como registrar dependência
+
+- Pela interface: na issue que vai ficar bloqueada, barra lateral → **Blocked by** → busca a issue que bloqueia.
+- Por CLI: `gh api repos/ljborgess/ProLobby.com/issues/<N>/dependencies/blocked_by -X POST -F issue_id=<id interno da bloqueadora>` — o `issue_id` é o id interno, não o número `#N`; pegar com `gh api repos/ljborgess/ProLobby.com/issues/<N> -q .id`.
+- Sub-issue no pai: `gh api repos/ljborgess/ProLobby.com/issues/<pai>/sub_issues -X POST -F sub_issue_id=<id interno da filha>`.
+- **Regra**: quem abre issue nova identifica a dependência **fina** na hora (qual peça específica bloqueia, não só "a issue pai") e já vincula.
 
 ## Labels
 
@@ -149,4 +154,4 @@ Toda fatia de fase (ex.: "Núcleo: Conta e autenticação") nasce em 3 níveis, 
 
 ## Exceção: piloto de OCR
 
-O [piloto de OCR](docs/requisitos/06-piloto-ocr.md) (bloqueador nº 2) não segue este fluxo — é script de medição isolado, sem conta/banco/upload/tela, rodado direto pelo Luciano, sem issue nem PR. O resultado (Tesseract vs. Google Vision) vira input pra issue de "OCR de personagem" (item 2.2 de `02-implementacao.md`), essa sim no fluxo normal.
+O [piloto de OCR](docs/requisitos/06-piloto-ocr.md) (bloqueador nº 2) não segue este fluxo — é script de medição isolado, sem conta/banco/upload/tela, rodado direto pelo Luciano, sem issue nem PR. O resultado (Tesseract vs. Google Vision) vira input pra Fase 2.2 (personagem e verificação por OCR), essa sim no fluxo normal. **Atualização de 2026-09-11**: o piloto ganhou issues próprias na Fase 0 do roadmap ([#64](https://github.com/ljborgess/ProLobby.com/issues/64)) porque virou trabalho de duas pessoas — a coleta dos 50 prints e o script de medição podem correr em paralelo — mas segue sem PR de produto.
