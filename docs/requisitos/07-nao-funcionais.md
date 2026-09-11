@@ -96,6 +96,17 @@ Por que 2 anos e não "para sempre": o log **liga pessoa a denúncia e punição
 
 **Rotação (decidido em 2026-09-08)**: sem rotação periódica agendada — MVP com 4 sócios, baixo risco de vazamento por processo, e rotação agendada é custo operacional sem benefício proporcional nesse tamanho de time. Rotaciona só sob suspeita ou confirmação de vazamento: regenerar o token no Developer Portal, atualizar a variável de ambiente, revisar `#log-moderacao` em busca de ação não reconhecida no período suspeito.
 
+### RNF-021 · Segredo de sessão é credencial de operação, com procedimento de emergência escrito
+**Origem**: [ADR-007](../adr/007-sessao-jwt.md), decidido em 2026-09-11
+
+**Aceite**: o `JWT_SECRET` vive só em variável de ambiente do backend — nunca no repositório, nem no histórico do git, nem em log ou mensagem de erro. Quem o tem **forja sessão de qualquer conta, inclusive Admin**, então recebe o mesmo tratamento do token do bot ([RNF-013](#rnf-013--token-do-bot-só-em-variável-de-ambiente)).
+
+**Procedimento de emergência, escrito antes de precisar**: trocar o segredo invalida **todos** os tokens em circulação de uma vez. É a única revogação em massa que o desenho de sessão tem ([ADR-007](../adr/007-sessao-jwt.md) decidiu JWT sem revogação por sessão), e a resposta a vazamento de banco ou suspeita de comprometimento em escala.
+
+- **Custo conhecido**: toda a base reloga. Precisa estar escrito antes, porque a alternativa é decidir isso no meio de um incidente, por quem estiver acordado — mesmo racional do procedimento de vazamento do token do bot ([Integração técnica](../discord/04-integracao.md)).
+- **Não existe rotação sem derrubar ninguém** por decisão: aceitar dois segredos na validação seria código pra um caso que talvez nunca aconteça, e quando acontecer, derrubar todo mundo é provavelmente o comportamento desejado.
+- Trocar o segredo **não** resolve conta comprometida individual — pra isso não há mecanismo, e a limitação está registrada no ADR-007.
+
 ## Compatibilidade e acesso
 
 ### RNF-014 · Duas últimas versões dos navegadores atuais, celular incluído

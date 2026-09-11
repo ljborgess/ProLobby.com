@@ -2,7 +2,7 @@
 
 Lista numerada e rastreável. Formato e regras em [README](README.md).
 
-**Status: 9 áreas levantadas, RF-001 a RF-080, RNF-001 a RNF-020.** Nenhuma área permanece sem varredura de lacuna.
+**Status: 9 áreas levantadas, RF-001 a RF-081, RNF-001 a RNF-021.** Nenhuma área permanece sem varredura de lacuna.
 
 > **Auditoria de 2026-09-11**: varredura de fluxo ponta a ponta fechou 24 achados — 6 quebras de fluxo (entre elas um estado inalcançável e um loop de suspensão que virava banimento), 6 lacunas de modelo de dados, 7 ambiguidades e 5 de processo/repo. RF-074 a RF-080 nasceram daí; RF-006, RF-034, RF-035, RF-043, RF-058, RF-066, RF-071 e RF-072 foram corrigidos no lugar. Relatório completo em [research/auditoria-2026-09-11.md](../research/auditoria-2026-09-11.md).
 
@@ -517,6 +517,17 @@ Mitiga o furo aberto pela ressalva da Virtual Pro única: nada impedia verificar
 **Correção de 2026-09-11 — ocupação de lobby não pausa cadastro.** O critério anterior misturava dois tipos de teto: chamada de OCR é **acumulativa no mês** (barrar entrada nova reduz mesmo o consumo), enquanto lobby simultâneo é **ocupação instantânea** que se resolve em minutos — barrar cadastro ali não libera um único lobby e pune quem nada tem a ver com o pico. A alavanca certa pra capacidade instantânea é **pausar o fechamento de lobby novo**, que já existe em [RF-053](#rf-053--acima-de-400-canais-alerta-no-teto-a-fila-pausa) e [RNF-008](07-nao-funcionais.md#rnf-008--queda-do-discord-ou-teto-de-canais-pausa-a-fila-não-derruba-a-plataforma): atingidos 9 de 10 lobbies simultâneos ([RNF-004](07-nao-funcionais.md#rnf-004--10-lobbies-simultâneos)), a fila pausa com aviso in-app e volta sozinha quando um lobby encerra. Cadastro segue aberto. Não existe caminho automático que gere custo — passar do free tier nunca vira cobrança sem decisão humana explícita dos 4 sócios. Vale enquanto a ideia não estiver validada (critério de saída do beta, ver [Lançamento](../negocio/04-lancamento.md)); revisar quando decidirem pagar por infra conscientemente.
 
 **Reconciliação com o critério de desistir de 90 dias ([tese de mercado](../negocio/01-mercado.md))**: a meta de sucesso do MVP (10 partidas/semana, ~80-100 chamadas OCR/mês) fica ~10x abaixo do teto do free tier (1000 OCR/mês) — na escala-alvo, RF-072 não deveria disparar durante a janela de medição. **Se disparar mesmo assim, é sinal de demanda muito acima do esperado, não de fracasso** — nesse cenário os 4 decidem conscientemente pagar por infra (a mesma decisão que RF-072 já reserva pra eles), em vez de deixar o critério de desistir confundir capacidade truncada com falta de demanda.
+
+### RF-081 · Conta banida faz login, em modo restrito, só pra apelar
+**Origem**: gap encontrado em grilling de desenho de sessão, decidido em 2026-09-11 · [ADR-007](../adr/007-sessao-jwt.md)
+
+**Aceite**: conta `banida` completa o login normalmente e alcança **apenas** duas coisas: ver a punição aplicada (motivo e data) e abrir a apelação prevista em [RF-037](#rf-037--uma-apelação-por-punição-reabertura-só-com-fato-novo). Qualquer outra rota responde recusa com o motivo. Conta `excluida` não faz login em hipótese nenhuma.
+
+Por que precisou existir: [RF-037](#rf-037--uma-apelação-por-punição-reabertura-só-com-fato-novo) garante uma apelação por punição, e [Moderação](../produto/04-governanca/01-moderacao.md) registra que o banimento **não** expulsa do Discord justamente pra a pessoa poder "ver avisos, discutir, apelar". Mas nada dizia se ela consegue **entrar na plataforma** — e a leitura natural (banido não loga) transferiria o direito de apelação inteiro pro Discord.
+
+Isso não fecha: **dá pra ser banido por fraude no cadastro (print falso comprovado) sem nunca ter vinculado Discord**, porque o vínculo só é obrigatório pra entrar na fila ([RF-002](#rf-002--entrada-na-fila-exige-e-mail-verificado-personagem-verificado-e-discord-vinculado)). Essa pessoa ficaria banida sem nenhum caminho de apelação — o direito existiria no papel e não no produto.
+
+O modo restrito só é implementável porque o token de sessão **não** carrega o estado da conta: ele é lido do banco a cada request ([ADR-007](../adr/007-sessao-jwt.md)), então o banimento passa a valer no request seguinte, e não quando o token expira.
 
 ### RF-079 · Banimento sobrevive à exclusão de conta
 **Origem**: gap encontrado em auditoria, decidido em 2026-09-11 · [produto/04-governanca/02-lgpd.md](../produto/04-governanca/02-lgpd.md)

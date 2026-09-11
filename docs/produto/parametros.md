@@ -102,6 +102,7 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 |---|---|---|
 | Idade mínima | 16 anos (data de nascimento no cadastro) | [Termos](04-governanca/03-termos.md) |
 | Validade do link de redefinição de senha | 30 min, uso único | [Onboarding](05-produto/01-onboarding.md) |
+| Duração da sessão (JWT) | 7 dias fixos, sem renovação | [ADR-007](../adr/007-sessao-jwt.md) |
 | Contas por e-mail | 1 (chave única) | [Onboarding](05-produto/01-onboarding.md) |
 | Sessões simultâneas por conta | sem limite | [Onboarding](05-produto/01-onboarding.md) |
 | Retenção de prints (imagem) | 90 dias (limpeza diária automática) | [LGPD](04-governanca/02-lgpd.md) |
