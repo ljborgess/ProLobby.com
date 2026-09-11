@@ -16,7 +16,15 @@ import { SESSION_COOKIE_NAME } from '../security/session-cookie'
 import { ALLOWED_STATES, IS_PUBLIC } from './auth.decorators'
 import type { SessionTokenPayload } from './session.constants'
 
-/** The authenticated account, attached to the request for handlers to read. */
+/**
+ * The authenticated account, attached to the request for handlers to read.
+ *
+ * **Read-only.** It comes from a forked EntityManager owned by the guard, not
+ * by the request handler — mutating it and calling flush() would write through
+ * an EM nobody else knows about, landing the change in a different identity map
+ * than everything else in the request. A handler that needs to write reloads the
+ * account by id, in its own EM.
+ */
 export interface RequestWithAccount extends Request {
   account?: Account
 }
@@ -68,6 +76,8 @@ export class SessionGuard implements CanActivate {
       throw new UnauthorizedException('invalid_session')
     }
 
+    // fork() because the guard runs outside the request's ORM context. What it
+    // returns is read-only for handlers — see RequestWithAccount.
     const account = await this.em.fork().findOne(Account, { id: payload.sub })
 
     // A valid token for an account that no longer exists: LGPD deletion, in

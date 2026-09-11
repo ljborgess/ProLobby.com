@@ -31,6 +31,16 @@ Endpoint de update aceita só os campos que o formulário expõe — nunca seria
 ## 9 · Proteger cookies
 Cookie de sessão: `HttpOnly`, `Secure`, `SameSite`. Nenhum dado sensível em cookie legível por JS.
 
+## 9b · CSRF: o que protege hoje é o `SameSite`, e ele tem uma condição
+
+Não existe token anti-CSRF. O que fecha o vetor é o cookie de sessão com **`SameSite: lax`** ([ADR-007](../adr/007-sessao-jwt.md)): um POST vindo de outro site não carrega o cookie, então não há requisição forjada com sessão.
+
+**A condição**: `lax` permite que navegação top-level por **GET** carregue o cookie. Enquanto nenhuma rota GET mudar estado, o vetor continua fechado. Se alguma mudar — um `GET /fila/sair`, um link de "confirmar" que grava algo — ela fica exposta a qualquer link que a pessoa clique em outro lugar.
+
+**Regra prática, que vale pra toda rota nova**: GET nunca tem efeito colateral. Ação que muda estado usa POST, PATCH ou DELETE. É boa prática de HTTP em qualquer lugar, e aqui é também o que sustenta a ausência de token CSRF.
+
+`SameSite: strict` foi descartado por outro motivo, registrado no ADR-007: derrubaria o cookie de quem chega por link do Discord, que é o caminho normal de entrada neste produto ([RF-060](05-funcionais.md#rf-060--sair-do-servidor-discord-bloqueia-a-fila-até-voltar)).
+
 ## 10 · Hash nas senhas
 Nunca senha em texto puro nem hash reversível. bcrypt/argon2 com salt, nunca MD5/SHA-1 sozinho.
 
