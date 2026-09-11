@@ -50,7 +50,23 @@ As duas são registradas no próprio PR (comentário ou approval), não em conve
 
 ### Rodando os testes localmente
 
-`pnpm turbo test` não precisa de nada. O **e2e do `apps/api` precisa de Postgres** (`docker compose up -d postgres` na raiz) — no CI ele sobe como `services:` do workflow, com os mesmos valores do `docker-compose.yml`.
+`pnpm turbo test` não precisa de nada. O **e2e do `apps/api` precisa de Postgres**:
+
+```bash
+docker compose up -d postgres
+pnpm turbo e2e
+```
+
+No CI o banco sobe como `services:` do workflow, com os mesmos usuário, senha e nome de banco do `docker-compose.yml` — é o que evita o "funciona local, quebra no CI".
+
+**Se a porta 5432 já estiver ocupada** por outra stack na máquina (comum em quem toca mais de um projeto), não edite o `docker-compose.yml`:
+
+```bash
+POSTGRES_PORT=5442 docker compose up -d postgres
+DATABASE_URL=postgres://prolobby:prolobby@localhost:5442/prolobby pnpm turbo e2e
+```
+
+O container continua na 5432 por dentro; muda só o mapeamento no host.
 
 ## Estrutura de código
 
