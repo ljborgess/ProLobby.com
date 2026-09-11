@@ -12,6 +12,29 @@ concurrency:
 jobs:
   lint-build-test:
     runs-on: ubuntu-latest
+
+    # Mesmos valores do docker-compose.yml da raiz — se divergirem, aparece o
+    # "funciona local, quebra no CI" que esta issue existe pra evitar (#67).
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: prolobby
+          POSTGRES_PASSWORD: prolobby
+          POSTGRES_DB: prolobby
+        ports:
+          - 5432:5432
+        # Sem o health check o job começa a testar com o banco ainda subindo,
+        # e a falha é intermitente — a pior de diagnosticar.
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgres://prolobby:prolobby@localhost:5432/prolobby
+
     steps:
       - uses: actions/checkout@v4
 

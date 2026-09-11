@@ -1,0 +1,73 @@
+name: Sub-issue técnica
+description: Uma entidade, endpoint, tela ou arquivo de config. Pequena o bastante pra virar 1 PR revisável.
+title: '<o que> — <recorte>'
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Se não cabe em 1 PR que dá pra revisar de uma sentada, é issue de fase, não sub-issue.
+
+  - type: input
+    id: pai
+    attributes:
+      label: Sub-issue de
+      description: Número da issue de fase. Depois de abrir, vincular de verdade (sub-issue nativo), não só citar aqui.
+      placeholder: '#30'
+    validations:
+      required: true
+
+  - type: textarea
+    id: o-que
+    attributes:
+      label: O quê
+      description: O recorte exato. Campos da entidade, assinatura do endpoint, o que a tela mostra.
+    validations:
+      required: true
+
+  - type: input
+    id: rfs
+    attributes:
+      label: RFs cobertos
+      placeholder: RF-024
+    validations:
+      required: true
+
+  - type: input
+    id: origem
+    attributes:
+      label: Origem no dossiê
+      placeholder: docs/requisitos/03-dados.md#conta
+    validations:
+      required: true
+
+  - type: textarea
+    id: dependencia
+    attributes:
+      label: Depende de
+      description: A peça específica que bloqueia. Registrar no *Blocked by* nativo depois de abrir.
+      placeholder: '#31 (entidade Conta)'
+    validations:
+      required: false
+
+  - type: textarea
+    id: passo-a-passo
+    attributes:
+      label: Passo a passo sugerido
+      description: Opcional. Útil quando há armadilha conhecida ou ordem que importa.
+      value: |
+        1.
+        2.
+    validations:
+      required: false
+
+  - type: textarea
+    id: aceite
+    attributes:
+      label: Critério de aceite
+      description: Inclui o teste que prova. Sem teste, o critério não é verificável.
+      value: |
+        - [ ]
+        - [ ] Teste cobrindo o critério acima
+    validations:
+      required: true

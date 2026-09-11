@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Roadmap de fases
+    url: https://github.com/ljborgess/ProLobby.com/issues/64
+    about: Sequência das 13 fases, divisão de trabalho e mapeamento das issues antigas. Só se abre issue da fase corrente.
+  - name: Fluxo de contribuição
+    url: https://github.com/ljborgess/ProLobby.com/blob/dev/CONTRIBUTING.md
+    about: Hierarquia PRD → issue → sub-issue, padrão de código, e a regra de review antes do merge.

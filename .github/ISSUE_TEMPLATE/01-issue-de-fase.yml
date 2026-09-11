@@ -1,0 +1,75 @@
+name: Issue de fase
+description: Peça grande de uma fase (schema, cadastro, auth do webhook, CI...). Vira sub-issue do PRD da fase.
+title: '<verbo no infinitivo> <o que> (<RFs>)'
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Só abrir issue da **fase corrente**. Fase futura existe como milestone e como linha da tabela do [PRD Mestre](../../issues/64) — issue aberta cedo demais envelhece antes de virar código.
+
+  - type: textarea
+    id: o-que
+    attributes:
+      label: O quê
+      description: O que passa a existir ou funcionar. Não é lista de arquivos.
+      placeholder: Entidade X com migration, endpoint Y aceitando Z...
+    validations:
+      required: true
+
+  - type: textarea
+    id: por-que
+    attributes:
+      label: Por quê
+      description: O que trava sem isso, ou que problema real resolve.
+    validations:
+      required: true
+
+  - type: input
+    id: rfs
+    attributes:
+      label: RFs cobertos
+      description: RF-001, RNF-016... Se não houver (infra, processo), escrever "nenhum" e dizer por quê.
+      placeholder: RF-019, RF-021, RF-072
+    validations:
+      required: true
+
+  - type: input
+    id: origem
+    attributes:
+      label: Origem no dossiê
+      description: Caminho do arquivo que decidiu isso. Requisito sem origem é requisito que alguém inventou.
+      placeholder: docs/produto/03-partida/02-fila.md
+    validations:
+      required: true
+
+  - type: textarea
+    id: dependencia
+    attributes:
+      label: Depende de
+      description: |
+        Qual **peça específica** bloqueia — não "a issue pai". Depois de abrir, registrar no *Blocked by* nativo (barra lateral), que é o que aparece como selo.
+      placeholder: '#31 (entidade Conta) — sem a tabela não há onde gravar'
+    validations:
+      required: false
+
+  - type: textarea
+    id: seguranca
+    attributes:
+      label: Checklist de segurança aplicável
+      description: Quais grupos de docs/requisitos/08-seguranca-checklist.md essa mudança toca (auth, banco, upload, API pública, segredo).
+      placeholder: 'Auth e sessão (6, 7, 9, 10) — cria endpoint autenticado'
+    validations:
+      required: false
+
+  - type: textarea
+    id: aceite
+    attributes:
+      label: Critério de aceite
+      description: Observável. "Funciona" não é critério; "endpoint devolve 409 quando o e-mail já existe" é.
+      value: |
+        - [ ]
+        - [ ]
+        - [ ]
+    validations:
+      required: true
