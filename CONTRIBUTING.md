@@ -26,13 +26,47 @@ Sem exceção, em qualquer PR:
 ## Fluxo de issue → PR → merge
 
 1. **Luciano atribui a issue** (campo `Assignee` do GitHub, não label/prefixo).
-2. Branch por issue/RF: `feat/rf-019-cadastro`, `fix/rf-024-link-expira`, etc.
+2. Branch por issue/RF: `feat/rf-019-cadastro`, `fix/rf-024-link-expira`, `chore/...`.
 3. Commit no padrão Conventional Commits (`commitlint.config.js` valida via Husky) — `feat:`, `fix:`, `chore:`, `test:`, `docs:`.
-4. Abrir PR contra `dev`, referenciando a issue (`Closes #N`), **deixado aberto pra review** — quem coda não faz merge sozinho, exceto Luciano.
-5. **Review**:
-   - PR do Rafael (ou do Felipe, quando ativo) → precisa de **1 approval do Luciano** antes de mergear. **É convenção, não trava técnica** — repo privado no plano Free não suporta branch protection com review obrigatório (confirmado via API, 2026-09-08). Quem tem `push` consegue mergear sem aprovação; a regra depende de disciplina, não do GitHub bloquear.
-   - PR do Luciano → mergeia direto após CI verde.
-6. CI (`.github/workflows/ci.yml`) precisa estar verde: lint, test, build.
+4. Abrir PR contra `dev` referenciando a issue (`Closes #N`). O template preenche sozinho — PR **sem issue vinculada não entra**.
+5. CI verde: format, lint, type-check, test, build, e2e e audit.
+
+### O PR fica aberto até as duas revisões — sem exceção
+
+**Nenhum PR é mergeado no mesmo movimento em que é aberto.** Vale pra todo mundo, inclusive pra quem tem permissão de mergear sozinho e inclusive com o CI verde:
+
+| Revisão | O que olha |
+|---|---|
+| **Code review** | corretude, aderência ao RF de origem, reuso do que já existe, ausência de abstração especulativa, teste cobrindo o critério de aceite da issue |
+| **Security review** | o recorte do [checklist de segurança](docs/requisitos/08-seguranca-checklist.md) marcado no PR foi conferido **por outra pessoa**, não só pelo autor |
+
+As duas são registradas no próprio PR (comentário ou approval), não em conversa paralela — quem for ler o histórico daqui a seis meses precisa ver que aconteceram.
+
+**Por que está escrito com esse peso**: branch protection não é trava técnica neste repo — privado no plano Free, decidido em [#66](https://github.com/ljborgess/ProLobby.com/issues/66) e registrado no [ADR-006](docs/adr/006-backend-separado-e-tooling.md). O GitHub **deixa** mergear sem aprovação. Então a regra só existe enquanto estiver escrita e for seguida: é disciplina declarada, não garantia da ferramenta.
+
+- PR do Rafael ou do Felipe → aprovação do Luciano nas duas dimensões antes do merge.
+- PR do Luciano → **também fica aberto**: pede code review e security review a outra pessoa do time. CI verde não substitui revisão humana, e quem escreveu o código é a pior pessoa pra revisar o próprio recorte de segurança.
+- Exceção única: correção de emergência com produção no ar — que não existe ainda, e quando existir vira ADR própria.
+
+### Rodando os testes localmente
+
+`pnpm turbo test` não precisa de nada. O **e2e do `apps/api` precisa de Postgres**:
+
+```bash
+docker compose up -d postgres
+pnpm turbo e2e
+```
+
+No CI o banco sobe como `services:` do workflow, com os mesmos usuário, senha e nome de banco do `docker-compose.yml` — é o que evita o "funciona local, quebra no CI".
+
+**Se a porta 5432 já estiver ocupada** por outra stack na máquina (comum em quem toca mais de um projeto), não edite o `docker-compose.yml`:
+
+```bash
+POSTGRES_PORT=5442 docker compose up -d postgres
+DATABASE_URL=postgres://prolobby:prolobby@localhost:5442/prolobby pnpm turbo e2e
+```
+
+O container continua na 5432 por dentro; muda só o mapeamento no host.
 
 ## Estrutura de código
 

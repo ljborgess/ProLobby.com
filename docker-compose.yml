@@ -6,8 +6,12 @@ services:
       POSTGRES_USER: prolobby
       POSTGRES_PASSWORD: prolobby
       POSTGRES_DB: prolobby
+    # Porta do host é sobrescrevível: outra stack na máquina pode já estar
+    # ocupando a 5432. `POSTGRES_PORT=5442 docker compose up -d postgres`
+    # resolve sem editar arquivo versionado — o container segue na 5432 por
+    # dentro, então só o DATABASE_URL local muda.
     ports:
-      - '5432:5432'
+      - '${POSTGRES_PORT:-5432}:5432'
     volumes:
       - prolobby-postgres-data:/var/lib/postgresql/data
 
