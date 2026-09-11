@@ -1,7 +1,6 @@
 import { MikroORM } from '@mikro-orm/postgresql'
 
 import config from '../src/common/database/mikro-orm.config'
-import { Account } from '../src/modules/account/account.entity'
 import { AccountPlan, AccountRole, AccountState } from '../src/modules/account/account.enums'
 
 /**
@@ -16,7 +15,7 @@ describe('account table', () => {
   let orm: MikroORM
 
   beforeAll(async () => {
-    orm = await MikroORM.init({ ...config, entities: [Account], entitiesTs: [Account] })
+    orm = await MikroORM.init(config)
     await orm.getSchemaGenerator().refreshDatabase()
   }, 60_000)
 

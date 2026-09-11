@@ -1,4 +1,4 @@
-import { Entity, Enum, Index, PrimaryKey, Property, Unique } from '@mikro-orm/core'
+import { Entity, Enum, Index, Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core'
 import { randomUUID } from 'node:crypto'
 
 import { AccountPlan, AccountRole, AccountState } from './account.enums'
@@ -12,7 +12,7 @@ import { AccountPlan, AccountRole, AccountState } from './account.enums'
 @Entity({ tableName: 'account' })
 export class Account {
   @PrimaryKey({ type: 'uuid' })
-  id: string = randomUUID()
+  id: string & Opt = randomUUID()
 
   @Property({ length: 320 })
   @Unique()
@@ -27,7 +27,7 @@ export class Account {
    * account can still see profiles, rankings and match history.
    */
   @Property({ default: false })
-  emailVerified: boolean = false
+  emailVerified: boolean & Opt = false
 
   /**
    * Birth date, not age: age is computed at sign-up and anything under 16 is
@@ -60,7 +60,7 @@ export class Account {
   discordId?: string
 
   @Enum({ items: () => AccountRole, default: AccountRole.USER })
-  role: AccountRole = AccountRole.USER
+  role: AccountRole & Opt = AccountRole.USER
 
   /**
    * 0–100, starts at 70 — neutral-high, giving a new account the benefit of
@@ -68,14 +68,14 @@ export class Account {
    * (docs/produto/02-jogador/02-ranking.md).
    */
   @Property({ type: 'smallint', default: 70 })
-  reputation: number = 70
+  reputation: number & Opt = 70
 
   @Enum({ items: () => AccountPlan, default: AccountPlan.NONE })
-  plan: AccountPlan = AccountPlan.NONE
+  plan: AccountPlan & Opt = AccountPlan.NONE
 
   @Enum({ items: () => AccountState, default: AccountState.UNVERIFIED })
   @Index()
-  state: AccountState = AccountState.UNVERIFIED
+  state: AccountState & Opt = AccountState.UNVERIFIED
 
   /**
    * When the 7-day suspension expires. This is what lets a job restore
@@ -90,5 +90,5 @@ export class Account {
   suspensionEndsAt?: Date
 
   @Property()
-  createdAt: Date = new Date()
+  createdAt: Date & Opt = new Date()
 }
