@@ -79,6 +79,56 @@ DATABASE_URL=postgres://prolobby:prolobby@localhost:5442/prolobby pnpm turbo e2e
 
 O container continua na 5432 por dentro; muda só o mapeamento no host.
 
+## Idioma: código em inglês, projeto em português
+
+**Todo código é em inglês. Sem exceção e sem mistura.** Nome de classe, variável, função, arquivo, coluna de banco, valor de enum, chave de JSON, mensagem de commit interna ao código, comentário e nome de teste — tudo inglês.
+
+**Todo o resto do projeto é em português**: dossiê (`docs/`), issue, PR, mensagem de commit, discussão. É onde a decisão de produto mora, e o time pensa em português.
+
+A fronteira é o artefato, nunca a linha: um arquivo `.ts` é inteiro em inglês, uma issue é inteira em português. O que não pode existir é `const contaVerificada = await findAccount()` — meia frase em cada idioma, que é o que obriga quem lê a traduzir mentalmente a cada linha.
+
+### Por quê
+
+- **Stack inteira é em inglês**: `findOne`, `createdAt`, `@Entity`, `beforeAll`. Código misto produz `contaRepository.findOneByEmail(email)` — três idiomas numa expressão.
+- **Plural e acento não sobrevivem a banco e URL**: `personagens`, `notificações`, `avaliação` viram `personagems`, `notificacoes`, `avaliacao`. O acento cai em algum lugar do caminho e o nome deixa de ser a palavra que era.
+- **Reverter depois é caro**: renomear coluna exige migration, e renomear classe exige tocar em tudo que importa dela.
+
+### Glossário — dossiê (pt) → código (en)
+
+O dossiê é a fonte da regra; o código traduz o nome, nunca o conceito. Quem implementar uma RF encontra o termo em português no requisito e o equivalente aqui:
+
+| Dossiê | Código | Onde |
+|---|---|---|
+| Conta | `Account` | `modules/account` |
+| Personagem | `Character` | `modules/character` |
+| GamertagPlataforma | `PlatformGamertag` | `modules/character` |
+| ClubeDeclarado | `DeclaredClub` | `modules/character` |
+| EnvioDePrint | `ScreenshotUpload` | `modules/character` |
+| EntradaFila | `QueueEntry` | `modules/queue` |
+| OcorrenciaRecusaFila | `QueueDeclineOccurrence` | `modules/queue` |
+| Lobby | `Lobby` | `modules/lobby` |
+| ParticipacaoLobby | `LobbyParticipation` | `modules/lobby` |
+| Report (de resultado) | `MatchReport` | `modules/result` |
+| EstatisticaPartida | `MatchStatistic` | `modules/result` |
+| Avaliacao | `PeerRating` | `modules/result` |
+| EventoElo / EventoReputacao | `EloEvent` / `ReputationEvent` | `modules/ranking` |
+| CasoModeracao | `ModerationCase` | `modules/moderation` |
+| LogAuditoria | `AuditLog` | `modules/moderation` |
+| IdentidadeBloqueada | `BlockedIdentity` | `modules/moderation` |
+| AceiteTos | `TermsAcceptance` | `modules/account` |
+| Notificacao | `Notification` | `modules/notification` |
+| EventoPagamento | `PaymentEvent` | `modules/account` |
+| EntregaEvento | `EventDelivery` | `modules/bot-integration` |
+| Capitão | `captain` | — |
+| Reputação / Elo | `reputation` / `elo` | — |
+| Categoria (posição) | `category` | — |
+
+Nome de módulo em `apps/api/src/modules/` e em `apps/web/src/modules/` segue o **inglês** da tabela; a label `area:*` da issue segue o **português**, porque issue é comunicação de time.
+
+### Exceção única
+
+Caminho de arquivo do dossiê citado em comentário fica como está (`docs/produto/03-partida/02-fila.md`) — é um caminho real, não texto. Vale também pra `RF-019` e afins: são identificadores, não palavras.
+
 ## Estrutura de código
 
 Espelha o `plataforma-b2ml` (mesma empresa, mesmo padrão já validado): **módulo por domínio, não por tipo de arquivo**. Nomes de domínio = mesmos das `area:*` labels.

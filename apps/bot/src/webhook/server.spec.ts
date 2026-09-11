@@ -7,7 +7,7 @@ describe('webhook server', () => {
   it('accepts a well-formed platform event', async () => {
     const res = await request(app).post('/events').send({
       id: '11111111-1111-1111-1111-111111111111',
-      type: 'lobby.fechado',
+      type: 'lobby.closed',
       occurredAt: new Date().toISOString(),
       payload: {},
     })
@@ -16,7 +16,7 @@ describe('webhook server', () => {
   })
 
   it('rejects a malformed event', async () => {
-    const res = await request(app).post('/events').send({ type: 'lobby.fechado' })
+    const res = await request(app).post('/events').send({ type: 'lobby.closed' })
 
     expect(res.status).toBe(400)
   })
