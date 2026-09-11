@@ -11,3 +11,9 @@ Antes de escrever ou revisar qualquer código de backend, autenticação, banco 
 ## Antes de commitar mudança em `docs/`
 
 `scripts/check-docs-links.sh` já roda via hook `PreToolUse` antes de `git commit` e bloqueia link quebrado ou arquivo órfão fora do índice — mas rodar manualmente antes de propor a mudança evita ida e volta.
+
+## Regra permanente: idioma
+
+**Código em inglês, projeto em português.** Identificador, comentário, nome de teste, coluna de banco e valor de enum: inglês, sempre. Dossiê, issue, PR e commit: português. A fronteira é o artefato, nunca a linha — nada de `contaVerificada` ao lado de `findAccount`.
+
+Glossário dossiê → código (Conta → `Account`, CasoModeracao → `ModerationCase`, etc.) em [CONTRIBUTING.md](CONTRIBUTING.md#idioma-código-em-inglês-projeto-em-português).

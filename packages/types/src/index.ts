@@ -1,7 +1,8 @@
 import { z } from 'zod'
 
-// Stub do contrato de evento webhook (RF-058, docs/discord/04-integracao.md).
-// Cresce junto com apps/api e apps/bot conforme cada RF-047..RF-062 é implementado.
+// Stub of the webhook event contract (RF-058, docs/discord/04-integracao.md).
+// Grows alongside apps/api and apps/bot as each of RF-047..RF-062 is built.
+// Issue #95 replaces the loose payload with a discriminated union per type.
 
 export const platformEventSchema = z.object({
   id: z.string().uuid(),

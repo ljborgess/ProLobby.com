@@ -1,8 +1,8 @@
 import express, { Express, Request, Response } from 'express'
 import { platformEventSchema } from '@prolobby/types'
 
-// Recebe evento da plataforma (RF-058). Testável isolado via evento fake
-// (curl) até apps/api existir de verdade — ver docs/discord/HANDOFF-bot.md.
+// Receives platform events (RF-058). Testable in isolation with a fake event
+// (curl) until apps/api actually exists — see docs/discord/HANDOFF-bot.md.
 export function createWebhookServer(): Express {
   const app = express()
   app.use(express.json())
@@ -13,7 +13,7 @@ export function createWebhookServer(): Express {
       res.status(400).json({ error: parsed.error.flatten() })
       return
     }
-    // TODO: rotear pro handler de cada RF-047..062 conforme parsed.data.type
+    // TODO: route to the handler for each of RF-047..062 based on parsed.data.type
     res.status(202).json({ received: true })
   })
 
