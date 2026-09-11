@@ -9,7 +9,8 @@ Documenta a estrutura do servidor Discord da comunidade ProLobby: cargos, canais
 3. [Bot: permissões e integração com moderação](03-bot.md)
 4. [Integração técnica plataforma ↔ bot](04-integracao.md)
 5. [Arquitetura do bot — implementação](05-arquitetura-bot.md)
-6. [Handoff — bot do Discord](HANDOFF-bot.md)
+6. [Runbook — montar o servidor do zero](06-runbook-servidor.md) — passo a passo de execução manual ([#70](https://github.com/ljborgess/ProLobby.com/issues/70))
+7. [Handoff — bot do Discord](HANDOFF-bot.md)
 
 ## Propriedade e convite do servidor
 

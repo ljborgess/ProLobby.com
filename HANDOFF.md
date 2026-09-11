@@ -20,17 +20,9 @@ Varredura do dossiê contra o scaffold rodou 4 vezes no total (a de 2026-09-08 a
 
 > **Nota de 2026-09-10**: os números de issue citados nesta seção (`#1`–`#5`) são os **antigos**, fechados e substituídos na reformulação de 2026-09-10 (ver seção "Estado atual" acima). Mapeamento: #1→#30, #2→#40, #3→#45, #4→#36, #5→#26. O conteúdo/achados abaixo continuam válidos, só a numeração mudou.
 
-### Decisão que só o time pode tomar (bloqueia processo)
+### Decisão fechada em 2026-09-11 — branch protection é convenção
 
-**Branch protection em `dev` é inexequível hoje.** O [ADR-006](docs/adr/006-backend-separado-e-tooling.md) decide que PR de Rafael/Felipe exige 1 approval do Luciano — mas `gh api repos/ljborgess/ProLobby.com/branches/dev/protection` devolve `403: Upgrade to GitHub Pro or make this repository public`. O repo é privado no plano Free, e quem tem permissão `push` **pode mergear o próprio PR sem aprovação de ninguém**. Hoje a regra é honra, não trava técnica.
-
-Três saídas, nenhuma tomada ainda:
-
-| Saída | Custo | Efeito colateral |
-|---|---|---|
-| Tornar o repo **público** | R$ 0 | destrava branch protection **e** SonarCloud (pergunta que o ADR-006 já deixou aberta); expõe dossiê de negócio, monetização e estratégia |
-| **GitHub Pro** | ~US$ 4/usuário/mês | colide com a regra de custo zero ([RF-072](docs/requisitos/05-funcionais.md#rf-072--cadastro-pausa-perto-do-teto-do-free-tier-sem-gasto-automático)) |
-| Assumir que é **convenção** | R$ 0 | registrar no ADR-006 que a regra é disciplina e não trava, pra ninguém confiar em garantia que não existe |
+O repo continua **privado, no plano Free**, e a regra de "PR de terceiro precisa de 1 approval do Luciano" é **disciplina declarada, não trava técnica** — o GitHub não impede o merge. Repo público (destravaria de graça, mas expõe monetização, rateio e estratégia) e GitHub Pro (primeiro gasto recorrente do projeto) foram avaliados e descartados; racional completo e gatilho de revisão no [ADR-006](docs/adr/006-backend-separado-e-tooling.md). Issue [#66](https://github.com/ljborgess/ProLobby.com/issues/66).
 
 ### Aberto no código (já viraram issue)
 
