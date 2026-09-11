@@ -3,8 +3,16 @@
   "testEnvironment": "node",
   "testRegex": "test/.*\\.e2e-spec\\.ts$",
   "transform": {
-    "^.+\\.ts$": ["ts-jest", { "tsconfig": { "module": "CommonJS" } }]
+    "^.+\\.ts$": [
+      "ts-jest",
+      {
+        "tsconfig": {
+          "module": "CommonJS"
+        }
+      }
+    ]
   },
   "moduleFileExtensions": ["js", "json", "ts"],
-  "testTimeout": 30000
+  "testTimeout": 30000,
+  "maxWorkers": 1
 }
