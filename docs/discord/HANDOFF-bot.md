@@ -5,7 +5,7 @@
 ## Decidido ([05-arquitetura-bot.md](05-arquitetura-bot.md))
 
 - Monorepo pnpm workspaces + Turborepo: `apps/web` (Next.js/TypeScript, só frontend), `apps/api` (NestJS, toda regra de negócio), `apps/bot` (Node.js + TypeScript + discord.js), `packages/types` (contrato do evento webhook).
-- Postgres self-hosted, MikroORM, JWT no NestJS — na mesma VM Oracle Cloud (São Paulo/Vinhedo). Ver [ADR-006](../adr/006-backend-separado-e-tooling.md), que corrige o ADR-005 nesses três pontos.
+- MikroORM e JWT no NestJS ([ADR-006](../adr/006-backend-separado-e-tooling.md)). Banco na Neon em São Paulo; `web`, `api` e `bot` na mesma VM Oracle Cloud em São Paulo, atrás da Cloudflare ([ADR-009](../adr/009-neon-cloudflare-vm.md)).
 - Escalabilidade: sharding desnecessário (1 servidor só), rate limit resolvido por execução sequencial (RF-059), fila de retry em memória no início.
 - Protocolo webhook, não polling — [ADR-003](../adr/003-webhook-nao-polling.md).
 - Escopo e permissões do bot — RF-047 a RF-062, [docs/discord/03-bot.md](03-bot.md).
@@ -22,7 +22,7 @@
 ## Riscos
 
 - Token do bot como ponto único de falha — **decidido (2026-09-08)**: sem rotação periódica agendada, rotaciona só sob suspeita de vazamento (ver [RNF-013](../requisitos/07-nao-funcionais.md#rnf-013--token-do-bot-só-em-variável-de-ambiente)).
-- Região de hospedagem — **decidido (2026-09-08)**: Oracle Cloud, São Paulo/Vinhedo (ver [Sustentabilidade](../negocio/03-sustentabilidade.md)).
+- Região de hospedagem — **decidido (2026-09-08), ajustado em 2026-09-14**: VM Oracle em São Paulo, banco na Neon em São Paulo ([ADR-009](../adr/009-neon-cloudflare-vm.md)).
 
 ## Referências
 

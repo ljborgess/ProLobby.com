@@ -33,12 +33,12 @@ RNF é o que o sistema tem que **ser**, não o que tem que **fazer**. Vive separ
 - Acima disso, o gargalo que aparece primeiro **não é o servidor**: 10 lobbies são 30 canais, e o teto do Discord é 500 (ver RF-053).
 - Não dimensionar pra 50: seria otimizar pra escala hipotética, princípio que o dossiê rejeita.
 - **Regra de custo (2026-09-08)**: aproximando do teto do free tier antes disso (capacidade Always Free caiu pra 2 OCPU/12GB em jun/2026), o sistema **pausa cadastro** em vez de forçar upgrade pago — [RF-072](05-funcionais.md#rf-072--cadastro-pausa-perto-do-teto-do-free-tier-sem-gasto-automático). Ideia ainda não validada não justifica gasto automático.
-- **Estimativa de capacidade (2026-09-08)**: Next.js + Postgres + bot (discord.js, 1 servidor só) somam ~1.2-2.5GB de RAM em carga leve, contra 12GB disponíveis — folga de 4-6x. CPU (2 OCPU) é o recurso mais apertado, mas a carga-alvo (I/O simples, OCR via Tesseract ~80-100x/mês) fica bem abaixo do que 2 núcleos processam. Estimativa baseada em [Next.js docs](https://nextjs.org/docs/app/guides/memory-usage), [Severalnines (Postgres)](https://severalnines.com/blog/setting-optimal-environment-postgresql/) e [Renzom (discord.js)](https://www.renzom.com/blog/discord-bot-ram-sizing-2026), não medição real — confirmar com monitoramento assim que a plataforma estiver no ar.
+- **Estimativa de capacidade (2026-09-08)**: Next.js + Postgres + bot (discord.js, 1 servidor só) somam ~1.2-2.5GB de RAM em carga leve, contra 12GB disponíveis — folga de 4-6x. _(Desde o [ADR-009](../adr/009-neon-cloudflare-vm.md), o Postgres roda na Neon e sai dessa conta; na VM ficam web, API, bot e `cloudflared`.)_ CPU (2 OCPU) é o recurso mais apertado, mas a carga-alvo (I/O simples, OCR via Tesseract ~80-100x/mês) fica bem abaixo do que 2 núcleos processam. Estimativa baseada em [Next.js docs](https://nextjs.org/docs/app/guides/memory-usage), [Severalnines (Postgres)](https://severalnines.com/blog/setting-optimal-environment-postgresql/) e [Renzom (discord.js)](https://www.renzom.com/blog/discord-bot-ram-sizing-2026), não medição real — confirmar com monitoramento assim que a plataforma estiver no ar.
 
 ### RNF-005 · Crescimento de armazenamento limitado pela retenção
 **Origem**: [produto/04-governanca/02-lgpd.md](../produto/04-governanca/02-lgpd.md)
 
-**Aceite**: o volume de imagens tem teto, porque a limpeza diária de 90 dias corta o acúmulo. Histórico de partida cresce indefinidamente, mas é texto — ver a retenção de cada coisa em [parâmetros](../produto/parametros.md).
+**Aceite**: o volume de imagens tem teto, porque a retenção de 90 dias corta o acúmulo — por regra de lifecycle do bucket ([ADR-009](../adr/009-neon-cloudflare-vm.md)). Histórico de partida cresce indefinidamente, mas é texto — ver a retenção de cada coisa em [parâmetros](../produto/parametros.md).
 
 ## Disponibilidade e recuperação
 
@@ -53,6 +53,8 @@ RNF é o que o sistema tem que **ser**, não o que tem que **fazer**. Vive separ
 **Aceite**: coerente com o backup diário já decidido — no pior caso perde-se um dia de partidas, elo e reputação. A restauração completa cabe em 24 h, e isso é **verificado no teste de restauração** obrigatório antes do primeiro usuário externo.
 
 Ter o número escrito é o que transforma "tem backup" em compromisso verificável. Sem prazo declarado, ninguém testa — e backup nunca testado não é backup.
+
+**Como cumpre (2026-09-14, [ADR-009](../adr/009-neon-cloudflare-vm.md))**: `pg_dump` diário, criptografado, 30 dias no Oracle Object Storage em São Paulo. O teste de restauração é antecipado pro **primeiro deploy interno**, logo depois de a Fase 2.1 fechar, num projeto Neon novo.
 
 ### RNF-008 · Queda do Discord ou teto de canais pausa a fila, não derruba a plataforma
 **Origem**: [discord/04-integracao.md](../discord/04-integracao.md)

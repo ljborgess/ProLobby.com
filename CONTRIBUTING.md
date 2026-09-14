@@ -164,6 +164,13 @@ Dentro de um módulo: `*.controller.ts`, `*.service.ts`, `*.module.ts` e `*.spec
 - **RF-047 a RF-062 (exceto 058/059)**: cada RF é emitida como evento pelo módulo de domínio dono do gatilho (ex.: `lobby` emite quando cria/apaga canal, `moderacao` emite quando aplica punição), e `bot-integration` escuta qualquer evento marcado pra ir pro Discord e entrega via webhook — não decide regra de negócio nenhuma, reforça o que [ADR-003](docs/adr/003-webhook-nao-polling.md) já dizia (bot burro, regra na plataforma). **Qual módulo de domínio é dono de cada RF específica dessa faixa fica pra quando a Fase 3 abrir** — decidir agora seria documentar fase futura em detalhe antes da hora, o mesmo erro que já corrigimos quando as issues #1-#5 foram fechadas e reabertas em PRD/issue/sub-issue.
 - **RF-047, RF-048, RF-062 não têm código em `apps/api`** — são ausência de feature (047), checagem nativa do Discord.js (048) ou processo operacional + checagem no boot do bot (062). Não procurar controller/service pra elas na API.
 
+**Banco na Neon — regras que o ambiente impõe (decidido em 2026-09-14, [ADR-009](docs/adr/009-neon-cloudflare-vm.md))**. Valem desde já, mesmo com o desenvolvimento local em Docker, porque o erro só aparece em produção:
+
+1. **Nada consulta o banco em ciclo com o sistema parado.** Tick de fila só com gente na fila; retry de evento só com entrega pendente; scheduler diário. Um `setInterval` esquecido mantém a Neon acordada 24 horas e estoura o plano grátis sem ninguém perceber.
+2. **O pool começa com zero conexões e reconecta sozinho.** A Neon derruba conexões paradas quando hiberna.
+3. **Nada que dependa de sessão do Postgres**: sem `SET` de sessão, sem `LISTEN/NOTIFY`, sem advisory lock de sessão. O PgBouncer em modo transação divide conexões entre requisições — funciona no teste local e falha em produção. **Consequência pra Fase 2.5**: o tempo real da fila ([RNF-003](docs/requisitos/07-nao-funcionais.md#rnf-003--estado-da-fila-atualiza-em-menos-de-3-s)) vai por WebSocket ou SSE na própria API.
+4. **A API usa a role `prolobby_app` (sem DDL)**; migration roda com `prolobby_owner` pela URL direta. Tabela nova precisa estar coberta pelo `ALTER DEFAULT PRIVILEGES`.
+
 ### `apps/web` (Next.js App Router)
 
 ```

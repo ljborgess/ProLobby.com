@@ -22,7 +22,7 @@ Gerenciador: pnpm workspaces + Turborepo. A separação `web`/`api` veio do [ADR
 
 **Por que monorepo:** custo de montar é baixo (workspaces), evita separar depois quando `web` e `bot` precisarem compartilhar o contrato do evento webhook.
 
-**Por que `apps/bot` separado dos outros:** o bot mantém conexão persistente com o gateway do Discord (websocket) — não roda em ambiente serverless/edge. Processo próprio na mesma VM Oracle Cloud (São Paulo/Vinhedo) que roda `web`, `api` e Postgres. Quem chama o bot via HTTP (webhook) é a **`api`**, não o `web` — é ela que decide regra de negócio ([ADR-006](../adr/006-backend-separado-e-tooling.md)).
+**Por que `apps/bot` separado dos outros:** o bot mantém conexão persistente com o gateway do Discord (websocket) — não roda em ambiente serverless/edge. Processo próprio na mesma VM Oracle Cloud (São Paulo) que roda `web` e `api`, no mesmo Docker Compose; o Postgres fica na Neon, em São Paulo ([ADR-009](../adr/009-neon-cloudflare-vm.md)). A chamada `api` → `bot` passa pela rede interna do Docker, sem porta publicada. Quem chama o bot via HTTP (webhook) é a **`api`**, não o `web` — é ela que decide regra de negócio ([ADR-006](../adr/006-backend-separado-e-tooling.md)).
 
 ## Ordem de implementação
 
@@ -43,4 +43,4 @@ Gerenciador: pnpm workspaces + Turborepo. A separação `web`/`api` veio do [ADR
 ## Riscos
 
 - Token do bot como ponto único de falha — **decidido (2026-09-08)**: sem rotação periódica agendada, rotaciona só sob suspeita de vazamento (ver [RNF-013](../requisitos/07-nao-funcionais.md#rnf-013--token-do-bot-só-em-variável-de-ambiente)).
-- Região de hospedagem — **decidido (2026-09-08)**: Oracle Cloud, São Paulo/Vinhedo, dado nunca sai do Brasil (ver [Sustentabilidade](../negocio/03-sustentabilidade.md)).
+- Região de hospedagem — **decidido (2026-09-08), ajustado em 2026-09-14**: VM Oracle Cloud em São Paulo, banco na Neon em São Paulo, Cloudflare na frente. Dado armazenado nunca sai do Brasil ([ADR-009](../adr/009-neon-cloudflare-vm.md)).

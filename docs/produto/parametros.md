@@ -107,7 +107,7 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 | Duração da sessão (JWT) | 7 dias fixos, sem renovação | [ADR-007](../adr/007-sessao-jwt.md) |
 | Contas por e-mail | 1 (chave única) | [Onboarding](05-produto/01-onboarding.md) |
 | Sessões simultâneas por conta | sem limite | [Onboarding](05-produto/01-onboarding.md) |
-| Retenção de prints (imagem) | 90 dias (limpeza diária automática) | [LGPD](04-governanca/02-lgpd.md) |
+| Retenção de prints (imagem) | 90 dias (regra de lifecycle do bucket) | [LGPD](04-governanca/02-lgpd.md) |
 | Retenção de histórico de partida | indefinida | [LGPD](04-governanca/02-lgpd.md) |
 | Retenção de log de evento (elo/reputação) | indefinida | [LGPD](04-governanca/02-lgpd.md) |
 | Retenção de comprovante de pagamento | nenhuma — descartado na confirmação | [LGPD](04-governanca/02-lgpd.md) |
@@ -166,6 +166,20 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 | Lobbies simultâneos suportados | 10 (80 a 220 pessoas) | [RNF-004](../requisitos/07-nao-funcionais.md) |
 | Perda máxima de dado em desastre | 24 h | [RNF-007](../requisitos/07-nao-funcionais.md) |
 | Prazo de restauração | 24 h, com teste obrigatório | [RNF-007](../requisitos/07-nao-funcionais.md) |
+
+## Infraestrutura
+
+| Parâmetro | Valor | Onde é decidido |
+|---|---|---|
+| Backup do banco | `pg_dump` diário, criptografado, retido 30 dias no Object Storage (São Paulo) | [ADR-009](../adr/009-neon-cloudflare-vm.md) |
+| Histórico de restauração da Neon (camada extra) | 6 h (fixo no plano grátis) | [ADR-009](../adr/009-neon-cloudflare-vm.md) |
+| Hibernação do banco | depois de 5 min parado | [ADR-009](../adr/009-neon-cloudflare-vm.md) |
+| Consulta de cotas dos planos grátis | a cada 6 h | [ADR-009](../adr/009-neon-cloudflare-vm.md) |
+| Alerta — Neon armazenamento (0,5 GB) e compute (100 CU-h/mês) | 70% e 90% | [RF-072](../requisitos/05-funcionais.md) |
+| Alerta — Neon saída (5 GB/mês) | 60% e 80% | [RF-072](../requisitos/05-funcionais.md) |
+| Alerta — Object Storage (20 GB) | 80% | [RF-072](../requisitos/05-funcionais.md) |
+| Pausa de cadastro — e-mail | 90% do teto diário do provedor | [RF-072](../requisitos/05-funcionais.md) |
+| Domínio | `.com.br`, ~R$ 40/ano | [ADR-009](../adr/009-neon-cloudflare-vm.md) |
 | Retenção do log de auditoria | 2 anos | [RNF-012](../requisitos/07-nao-funcionais.md) |
 | Navegadores suportados | 2 últimas versões de Chrome, Safari, Firefox, Edge — desktop e celular | [RNF-014](../requisitos/07-nao-funcionais.md) |
 | Resposta de ação comum | menos de 1 s (p95) | [RNF-001](../requisitos/07-nao-funcionais.md) |

@@ -36,4 +36,14 @@ Com corte em 16 anos, **a base inclui menores de idade** — e a LGPD (art. 14) 
 - **Aceite versionado**: plataforma registra qual versão do ToS cada jogador aceitou e quando. Mudança material (ex.: quando entrar monetização) exige novo aceite antes de continuar usando — exigência prática de LGPD, já que consentimento precisa ser rastreável. Barato se o schema nascer com o campo (ver [Onboarding](../05-produto/01-onboarding.md)).
 - Publicados em **português e espanhol**, acompanhando o idioma da plataforma (ver [Escopo de plataforma, jogo e região](../05-produto/02-escopo.md)).
 - Motivo: coleta de print, foto, Discord ID e gamertag sem aviso formal é risco jurídico direto, não só decisão de produto — complementa a política de retenção/exclusão de [Dados pessoais e LGPD](02-lgpd.md).
+- **Operadores declarados na Política de Privacidade (decidido em 2026-09-14, [ADR-009](../../adr/009-neon-cloudflare-vm.md))** — a promessa é "dado **armazenado** nunca sai do Brasil", e o que trafega fora dele é dito:
+
+  | Operador | O que faz | Onde fica o dado | Base legal |
+  |---|---|---|---|
+  | Neon (empresa dos EUA) | banco de dados | armazenado em São Paulo | execução de contrato |
+  | Oracle | servidor, prints, backups | São Paulo | execução de contrato |
+  | Cloudflare (empresa dos EUA) | DNS, proteção contra ataque, trânsito das requisições (IP, cookie, cabeçalhos) | processamento na rede global — transferência internacional declarada | execução de contrato + legítimo interesse (segurança) |
+  | Provedor de e-mail ([ADR-008](../../adr/008-provedor-de-email.md)) | e-mail transacional | exterior | execução de contrato |
+
+  Entra na mesma consulta jurídica das pendências acima — é um parágrafo a mais, não item novo.
 - Cobre também o consentimento de **uso do clube EA declarado pelo jogador** (ver [Personagens e verificação](../02-jogador/01-verificacao.md)) — ao declarar clube com vaga, jogador é avisado explicitamente que autoriza até 10 jogadores de outro lobby serem convidados temporariamente pro clube quando escolhido capitão.
