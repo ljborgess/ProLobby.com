@@ -1,4 +1,4 @@
-import express, { Express, Request, Response } from 'express'
+import express, { Express, NextFunction, Request, Response } from 'express'
 import {
   WEBHOOK_MAX_SKEW_MS,
   WEBHOOK_SIGNATURE_HEADER,
@@ -7,13 +7,14 @@ import {
   verifyWebhookSignature,
 } from '@prolobby/types'
 
-type RequestWithRawBody = Request & { rawBody?: Buffer }
+import { SlidingWindowLimiter, WEBHOOK_BODY_LIMIT, type Clock } from './rate-limit'
 
-export type WebhookClock = { now(): Date }
+type RequestWithRawBody = Request & { rawBody?: Buffer }
 
 export type WebhookServerOptions = {
   secret: string
-  clock?: WebhookClock
+  clock?: Clock
+  limiter?: SlidingWindowLimiter
 }
 
 /**
@@ -25,11 +26,13 @@ export type WebhookServerOptions = {
  * on nobody having forwarded a path.
  */
 export function createWebhookServer(options: WebhookServerOptions): Express {
-  const clock: WebhookClock = options.clock ?? { now: () => new Date() }
+  const clock: Clock = options.clock ?? { now: () => new Date() }
+  const limiter = options.limiter ?? new SlidingWindowLimiter(clock)
 
   const app = express()
   app.use(
     express.json({
+      limit: WEBHOOK_BODY_LIMIT,
       verify: (req: RequestWithRawBody, _res, buf) => {
         req.rawBody = buf
       },
@@ -41,6 +44,13 @@ export function createWebhookServer(options: WebhookServerOptions): Express {
     const rawBody = req.rawBody ?? Buffer.from('')
     if (!verifyWebhookSignature(options.secret, rawBody, signature)) {
       res.status(401).json({ error: 'invalid_signature' })
+      return
+    }
+
+    // After HMAC: unsigned floods must not spend the global budget. 429 is for
+    // a retry loop in the API (issue #94), not for anyone who can reach the port.
+    if (!limiter.allow()) {
+      res.status(429).json({ error: 'rate_limited' })
       return
     }
 
@@ -59,7 +69,23 @@ export function createWebhookServer(options: WebhookServerOptions): Express {
     res.status(202).json({ received: true })
   })
 
+  app.use((err: unknown, _req: Request, res: Response, next: NextFunction) => {
+    if (isPayloadTooLarge(err)) {
+      res.status(413).json({ error: 'payload_too_large' })
+      return
+    }
+    next(err)
+  })
+
   return app
+}
+
+function isPayloadTooLarge(err: unknown): boolean {
+  if (typeof err !== 'object' || err === null) {
+    return false
+  }
+  const typed = err as { status?: number; type?: string }
+  return typed.status === 413 || typed.type === 'entity.too.large'
 }
 
 export function readWebhookSecret(): string {
