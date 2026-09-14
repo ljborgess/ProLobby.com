@@ -1,5 +1,13 @@
 import { Transform } from 'class-transformer'
-import { IsDateString, IsEmail, IsString, Length, MaxLength, MinLength } from 'class-validator'
+import {
+  IsDateString,
+  IsEmail,
+  IsString,
+  Length,
+  Matches,
+  MaxLength,
+  MinLength,
+} from 'class-validator'
 
 /**
  * Sign-up payload — RF-019.
@@ -59,4 +67,15 @@ export class SignUpDto {
   @Length(2, 200)
   @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   securityAnswer!: string
+
+  /**
+   * The terms version the person was shown and accepted — RF-026.
+   *
+   * Required: an account born without a recorded acceptance would have used the
+   * platform with no traceable consent, which is what LGPD asks for in
+   * practice. Must equal the current version; the service refuses anything
+   * else so a stale form cannot record consent to text nobody is showing.
+   */
+  @Matches(/^\d{4}-\d{2}-\d{2}$/)
+  acceptedTermsVersion!: string
 }

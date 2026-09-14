@@ -3,6 +3,8 @@ import { Controller, Get, type INestApplication } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
 import request from 'supertest'
 
+import { CURRENT_TERMS_VERSION } from '../src/modules/account/terms.constants'
+
 import { AppModule } from '../src/app.module'
 import { HashService } from '../src/common/auth/hash.service'
 import { AllowStates } from '../src/common/auth/auth.decorators'
@@ -37,6 +39,7 @@ const signUpBody = (email: string) => ({
   birthDate: '1990-05-20',
   securityQuestion: 'Qual o nome do seu primeiro time?',
   securityAnswer: 'São Paulo',
+  acceptedTermsVersion: CURRENT_TERMS_VERSION,
 })
 
 describe('sessions', () => {

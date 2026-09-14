@@ -3,6 +3,8 @@ import { Test } from '@nestjs/testing'
 import type { INestApplication } from '@nestjs/common'
 import request from 'supertest'
 
+import { CURRENT_TERMS_VERSION } from '../src/modules/account/terms.constants'
+
 import { AppModule } from '../src/app.module'
 import { applySecurity } from '../src/common/security/security.config'
 import { MailSender, TransactionalEmail, type OutgoingEmail } from '../src/common/mail/mail.types'
@@ -43,6 +45,7 @@ const signUpBody = (email: string) => ({
   birthDate: '1990-05-20',
   securityQuestion: 'Qual o nome do seu primeiro time?',
   securityAnswer: 'São Paulo',
+  acceptedTermsVersion: CURRENT_TERMS_VERSION,
 })
 
 describe('email verification', () => {

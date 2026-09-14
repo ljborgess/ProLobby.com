@@ -12,8 +12,13 @@ import type { Request } from 'express'
 
 import { Account } from '../../modules/account/account.entity'
 import { AccountState } from '../../modules/account/account.enums'
+import { TermsAcceptance } from '../../modules/account/terms-acceptance.entity'
+import {
+  CURRENT_TERMS_VERSION,
+  LATEST_MATERIAL_TERMS_VERSION,
+} from '../../modules/account/terms.constants'
 import { SESSION_COOKIE_NAME } from '../security/session-cookie'
-import { ALLOWED_STATES, IS_PUBLIC } from './auth.decorators'
+import { ALLOWED_STATES, IS_PUBLIC, SKIP_TERMS_CHECK } from './auth.decorators'
 import type { SessionTokenPayload } from './session.constants'
 
 /**
@@ -78,7 +83,8 @@ export class SessionGuard implements CanActivate {
 
     // fork() because the guard runs outside the request's ORM context. What it
     // returns is read-only for handlers — see RequestWithAccount.
-    const account = await this.em.fork().findOne(Account, { id: payload.sub })
+    const em = this.em.fork()
+    const account = await em.findOne(Account, { id: payload.sub })
 
     // A valid token for an account that no longer exists: LGPD deletion, in
     // practice. Never a 403 — there is nothing to forbid.
@@ -100,6 +106,38 @@ export class SessionGuard implements CanActivate {
         // find its way to the appeal.
         state: account.state,
       })
+    }
+
+    const skipTermsCheck = this.reflector.getAllAndOverride<boolean>(SKIP_TERMS_CHECK, [
+      context.getHandler(),
+      context.getClass(),
+    ])
+
+    // RF-026: after a material change, the account is held at the acceptance
+    // screen until it accepts. Checked after the state, so a suspended or
+    // banned account is told about its state first — that is the more urgent
+    // thing to know.
+    //
+    // Banned accounts are exempt. What a banned person reaches is its own
+    // punishment and the appeal (RF-081): that is exercising a right, not
+    // using the platform, and conditioning an appeal on accepting new terms
+    // would make the right depend on consent.
+    if (!skipTermsCheck && account.state !== AccountState.BANNED) {
+      const accepted = await em.count(TermsAcceptance, {
+        account: account.id,
+        // Versions are ISO dates, so "at or after the last material change" is
+        // a string comparison. A non-material revision does not ask anyone again.
+        version: { $gte: LATEST_MATERIAL_TERMS_VERSION },
+      })
+
+      if (accepted === 0) {
+        throw new ForbiddenException({
+          message: 'terms_acceptance_required',
+          // What the front end needs to render the acceptance screen, and no
+          // more.
+          currentVersion: CURRENT_TERMS_VERSION,
+        })
+      }
     }
 
     request.account = account
