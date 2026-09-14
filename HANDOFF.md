@@ -6,10 +6,14 @@ Pra quem (Claude Code, outra sessão/máquina) for continuar este projeto a part
 
 Ver [`README.md`](README.md). Origem: ideia nasceu numa sessão sobre o projeto `escalacao-brasileirao` (Django, escalação de Brasileirão via API), mas ProLobby é **projeto novo e independente** — só a identidade visual (design system) foi herdada de lá, nada de backend/dados.
 
-## Estado atual (2026-09-11)
+## Estado atual (2026-09-14)
 
-- **Fase**: design de produto e requisitos fechados; **engenharia começou**. Scaffold do monorepo commitado (Turborepo + pnpm: `apps/web` Next.js, `apps/api` NestJS+MikroORM, `apps/bot` discord.js) — ainda é esqueleto, sem regra de negócio.
-- **Tracker reconstruído fase a fase (2026-09-11)**: índice vivo é **[#64 — PRD Mestre](https://github.com/ljborgess/ProLobby.com/issues/64)**, com as 13 fases em ordem de execução, a divisão de trabalho (Luciano no caminho crítico, Rafael no paralelo) e o mapeamento das issues antigas. Regra nova: **só a fase corrente tem issue**; fase futura existe como milestone e linha da tabela do #64. A **Fase 1** (infra de CI, processo de PR e servidor Discord) está aberta em #65–#70; as issues #25–#63 vão sendo fechadas como `not planned` conforme cada fase é reconstruída — já foram #26–#29, #49 e #51.
+- **Fase**: design de produto e requisitos fechados; **engenharia em andamento**. **Fase 1** (CI, processo de PR, servidor Discord) concluída em 2026-09-11. **Fase 2.1** (núcleo de conta) em andamento, com 11 de 26 issues fechadas: schema base, segurança transversal da API, cadastro, login e sessão ([ADR-007](docs/adr/007-sessao-jwt.md)), verificação de e-mail ([ADR-008](docs/adr/008-provedor-de-email.md)) e aceite de Termos já estão em `dev`.
+- **Time de código: três devs ativos desde 2026-09-14.** Luciano no caminho crítico (Claude Code), Rafael no paralelo de bot e infra (Cursor), Felipe no paralelo de produto visível (Claude Code). A ordem de cada um está no [grafo da Fase 2.1](CONTRIBUTING.md#grafo-vivo--fase-21-núcleo-de-conta-trabalho-aberto-em-2026-09-14) e no #64.
+- **Review**: PR do Rafael e do Felipe precisa da aprovação do Luciano. PR do Luciano é revisado por ele mesmo, com code review e security review do agente publicados no PR ([CONTRIBUTING](CONTRIBUTING.md#quem-revisa-o-pr-do-luciano-decidido-em-2026-09-14)).
+- **Quem entra pra codar** começa por [`docs/time/`](docs/time/README.md): primeiro dia, fluxo de uma issue, regras que já pegaram bug, Claude Code e Cursor.
+- **Tempo estimado**: beta pronto entre o fim de dezembro de 2026 e o início de março de 2027; abertura pública entre meados de janeiro e meados de abril de 2027. É estimativa com faixa, não prazo. Premissas, riscos e regra de recalibração em [Ordem de implementação](docs/negocio/02-implementacao.md).
+- **Tracker fase a fase**: índice vivo é **[#64 — PRD Mestre](https://github.com/ljborgess/ProLobby.com/issues/64)**, com as 13 fases em ordem, a divisão de trabalho, a estimativa e o mapeamento das issues antigas. **Só a fase corrente tem issue**; fase futura existe como milestone e linha da tabela do #64. As issues #25–#63 são fechadas como `not planned` quando a fase que as cobre é reconstruída.
 - **Auditoria de fluxo de 2026-09-11**: varredura ponta a ponta do dossiê fechou **24 achados** — 6 quebras de fluxo (estado `expirada_sem_report` inalcançável, suspensão que virava banimento sozinha, capitão punido por falta de vaga, RF-066 disparando em partida legítima, deadlock de moderação, beta sem trava), 6 lacunas de modelo de dados, 7 ambiguidades e 5 de processo. Nasceram **RF-074 a RF-080** e 4 entidades novas; as 36 h de zero-report e o critério de "qualquer vaga > 0" foram revogados. **Ler [`docs/research/auditoria-2026-09-11.md`](docs/research/auditoria-2026-09-11.md) antes de implementar fila, lobby, resultado ou moderação** — várias regras mudaram de comportamento, não só de texto. Abriu também [#62](https://github.com/ljborgess/ProLobby.com/issues/62) (entidade `CasoModeracao`, sub-issue de #30) e [#63](https://github.com/ljborgess/ProLobby.com/issues/63) (rodar o checklist no jogo, que era o único bloqueador sem issue).
 - **Branches**: só `main` e `dev`. Trabalho corre em `dev`; `main` só recebe merge quando o time decidir promover.
 - Todo o conteúdo abaixo está commitado em `dev`.
@@ -45,16 +49,16 @@ O repo continua **privado, no plano Free**, e a regra de "PR de terceiro precisa
 - `README.md` dizia "desenvolvimento de código é solo".
 - Issues #1–#3 tinham erro de conteúdo: a #1 descrevia `Conta` com campos que não batiam com `03-dados.md` e tratava `AceiteTos` como campo em vez de entidade; a #2 não citava a **RF-072**, que é exceção explícita da própria RF-019 que ela implementa.
 
-### Ordem sugerida pra retomar
+### Ordem sugerida pra retomar (atualizada em 2026-09-14)
 
-Sequência canônica agora vive em **[#64 — PRD Mestre](https://github.com/ljborgess/ProLobby.com/issues/64)**. O que fazer primeiro:
+Sequência canônica em **[#64 — PRD Mestre](https://github.com/ljborgess/ProLobby.com/issues/64)**. A Fase 1 inteira (#66–#70) já fechou. Agora:
 
-1. **[#66](https://github.com/ljborgess/ProLobby.com/issues/66)** — decidir repo público vs GitHub Pro vs convenção. É decisão de sócio, não de implementação, e o template de PR (#68) depende dela.
-2. **[#67](https://github.com/ljborgess/ProLobby.com/issues/67)** (Postgres no CI) — sem isso o primeiro PR de schema quebra por infraestrutura.
-3. **[#70](https://github.com/ljborgess/ProLobby.com/issues/70)** (servidor Discord) e **[#68](https://github.com/ljborgess/ProLobby.com/issues/68)**/**[#69](https://github.com/ljborgess/ProLobby.com/issues/69)** (templates) — correm em paralelo.
-4. **[#63](https://github.com/ljborgess/ProLobby.com/issues/63)** (checklist no jogo) a qualquer momento: não bloqueia código novo, mas bloqueia RF-051/052/055 e três parâmetros "a calibrar".
-5. Fechada a Fase 1, abrir a **Fase 2.1** (núcleo de conta) pelo mesmo caminho — PRD, issues, sub-issues — e fechar as antigas #30/#40/#45 e suas filhas apontando pras substitutas.
-6. ~~Convidar o **Felipe** de novo~~ — entrou em 2026-09-14. Rafael e Felipe começam pelo [guia do time](docs/time/README.md).
+1. **Fechar a Fase 2.1** pelo grafo: Luciano #90 → #91 → #104; Rafael #81 → #93 → #94/#95; Felipe #106 → #87 → #101.
+2. **[#50](https://github.com/ljborgess/ProLobby.com/issues/50) — piloto de OCR**, emendado pelo Rafael no fim do webhook. Precisa sair **antes da Fase 2.2**, porque escolhe o motor de OCR.
+3. **[#63](https://github.com/ljborgess/ProLobby.com/issues/63) — checklist no jogo**, antes de a **Fase 3** começar. São minutos de jogo; a partir da 3, o retrabalho fica caro.
+4. Fechada a 2.1, abrir a **2.2** (Rafael + Felipe) e a **2.3** (Luciano) em paralelo, pelo caminho PRD → issues → sub-issues.
+5. **Convite pendente pra `jgbriel-io`** no repo. Se aceitar, passam a ser 4 pessoas com `push`, o que dispara o gatilho de revisão de branch protection do [ADR-006](docs/adr/006-backend-separado-e-tooling.md).
+6. **Recrutamento dos ~24 convidados do beta** começa agora, em paralelo. É a única etapa que não depende de código ([Lançamento](docs/negocio/04-lancamento.md)).
 
 ## Os dois bloqueadores — leia isto antes de qualquer coisa
 
@@ -78,12 +82,13 @@ docs/
 │   └── 05-produto/   01-onboarding · 02-escopo · 03-backlog
 ├── requisitos/   O QUE o sistema faz — comportamento verificável
 │   ├── 01-transversais · 02-estados · 03-dados · 04-notificacoes
-│   ├── 05-funcionais       RF-001 a RF-080
+│   ├── 05-funcionais       RF-001 a RF-081
 │   ├── 06-piloto-ocr       bloqueador nº 2
-│   ├── 07-nao-funcionais   RNF-001 a RNF-020
-│   └── 08-seguranca-checklist   18 itens, aplicar desde a 1ª linha de código de backend
-├── adr/          decisão técnica difícil de reverter (001 a 006; 005/006 são a stack)
+│   ├── 07-nao-funcionais   RNF-001 a RNF-021
+│   └── 08-seguranca-checklist   18 itens + 9b, aplicar desde a 1ª linha de código de backend
+├── adr/          decisão técnica difícil de reverter (001 a 008; 005/006 stack, 007 sessão, 008 e-mail)
 ├── research/     auditorias do dossiê (a de 2026-09-11 mudou regra, não só texto)
+├── time/         guia de quem coda: primeiro dia · fluxo da issue · regras · Claude Code e Cursor
 ├── discord/      01-cargos · 02-canais · 03-bot · 04-integracao
 └── negocio/      01-mercado · 02-implementacao · 03-sustentabilidade · 04-lancamento
 ```
@@ -142,4 +147,4 @@ Tabela completa em `produto/05-produto/03-backlog.md`. Nenhuma é de requisito:
 
 Os 4 (Luciano, Rafael, João, Felipe) trabalham em conjunto, sem papel fixo por disciplina. Não é pendência, é decisão tomada.
 
-**Recorte de código (2026-09-08)**: dentro da parte de desenvolvimento especificamente, **Luciano e Rafael codam**. Felipe foi convidado pro repo (`LipeLou`) mas ainda não entrou — quando aceitar, mesma função do Rafael. Luciano lidera de fato (mais investido, dono do contexto completo do dossiê) — atribui issue, revisa e aprova PR do Rafael (e do Felipe, quando ativo). Não reabre a decisão acima sobre papel fixo no projeto como um todo, só descreve como o fluxo de código funciona (ver [ADR-006](docs/adr/006-backend-separado-e-tooling.md)).
+**Recorte de código (atualizado em 2026-09-14)**: dentro do desenvolvimento, **Luciano, Rafael e Felipe codam**. O trabalho é dividido **por área, pra paralelizar**, não por papel fixo: Luciano no caminho crítico, Rafael em bot e infra, Felipe em produto visível. Luciano lidera de fato (dono do contexto completo do dossiê): atribui issue e aprova os PRs do Rafael e do Felipe; o PR dele é revisado por ele mesmo, com review do agente publicado no PR. Isso não reabre a decisão acima sobre papel fixo no projeto como um todo, só descreve como o fluxo de código anda (ver [CONTRIBUTING.md](CONTRIBUTING.md) e [ADR-006](docs/adr/006-backend-separado-e-tooling.md)).

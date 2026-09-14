@@ -147,11 +147,18 @@ telas são do projeto de origem, servindo só de referência de estilo:
 
 ## Estado atual
 
-Design de produto e requisitos fechados. Stack decidida ([ADR-005](docs/adr/005-stack-tecnica.md),
-[ADR-006](docs/adr/006-backend-separado-e-tooling.md)) e scaffold do monorepo criado —
+Design de produto e requisitos fechados; **engenharia em andamento**. Stack decidida
+([ADR-005](docs/adr/005-stack-tecnica.md), [ADR-006](docs/adr/006-backend-separado-e-tooling.md)):
 `apps/web` (Next.js), `apps/api` (NestJS + MikroORM), `apps/bot` (Node.js + discord.js),
 Turborepo + pnpm workspaces, testes (Vitest/Jest/Playwright) e CI (GitHub Actions) rodando.
-Nenhum RF implementado ainda — é fundação, não funcionalidade.
+
+**Fase 1** (CI, processo de PR e servidor Discord) concluída. **Fase 2.1** (conta e
+autenticação) em andamento: cadastro, login e sessão, verificação de e-mail e aceite de
+Termos já estão em `dev`. Fases e ordem no [PRD Mestre](https://github.com/ljborgess/ProLobby.com/issues/64).
+
+**Tempo estimado**: beta pronto entre o fim de dezembro de 2026 e o início de março de 2027,
+e abertura pública entre meados de janeiro e meados de abril de 2027. É estimativa com faixa,
+não prazo. Premissas em [Ordem de implementação](docs/negocio/02-implementacao.md).
 
 Nove áreas de requisito levantadas, com RF e RNF numerados e rastreáveis em
 [`docs/requisitos/`](docs/requisitos/README.md).
@@ -167,8 +174,10 @@ Nove áreas de requisito levantadas, com RF e RNF numerados e rastreáveis em
    projeto, é o único grande que exige código pra ser medido.
 
 Divisão de papéis no time já fechada — sem papel fixo, trabalho em conjunto.
-No código especificamente, Luciano, Rafael e Felipe desenvolvem; Luciano
-atribui issue e revisa PR.
+No código, três devs ativos desde 2026-09-14, divididos por área pra paralelizar:
+Luciano no caminho crítico, Rafael em bot e infra, Felipe em produto visível.
+Luciano atribui issue e aprova PR. Quem entra pra codar começa por
+[`docs/time/`](docs/time/README.md).
 
 Trabalho corre em `dev`; `main` só recebe merge quando o time decidir
 promover.
@@ -179,6 +188,6 @@ promover.
 
 **Luciano · Rafael · João · Felipe**
 
-<sub>em design de produto — 2026</sub>
+<sub>em desenvolvimento — 2026</sub>
 
 </div>

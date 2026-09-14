@@ -63,6 +63,8 @@ Lista completa e o racional de cada item: [`docs/requisitos/08-seguranca-checkli
 Este PR **fica aberto** até passar por duas revisões, mesmo quando o CI está verde e mesmo quando o autor é quem pode mergear:
 
 - [ ] **Code review** — corretude, aderência ao RF de origem, sem duplicação, sem abstração especulativa
-- [ ] **Security review** — o recorte marcado acima foi conferido por outra pessoa, não só pelo autor
+- [ ] **Security review** — o recorte marcado acima foi conferido item a item, não só marcado pelo autor
+
+Quem aprova: PR do Rafael ou do Felipe → o Luciano. PR do Luciano → ele mesmo, com o code review e o security review do agente publicados neste PR ([CONTRIBUTING](https://github.com/ljborgess/ProLobby.com/blob/dev/CONTRIBUTING.md)).
 
 Branch protection **não é trava técnica** neste repo (privado no plano Free, decidido em [#66](https://github.com/ljborgess/ProLobby.com/issues/66) e registrado no [ADR-006](https://github.com/ljborgess/ProLobby.com/blob/dev/docs/adr/006-backend-separado-e-tooling.md)): o GitHub deixa mergear sem aprovação. A regra vale por disciplina, e é por isso que ela está escrita aqui.

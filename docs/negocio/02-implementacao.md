@@ -1,6 +1,6 @@
 # Ordem de implementação — por onde começar
 
-Uso interno dos 4. Ordem sugerida com base nas dependências já mapeadas no dossiê — não é cronograma com data, é sequência lógica (o que trava o quê).
+Uso interno dos 4. Ordem com base nas dependências já mapeadas no dossiê (o que trava o quê) e, desde 2026-09-14, uma [estimativa de tempo](#capacidade-do-time-e-tempo-estimado-2026-09-14) com faixa e premissas. É estimativa pra planejar, não prazo prometido.
 
 ## 0. Stack decidida antes dos bloqueadores — risco aceito conscientemente
 
@@ -14,7 +14,7 @@ Uso interno dos 4. Ordem sugerida com base nas dependências já mapeadas no dos
 
 > A ordem por dependência abaixo continua correta pra responder *o que dá pra construir*. O checklist no jogo segue valendo a pena rodar assim que possível — não trava mais o começo da engenharia, mas trava a implementação final do item 3 (fechamento do lobby).
 
-## 1. Discord primeiro (configuração, não código)
+## 1. Discord primeiro (configuração, não código) — ✅ feito na Fase 1 (2026-09-11)
 
 Servidor Discord não depende da plataforma existir — é configuração manual, rápida, sem escrever linha de código:
 
@@ -36,8 +36,10 @@ Ordem dentro da plataforma, cada item destrava o próximo:
 1. **Conta + autenticação** — o schema nasce com as entidades e atributos de [Modelo de dados](../requisitos/03-dados.md), incluindo o **log de evento de elo e reputação** (sem ele o rollback de disputa é inimplementável) e um gamertag por plataforma. E-mail + senha, verificação de e-mail, recuperação por link (30min), aceite versionado de ToS, pergunta de segurança no cadastro ([Onboarding](../produto/05-produto/01-onboarding.md)). O schema já nasce com **campo de plano na conta e tabela de evento de pagamento** ([Sustentabilidade](03-sustentabilidade.md)) — nada de cobrança implementado, só o espaço reservado, porque fazer isso como migração retroativa é o que custa caro. Interface já nasce em **português e espanhol** ([Escopo](../produto/05-produto/02-escopo.md)) — retrofit de i18n depois custa mais caro que nascer com ele.
 2. **OCR de personagem** (cadastro/verificação) — é o mesmo motor de OCR que "Resultado de partida" vai reusar depois, vale construir pensando nos dois usos desde já ([Personagens e verificação](../produto/02-jogador/01-verificacao.md)). Fluxo de upload nasce **mobile-first** — a maioria dos envios vem do celular (foto da tela do console), não do desktop.
 3. **Vínculo Discord (OAuth2)** — só depois de já ter conta + personagem funcionando, porque é o terceiro (e último) requisito do onboarding, e depende do bot já existir (etapa 1 acima).
-4. **Fila e matchmaking** — distribuição por categoria, equilíbrio por elo ([Fila e matchmaking](../produto/03-partida/02-fila.md)). Essa é a primeira peça que só faz sentido depois que personagem + elo (próximo item) existem.
-5. **Motor de elo/reputação** — precisa existir antes da fila fechar de verdade (equilíbrio depende disso).
+4. **Motor de elo/reputação** — precisa existir antes da fila, porque o equilíbrio da fila depende dele. Nasce com seed pelo overall do personagem verificado (item 2).
+5. **Fila e matchmaking** — distribuição por categoria, equilíbrio por elo ([Fila e matchmaking](../produto/03-partida/02-fila.md)). É a primeira peça que só faz sentido depois que personagem e elo existem.
+
+> **Corrigido em 2026-09-14**: este arquivo listava fila (4) antes de elo (5), enquanto a própria justificativa dizia o contrário e o [PRD Mestre](https://github.com/ljborgess/ProLobby.com/issues/64) já tinha fixado elo como Fase 2.4 e fila como 2.5. Os títulos dos PRDs #53 e #55 estavam trocados do mesmo jeito e foram corrigidos.
 
 ## 3. Fechamento do lobby (a parte mais arriscada)
 
@@ -66,8 +68,84 @@ Produto pronto não vai direto pro público: roda **beta fechado gratuito** com 
 
 **O recrutamento dos convidados roda em paralelo ao desenvolvimento**, não depois — é a única etapa que não depende de código, e a que mais costuma ser esquecida até virar bloqueio.
 
-## Resumo — o que fazer essa semana
+## Capacidade do time e tempo estimado (2026-09-14)
 
-1. Stack já decidida ([ADR-005](../adr/005-stack-tecnica.md)) — pode começar o piloto de OCR e o núcleo da plataforma (item 2) já.
-2. Montar o servidor Discord (item 1) — configuração manual, em paralelo com o resto.
-3. Rodar o [checklist de teste no jogo](../produto/03-partida/05-checklist.md) assim que possível — não bloqueia mais o início, mas bloqueia a implementação final do fechamento de lobby (item 3).
+**Estimativa, não prazo.** O [beta continua sem data fixa](04-lancamento.md), por decisão. Esta seção serve pra planejar o que depende de calendário: recrutamento dos convidados, abertura da entidade legal e pré-venda. Não serve pra cobrar entrega.
+
+### Quem coda, em que trilha
+
+| Trilha | Quem | Ferramenta | O que carrega, em ordem |
+|---|---|---|---|
+| Caminho crítico | Luciano | Claude Code | conta (2.1) → vínculo Discord (2.3) → elo (2.4) → fila (2.5) → lobby (3) → disputa (4.2) → painel (5) |
+| Bot e infra | Rafael | Cursor | webhook (2.1) → piloto de OCR (Fase 0) → OCR de personagem (2.2) → handlers de canal do bot (3) → OCR de resultado (4.1) → notificações |
+| Produto visível | Felipe | Claude Code | telas e scheduler (2.1) → telas de upload, fila e lobby → perfil e ranking (4.3) → LGPD operacional, Termos e página de venda (5) |
+
+O recrutamento dos ~24 convidados do beta não depende de nenhuma trilha de código e roda em paralelo desde já.
+
+### Premissas
+
+- **Os três são part-time e trabalham com IA.** As faixas assumem algo em torno de 10 a 15 horas por semana de cada um.
+- **Rafael e Felipe rendem menos nas primeiras 1–2 semanas**, aprendendo o fluxo e o dossiê. Já está dentro da faixa da 2.1.
+- **Review custa tempo do caminho crítico.** Cada PR dos dois passa pelo Luciano; isso também já está nas faixas.
+- **O ritmo medido até aqui não serve de base sozinho.** A Fase 1 e 11 issues da 2.1 fecharam em dois dias ativos, mas eram peças sem dependência externa (CI, schema, autenticação). Fila, lobby e disputa não são assim.
+- **Os bloqueadores rodam no tempo certo:** piloto de OCR antes da 2.2, checklist no jogo antes da 3.
+
+### Faixa por fase, com os três
+
+| Fase | Semanas | Trilha | Depende de |
+|---|---|---|---|
+| 2.1 — o que falta | 1–2 | as três | — |
+| 0 — piloto de OCR | 1 | Rafael | webhook da 2.1 |
+| 0 — checklist no jogo | minutos, zero código | qualquer um dos 4 | precisa rodar antes da 3 |
+| 2.2 — personagem e OCR | 2–3 | Rafael + Felipe (telas) | piloto de OCR |
+| 2.3 — vínculo Discord | 1–2 | Luciano | 2.1 |
+| 2.4 — elo e reputação | 1–2 | Luciano | 2.2 (seed por overall) e 2.3 |
+| 2.5 — fila e matchmaking | 2–3 | Luciano + Felipe (telas) | 2.4 |
+| 3 — fechamento do lobby | 2–4 | Luciano + Rafael (bot) | 2.5 e checklist no jogo |
+| 4.1 — report de resultado | 2–3 | Luciano + Rafael (OCR) | 3 |
+| 4.2 — rollback, disputa e punição | 2–3 | Luciano | 4.1 |
+| 4.3 — perfil e ranking | 1–2 | Felipe | dado real da 4.1; corre junto da 4.2 |
+| 5 — governança | 2–3 | Luciano (painel) + Felipe (LGPD, Termos, venda) | 4.2 |
+| 6 — beta fechado | 3–6, sem teto | todos | 5 |
+
+### Somando o caminho crítico
+
+1. A 2.1 fecha em **1–2 semanas**.
+2. A 2.4 só começa quando a 2.2 **e** a 2.3 fecharem. A mais lenta é a 2.2, que espera o piloto de OCR: **4–6 semanas** a partir de 2026-09-14.
+3. Da 2.4 até o fim da governança (2.4 + 2.5 + 3 + 4.1 + 4.2 + 5): **11–18 semanas**.
+
+| Marco | A partir de 2026-09-14 | Datas aproximadas |
+|---|---|---|
+| Fase 2.1 fechada | 1–2 semanas | 21 a 28 de setembro de 2026 |
+| Beta pronto pra começar | 15–24 semanas | 28 de dezembro de 2026 a 1º de março de 2027 |
+| Abertura pública | 18–30 semanas | 18 de janeiro a 12 de abril de 2027 |
+
+**Dezembro e janeiro caem no meio do caminho.** Com festas de fim de ano num time part-time, o realista é mirar a metade de cima de cada faixa.
+
+### Quanto os dois devs novos mudam a conta
+
+Com o Luciano sozinho, as trilhas paralelas entram na fila do caminho crítico: piloto e OCR da 2.2, telas de todas as fases, handlers do bot, perfil e ranking, LGPD e Termos. Isso soma **7 a 12 semanas**, e o beta ficaria pronto em **22 a 36 semanas** (meados de fevereiro a fim de maio de 2027).
+
+**Rafael e Felipe adiantam o beta em cerca de 2 a 3 meses**, desde que a fila de review do Luciano não vire o novo gargalo.
+
+### O que estoura a faixa
+
+- **Checklist no jogo com o teste 6 falhando**: cai o piso de 8 humanos, e a Fase 3 é redesenhada. A estimativa da 3 em diante deixa de valer.
+- **Piloto de OCR abaixo do aceitável**: a 2.2 ganha verificação manual ou troca de motor.
+- **Review virando gargalo**: PRs das duas trilhas paralelas esperando aprovação param quem está fora do caminho crítico.
+- **Beta sem bater o critério de saída**: continua, sem teto, por decisão.
+
+### Recalibrar a cada fase fechada
+
+Ao fechar uma fase, compare as semanas reais com a faixa da tabela. Se passou da ponta de cima em mais de 50%, refaça a estimativa inteira e atualize este arquivo e o [PRD Mestre](https://github.com/ljborgess/ProLobby.com/issues/64).
+
+```bash
+gh issue list --state closed --milestone "<nome da milestone>" --json number,closedAt
+```
+
+## Resumo — o que fazer agora (2026-09-14)
+
+1. **Fechar a Fase 2.1** pelo grafo do [CONTRIBUTING](../../CONTRIBUTING.md): Luciano #90 → #91 → #104; Rafael #81 → #93 → #94/#95; Felipe #106 → #87 → #101.
+2. **Piloto de OCR** ([#50](https://github.com/ljborgess/ProLobby.com/issues/50)) emendado pelo Rafael no fim do webhook, antes da Fase 2.2.
+3. **Checklist no jogo** ([#63](https://github.com/ljborgess/ProLobby.com/issues/63)) rodado antes de a Fase 3 começar. São minutos, e qualquer um dos 4 pode fazer.
+4. **Recrutamento dos convidados do beta** começando agora, em paralelo.

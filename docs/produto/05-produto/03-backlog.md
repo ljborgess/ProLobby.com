@@ -31,8 +31,8 @@ Estado da varredura mais recente (2026-09-08): **região do free tier** (Oracle 
 
 | Aberto | Bloqueia | Natureza |
 |---|---|---|
-| **Teste no jogo** ([checklist](../03-partida/05-checklist.md)) | escrever código | execução, bloqueador nº 1 |
-| **Piloto de OCR** ([06-piloto-ocr.md](../../requisitos/06-piloto-ocr.md)) | a plataforma, e a escolha de OCR | bloqueador nº 2 — único risco grande que exige código pra medir |
+| **Teste no jogo** ([checklist](../03-partida/05-checklist.md)) | Fase 3 (fechamento do lobby) e RF-051/052/055 — desde 2026-09-08 não bloqueia mais o código em geral | execução, bloqueador nº 1 |
+| **Piloto de OCR** ([06-piloto-ocr.md](../../requisitos/06-piloto-ocr.md)) | Fase 2.2 (personagem) e a escolha do motor de OCR | bloqueador nº 2 — único risco grande que exige código pra medir |
 | **Titular das contas e rateio entre os 4** ([tese de mercado](../../negocio/01-mercado.md)) | primeiro gasto recorrente | acordo entre sócios |
 | **Consulta jurídica** — redação Fundador/CDC, LGPD 16-17, entidade legal | receber dinheiro | três assuntos, uma consulta |
 | **Desenho de torneio/liga** — formato, no-show, arbitragem, premiação | receita de torneio (adiada) | grelha própria, depois do núcleo |
@@ -43,4 +43,5 @@ Riscos aceitos conscientemente, não lacunas: [conluio de resultado](../02-jogad
 ## Decidido: sem divisão formal
 
 - **Divisão de papéis** entre Luciano, Rafael, João e Felipe — discutido e decidido continuar **sem papel fixo por disciplina**: os 4 trabalham em conjunto, qualquer um mexe em qualquer parte. Não é pendência, é decisão tomada. Revisitar só se o time sentir necessidade (ex.: atrito de responsabilidade, gargalo de decisão).
+- **No código, divisão por área não é papel fixo** (2026-09-14): Luciano, Rafael e Felipe codam, cada um numa trilha (caminho crítico, bot e infra, produto visível), pra dois não mexerem nos mesmos arquivos ao mesmo tempo. A trilha muda por fase, quando precisar. Detalhe em [CONTRIBUTING](../../../CONTRIBUTING.md) e [Ordem de implementação](../../negocio/02-implementacao.md).
 
