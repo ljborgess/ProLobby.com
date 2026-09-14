@@ -14,7 +14,7 @@ Ao planejar o início do código, o desenvolvimento era solo (1 pessoa), com exp
 **Atualização (2026-09-14)**: Felipe entrou, e o time de código passa a ter **três devs ativos**: Luciano no caminho crítico, Rafael em bot e infra, Felipe em produto visível. Duas decisões abaixo mudaram, e valem como estão no [CONTRIBUTING.md](../../CONTRIBUTING.md):
 
 1. **Revisão de PR.** O PR do Luciano **não mergeia mais direto** após CI verde. Ele fica aberto, com code review e security review do agente publicados no próprio PR, e é revisado pelo Luciano. O PR do Rafael e do Felipe continua precisando da aprovação do Luciano.
-2. **Pessoas com `push`.** Hoje são 3 (`ljborgess`, `rafaeljs08`, `LipeLou`), no limite do gatilho de revisão de branch protection descrito abaixo. Há convite pendente pra `jgbriel-io`: se ele aceitar, passam a ser 4, e o gatilho dispara.
+2. **Pessoas com `push`.** Hoje são 3 (`ljborgess`, `rafaeljs08`, `LipeLou`), no limite do gatilho de revisão de branch protection descrito abaixo. Há convite pendente pro João (`jgbriel-io`), e se ele entra no código é decisão pra frente. Se aceitar, passam a ser 4, e o gatilho dispara.
 
 Reavaliado: pra 1 pessoa construindo sozinha um domínio complexo (73 RFs, máquina de estado de 12 estados, log de eventos de elo/reputação com rollback, retry com backoff, escada de punição), familiaridade com o stack pesa mais que reduzir de 2 processos pra 1 — Turborepo já orquestra os dois com um comando.
 
