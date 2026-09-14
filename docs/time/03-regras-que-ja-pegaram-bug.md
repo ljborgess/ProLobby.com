@@ -69,6 +69,24 @@ pnpm exec mikro-orm migration:create
 
 **Por quê:** `migration:create` diffa contra **o banco**, não contra os arquivos. Banco sujo de teste gera migration parcial que só quebra em banco novo — ou seja, no deploy.
 
+## Banco na Neon: o que funciona local e quebra em produção
+
+Localmente o banco é um Postgres em Docker, sempre ligado e com conexão direta. Em produção é a Neon ([ADR-009](../adr/009-neon-cloudflare-vm.md)): **hiberna depois de 5 minutos parado** e a app conecta **por um pooler (PgBouncer)**. Por isso:
+
+- **Nada consulta o banco em ciclo com o sistema parado.** Nada de `setInterval` batendo no banco; tick de fila só com gente na fila, retry só com entrega pendente, job agendado uma vez por dia. **Por quê:** um único ciclo esquecido mantém a Neon acordada 24 horas e estoura as horas grátis do mês em silêncio.
+- **Nada preso a sessão do Postgres**: sem `SET` de sessão, sem `LISTEN/NOTIFY`, sem advisory lock de sessão. **Por quê:** o pooler divide a mesma conexão entre requisições diferentes. Passa no teste local e falha em produção.
+- **Imagem nunca vai pro banco.** Print fica no storage; o banco guarda só a referência. **Por quê:** a Neon grátis tem 0,5 GB, e o backup do banco não pode virar cópia eterna de print.
+- **A API conecta com uma role sem DDL.** Migration roda com outra role, pela URL direta. Tabela nova precisa estar coberta pelas permissões padrão.
+
+## Atrás da Cloudflare: IP, cache e endereço
+
+Em produção a Cloudflare fica na frente e o tráfego chega à VM por um túnel, sem porta aberta ([ADR-009](../adr/009-neon-cloudflare-vm.md)).
+
+- **Nenhum `ports:` nos serviços de produção do `docker-compose`.** **Por quê:** o IP real vem do cabeçalho `CF-Connecting-IP`, e ele só é confiável enquanto a API for alcançável apenas pelo túnel. Publicar a porta não dá erro nenhum — só deixa qualquer um forjar o IP e anula o rate limit.
+- **No `apps/web`, chamada feita no servidor repassa o `CF-Connecting-IP`.** **Por quê:** senão toda renderização no servidor chega com o mesmo IP e divide um único limite de requisições.
+- **Página ou resposta com sessão sai com `Cache-Control: private, no-store`.** **Por quê:** a borda da Cloudflare não pode guardar HTML de pessoa logada — seria entregar a página de uma pessoa pra outra.
+- **Web e API no mesmo endereço**: em produção a API responde em `/api/*`. **Um cliente de API só no `apps/web`**, com a base configurável; nenhuma URL de API espalhada pelos componentes.
+
 ## Teste que não pega linha do vizinho
 
 A suíte e2e roda com um worker só, contra o mesmo banco. Filtre sempre pelo que o teste criou (e-mail único por teste, `account: account.id`), nunca "a última linha da tabela".

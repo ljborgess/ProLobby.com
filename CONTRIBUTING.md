@@ -245,11 +245,14 @@ Um PR aberto por pessoa; a seta é a ordem, e o *Blocked by* nativo está regist
 │                               → #94 rate limit no webhook      — blocked by #93
 │                               → #95 contrato de evento tipado  — blocked by #93
 │                               (#92 fecha quando #93, #94 e #95 fecharem)
+│                               depois da 2.1 → #50 piloto de OCR → primeiro deploy interno (ADR-009)
 │
-└── @LipeLou     (Claude Code)  #106 scheduler + limpeza diária
-                                → #87 tela de cadastro e login
+└── @LipeLou     (Claude Code)  #106 scheduler (sem job de prints — virou lifecycle, ADR-009)
+                                → #87 tela de cadastro e login   — requisitos de infra do ADR-009 no corpo
                                 → #101 proteção contra bot       — blocked by #87
 ```
+
+O primeiro deploy interno não tem issue ainda: pela regra "uma fase por vez", as issues dele nascem quando a Fase 2.2 abrir ([ADR-009](docs/adr/009-neon-cloudflare-vm.md), decisão 12).
 
 ### Grafo — Fase 1 (infra, processo e Discord) — concluída em 2026-09-11
 

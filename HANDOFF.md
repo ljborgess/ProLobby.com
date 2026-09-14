@@ -55,10 +55,11 @@ Sequência canônica em **[#64 — PRD Mestre](https://github.com/ljborgess/ProL
 
 1. **Fechar a Fase 2.1** pelo grafo: Luciano #90 → #91 → #104; Rafael #81 → #93 → #94/#95; Felipe #106 → #87 → #101.
 2. **[#50](https://github.com/ljborgess/ProLobby.com/issues/50) — piloto de OCR**, emendado pelo Rafael no fim do webhook. Precisa sair **antes da Fase 2.2**, porque escolhe o motor de OCR.
-3. **[#63](https://github.com/ljborgess/ProLobby.com/issues/63) — checklist no jogo**, antes de a **Fase 3** começar. São minutos de jogo; a partir da 3, o retrabalho fica caro.
-4. Fechada a 2.1, abrir a **2.2** (Rafael + Felipe) e a **2.3** (Luciano) em paralelo, pelo caminho PRD → issues → sub-issues.
-5. **João (`jgbriel-io`) tem convite pendente no repo, e o papel dele no código é decisão pra frente** (Luciano, 2026-09-14). Não entra na divisão nem na estimativa até ser decidido. Se aceitar o convite, passam a ser 4 pessoas com `push`, o que dispara o gatilho de revisão de branch protection do [ADR-006](docs/adr/006-backend-separado-e-tooling.md).
-6. **Recrutamento dos ~24 convidados do beta** começa agora, em paralelo. É a única etapa que não depende de código ([Lançamento](docs/negocio/04-lancamento.md)).
+3. **Primeiro deploy interno** ([ADR-009](docs/adr/009-neon-cloudflare-vm.md)), pelo Rafael depois do piloto, em paralelo com o começo da 2.2. Fechado pelo Cloudflare Access (só os 4 abrem), com o teste de restauração do backup. Antes dele: comprar o `.com.br`, fechar o acordo escrito de titularidade entre os 4 e criar as contas da Neon, da Oracle e da Cloudflare com e-mail do projeto e segundo fator. As issues nascem quando a 2.2 abrir.
+4. **[#63](https://github.com/ljborgess/ProLobby.com/issues/63) — checklist no jogo**, antes de a **Fase 3** começar. São minutos de jogo; a partir da 3, o retrabalho fica caro.
+5. Fechada a 2.1, abrir a **2.2** (Rafael + Felipe) e a **2.3** (Luciano) em paralelo, pelo caminho PRD → issues → sub-issues.
+6. **João (`jgbriel-io`) tem convite pendente no repo, e o papel dele no código é decisão pra frente** (Luciano, 2026-09-14). Não entra na divisão nem na estimativa até ser decidido. Se aceitar o convite, passam a ser 4 pessoas com `push`, o que dispara o gatilho de revisão de branch protection do [ADR-006](docs/adr/006-backend-separado-e-tooling.md).
+7. **Recrutamento dos ~24 convidados do beta** começa agora, em paralelo. É a única etapa que não depende de código ([Lançamento](docs/negocio/04-lancamento.md)).
 
 ## Os dois bloqueadores — leia isto antes de qualquer coisa
 
