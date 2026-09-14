@@ -1,6 +1,12 @@
 # 4 · Trabalhando com IA: Claude Code ou Cursor
 
-No time, **um usa Claude Code e outro usa Cursor**. A ferramenta é escolha de cada um. **O padrão de entrega é o mesmo:** mesmo fluxo, mesmas regras, mesmo PR e o mesmo review publicado. O revisor não pode conseguir adivinhar, olhando o PR, qual ferramenta foi usada.
+No time, **o Rafael usa Cursor, e o Felipe e o Luciano usam Claude Code**. A ferramenta é escolha de cada um.
+
+| Quem | Ferramenta | O que carrega o contexto |
+|---|---|---|
+| Rafael | Cursor | `.cursor/rules/prolobby.mdc` |
+| Felipe | Claude Code | `CLAUDE.md` |
+| Luciano | Claude Code | `CLAUDE.md` | **O padrão de entrega é o mesmo:** mesmo fluxo, mesmas regras, mesmo PR e o mesmo review publicado. O revisor não pode conseguir adivinhar, olhando o PR, qual ferramenta foi usada.
 
 ## Como cada ferramenta conhece o projeto
 

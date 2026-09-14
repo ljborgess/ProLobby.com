@@ -4,7 +4,7 @@ Pra quem entra pra codar no ProLobby (Rafael, Felipe e quem vier depois). O obje
 
 Nada aqui é burocracia inventada. Cada regra nasceu de um bug real que o padrão pegou antes de chegar em produção — o motivo está escrito do lado de cada uma.
 
-**Cada um trabalha com a sua IA: hoje, um usa Claude Code e o outro usa Cursor.** A ferramenta é livre, o padrão não. Abra o repo, cole o prompt do [guia 4](04-trabalhando-com-ia.md) no começo da sessão e faça a issue junto com ela, do entendimento ao PR revisado. O Claude Code já conhece o projeto pelo `CLAUDE.md`, e o Cursor pelo `.cursor/rules/prolobby.mdc`. Os dois apontam pras mesmas fontes.
+**Cada um trabalha com a sua IA: o Rafael usa Cursor, o Felipe usa Claude Code.** A ferramenta é livre, o padrão não. Abra o repo, cole o prompt do [guia 4](04-trabalhando-com-ia.md) no começo da sessão e faça a issue junto com ela, do entendimento ao PR revisado. O Claude Code já conhece o projeto pelo `CLAUDE.md`, e o Cursor pelo `.cursor/rules/prolobby.mdc`. Os dois apontam pras mesmas fontes.
 
 ## Leia nesta ordem
 
