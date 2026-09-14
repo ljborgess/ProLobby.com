@@ -7,16 +7,20 @@ import type { RequestWithAccount } from '../../common/auth/session.guard'
 import { AccountState } from './account.enums'
 import { AccountService } from './account.service'
 import { AcceptTermsDto } from './dto/accept-terms.dto'
+import { ConfirmPasswordResetDto } from './dto/confirm-password-reset.dto'
+import { RequestPasswordResetDto } from './dto/request-password-reset.dto'
 import { ResendVerificationDto } from './dto/resend-verification.dto'
 import { SignUpDto } from './dto/sign-up.dto'
 import { VerifyEmailDto } from './dto/verify-email.dto'
 import { EmailVerificationService } from './email-verification.service'
+import { PasswordResetService } from './password-reset.service'
 
 @Controller('accounts')
 export class AccountController {
   constructor(
     private readonly accountService: AccountService,
     private readonly emailVerificationService: EmailVerificationService,
+    private readonly passwordResetService: PasswordResetService,
   ) {}
 
   /**
@@ -80,6 +84,42 @@ export class AccountController {
   @Throttle({ login: {} })
   async verifyEmail(@Body() dto: VerifyEmailDto): Promise<void> {
     await this.emailVerificationService.verify(dto.token)
+  }
+
+  /**
+   * Asks for a password reset link — RF-024, RF-070.
+   *
+   * Always 202, and always at the same speed: the lookup, the insert and the
+   * email all happen after the response. Awaiting any of them would make a
+   * real account measurably slower than an unknown address, which enumerates
+   * accounts with a stopwatch instead of a status code.
+   */
+  @Public()
+  @Post('password-resets')
+  @HttpCode(HttpStatus.ACCEPTED)
+  // The login bucket: the cost of this endpoint is an email to somebody
+  // else's inbox, so the limit guards a stranger, not this server.
+  @Throttle({ login: {} })
+  requestPasswordReset(@Body() dto: RequestPasswordResetDto): { message: string } {
+    this.passwordResetService.request(dto.email)
+
+    return { message: 'check_your_email' }
+  }
+
+  /**
+   * Sets a new password from a reset link — RF-024.
+   *
+   * POST, not GET, for the same reason as the verification route: `SameSite:
+   * lax` lets a top-level GET carry the session cookie, and item 9b of the
+   * security checklist rests on no GET ever changing state. It also keeps
+   * corporate mail scanners from burning the link before the person opens it.
+   */
+  @Public()
+  @Post('password-resets/confirmations')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Throttle({ login: {} })
+  async confirmPasswordReset(@Body() dto: ConfirmPasswordResetDto): Promise<void> {
+    await this.passwordResetService.confirm(dto.token, dto.password)
   }
 
   /**
