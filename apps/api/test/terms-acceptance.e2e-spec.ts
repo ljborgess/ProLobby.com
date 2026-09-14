@@ -239,6 +239,25 @@ describe('terms acceptance (RF-026)', () => {
       await expect(acceptancesOf('twice-accept@test.local')).resolves.toHaveLength(1)
     })
 
+    it('leaves one row when two acceptances race each other', async () => {
+      const cookie = await sessionFor('race-accept@test.local')
+      await forgetAcceptances('race-accept@test.local')
+
+      const accept = () =>
+        request(app.getHttpServer())
+          .post('/accounts/terms-acceptances')
+          .set('Cookie', cookie)
+          .send({ version: CURRENT_TERMS_VERSION })
+
+      // A double click: both requests pass the guard before either inserts, so
+      // only the unique index can keep this at one row — and the loser must
+      // still answer 204, not 500.
+      const results = await Promise.all([accept(), accept(), accept()])
+
+      expect(results.map((res) => res.status)).toEqual([204, 204, 204])
+      await expect(acceptancesOf('race-accept@test.local')).resolves.toHaveLength(1)
+    })
+
     it('refuses to record acceptance of an older version', async () => {
       const cookie = await sessionFor('accept-old@test.local')
 
