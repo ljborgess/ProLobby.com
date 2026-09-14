@@ -4,9 +4,9 @@ Levantamento de requisitos e design de produto, separado por domínio. Cada arqu
 
 Numeração indica **ordem de leitura** dentro de cada pasta — as pastas também estão em ordem, então ler de cima pra baixo dá o fluxo completo do produto.
 
-Time: Luciano, Rafael, João, Felipe — sem divisão fixa de papéis (decisão registrada, ver backlog).
+Time: Luciano, Rafael, João, Felipe — sem divisão fixa de papéis (decisão registrada, ver backlog). No código, Luciano, Rafael e Felipe, divididos por área pra paralelizar ([CONTRIBUTING](../../CONTRIBUTING.md)).
 
-Status: design de produto fechado. Stack técnica decidida em 2026-09-08 ([ADR-005](../adr/005-stack-tecnica.md), [ADR-006](../adr/006-backend-separado-e-tooling.md)), scaffold de código já criado (`apps/`, `packages/`) — nenhum RF implementado ainda.
+Status: design de produto fechado. Stack técnica decidida em 2026-09-08 ([ADR-005](../adr/005-stack-tecnica.md), [ADR-006](../adr/006-backend-separado-e-tooling.md)). Engenharia em andamento: Fase 1 concluída, Fase 2.1 (conta e autenticação) em curso, com cadastro, sessão, verificação de e-mail e aceite de Termos já implementados.
 
 ## 01 · Visão
 

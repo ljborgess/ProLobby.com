@@ -104,9 +104,9 @@ Dispara quando o critério de saída fecha. Tudo ao mesmo tempo:
 
 | Etapa | Custa | Bloqueia o quê |
 |---|---|---|
-| Teste no jogo ([checklist](../produto/03-partida/05-checklist.md)) | minutos, zero código | **tudo** — é o bloqueador nº 1 |
-| Servidor Discord montado | horas, configuração manual | beta |
-| Núcleo da plataforma + lobby + resultado | o desenvolvimento em si | beta |
+| Teste no jogo ([checklist](../produto/03-partida/05-checklist.md)) | minutos, zero código | **Fase 3** (fechamento do lobby) e RF-051/052/055 — bloqueador nº 1 |
+| Servidor Discord montado | ✅ feito na Fase 1 (2026-09-11) | beta |
+| Núcleo da plataforma + lobby + resultado | o desenvolvimento em si — **15 a 24 semanas** com os 3 devs, faixa e premissas em [Ordem de implementação](02-implementacao.md) | beta |
 | Recrutamento dos ~24 convidados | trabalho de comunidade, paralelo ao desenvolvimento | beta |
 | **Beta fechado, gratuito** | tempo indeterminado, até o critério bater | abertura |
 | Entidade legal — ME no Simples (MEI descartado, ver [Sustentabilidade](03-sustentabilidade.md)) + página de venda + Termos revisados | dias | **pré-venda**, que é o fim do beta menos 7 dias |

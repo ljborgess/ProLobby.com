@@ -2,7 +2,7 @@
 
 Ver [HANDOFF.md](HANDOFF.md) pro estado do projeto e [CONTRIBUTING.md](CONTRIBUTING.md) pro fluxo de código.
 
-**Repo tem dossiê (`docs/`) e código (`apps/`, `packages/`).** A stack foi decidida em [ADR-005](docs/adr/005-stack-tecnica.md)/[ADR-006](docs/adr/006-backend-separado-e-tooling.md) e o monorepo está no ar (Next.js + NestJS + discord.js, Turborepo/pnpm) — o scaffold existe, a regra de negócio não. Os [dois bloqueadores](HANDOFF.md#os-dois-bloqueadores--leia-isto-antes-de-qualquer-coisa) continuam pendentes, mas **não travam mais o código**: travam RF-051/052/055 e três parâmetros marcados como "a calibrar". Não recusar trabalho de implementação por causa deles.
+**Repo tem dossiê (`docs/`) e código (`apps/`, `packages/`).** A stack foi decidida em [ADR-005](docs/adr/005-stack-tecnica.md)/[ADR-006](docs/adr/006-backend-separado-e-tooling.md) e o monorepo está no ar (Next.js + NestJS + discord.js, Turborepo/pnpm). A regra de negócio está sendo construída fase a fase: Fase 1 concluída, Fase 2.1 (conta e autenticação) em andamento. Time de código: Luciano, Rafael (Cursor) e Felipe; quem entra começa por [`docs/time/`](docs/time/README.md). Os [dois bloqueadores](HANDOFF.md#os-dois-bloqueadores--leia-isto-antes-de-qualquer-coisa) continuam pendentes, mas **não travam mais o código**: travam RF-051/052/055 e três parâmetros marcados como "a calibrar". Não recusar trabalho de implementação por causa deles.
 
 ## Regra permanente: checklist de segurança
 
