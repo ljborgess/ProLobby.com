@@ -4,7 +4,9 @@ Referência rápida do fluxo decidido no [ADR-006](docs/adr/006-backend-separado
 
 ## Time
 
-Luciano (`@ljborgess`) e Rafael (`@rafaeljs08`) codam. Felipe (`LipeLou`) foi convidado, ainda não entrou — quando entrar, assume carga do trabalho paralelo. Luciano lidera de fato (contexto completo do dossiê): atribui issue, revisa e aprova PR dos outros. Ver [HANDOFF.md](HANDOFF.md#decidido-sem-divisão-de-papéis).
+Luciano (`@ljborgess`), Rafael (`@rafaeljs08`) e Felipe (`LipeLou`, entrou em 2026-09-14) codam. Rafael e Felipe dividem o trabalho paralelo. Luciano lidera de fato (contexto completo do dossiê): atribui issue, revisa e aprova PR dos outros. Ver [HANDOFF.md](HANDOFF.md#decidido-sem-divisão-de-papéis).
+
+**Acabou de entrar?** Leia o [guia do time](docs/time/README.md) antes da primeira issue — é este fluxo, em passo a passo, com o motivo de cada regra e o prompt de abertura de sessão. No time, um usa Claude Code e outro usa Cursor. A ferramenta é livre, mas o padrão de PR e de review é o mesmo ([guia 4](docs/time/04-trabalhando-com-ia.md)).
 
 A divisão por issue segue **caminho crítico x paralelo** — critério detalhado na [hierarquia de issues](#divisão-de-trabalho--caminho-crítico-x-paralelo) abaixo.
 

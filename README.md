@@ -133,6 +133,7 @@ telas são do projeto de origem, servindo só de referência de estilo:
 
 <table>
 <tr><td><a href="docs/README.md"><code>docs/</code></a></td><td>Índice geral</td></tr>
+<tr><td><a href="docs/time/README.md"><code>docs/time/</code></a></td><td>Guia de quem coda: primeiro dia, fluxo de issue, regras que já pegaram bug, Claude Code e Cursor</td></tr>
 <tr><td><a href="docs/produto/README.md"><code>docs/produto/</code></a></td><td>Decisões de produto e o motivo de cada uma, por domínio</td></tr>
 <tr><td><a href="docs/produto/parametros.md"><code>parametros.md</code></a></td><td>Todos os números do sistema num lugar só (elo, reputação, prazos, limites)</td></tr>
 <tr><td><a href="docs/requisitos/README.md"><code>docs/requisitos/</code></a></td><td>O que o sistema faz: RF-001 a RF-073, RNF-001 a RNF-020, estados, modelo de dados, checklist de segurança</td></tr>

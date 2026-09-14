@@ -54,7 +54,7 @@ Sequência canônica agora vive em **[#64 — PRD Mestre](https://github.com/ljb
 3. **[#70](https://github.com/ljborgess/ProLobby.com/issues/70)** (servidor Discord) e **[#68](https://github.com/ljborgess/ProLobby.com/issues/68)**/**[#69](https://github.com/ljborgess/ProLobby.com/issues/69)** (templates) — correm em paralelo.
 4. **[#63](https://github.com/ljborgess/ProLobby.com/issues/63)** (checklist no jogo) a qualquer momento: não bloqueia código novo, mas bloqueia RF-051/052/055 e três parâmetros "a calibrar".
 5. Fechada a Fase 1, abrir a **Fase 2.1** (núcleo de conta) pelo mesmo caminho — PRD, issues, sub-issues — e fechar as antigas #30/#40/#45 e suas filhas apontando pras substitutas.
-6. Convidar o **Felipe** de novo se o convite tiver expirado (`LipeLou`, mandado em 2026-09-08, ainda pendente).
+6. ~~Convidar o **Felipe** de novo~~ — entrou em 2026-09-14. Rafael e Felipe começam pelo [guia do time](docs/time/README.md).
 
 ## Os dois bloqueadores — leia isto antes de qualquer coisa
 
