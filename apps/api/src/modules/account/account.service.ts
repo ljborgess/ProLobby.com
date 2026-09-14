@@ -8,6 +8,8 @@ import { normaliseSecurityAnswer } from './account.security-answer'
 import { CapacityService } from './capacity.service'
 import { EmailVerificationService } from './email-verification.service'
 import type { SignUpDto } from './dto/sign-up.dto'
+import { TermsAcceptance } from './terms-acceptance.entity'
+import { CURRENT_TERMS_VERSION } from './terms.constants'
 
 @Injectable()
 export class AccountService {
@@ -19,7 +21,7 @@ export class AccountService {
   ) {}
 
   /**
-   * Creates an account — RF-019, RF-020, RF-021, RF-070, RF-072.
+   * Creates an account — RF-019, RF-020, RF-021, RF-026, RF-070, RF-072.
    *
    * Returns nothing on purpose. The caller always answers the same thing, and
    * what actually happened (account created, or address already taken) travels
@@ -36,6 +38,13 @@ export class AccountService {
         waitingListAvailable: true,
       })
     }
+
+    // RF-026: consent is to the text actually being shown. A stale form still
+    // carrying an older version must not record acceptance of it. Like the age
+    // check below, this is about what the person sent, so answering explicitly
+    // reveals nothing about anyone else — and it runs before the email lookup,
+    // identically for every address.
+    assertCurrentTermsVersion(dto.acceptedTermsVersion)
 
     const birthDate = new Date(dto.birthDate)
 
@@ -82,13 +91,15 @@ export class AccountService {
       securityAnswerHash,
     })
 
+    // Persisted in the same flush as the account, so they commit together: an
+    // account can never exist without the acceptance it was created under.
+    this.em.persist(account)
+    this.em.persist(this.em.create(TermsAcceptance, { account, version: CURRENT_TERMS_VERSION }))
+
     try {
-      await this.em.persistAndFlush(account)
+      await this.em.flush()
       await this.emailVerificationService.sendVerification(account)
     } catch (error) {
-      // Two requests for the same address can both pass the findOne above and
-      // reach the insert. The unique index is what actually enforces RF-020,
-      // and losing that race must look exactly like the "already exists" case.
       // Two requests for the same address can both pass the findOne above and
       // reach the insert. The unique index is what actually enforces RF-020,
       // and losing that race must look exactly like the "already exists" case
@@ -99,6 +110,48 @@ export class AccountService {
       }
       throw error
     }
+  }
+
+  /**
+   * Records acceptance of the current terms — RF-026.
+   *
+   * Idempotent (RNF-018): accepting the same version twice — a double click, a
+   * retried request — leaves exactly one row, enforced by the unique index on
+   * (account, version) rather than by a check-then-insert that two requests
+   * could both pass.
+   */
+  async acceptTerms(accountId: string, version: string): Promise<void> {
+    assertCurrentTermsVersion(version)
+
+    const em = this.em.fork()
+    em.persist(
+      em.create(TermsAcceptance, { account: em.getReference(Account, accountId), version }),
+    )
+
+    try {
+      await em.flush()
+    } catch (error) {
+      if (isUniqueViolation(error)) {
+        return
+      }
+      throw error
+    }
+  }
+}
+
+/**
+ * Only the version being shown today can be accepted.
+ *
+ * Accepting an older version would record consent to text that is no longer
+ * the terms — and with LATEST_MATERIAL_TERMS_VERSION moving forward, it could
+ * even be used to satisfy the check with a version nobody reads anymore.
+ */
+function assertCurrentTermsVersion(version: string): void {
+  if (version !== CURRENT_TERMS_VERSION) {
+    throw new BadRequestException({
+      message: 'terms_version_outdated',
+      currentVersion: CURRENT_TERMS_VERSION,
+    })
   }
 }
 

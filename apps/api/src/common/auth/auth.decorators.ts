@@ -4,6 +4,7 @@ import type { AccountState } from '../../modules/account/account.enums'
 
 export const IS_PUBLIC = 'auth:public'
 export const ALLOWED_STATES = 'auth:allowed-states'
+export const SKIP_TERMS_CHECK = 'auth:skip-terms-check'
 
 /**
  * Opens a route to anyone, with no session at all.
@@ -30,3 +31,13 @@ export const Public = () => SetMetadata(IS_PUBLIC, true)
  * `DELETED` is never allowed anywhere, so it is not expressible here.
  */
 export const AllowStates = (...states: AccountState[]) => SetMetadata(ALLOWED_STATES, states)
+
+/**
+ * Lets a route through for an account that has not accepted the latest
+ * material terms (RF-026).
+ *
+ * Meant for exactly one route: the one that records the acceptance. Anything
+ * else carrying it would let an account keep using the platform while
+ * refusing the terms, which is the whole thing RF-026 blocks.
+ */
+export const SkipTermsCheck = () => SetMetadata(SKIP_TERMS_CHECK, true)
