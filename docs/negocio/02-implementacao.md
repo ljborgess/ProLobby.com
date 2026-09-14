@@ -8,7 +8,7 @@ Uso interno dos 4. Ordem com base nas dependências já mapeadas no dossiê (o q
 
 **O que ainda depende do checklist, especificamente**: RF-051, RF-052 e RF-055 (canais do lobby, prazos de deleção, gatilho do cargo Verificado) — são decisão de **produto** (tamanho de lobby, premissa de verificação), não de tecnologia, e podem exigir retrabalho quando o teste 6 (IA cobrindo vaga) ou o teste 7 (Virtual Pro única) rodarem. A stack em si não muda por causa disso.
 
-**O teto de custo já está resolvido**: R$ 0 no MVP, via free tier (ver [Sustentabilidade](03-sustentabilidade.md)) — Next.js + Postgres + bot cabem na mesma VM Oracle. E desarma a escolha "OCR pago vs. biblioteca local" no início: o piloto testa primeiro com Tesseract (grátis), comparando com Google Vision (free tier) só se a taxa vier baixa.
+**O teto de custo já está resolvido**: R$ 0 no MVP, via free tier (ver [Sustentabilidade](03-sustentabilidade.md)) — web, API e bot na VM Oracle, banco na Neon, prints e backups no Object Storage da Oracle, Cloudflare na frente ([ADR-009](../adr/009-neon-cloudflare-vm.md)). E desarma a escolha "OCR pago vs. biblioteca local" no início: o piloto testa primeiro com Tesseract (grátis), comparando com Google Vision (free tier) só se a taxa vier baixa.
 
 **Primeiro trabalho de engenharia: o [piloto de OCR](../requisitos/06-piloto-ocr.md)** — bloqueador nº 2. Continua sendo a única coisa que exige código pra medir um risco real (taxa de acerto do OCR em print de estranho); roda isolado, sem conta, sem banco, sem tela, antes de qualquer parte da plataforma.
 
@@ -77,7 +77,7 @@ Produto pronto não vai direto pro público: roda **beta fechado gratuito** com 
 | Trilha | Quem | Ferramenta | O que carrega, em ordem |
 |---|---|---|---|
 | Caminho crítico | Luciano | Claude Code | conta (2.1) → vínculo Discord (2.3) → elo (2.4) → fila (2.5) → lobby (3) → disputa (4.2) → painel (5) |
-| Bot e infra | Rafael | Cursor | webhook (2.1) → piloto de OCR (Fase 0) → OCR de personagem (2.2) → handlers de canal do bot (3) → OCR de resultado (4.1) → notificações |
+| Bot e infra | Rafael | Cursor | webhook (2.1) → piloto de OCR (Fase 0) → **primeiro deploy interno** ([ADR-009](../adr/009-neon-cloudflare-vm.md), junto do começo da 2.2) → OCR de personagem (2.2) → handlers de canal do bot (3) → OCR de resultado (4.1) → notificações |
 | Produto visível | Felipe | Claude Code | telas e scheduler (2.1) → telas de upload, fila e lobby → perfil e ranking (4.3) → LGPD operacional, Termos e página de venda (5) |
 
 O recrutamento dos ~24 convidados do beta não depende de nenhuma trilha de código e roda em paralelo desde já.
@@ -89,6 +89,7 @@ O recrutamento dos ~24 convidados do beta não depende de nenhuma trilha de cód
 - **Review custa tempo do caminho crítico.** Cada PR dos dois passa pelo Luciano; isso também já está nas faixas.
 - **O ritmo medido até aqui não serve de base sozinho.** A Fase 1 e 11 issues da 2.1 fecharam em dois dias ativos, mas eram peças sem dependência externa (CI, schema, autenticação). Fila, lobby e disputa não são assim.
 - **Os bloqueadores rodam no tempo certo:** piloto de OCR antes da 2.2, checklist no jogo antes da 3.
+- **O primeiro deploy interno** ([ADR-009](../adr/009-neon-cloudflare-vm.md)) soma até 1 semana na trilha do Rafael. Ainda não está nas faixas abaixo; entra na primeira recalibração.
 
 ### Faixa por fase, com os três
 

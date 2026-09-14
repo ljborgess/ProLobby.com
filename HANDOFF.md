@@ -55,10 +55,11 @@ Sequência canônica em **[#64 — PRD Mestre](https://github.com/ljborgess/ProL
 
 1. **Fechar a Fase 2.1** pelo grafo: Luciano #90 → #91 → #104; Rafael #81 → #93 → #94/#95; Felipe #106 → #87 → #101.
 2. **[#50](https://github.com/ljborgess/ProLobby.com/issues/50) — piloto de OCR**, emendado pelo Rafael no fim do webhook. Precisa sair **antes da Fase 2.2**, porque escolhe o motor de OCR.
-3. **[#63](https://github.com/ljborgess/ProLobby.com/issues/63) — checklist no jogo**, antes de a **Fase 3** começar. São minutos de jogo; a partir da 3, o retrabalho fica caro.
-4. Fechada a 2.1, abrir a **2.2** (Rafael + Felipe) e a **2.3** (Luciano) em paralelo, pelo caminho PRD → issues → sub-issues.
-5. **João (`jgbriel-io`) tem convite pendente no repo, e o papel dele no código é decisão pra frente** (Luciano, 2026-09-14). Não entra na divisão nem na estimativa até ser decidido. Se aceitar o convite, passam a ser 4 pessoas com `push`, o que dispara o gatilho de revisão de branch protection do [ADR-006](docs/adr/006-backend-separado-e-tooling.md).
-6. **Recrutamento dos ~24 convidados do beta** começa agora, em paralelo. É a única etapa que não depende de código ([Lançamento](docs/negocio/04-lancamento.md)).
+3. **Primeiro deploy interno** ([ADR-009](docs/adr/009-neon-cloudflare-vm.md)), pelo Rafael depois do piloto, em paralelo com o começo da 2.2. Fechado pelo Cloudflare Access (só os 4 abrem), com o teste de restauração do backup. Antes dele: comprar o `.com.br`, fechar o acordo escrito de titularidade entre os 4 e criar as contas da Neon, da Oracle e da Cloudflare com e-mail do projeto e segundo fator. As issues nascem quando a 2.2 abrir.
+4. **[#63](https://github.com/ljborgess/ProLobby.com/issues/63) — checklist no jogo**, antes de a **Fase 3** começar. São minutos de jogo; a partir da 3, o retrabalho fica caro.
+5. Fechada a 2.1, abrir a **2.2** (Rafael + Felipe) e a **2.3** (Luciano) em paralelo, pelo caminho PRD → issues → sub-issues.
+6. **João (`jgbriel-io`) tem convite pendente no repo, e o papel dele no código é decisão pra frente** (Luciano, 2026-09-14). Não entra na divisão nem na estimativa até ser decidido. Se aceitar o convite, passam a ser 4 pessoas com `push`, o que dispara o gatilho de revisão de branch protection do [ADR-006](docs/adr/006-backend-separado-e-tooling.md).
+7. **Recrutamento dos ~24 convidados do beta** começa agora, em paralelo. É a única etapa que não depende de código ([Lançamento](docs/negocio/04-lancamento.md)).
 
 ## Os dois bloqueadores — leia isto antes de qualquer coisa
 
@@ -138,7 +139,7 @@ Tabela completa em `produto/05-produto/03-backlog.md`. Nenhuma é de requisito:
 - **Smurf com investimento**: conta EA nova + Discord novo + console novo passa. O vínculo pega recriação preguiçosa, não quem investe.
 - **Dependência da mecânica da EA**: sem API nem contrato, qualquer patch pode mudar a base do produto. Mitigação é disciplina operacional, não engenharia.
 - **Sem reembolso** no apoio de Fundador, se houver cobrança.
-- **Região de hospedagem**: Oracle Cloud Free Tier, São Paulo ou Vinhedo — dado nunca sai do Brasil, sem precisar de cláusula padrão/adequação ANPD pra LGPD. Capacidade Always Free ARM foi cortada de 4 OCPU/24GB pra 2 OCPU/12GB em junho/2026, revisar de novo quando a stack for decidida (ver [Sustentabilidade](docs/negocio/03-sustentabilidade.md)).
+- **Região de hospedagem (ajustada em 2026-09-14, [ADR-009](docs/adr/009-neon-cloudflare-vm.md))**: banco na Neon em São Paulo; web, API e bot na VM Oracle Free Tier em São Paulo; prints e backups no Oracle Object Storage em São Paulo; Cloudflare na frente via túnel. **Dado armazenado nunca sai do Brasil**; o trânsito das requisições pela rede da Cloudflare e o envio de e-mail são declarados na Política de Privacidade. Riscos aceitos: endereço público do banco (IP Allow só no plano pago, com cinco compensações) e dependência de três free tiers (Neon, Oracle, Cloudflare), com Docker Compose pra migrar de VM em horas.
 - **MEI não aceita a atividade** (confirmado por CNAE público, 2026-09-08, sem contador acessível pro projeto) — entidade legal é ME no Simples, ~R$200-300/mês, gatilho de assinatura recorrente sobe pra ~700 contas ativas.
 - **[RF-033](docs/requisitos/05-funcionais.md#rf-033--clube-em-uso-não-é-candidato-em-outro-lobby)**: trava a conta inteira quando 1 dos até 3 clubes simultâneos (FC26) está em uso, mesmo os outros 2 livres. Mudar exigiria cadastro/OCR de 3 clubes por conta — escopo grande demais pro ganho.
 - **Rotação de token do bot**: sem agenda periódica, só sob suspeita de vazamento (ver [RNF-013](docs/requisitos/07-nao-funcionais.md#rnf-013--token-do-bot-só-em-variável-de-ambiente)) — custo operacional desproporcional pra 4 sócios part-time.

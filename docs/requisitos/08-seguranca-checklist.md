@@ -2,7 +2,7 @@
 
 **Regra permanente, não fase do dossiê.** Entra em vigor na primeira linha de código de backend/auth/banco, independente de quando isso acontecer (depois dos [dois bloqueadores](../../HANDOFF.md#os-dois-bloqueadores--leia-isto-antes-de-qualquer-coisa)). Consultar antes de qualquer PR que toque autenticação, banco, upload ou API.
 
-**Atualizado (2026-09-08, [ADR-005](../adr/005-stack-tecnica.md) + [ADR-006](../adr/006-backend-separado-e-tooling.md))**: stack decidida é Postgres self-hosted **sem RLS** — client nunca fala direto com o banco, tudo passa pela **API do NestJS** (`apps/api`); o Next.js é só frontend e não decide autorização. Isso muda os itens 3 e 4 abaixo: não têm política de linha pra manter, mas o **princípio continua valendo com peso redobrado nos itens 6 e 7** (auth server-side, restringir acessos), porque não existe camada de banco fazendo esse trabalho.
+**Atualizado (2026-09-08, [ADR-005](../adr/005-stack-tecnica.md) + [ADR-006](../adr/006-backend-separado-e-tooling.md); banco e borda ajustados em 2026-09-14, [ADR-009](../adr/009-neon-cloudflare-vm.md) — ver itens 3, 11 e 18)**: stack decidida é Postgres **sem RLS** — client nunca fala direto com o banco, tudo passa pela **API do NestJS** (`apps/api`); o Next.js é só frontend e não decide autorização. Isso muda os itens 3 e 4 abaixo: não têm política de linha pra manter, mas o **princípio continua valendo com peso redobrado nos itens 6 e 7** (auth server-side, restringir acessos), porque não existe camada de banco fazendo esse trabalho.
 
 ## 1 · Esconder API keys
 Nenhuma chave (OCR pago, Discord, provedor de e-mail, storage) exposta no client. Só server-side ou variável de ambiente do backend. Cobre [RNF-013](07-nao-funcionais.md#rnf-013--token-do-bot-só-em-variável-de-ambiente) (token do bot) — estender pra toda chave de terceiro, não só Discord.
@@ -11,7 +11,14 @@ Nenhuma chave (OCR pago, Discord, provedor de e-mail, storage) exposta no client
 Nenhum `.env`, chave ou token commitado, nem no histórico. Usar `.gitignore` desde o primeiro commit de código; se vazar, revogar a chave (não basta remover o commit — histórico do git persiste).
 
 ## 3 · Não expor acesso direto ao banco
-**N/A na stack decidida (Postgres self-hosted, sem RLS)** — o client (browser/app) nunca fala direto com o banco, só com a API do NestJS (`apps/api`). Se algum dia mudar pra um banco com client-side access (ex.: Supabase com anon key), essa chave só pode fazer o que a política de linha permite (item 4) — nunca tratar a chave pública como equivalente a autenticado.
+O client (browser/app) nunca fala direto com o banco, só com a API do NestJS (`apps/api`). Se algum dia mudar pra um banco com client-side access (ex.: Supabase com anon key), essa chave só pode fazer o que a política de linha permite (item 4) — nunca tratar a chave pública como equivalente a autenticado.
+
+**Atualizado (2026-09-14, [ADR-009](../adr/009-neon-cloudflare-vm.md))**: o banco está na Neon, e o **endereço dele é público** — restringir por IP só existe no plano pago. As compensações são obrigatórias:
+- **Duas roles**: `prolobby_app` (API, sem DDL) e `prolobby_owner` (migrations, dump, restore). A API nunca conecta com a dona do schema.
+- **Senha aleatória, só em variável de ambiente**, com o mesmo tratamento do token do bot.
+- **`sslmode=require&channel_binding=require`** nas duas URLs.
+- **Botão de pânico no runbook**: trocar a senha das duas roles e reiniciar.
+- **Segundo fator** nos painéis da Neon, da Oracle e da Cloudflare.
 
 ## 4 · RLS (row-level security)
 **N/A na stack decidida** — sem RLS, autorização é 100% responsabilidade do item 7 (restringir acessos) e do item 6 (auth server-side), no código do NestJS, apoiada no campo `papel` da Conta ([Modelo de dados](03-dados.md#conta)). Se algum dia migrar pra Postgres gerenciado com RLS, reativar este item: toda tabela com dado de usuário teria RLS ligado, sem exceção "por enquanto".
@@ -47,6 +54,8 @@ Nunca senha em texto puro nem hash reversível. bcrypt/argon2 com salt, nunca MD
 ## 11 · Rate limit
 Por conta e por IP em login, envio de print, e leitura de perfil público. Já é [RNF-011](07-nao-funcionais.md#rnf-011--rate-limiting-na-api-própria).
 
+**IP real em produção ([ADR-009](../adr/009-neon-cloudflare-vm.md))**: o cliente é identificado pelo cabeçalho `CF-Connecting-IP`, nunca por `trust proxy` por contagem. Isso só é seguro enquanto a API for alcançável **apenas pelo túnel da Cloudflare**: nenhum `ports:` nos serviços de produção do Docker Compose. Publicar a porta da API não gera erro nenhum — só torna o IP forjável e o rate limit decorativo. O web repassa o `CF-Connecting-IP` quando chama a API na renderização do servidor.
+
 ## 12 · Bot protection
 Cadastro, login e report de resultado com proteção contra automação (captcha, honeypot, ou throttling agressivo em padrão de bot) — sem isso o rate limit sozinho não impede farm de conta.
 
@@ -67,3 +76,8 @@ Endpoint devolve só os campos que a tela precisa — nunca o objeto inteiro do 
 
 ## 18 · Security headers
 `Content-Security-Policy`, `X-Content-Type-Options`, `X-Frame-Options`/`frame-ancestors`, `Strict-Transport-Security` — configurados desde o primeiro deploy, não como reforço depois.
+
+**Na borda da Cloudflare ([ADR-009](../adr/009-neon-cloudflare-vm.md))**:
+- **Cache só de estático público** (`/_next/static/*`, imagens, fontes). **Nunca `/api/*` nem HTML** — cache errado ali entrega a página de uma pessoa pra outra. Resposta com sessão sai com `Cache-Control: private, no-store`.
+- **Web Analytics e Browser Insights desligados** ([RNF-020](07-nao-funcionais.md#rnf-020--métricas-do-beta-e-de-sucesso-saem-do-próprio-banco)).
+- **Nenhuma transformação de conteúdo** (Rocket Loader, Email Obfuscation, injeção de script): quebra a CSP.

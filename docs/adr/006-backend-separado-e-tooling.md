@@ -26,7 +26,7 @@ Reavaliado: pra 1 pessoa construindo sozinha um domínio complexo (73 RFs, máqu
 | ORM | Prisma | **MikroORM** (`@mikro-orm/nestjs`, `@mikro-orm/postgresql`) |
 | Autenticação | Auth.js (NextAuth) no Next.js | **JWT no NestJS** (`@nestjs/jwt`) — Next.js só guarda o token (cookie `HttpOnly`) e repassa pra API |
 
-**Mantido do ADR-005** (não muda): bot Node.js+TypeScript+discord.js, Postgres self-hosted sem RLS, Oracle Cloud Free Tier (São Paulo/Vinhedo), monorepo no mesmo repositório `ProLobby.com`.
+**Mantido do ADR-005** (não muda): bot Node.js+TypeScript+discord.js, Postgres self-hosted sem RLS, Oracle Cloud Free Tier (São Paulo/Vinhedo), monorepo no mesmo repositório `ProLobby.com`. _(Banco e hospedagem foram corrigidos depois pelo [ADR-009](009-neon-cloudflare-vm.md): Neon em São Paulo e Cloudflare na frente da VM.)_
 
 **Novo, não coberto pelo ADR-005**:
 
@@ -68,6 +68,6 @@ Reavaliado: pra 1 pessoa construindo sozinha um domínio complexo (73 RFs, máqu
 ## Consequências
 
 - **Checklist de segurança** (`08-seguranca-checklist.md`) itens 6 (auth server-side) e 7 (restringir acessos) agora vivem inteiramente no NestJS, não no Next.js — reforça a nota já registrada no ADR-005 de que esses dois itens carregam peso redobrado sem RLS.
-- **Capacidade da VM**: estimativa do ADR-005 (~1.2-2.5GB de RAM em carga leve) já contava com Postgres + Next.js + bot; NestJS separado soma mais um processo Node — revisar estimativa antes de ir pra produção, mas a folga de RAM (12GB) deixa margem grande.
+- **Capacidade da VM**: estimativa do ADR-005 (~1.2-2.5GB de RAM em carga leve) já contava com Postgres + Next.js + bot; NestJS separado soma mais um processo Node — revisar estimativa antes de ir pra produção, mas a folga de RAM (12GB) deixa margem grande. _(Com o [ADR-009](009-neon-cloudflare-vm.md), o Postgres sai da VM e entra o `cloudflared`, bem mais leve — a folga aumenta.)_
 - **`docs/discord/05-arquitetura-bot.md` e `HANDOFF-bot.md`** não mudam — o bot continua Node.js+discord.js independente do backend.
 - Documentos que citam a stack do ADR-005 precisam apontar também pra este ADR quando falarem de backend/ORM/auth.

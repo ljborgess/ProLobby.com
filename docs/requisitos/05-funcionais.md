@@ -516,6 +516,19 @@ Mitiga o furo aberto pela ressalva da Virtual Pro única: nada impedia verificar
 
 **Correção de 2026-09-11 — ocupação de lobby não pausa cadastro.** O critério anterior misturava dois tipos de teto: chamada de OCR é **acumulativa no mês** (barrar entrada nova reduz mesmo o consumo), enquanto lobby simultâneo é **ocupação instantânea** que se resolve em minutos — barrar cadastro ali não libera um único lobby e pune quem nada tem a ver com o pico. A alavanca certa pra capacidade instantânea é **pausar o fechamento de lobby novo**, que já existe em [RF-053](#rf-053--acima-de-400-canais-alerta-no-teto-a-fila-pausa) e [RNF-008](07-nao-funcionais.md#rnf-008--queda-do-discord-ou-teto-de-canais-pausa-a-fila-não-derruba-a-plataforma): atingidos 9 de 10 lobbies simultâneos ([RNF-004](07-nao-funcionais.md#rnf-004--10-lobbies-simultâneos)), a fila pausa com aviso in-app e volta sozinha quando um lobby encerra. Cadastro segue aberto. Não existe caminho automático que gere custo — passar do free tier nunca vira cobrança sem decisão humana explícita dos 4 sócios. Vale enquanto a ideia não estiver validada (critério de saída do beta, ver [Lançamento](../negocio/04-lancamento.md)); revisar quando decidirem pagar por infra conscientemente.
 
+**Tetos novos da stack de 2026-09-14 ([ADR-009](../adr/009-neon-cloudflare-vm.md))**, com a mesma regra acima — a ação precisa aliviar o recurso:
+
+| Teto grátis | Pausar cadastro alivia? | Ação |
+|---|---|---|
+| OCR: 1.000 chamadas/mês | sim | pausa cadastro em 90% (acima) |
+| E-mail: teto diário do provedor ([ADR-008](../adr/008-provedor-de-email.md)) | sim | pausa cadastro em 90% do teto diário, quando o provedor for escolhido |
+| Neon: 0,5 GB de armazenamento | não | alerta em 70% e 90% |
+| Neon: 100 CU-horas/mês | não | alerta em 70% e 90% |
+| Neon: 5 GB/mês de saída — estourou, banco suspenso até o próximo ciclo | não | alerta em 60% e 80% |
+| Oracle Object Storage: 20 GB | não | alerta em 80% |
+
+Medição a cada 6 horas pela API de gestão da Neon (não acorda o banco) e pela API da Oracle; alerta em `#status-sistema`. Nenhum alerta dispara gasto: todos pedem decisão humana.
+
 **Reconciliação com o critério de desistir de 90 dias ([tese de mercado](../negocio/01-mercado.md))**: a meta de sucesso do MVP (10 partidas/semana, ~80-100 chamadas OCR/mês) fica ~10x abaixo do teto do free tier (1000 OCR/mês) — na escala-alvo, RF-072 não deveria disparar durante a janela de medição. **Se disparar mesmo assim, é sinal de demanda muito acima do esperado, não de fracasso** — nesse cenário os 4 decidem conscientemente pagar por infra (a mesma decisão que RF-072 já reserva pra eles), em vez de deixar o critério de desistir confundir capacidade truncada com falta de demanda.
 
 ### RF-081 · Conta banida faz login, em modo restrito, só pra apelar
