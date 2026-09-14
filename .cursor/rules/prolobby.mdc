@@ -1,0 +1,21 @@
+---
+description: Regras permanentes do ProLobby — equivalente do CLAUDE.md para o Cursor
+alwaysApply: true
+---
+
+Este arquivo não repete regra: aponta pra fonte, pra que Claude Code e Cursor sigam exatamente o mesmo padrão. Se algo aqui divergir dos arquivos abaixo, eles mandam.
+
+Antes de qualquer tarefa, leia:
+
+- `CLAUDE.md` — regras permanentes (checklist de segurança, idioma). Valem igual no Cursor.
+- `CONTRIBUTING.md` — fluxo de issue, PR e review.
+- `docs/time/` — guia do time, com o prompt de abertura de sessão e o formato do review.
+- `HANDOFF.md` — estado do projeto.
+
+Resumo do que não pode escapar:
+
+- Código em inglês (identificador, comentário, teste, coluna, enum); issue, PR e commit em português. Nunca misturado no mesmo arquivo.
+- Backend, autenticação, banco ou upload: consultar `docs/requisitos/08-seguranca-checklist.md` antes da primeira linha.
+- PR contra `dev`, com as 7 seções do template, code review e security review publicados como comentário. Nunca fazer merge.
+- O hook de links de `docs/` do Claude Code não roda aqui: se mexer em `docs/`, rodar `bash scripts/check-docs-links.sh` antes do commit.
+- Nunca pedir, repetir ou gravar segredo (token, senha, `.env`).

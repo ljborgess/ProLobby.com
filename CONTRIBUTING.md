@@ -4,7 +4,9 @@ Referência rápida do fluxo decidido no [ADR-006](docs/adr/006-backend-separado
 
 ## Time
 
-Luciano (`@ljborgess`) e Rafael (`@rafaeljs08`) codam. Felipe (`LipeLou`) foi convidado, ainda não entrou — quando entrar, assume carga do trabalho paralelo. Luciano lidera de fato (contexto completo do dossiê): atribui issue, revisa e aprova PR dos outros. Ver [HANDOFF.md](HANDOFF.md#decidido-sem-divisão-de-papéis).
+Luciano (`@ljborgess`), Rafael (`@rafaeljs08`) e Felipe (`LipeLou`, entrou em 2026-09-14) codam. Rafael e Felipe dividem o trabalho paralelo. Luciano lidera de fato (contexto completo do dossiê): atribui issue, revisa e aprova PR dos outros. Ver [HANDOFF.md](HANDOFF.md#decidido-sem-divisão-de-papéis).
+
+**Acabou de entrar?** Leia o [guia do time](docs/time/README.md) antes da primeira issue — é este fluxo, em passo a passo, com o motivo de cada regra e o prompt de abertura de sessão. No time, o Rafael usa Cursor, e o Felipe e o Luciano usam Claude Code. A ferramenta é livre, mas o padrão de PR e de review é o mesmo ([guia 4](docs/time/04-trabalhando-com-ia.md)).
 
 A divisão por issue segue **caminho crítico x paralelo** — critério detalhado na [hierarquia de issues](#divisão-de-trabalho--caminho-crítico-x-paralelo) abaixo.
 
@@ -38,26 +40,25 @@ Sem exceção, em qualquer PR:
 | Revisão | O que olha |
 |---|---|
 | **Code review** | corretude, aderência ao RF de origem, reuso do que já existe, ausência de abstração especulativa, teste cobrindo o critério de aceite da issue |
-| **Security review** | o recorte do [checklist de segurança](docs/requisitos/08-seguranca-checklist.md) marcado no PR foi conferido **por outra pessoa**, não só pelo autor |
+| **Security review** | o recorte do [checklist de segurança](docs/requisitos/08-seguranca-checklist.md) marcado no PR foi conferido item a item, não só marcado pelo autor |
 
 As duas são registradas no próprio PR (comentário ou approval), não em conversa paralela — quem for ler o histórico daqui a seis meses precisa ver que aconteceram.
 
 **Por que está escrito com esse peso**: branch protection não é trava técnica neste repo — privado no plano Free, decidido em [#66](https://github.com/ljborgess/ProLobby.com/issues/66) e registrado no [ADR-006](docs/adr/006-backend-separado-e-tooling.md). O GitHub **deixa** mergear sem aprovação. Então a regra só existe enquanto estiver escrita e for seguida: é disciplina declarada, não garantia da ferramenta.
 
 - PR do Rafael ou do Felipe → aprovação do Luciano nas duas dimensões antes do merge.
-- PR do Luciano → **também fica aberto**: pede code review e security review a outra pessoa do time. CI verde não substitui revisão humana, e quem escreveu o código é a pior pessoa pra revisar o próprio recorte de segurança.
-- Exceção única: correção de emergência com produção no ar — que não existe ainda, e quando existir vira ADR própria.
-#### Quem revisa enquanto o time é de uma pessoa (decidido em 2026-09-11)
+- PR do Luciano → **também fica aberto** até a revisão, mas **quem revisa é o próprio Luciano** (ver abaixo). Não precisa de aprovação do Rafael nem do Felipe.
+- Exceção única: correção de emergência com produção no ar. Ela ainda não existe; quando existir, vira ADR própria.
 
-Hoje só o Luciano está ativo: o Rafael ainda não começou e o Felipe nem aceitou o convite. Escrever "outra pessoa revisa" nesse cenário produz **regra impossível de cumprir** — e regra que ninguém consegue seguir é a que ninguém lê quando finalmente importa. Foi o que aconteceu no [#71](https://github.com/ljborgess/ProLobby.com/pull/71), mergeado no mesmo dia em que a regra foi escrita.
+#### Quem revisa o PR do Luciano (decidido em 2026-09-14)
 
-Enquanto durar o período de um dev ativo:
+Em 2026-09-11, com só o Luciano ativo, "outra pessoa revisa" era uma **regra impossível de cumprir**. Foi o que aconteceu no [#71](https://github.com/ljborgess/ProLobby.com/pull/71), mergeado no mesmo dia em que a regra foi escrita. A saída foi o agente revisar. Com o Rafael e o Felipe ativos, a regra previa que a segunda revisão passasse pra eles. O Luciano decidiu que não: **o PR dele é revisado por ele mesmo**, e o time não é acionado.
 
-- **O agente (Claude Code) faz o code review e o security review** e publica os dois **como comentário no próprio PR**, antes do merge — achados classificados por severidade e o recorte do checklist de segurança conferido item a item.
-- **O Luciano lê, contesta ou aceita**, e é quem merge. A responsabilidade final continua humana; o que muda é que nenhum PR entra sem uma leitura adversarial registrada.
-- Achado que o autor discorda **fica escrito no PR com o motivo da recusa**. Discordância registrada vale mais que achado ignorado em silêncio.
+- **O agente (Claude Code) faz o code review e o security review** e publica os dois **como comentário no próprio PR**, antes do merge. Os achados vêm classificados por severidade, e o recorte do checklist de segurança é conferido item a item.
+- **O Luciano lê, contesta ou aceita**, e é ele quem faz o merge. A responsabilidade final continua humana, e nenhum PR entra sem uma leitura adversarial registrada.
+- Achado de que o autor discorda **fica escrito no PR com o motivo da recusa**. Discordância registrada vale mais que achado ignorado em silêncio.
 
-**Gatilho de saída**: com um segundo dev ativo, a segunda revisão passa a ser dele e esta seção vira histórico. O agente continua revisando — como camada extra, nunca como substituto de gente.
+**Por que não o Rafael ou o Felipe:** eles estão entrando agora e ainda não têm o contexto do dossiê. Tempo deles gasto revisando o caminho crítico é tempo tirado do trabalho paralelo. Se isso mudar, é decisão do Luciano, registrada aqui.
 
 ### Rodando os testes localmente
 
