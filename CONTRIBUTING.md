@@ -217,11 +217,34 @@ O tracker é reconstruído **fase a fase**, nunca de uma vez:
 ### Divisão de trabalho — caminho crítico x paralelo
 
 - **Luciano (`@ljborgess`)** pega a cadeia que **bloqueia o resto**: schema, autenticação, elo, fila, lobby, resultado, disputa, painel de moderação.
-- **Rafael (`@rafaeljs08`)** pega o que **corre em paralelo sem bloquear ninguém**: infra de CI, auth do webhook do bot, pipeline de OCR, telas do `apps/web`, perfil/ranking, notificações, LGPD operacional.
+- **Rafael (`@rafaeljs08`)** pega o paralelo do **bot e da infra**: auth do webhook do bot, contrato de evento, testes de migration, pipeline de OCR, notificações.
+- **Felipe (`@LipeLou`, entrou em 2026-09-14)** pega o paralelo do **produto visível**: telas do `apps/web`, proteção do cadastro, scheduler, perfil/ranking, LGPD operacional.
 
-Não é "backend vs frontend" — é minimizar espera de um pelo outro. Quando a cadeia crítica trava esperando review, o paralelo continua andando. Felipe (`LipeLou`), quando entrar, assume carga do paralelo.
+Não é "backend vs frontend" — é minimizar espera de um pelo outro. Quando a cadeia crítica trava esperando review, o paralelo continua andando. Rafael e Felipe ficam em áreas separadas pra não disputarem os mesmos arquivos.
 
-### Grafo vivo — Fase 1 (infra, processo e Discord)
+### Grafo vivo — Fase 2.1 (núcleo de conta), trabalho aberto em 2026-09-14
+
+Um PR aberto por pessoa; a seta é a ordem, e o *Blocked by* nativo está registrado nas issues.
+
+```
+#73 PRD Fase 2.1: núcleo — conta e autenticação
+│
+├── @ljborgess   (Claude Code)  #90 link de redefinição de senha
+│                               → #91 recuperação com dois fatores
+│                               → #104 conta suspensa vê o fim da pena
+│
+├── @rafaeljs08  (Cursor)       #81 teste de migration end-to-end
+│                               → #93 HMAC no webhook
+│                               → #94 rate limit no webhook      — blocked by #93
+│                               → #95 contrato de evento tipado  — blocked by #93
+│                               (#92 fecha quando #93, #94 e #95 fecharem)
+│
+└── @LipeLou     (Claude Code)  #106 scheduler + limpeza diária
+                                → #87 tela de cadastro e login
+                                → #101 proteção contra bot       — blocked by #87
+```
+
+### Grafo — Fase 1 (infra, processo e Discord) — concluída em 2026-09-11
 
 ```
 #64 PRD Mestre: roadmap de fases e ordem de execução
@@ -233,7 +256,7 @@ Não é "backend vs frontend" — é minimizar espera de um pelo outro. Quando a
     └── #70 Configurar o servidor Discord                            @ljborgess
 ```
 
-Fases 0 e 2.1 em diante: milestone criado, issues abertas quando a fase começar.
+Fase 0 e fases a partir da 2.2: milestone criado, issues abertas quando a fase começar.
 
 ### Como registrar dependência
 
