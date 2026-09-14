@@ -10,7 +10,7 @@
       "cache": false,
       "persistent": true,
       // Same rule as e2e: undeclared variables never reach the process.
-      "env": ["DATABASE_URL", "JWT_SECRET", "CORS_ORIGINS", "PORT", "DISCORD_BOT_TOKEN"]
+      "env": ["DATABASE_URL", "JWT_SECRET", "CORS_ORIGINS", "PORT", "DISCORD_BOT_TOKEN", "WEBHOOK_SECRET"]
     },
     "lint": {},
     "type-check": {
@@ -18,7 +18,7 @@
     },
     "test": {
       "dependsOn": ["^build"],
-      "env": ["THROTTLE_DISABLED"]
+      "env": ["THROTTLE_DISABLED", "WEBHOOK_SECRET"]
     },
     "e2e": {
       "cache": false,
@@ -33,7 +33,7 @@
       // it simply will not exist, and the failure looks like a bug in the code
       // rather than a missing declaration: the CI log prints the variable while
       // the process swears it is unset.
-      "env": ["DATABASE_URL", "JWT_SECRET", "CORS_ORIGINS", "THROTTLE_DISABLED"]
+      "env": ["DATABASE_URL", "JWT_SECRET", "CORS_ORIGINS", "THROTTLE_DISABLED", "WEBHOOK_SECRET"]
     }
   }
 }
