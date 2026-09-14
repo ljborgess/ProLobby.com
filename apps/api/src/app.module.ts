@@ -14,6 +14,7 @@ import { MailModule } from './common/mail/mail.module'
 import { globalValidationPipe } from './common/security/security.config'
 import { throttlerConfig, throttlingDisabled } from './common/security/throttler.config'
 import { AccountModule } from './modules/account/account.module'
+import { BotIntegrationModule } from './modules/bot-integration/bot-integration.module'
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { AccountModule } from './modules/account/account.module'
     AuthModule,
     MailModule,
     AccountModule,
+    BotIntegrationModule,
   ],
   controllers: [HealthController],
   providers: [

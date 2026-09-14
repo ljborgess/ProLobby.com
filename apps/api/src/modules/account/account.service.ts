@@ -2,6 +2,7 @@ import { EntityManager } from '@mikro-orm/postgresql'
 import { BadRequestException, Injectable, ServiceUnavailableException } from '@nestjs/common'
 
 import { HashService } from '../../common/auth/hash.service'
+import { isUniqueViolation } from '../../common/database/postgres-error'
 import { isOldEnough } from './account.age'
 import { Account } from './account.entity'
 import { normaliseSecurityAnswer } from './account.security-answer'
@@ -153,9 +154,4 @@ function assertCurrentTermsVersion(version: string): void {
       currentVersion: CURRENT_TERMS_VERSION,
     })
   }
-}
-
-/** Postgres unique-violation SQLSTATE. */
-function isUniqueViolation(error: unknown): boolean {
-  return typeof error === 'object' && error !== null && 'code' in error && error.code === '23505'
 }

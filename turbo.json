@@ -16,7 +16,8 @@
         "CORS_ORIGINS",
         "PORT",
         "DISCORD_BOT_TOKEN",
-        "WEBHOOK_SECRET"
+        "WEBHOOK_SECRET",
+        "BOT_WEBHOOK_URL"
       ]
     },
     "lint": {},
@@ -25,7 +26,7 @@
     },
     "test": {
       "dependsOn": ["^build"],
-      "env": ["THROTTLE_DISABLED", "WEBHOOK_SECRET"]
+      "env": ["THROTTLE_DISABLED", "WEBHOOK_SECRET", "BOT_WEBHOOK_URL"]
     },
     "e2e": {
       "cache": false,
@@ -40,7 +41,14 @@
       // it simply will not exist, and the failure looks like a bug in the code
       // rather than a missing declaration: the CI log prints the variable while
       // the process swears it is unset.
-      "env": ["DATABASE_URL", "JWT_SECRET", "CORS_ORIGINS", "THROTTLE_DISABLED", "WEBHOOK_SECRET"]
+      "env": [
+        "DATABASE_URL",
+        "JWT_SECRET",
+        "CORS_ORIGINS",
+        "THROTTLE_DISABLED",
+        "WEBHOOK_SECRET",
+        "BOT_WEBHOOK_URL"
+      ]
     }
   }
 }

@@ -2,6 +2,7 @@ import express, { Express, NextFunction, Request, Response } from 'express'
 import {
   WEBHOOK_MAX_SKEW_MS,
   WEBHOOK_SIGNATURE_HEADER,
+  isKnownPlatformEventType,
   isWebhookTimestampFresh,
   platformEventSchema,
   verifyWebhookSignature,
@@ -54,6 +55,12 @@ export function createWebhookServer(options: WebhookServerOptions): Express {
       return
     }
 
+    const type = typeof req.body?.type === 'string' ? req.body.type : undefined
+    if (type !== undefined && !isKnownPlatformEventType(type)) {
+      res.status(400).json({ error: 'unknown_event_type', type })
+      return
+    }
+
     const parsed = platformEventSchema.safeParse(req.body)
     if (!parsed.success) {
       res.status(400).json({ error: parsed.error.flatten() })
@@ -65,7 +72,8 @@ export function createWebhookServer(options: WebhookServerOptions): Express {
       return
     }
 
-    // TODO: route to the handler for each of RF-047..062 based on parsed.data.type
+    // Handlers for RF-047..062 arrive later. Auth, size, rate limit and the
+    // contract have to exist before any of them.
     res.status(202).json({ received: true })
   })
 
