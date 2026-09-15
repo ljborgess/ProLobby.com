@@ -55,3 +55,18 @@ export function isWebhookTimestampFresh(
 
   return Math.abs(now.getTime() - occurredAt.getTime()) <= maxSkewMs
 }
+
+/**
+ * Shared by apps/bot (WEBHOOK_SECRET used to verify incoming events) and
+ * apps/api (same value used to sign outgoing ones) — one place so the two
+ * never drift on what counts as a valid secret.
+ */
+export function readWebhookSecret(): string {
+  const secret = process.env.WEBHOOK_SECRET
+  if (!secret || secret === 'changeme') {
+    throw new Error(
+      'WEBHOOK_SECRET is required and must not be the placeholder — it authenticates kick/ban/channel commands (items 1 and 6 of the security checklist)',
+    )
+  }
+  return secret
+}

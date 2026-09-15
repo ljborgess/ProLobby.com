@@ -1,19 +1,22 @@
-import express, { Express, Request, Response } from 'express'
+import express, { Express, NextFunction, Request, Response } from 'express'
 import {
   WEBHOOK_MAX_SKEW_MS,
   WEBHOOK_SIGNATURE_HEADER,
+  isKnownPlatformEventType,
+  readWebhookSecret,
   isWebhookTimestampFresh,
   platformEventSchema,
   verifyWebhookSignature,
 } from '@prolobby/types'
 
-type RequestWithRawBody = Request & { rawBody?: Buffer }
+import { SlidingWindowLimiter, WEBHOOK_BODY_LIMIT, type Clock } from './rate-limit'
 
-export type WebhookClock = { now(): Date }
+type RequestWithRawBody = Request & { rawBody?: Buffer }
 
 export type WebhookServerOptions = {
   secret: string
-  clock?: WebhookClock
+  clock?: Clock
+  limiter?: SlidingWindowLimiter
 }
 
 /**
@@ -25,11 +28,13 @@ export type WebhookServerOptions = {
  * on nobody having forwarded a path.
  */
 export function createWebhookServer(options: WebhookServerOptions): Express {
-  const clock: WebhookClock = options.clock ?? { now: () => new Date() }
+  const clock: Clock = options.clock ?? { now: () => new Date() }
+  const limiter = options.limiter ?? new SlidingWindowLimiter(clock)
 
   const app = express()
   app.use(
     express.json({
+      limit: WEBHOOK_BODY_LIMIT,
       verify: (req: RequestWithRawBody, _res, buf) => {
         req.rawBody = buf
       },
@@ -44,6 +49,19 @@ export function createWebhookServer(options: WebhookServerOptions): Express {
       return
     }
 
+    // After HMAC: unsigned floods must not spend the global budget. 429 is for
+    // a retry loop in the API (issue #94), not for anyone who can reach the port.
+    if (!limiter.allow()) {
+      res.status(429).json({ error: 'rate_limited' })
+      return
+    }
+
+    const type = typeof req.body?.type === 'string' ? req.body.type : undefined
+    if (type !== undefined && !isKnownPlatformEventType(type)) {
+      res.status(400).json({ error: 'unknown_event_type', type })
+      return
+    }
+
     const parsed = platformEventSchema.safeParse(req.body)
     if (!parsed.success) {
       res.status(400).json({ error: parsed.error.flatten() })
@@ -55,19 +73,28 @@ export function createWebhookServer(options: WebhookServerOptions): Express {
       return
     }
 
-    // TODO: route to the handler for each of RF-047..062 based on parsed.data.type
+    // Handlers for RF-047..062 arrive later. Auth, size, rate limit and the
+    // contract have to exist before any of them.
     res.status(202).json({ received: true })
+  })
+
+  app.use((err: unknown, _req: Request, res: Response, next: NextFunction) => {
+    if (isPayloadTooLarge(err)) {
+      res.status(413).json({ error: 'payload_too_large' })
+      return
+    }
+    next(err)
   })
 
   return app
 }
 
-export function readWebhookSecret(): string {
-  const secret = process.env.WEBHOOK_SECRET
-  if (!secret || secret === 'changeme') {
-    throw new Error(
-      'WEBHOOK_SECRET is required and must not be the placeholder — it authenticates kick/ban/channel commands (items 1 and 6 of the security checklist)',
-    )
+function isPayloadTooLarge(err: unknown): boolean {
+  if (typeof err !== 'object' || err === null) {
+    return false
   }
-  return secret
+  const typed = err as { status?: number; type?: string }
+  return typed.status === 413 || typed.type === 'entity.too.large'
 }
+
+export { readWebhookSecret }
