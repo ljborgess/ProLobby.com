@@ -14,23 +14,30 @@ export const lobbyClosedEventSchema = z.object({
   id: uuid,
   occurredAt,
   type: z.literal('lobby.closed'),
-  payload: z.object({
-    lobbyId: uuid,
-    sideACaptainAccountId: uuid,
-    sideBCaptainAccountId: uuid,
-    // Floor of 8 humans, cap of 22 — docs/produto/03-partida/02-fila.md.
-    participantAccountIds: z.array(uuid).min(8).max(22),
-  }),
+  // Strict, like every payload here: an unexpected field is a sender that
+  // thinks it is sending something the receiver will never see. Silently
+  // dropping it is how two sides drift without a single error anywhere.
+  payload: z
+    .object({
+      lobbyId: uuid,
+      sideACaptainAccountId: uuid,
+      sideBCaptainAccountId: uuid,
+      // Floor of 8 humans, cap of 22 — docs/produto/03-partida/02-fila.md.
+      participantAccountIds: z.array(uuid).min(8).max(22),
+    })
+    .strict(),
 })
 
 export const accountPunishedEventSchema = z.object({
   id: uuid,
   occurredAt,
   type: z.literal('account.punished'),
-  payload: z.object({
-    accountId: uuid,
-    kind: z.enum(['suspension', 'ban']),
-  }),
+  payload: z
+    .object({
+      accountId: uuid,
+      kind: z.enum(['suspension', 'ban']),
+    })
+    .strict(),
 })
 
 export const quotaResourceSchema = z.enum([
@@ -65,14 +72,20 @@ export type SystemQuotaAlertEvent = z.infer<typeof systemQuotaAlertEventSchema>
 export type PlatformEvent = z.infer<typeof platformEventSchema>
 export type QuotaResource = z.infer<typeof quotaResourceSchema>
 
-export const PLATFORM_EVENT_TYPES = [
-  'lobby.closed',
-  'account.punished',
-  'system.quota_alert',
-] as const
+/**
+ * Derived from the union, never written by hand.
+ *
+ * A second, hand-kept list is a drift waiting to happen: add a schema to the
+ * union, forget the list, and the edge answers `unknown_event_type` for an
+ * event the contract actually accepts — a rejection with no failing test
+ * anywhere to explain it.
+ */
+export const PLATFORM_EVENT_TYPES = platformEventSchema.options.map(
+  (option) => option.shape.type.value,
+)
 
-export type PlatformEventType = (typeof PLATFORM_EVENT_TYPES)[number]
+export type PlatformEventType = PlatformEvent['type']
 
 export function isKnownPlatformEventType(type: string): type is PlatformEventType {
-  return (PLATFORM_EVENT_TYPES as readonly string[]).includes(type)
+  return (PLATFORM_EVENT_TYPES as string[]).includes(type)
 }

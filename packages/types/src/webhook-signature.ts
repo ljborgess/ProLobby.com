@@ -1,16 +1,50 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
 
-/** Header carrying the hex HMAC-SHA256 of the raw request body. */
+/** Header carrying the hex HMAC-SHA256 of `timestamp + "." + raw body`. */
 export const WEBHOOK_SIGNATURE_HEADER = 'x-webhook-signature'
 
 /**
- * Five minutes. Long enough for a slow retry (RF-058's first 10 s wait),
- * short enough that a captured request cannot be replayed after the window.
+ * Header carrying the ISO instant the request was *signed*.
+ *
+ * Deliberately not the event's `occurredAt`. The freshness window is a replay
+ * control and belongs to the transport: the sender stamps it fresh on every
+ * attempt, so a delivery recovered from the database hours after a restart
+ * still authenticates, while a captured request stops working after the
+ * window. Tying the window to `occurredAt` would force the sender to keep
+ * rewriting when the event happened — which is exactly how a business
+ * timestamp gets destroyed to satisfy a security check.
+ */
+export const WEBHOOK_TIMESTAMP_HEADER = 'x-webhook-timestamp'
+
+/**
+ * Five minutes. Long enough for a slow attempt (RF-058 waits up to 10 s for
+ * the ACK), short enough that a captured request cannot be replayed later.
  */
 export const WEBHOOK_MAX_SKEW_MS = 5 * 60 * 1000
 
-export function signWebhookBody(secret: string, rawBody: Buffer | string): string {
-  return createHmac('sha256', secret).update(rawBody).digest('hex')
+/**
+ * Exactly `YYYY-MM-DDTHH:MM:SS.sssZ`, nothing else.
+ *
+ * Strict on purpose, and it is the signature's business, not only the
+ * window's: the signed material is `timestamp + "." + body`, and an ISO
+ * instant already contains a dot. Left loose, `("<ts>.<body>", "")` and
+ * `("<ts>", "<body>")` would hash identically — the classic ambiguity of
+ * concatenating two attacker-visible fields with a separator that can appear
+ * inside one of them. A fixed-shape timestamp makes the split unambiguous.
+ */
+const ISO_INSTANT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
+
+/**
+ * The signed material is `timestamp + "." + body`, never the body alone:
+ * signing only the body would leave the timestamp free to edit, and a
+ * captured request could be replayed forever by moving it forward.
+ */
+export function signWebhookPayload(
+  secret: string,
+  timestampIso: string,
+  rawBody: Buffer | string,
+): string {
+  return hmac(secret, timestampIso, rawBody).toString('hex')
 }
 
 /**
@@ -19,12 +53,13 @@ export function signWebhookBody(secret: string, rawBody: Buffer | string): strin
  */
 export function verifyWebhookSignature(
   secret: string,
+  timestampIso: string | undefined,
   rawBody: Buffer | string,
   signatureHex: string | undefined,
 ): boolean {
-  const expected = createHmac('sha256', secret).update(rawBody).digest()
+  const expected = hmac(secret, timestampIso ?? '', rawBody)
 
-  if (!signatureHex) {
+  if (!timestampIso || !signatureHex || !ISO_INSTANT.test(timestampIso)) {
     timingSafeEqual(expected, expected)
     return false
   }
@@ -44,16 +79,20 @@ export function verifyWebhookSignature(
 }
 
 export function isWebhookTimestampFresh(
-  occurredAtIso: string,
+  timestampIso: string,
   now: Date,
   maxSkewMs: number,
 ): boolean {
-  const occurredAt = new Date(occurredAtIso)
-  if (Number.isNaN(occurredAt.getTime())) {
+  if (!ISO_INSTANT.test(timestampIso)) {
     return false
   }
 
-  return Math.abs(now.getTime() - occurredAt.getTime()) <= maxSkewMs
+  const signedAt = new Date(timestampIso)
+  if (Number.isNaN(signedAt.getTime())) {
+    return false
+  }
+
+  return Math.abs(now.getTime() - signedAt.getTime()) <= maxSkewMs
 }
 
 /**
@@ -69,4 +108,8 @@ export function readWebhookSecret(): string {
     )
   }
   return secret
+}
+
+function hmac(secret: string, timestampIso: string, rawBody: Buffer | string): Buffer {
+  return createHmac('sha256', secret).update(timestampIso).update('.').update(rawBody).digest()
 }

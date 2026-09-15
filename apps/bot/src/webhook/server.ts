@@ -2,10 +2,11 @@ import express, { Express, NextFunction, Request, Response } from 'express'
 import {
   WEBHOOK_MAX_SKEW_MS,
   WEBHOOK_SIGNATURE_HEADER,
+  WEBHOOK_TIMESTAMP_HEADER,
   isKnownPlatformEventType,
-  readWebhookSecret,
   isWebhookTimestampFresh,
   platformEventSchema,
+  readWebhookSecret,
   verifyWebhookSignature,
 } from '@prolobby/types'
 
@@ -43,9 +44,21 @@ export function createWebhookServer(options: WebhookServerOptions): Express {
 
   app.post('/events', (req: RequestWithRawBody, res: Response) => {
     const signature = req.header(WEBHOOK_SIGNATURE_HEADER)
+    const signedAt = req.header(WEBHOOK_TIMESTAMP_HEADER)
     const rawBody = req.rawBody ?? Buffer.from('')
-    if (!verifyWebhookSignature(options.secret, rawBody, signature)) {
+
+    if (!verifyWebhookSignature(options.secret, signedAt, rawBody, signature)) {
       res.status(401).json({ error: 'invalid_signature' })
+      return
+    }
+
+    // The window belongs to the signature, not to the event. A delivery the
+    // API recovered from its own table hours after a restart is legitimate
+    // and gets signed fresh; a request captured off the wire stops working
+    // five minutes later. `signedAt` is inside the signed material, so it
+    // cannot be moved forward without the secret.
+    if (!isWebhookTimestampFresh(signedAt ?? '', clock.now(), WEBHOOK_MAX_SKEW_MS)) {
+      res.status(401).json({ error: 'expired_timestamp' })
       return
     }
 
@@ -68,19 +81,21 @@ export function createWebhookServer(options: WebhookServerOptions): Express {
       return
     }
 
-    if (!isWebhookTimestampFresh(parsed.data.occurredAt, clock.now(), WEBHOOK_MAX_SKEW_MS)) {
-      res.status(401).json({ error: 'expired_timestamp' })
-      return
-    }
-
     // Handlers for RF-047..062 arrive later. Auth, size, rate limit and the
     // contract have to exist before any of them.
     res.status(202).json({ received: true })
   })
 
+  // A body-parser failure never reaches the route, so it is answered here or
+  // Express's own handler takes over — which replies with an HTML page and,
+  // outside production, the stack trace in the body (item 15).
   app.use((err: unknown, _req: Request, res: Response, next: NextFunction) => {
     if (isPayloadTooLarge(err)) {
       res.status(413).json({ error: 'payload_too_large' })
+      return
+    }
+    if (isMalformedJson(err)) {
+      res.status(400).json({ error: 'invalid_json' })
       return
     }
     next(err)
@@ -90,11 +105,20 @@ export function createWebhookServer(options: WebhookServerOptions): Express {
 }
 
 function isPayloadTooLarge(err: unknown): boolean {
+  const typed = asBodyParserError(err)
+  return typed?.status === 413 || typed?.type === 'entity.too.large'
+}
+
+function isMalformedJson(err: unknown): boolean {
+  const typed = asBodyParserError(err)
+  return typed?.type === 'entity.parse.failed' || err instanceof SyntaxError
+}
+
+function asBodyParserError(err: unknown): { status?: number; type?: string } | null {
   if (typeof err !== 'object' || err === null) {
-    return false
+    return null
   }
-  const typed = err as { status?: number; type?: string }
-  return typed.status === 413 || typed.type === 'entity.too.large'
+  return err as { status?: number; type?: string }
 }
 
 export { readWebhookSecret }

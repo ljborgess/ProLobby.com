@@ -59,6 +59,7 @@ describe('EventDelivery (e2e)', () => {
         eventId: event.id,
         type: event.type,
         payload: event.payload,
+        occurredAt: new Date(event.occurredAt),
         targetKind: EventDeliveryTargetKind.LOBBY,
         targetId: event.payload.lobbyId,
         attempts: 1,

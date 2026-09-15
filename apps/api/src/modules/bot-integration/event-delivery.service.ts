@@ -75,6 +75,7 @@ export class EventDeliveryService implements OnModuleDestroy {
       eventId: parsed.id,
       type: parsed.type,
       payload: { ...parsed.payload },
+      occurredAt: new Date(parsed.occurredAt),
       targetKind: target.kind,
       targetId: target.id,
     })
@@ -103,7 +104,27 @@ export class EventDeliveryService implements OnModuleDestroy {
     this.cancelById.set(id, cancel)
   }
 
+  /**
+   * One attempt, and it never throws.
+   *
+   * Callers fire this with `void` — from `enqueue` and from a timer — so an
+   * escaping rejection would be an unhandled one, and Node ends the process
+   * for those. A database blip while recording a retry must not take down an
+   * API that is answering requests: the row keeps its `nextAttemptAt` and the
+   * next boot picks it up.
+   */
   private async attempt(id: string): Promise<void> {
+    try {
+      await this.deliver(id)
+    } catch (error) {
+      this.logger.error(
+        `delivery attempt failed for ${id}`,
+        error instanceof Error ? error.stack : undefined,
+      )
+    }
+  }
+
+  private async deliver(id: string): Promise<void> {
     const em = this.em.fork()
     const row = await em.findOne(EventDelivery, { id })
     if (!row || row.deliveredAt || row.attempts >= DELIVERY_MAX_ATTEMPTS) {
@@ -113,44 +134,71 @@ export class EventDeliveryService implements OnModuleDestroy {
     row.attempts += 1
     const event = this.toEvent(row)
 
+    // Only the HTTP call is guarded here. Wrapping the database work in the
+    // same `try` made a failed write run the retry path twice — once from the
+    // body, once from the catch.
+    let status: number | null = null
     try {
-      const { status } = await this.webhook.post(event)
-      // 429 is a retryable "try later" (issue #94), not a definitive failure.
-      if (status === 202) {
-        row.deliveredAt = this.clock.now()
-        row.nextAttemptAt = undefined
-        await em.flush()
-        this.cancelById.get(id)?.()
-        this.cancelById.delete(id)
-        return
-      }
-
-      await this.scheduleRetry(em, row)
+      status = (await this.webhook.post(event)).status
     } catch {
-      await this.scheduleRetry(em, row)
+      // Timeout, connection refused, DNS — the bot may simply be restarting.
+      status = null
     }
+
+    if (status === 202) {
+      row.deliveredAt = this.clock.now()
+      row.nextAttemptAt = undefined
+      await em.flush()
+      this.cancelById.get(id)?.()
+      this.cancelById.delete(id)
+      return
+    }
+
+    // A rejected *contract* never becomes valid by waiting: the bot said this
+    // payload is not something it accepts, and the next three attempts would
+    // send the same bytes for the same answer. Burning them would also hide
+    // the real cause behind a case that reads "the bot never confirmed", when
+    // the truth is that we sent something it refuses.
+    //
+    // 429 is the exception — that one *is* "try later" (issue #94).
+    if (status !== null && isPermanentRejection(status)) {
+      await this.giveUp(em, row, `bot refused the event with HTTP ${status}`)
+      return
+    }
+
+    await this.scheduleRetry(em, row)
   }
 
   private async scheduleRetry(em: EntityManager, row: EventDelivery): Promise<void> {
-    if (row.attempts >= DELIVERY_MAX_ATTEMPTS) {
-      row.nextAttemptAt = undefined
-      await this.openDeliveryFailureCase(em, row)
-      await em.flush()
+    const delay = DELIVERY_BACKOFF_MS[row.attempts - 1]
+
+    if (delay === undefined) {
+      await this.giveUp(em, row, 'retries exhausted, the bot never confirmed')
       return
     }
 
-    const delay = DELIVERY_BACKOFF_MS[row.attempts - 1]
-    if (delay === undefined) {
-      await this.openDeliveryFailureCase(em, row)
-      await em.flush()
-      return
-    }
     row.nextAttemptAt = new Date(this.clock.now().getTime() + delay)
     await em.flush()
     this.arm(row.id, delay)
   }
 
-  private async openDeliveryFailureCase(em: EntityManager, row: EventDelivery): Promise<void> {
+  /** Stops trying and hands the event to a human — RF-058. */
+  private async giveUp(em: EntityManager, row: EventDelivery, reason: string): Promise<void> {
+    row.nextAttemptAt = undefined
+    // Counted as spent even when we stop early, so a boot recovery does not
+    // pick the row back up and start the same losing loop again.
+    row.attempts = DELIVERY_MAX_ATTEMPTS
+    this.cancelById.get(row.id)?.()
+    this.cancelById.delete(row.id)
+    await this.openDeliveryFailureCase(em, row, reason)
+    await em.flush()
+  }
+
+  private async openDeliveryFailureCase(
+    em: EntityManager,
+    row: EventDelivery,
+    reason: string,
+  ): Promise<void> {
     em.persist(
       em.create(ModerationCase, {
         type: ModerationCaseType.BOT_DELIVERY_FAILURE,
@@ -160,15 +208,26 @@ export class EventDeliveryService implements OnModuleDestroy {
         lobbyId: row.targetKind === EventDeliveryTargetKind.LOBBY ? row.targetId : undefined,
       }),
     )
-    this.logger.error(`delivery exhausted for event ${row.eventId} (${row.type})`)
+    this.logger.error(`delivery gave up on event ${row.eventId} (${row.type}): ${reason}`)
   }
 
   private toEvent(row: EventDelivery): PlatformEvent {
     return platformEventSchema.parse({
       id: row.eventId,
       type: row.type,
-      occurredAt: this.clock.now().toISOString(),
+      // The stored instant, never "now": the bot is told when the event
+      // happened, not when this attempt left. Freshness is the signing
+      // timestamp's job, and WebhookClient stamps that per attempt.
+      occurredAt: row.occurredAt.toISOString(),
       payload: row.payload,
     })
   }
+}
+
+/**
+ * 4xx other than 429: the bot understood the request and refused it. Sending
+ * the identical bytes again cannot change that answer.
+ */
+function isPermanentRejection(status: number): boolean {
+  return status >= 400 && status < 500 && status !== 429
 }

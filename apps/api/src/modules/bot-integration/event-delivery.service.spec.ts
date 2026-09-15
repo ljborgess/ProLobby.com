@@ -4,6 +4,7 @@ import { sampleLobbyClosedEvent } from '@prolobby/types'
 import { Clock } from '../../common/time/clock'
 import { EventDelivery } from './event-delivery.entity'
 import { EventDeliveryTargetKind } from './event-delivery.enums'
+import { ModerationCaseType } from '../moderation/moderation-case.enums'
 import { EventDeliveryService } from './event-delivery.service'
 import { WebhookClient } from './webhook-client'
 
@@ -95,6 +96,7 @@ describe('EventDeliveryService', () => {
       eventId: event.id,
       type: event.type,
       payload: event.payload,
+      occurredAt: new Date(event.occurredAt),
       attempts: 1,
       deliveredAt: undefined,
       nextAttemptAt: new Date(clock.now().getTime() + 5_000),
@@ -127,6 +129,7 @@ describe('EventDeliveryService', () => {
       eventId: event.id,
       type: event.type,
       payload: event.payload,
+      occurredAt: new Date(event.occurredAt),
       attempts: 0,
       targetKind: EventDeliveryTargetKind.LOBBY,
       createdAt: clock.now(),
@@ -145,5 +148,125 @@ describe('EventDeliveryService', () => {
 
     expect(post).toHaveBeenCalledTimes(2)
     expect(row.deliveredAt).toBeInstanceOf(Date)
+  })
+
+  it('stops at the first 400 instead of burning the retries on a refused contract', async () => {
+    const clock = new FakeClock()
+    const post = jest.fn().mockResolvedValue({ status: 400 })
+    const { service, em } = createService({ post }, clock)
+    const row = {
+      id: 'delivery-1',
+      eventId: event.id,
+      type: event.type,
+      payload: event.payload,
+      occurredAt: new Date(event.occurredAt),
+      attempts: 0,
+      targetKind: EventDeliveryTargetKind.LOBBY,
+      createdAt: clock.now(),
+    } as EventDelivery
+    em.create.mockReturnValue(row)
+    em.findOne.mockResolvedValue(row)
+
+    await service.enqueue(event, { kind: EventDeliveryTargetKind.LOBBY, id: event.payload.lobbyId })
+    await new Promise((resolve) => setImmediate(resolve))
+
+    // The bot understood the request and refused it; the same bytes get the
+    // same answer, so the three remaining attempts would buy nothing.
+    expect(post).toHaveBeenCalledTimes(1)
+    expect(em.create).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ type: ModerationCaseType.BOT_DELIVERY_FAILURE }),
+    )
+
+    await clock.tick(60_000)
+    await new Promise((resolve) => setImmediate(resolve))
+
+    expect(post).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps retrying a 503, which is the bot being restarted', async () => {
+    const clock = new FakeClock()
+    const post = jest
+      .fn()
+      .mockResolvedValueOnce({ status: 503 })
+      .mockResolvedValueOnce({ status: 202 })
+
+    const { service, em } = createService({ post }, clock)
+    const row = {
+      id: 'delivery-1',
+      eventId: event.id,
+      type: event.type,
+      payload: event.payload,
+      occurredAt: new Date(event.occurredAt),
+      attempts: 0,
+      targetKind: EventDeliveryTargetKind.LOBBY,
+      createdAt: clock.now(),
+    } as EventDelivery
+    em.create.mockReturnValue(row)
+    em.findOne.mockResolvedValue(row)
+
+    await service.enqueue(event, { kind: EventDeliveryTargetKind.LOBBY, id: event.payload.lobbyId })
+    await new Promise((resolve) => setImmediate(resolve))
+    await clock.tick(10_000)
+    await new Promise((resolve) => setImmediate(resolve))
+
+    expect(post).toHaveBeenCalledTimes(2)
+    expect(row.deliveredAt).toBeInstanceOf(Date)
+  })
+
+  it('survives a database failure while recording the retry', async () => {
+    const clock = new FakeClock()
+    const post = jest.fn().mockResolvedValue({ status: 500 })
+    const { service, em } = createService({ post }, clock)
+    const row = {
+      id: 'delivery-1',
+      eventId: event.id,
+      type: event.type,
+      payload: event.payload,
+      occurredAt: new Date(event.occurredAt),
+      attempts: 0,
+      targetKind: EventDeliveryTargetKind.LOBBY,
+      createdAt: clock.now(),
+    } as EventDelivery
+    em.create.mockReturnValue(row)
+    em.findOne.mockResolvedValue(row)
+    // The delivery insert works; the flush that records the retry does not.
+    em.flush.mockResolvedValueOnce(undefined).mockRejectedValue(new Error('connection lost'))
+
+    await service.enqueue(event, { kind: EventDeliveryTargetKind.LOBBY, id: event.payload.lobbyId })
+
+    // The point is what does *not* happen: attempt() is fired with `void`, so
+    // an escaping rejection would be an unhandled one and Node would end the
+    // process. Reaching this line at all is the assertion.
+    await new Promise((resolve) => setImmediate(resolve))
+    expect(post).toHaveBeenCalledTimes(1)
+  })
+
+  it('sends the event own timestamp, not the moment of the attempt', async () => {
+    const clock = new FakeClock()
+    const post = jest.fn().mockResolvedValue({ status: 202 })
+    const { service, em } = createService({ post }, clock)
+    const occurredAt = new Date('2026-09-14T09:00:00.000Z')
+    const row = {
+      id: 'delivery-1',
+      eventId: event.id,
+      type: event.type,
+      payload: event.payload,
+      occurredAt,
+      attempts: 0,
+      targetKind: EventDeliveryTargetKind.LOBBY,
+      createdAt: clock.now(),
+    } as EventDelivery
+    em.create.mockReturnValue(row)
+    em.findOne.mockResolvedValue(row)
+
+    await service.enqueue(event, { kind: EventDeliveryTargetKind.LOBBY, id: event.payload.lobbyId })
+    await new Promise((resolve) => setImmediate(resolve))
+
+    // Three hours older than the clock: the bot is told when the lobby closed,
+    // not when this attempt left. Freshness is the signing timestamp's job.
+    expect(post).toHaveBeenCalledWith(
+      expect.objectContaining({ occurredAt: occurredAt.toISOString() }),
+    )
   })
 })

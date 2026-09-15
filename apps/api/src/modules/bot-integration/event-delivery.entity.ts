@@ -29,6 +29,18 @@ export class EventDelivery {
   @Property({ type: 'json', columnType: 'jsonb' })
   payload!: Record<string, unknown>
 
+  /**
+   * When the event happened — the business timestamp, forwarded to the bot
+   * unchanged on every attempt.
+   *
+   * Stored because the replay window lives on the *signing* timestamp, not on
+   * this one: without a column here, a retry had nothing to send and the
+   * sender ended up stamping now, quietly destroying the only record of
+   * when the lobby actually closed.
+   */
+  @Property()
+  occurredAt!: Date
+
   @Enum({ items: () => EventDeliveryTargetKind })
   targetKind!: EventDeliveryTargetKind
 
