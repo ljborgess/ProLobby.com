@@ -4,7 +4,8 @@ import path from 'node:path'
 
 import config from '../src/common/database/mikro-orm.config'
 
-const SESSION_BOUND = /\b(listen|notify|pg_advisory_lock|pg_advisory_xact_lock|set session|set local)\b/i
+const SESSION_BOUND =
+  /\b(listen|notify|pg_advisory_lock|pg_advisory_xact_lock|set session|set local)\b/i
 
 /**
  * Replaces the provisional `SELECT 1` smoke test (issue #81).
@@ -92,8 +93,10 @@ function entityTableNames(orm: MikroORM): string[] {
 }
 
 async function listPublicTables(orm: MikroORM): Promise<string[]> {
-  const rows = await orm.em.getConnection().execute<{ tablename: string }[]>(
-    `select tablename from pg_catalog.pg_tables where schemaname = 'public'`,
-  )
+  const rows = await orm.em
+    .getConnection()
+    .execute<{ tablename: string }[]>(
+      `select tablename from pg_catalog.pg_tables where schemaname = 'public'`,
+    )
   return rows.map((row) => row.tablename)
 }
