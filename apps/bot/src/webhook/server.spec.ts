@@ -1,25 +1,16 @@
 import request from 'supertest'
-import { WEBHOOK_SIGNATURE_HEADER, signWebhookBody } from '@prolobby/types'
+import {
+  WEBHOOK_SIGNATURE_HEADER,
+  sampleLobbyClosedEvent,
+  sampleQuotaAlertEvent,
+  signWebhookBody,
+} from '@prolobby/types'
 
 import { SlidingWindowLimiter, WEBHOOK_RATE_LIMIT_MAX } from './rate-limit'
 import { createWebhookServer } from './server'
 
 const SECRET = 'test-webhook-secret-not-the-placeholder'
 const OTHER_SECRET = 'some-other-secret-also-not-a-placeholder'
-const NIL = (n: number) => `11111111-1111-1111-1111-${n.toString().padStart(12, '0')}`
-
-/** Real lobby.closed shape: two captains + 10 humans (issue #94). */
-const lobbyClosed = (occurredAt: string, id = NIL(100)) => ({
-  id,
-  type: 'lobby.closed',
-  occurredAt,
-  payload: {
-    lobbyId: NIL(200),
-    sideACaptainAccountId: NIL(1),
-    sideBCaptainAccountId: NIL(2),
-    participantAccountIds: Array.from({ length: 10 }, (_, i) => NIL(i + 1)),
-  },
-})
 
 describe('webhook server', () => {
   const clock = { now: () => new Date('2026-09-14T12:00:00.000Z') }
@@ -34,26 +25,30 @@ describe('webhook server', () => {
       .send(raw.toString('utf8'))
   }
 
-  it('accepts a well-formed signed platform event', async () => {
-    const res = await post(lobbyClosed(clock.now().toISOString()))
+  it('accepts a well-formed signed lobby.closed event', async () => {
+    const res = await post(sampleLobbyClosedEvent({ occurredAt: clock.now().toISOString() }))
     expect(res.status).toBe(202)
   })
 
   it('rejects a request with no signature', async () => {
-    const res = await request(app).post('/events').send(lobbyClosed(clock.now().toISOString()))
+    const body = sampleLobbyClosedEvent({ occurredAt: clock.now().toISOString() })
+    const res = await request(app).post('/events').send(body)
     expect(res.status).toBe(401)
     expect(res.body).toEqual({ error: 'invalid_signature' })
   })
 
   it('rejects a signature from another secret', async () => {
-    const res = await post(lobbyClosed(clock.now().toISOString()), OTHER_SECRET)
+    const res = await post(
+      sampleLobbyClosedEvent({ occurredAt: clock.now().toISOString() }),
+      OTHER_SECRET,
+    )
     expect(res.status).toBe(401)
   })
 
   it('rejects a body altered after signing', async () => {
-    const body = lobbyClosed(clock.now().toISOString())
+    const body = sampleLobbyClosedEvent({ occurredAt: clock.now().toISOString() })
     const raw = Buffer.from(JSON.stringify(body))
-    const tampered = Buffer.from(JSON.stringify({ ...body, type: 'lobby.opened' }))
+    const tampered = Buffer.from(JSON.stringify({ ...body, type: 'account.punished' }))
     const res = await request(app)
       .post('/events')
       .set('Content-Type', 'application/json')
@@ -65,13 +60,47 @@ describe('webhook server', () => {
 
   it('rejects a valid signature replayed outside the timestamp window', async () => {
     const occurredAt = new Date(clock.now().getTime() - 6 * 60 * 1000).toISOString()
-    const res = await post(lobbyClosed(occurredAt))
+    const res = await post(sampleLobbyClosedEvent({ occurredAt }))
     expect(res.status).toBe(401)
     expect(res.body).toEqual({ error: 'expired_timestamp' })
   })
 
-  it('rejects a malformed event', async () => {
-    const res = await post({ type: 'lobby.closed' })
+  it('rejects an unknown event type at the edge', async () => {
+    const res = await post({
+      id: '11111111-1111-1111-1111-000000000099',
+      occurredAt: clock.now().toISOString(),
+      type: 'lobby.exploded',
+      payload: {},
+    })
+
+    expect(res.status).toBe(400)
+    expect(res.body).toEqual({ error: 'unknown_event_type', type: 'lobby.exploded' })
+  })
+
+  it('rejects a lobby payload on a punishment event', async () => {
+    const lobby = sampleLobbyClosedEvent({ occurredAt: clock.now().toISOString() })
+    const res = await post({
+      id: lobby.id,
+      occurredAt: lobby.occurredAt,
+      type: 'account.punished',
+      payload: lobby.payload,
+    })
+
+    expect(res.status).toBe(400)
+  })
+
+  it('accepts system.quota_alert with no user data', async () => {
+    const res = await post(sampleQuotaAlertEvent({ occurredAt: clock.now().toISOString() }))
+    expect(res.status).toBe(202)
+  })
+
+  it('rejects system.quota_alert when the payload carries a user field', async () => {
+    const base = sampleQuotaAlertEvent({ occurredAt: clock.now().toISOString() })
+    const res = await post({
+      ...base,
+      payload: { ...base.payload, accountId: '11111111-1111-1111-1111-000000000001' },
+    })
+
     expect(res.status).toBe(400)
   })
 
@@ -93,7 +122,7 @@ describe('webhook server — global rate limit', () => {
     const clock = { now: () => new Date('2026-09-14T12:00:00.000Z') }
     const limiter = new SlidingWindowLimiter(clock)
     const app = createWebhookServer({ secret: SECRET, clock, limiter })
-    const body = lobbyClosed(clock.now().toISOString())
+    const body = sampleLobbyClosedEvent({ occurredAt: clock.now().toISOString() })
     const raw = Buffer.from(JSON.stringify(body))
     const signature = signWebhookBody(SECRET, raw)
 
@@ -120,7 +149,10 @@ describe('webhook server — global rate limit', () => {
     const legitimatePeak = 10 * 5
 
     for (let i = 0; i < legitimatePeak; i += 1) {
-      const body = lobbyClosed(clock.now().toISOString(), NIL(i + 1))
+      const body = sampleLobbyClosedEvent({
+        id: `11111111-1111-1111-1111-${(i + 1).toString().padStart(12, '0')}`,
+        occurredAt: clock.now().toISOString(),
+      })
       const raw = Buffer.from(JSON.stringify(body))
       const res = await request(app)
         .post('/events')
@@ -136,7 +168,7 @@ describe('webhook server — global rate limit', () => {
     const clock = { now: () => new Date('2026-09-14T16:00:00.000Z') }
     const limiter = new SlidingWindowLimiter(clock)
     const app = createWebhookServer({ secret: SECRET, clock, limiter })
-    const body = lobbyClosed(clock.now().toISOString())
+    const body = sampleLobbyClosedEvent({ occurredAt: clock.now().toISOString() })
 
     for (let i = 0; i < WEBHOOK_RATE_LIMIT_MAX; i += 1) {
       const res = await request(app).post('/events').send(body)
