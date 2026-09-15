@@ -32,6 +32,35 @@ Sem exceção, em qualquer PR:
 3. Commit no padrão Conventional Commits (`commitlint.config.js` valida via Husky) — `feat:`, `fix:`, `chore:`, `test:`, `docs:`.
 4. Abrir PR contra `dev` referenciando a issue (`Closes #N`). O template preenche sozinho — PR **sem issue vinculada não entra**.
 5. CI verde: format, lint, type-check, test, build, e2e e audit.
+6. Mergeado, **fechar a issue à mão** com um comentário dizendo onde foi entregue.
+
+### A base do PR é sempre `dev` — inclusive quando um trabalho depende do outro
+
+**Nenhum PR aponta pra branch de feature de ninguém.** Se o seu trabalho depende de outro que ainda não entrou, a dependência se registra no *Blocked by* da issue e você espera o merge — não empilha PR em cima de PR.
+
+**Por que está escrito**: em 2026-09-15 os PRs [#114](https://github.com/ljborgess/ProLobby.com/pull/114) e [#115](https://github.com/ljborgess/ProLobby.com/pull/115) foram abertos com base numa branch de feature, do jeito que o GitHub sugere pra PR empilhado. Os dois foram aprovados e mergeados — **e nenhum dos dois chegou em `dev`**: o merge foi pra branch de base, que já tinha sido mergeada e abandonada. O botão disse "Merged", o quadro disse entregue, e o código do rate limit e do contrato de evento ficou fora do produto. Só apareceu quando alguém foi conferir o `dev` arquivo por arquivo.
+
+Empilhar PR também mistura as revisões: quando o `#116` corrigiu a rota, ele arrastou junto a feature do PR anterior, e a descrição dele falava de uma coisa só.
+
+### `dev` é onde o produto é construído, `main` é o que vai pra produção
+
+Dois branches, com papéis diferentes e nenhuma ambiguidade:
+
+| Branch | O que é | Quem manda coisa pra lá |
+|---|---|---|
+| `dev` | onde o produto inteiro é construído e visto funcionando | todo PR, de todo mundo |
+| `main` | o que sobe pra produção | **só o Luciano, por decisão explícita** |
+
+- **Nenhum PR aponta pra `main`.** Trabalho entra em `dev`, roda em `dev`, é revisado em `dev`.
+- **`dev` → `main` é promoção, não merge de rotina.** Acontece quando o Luciano olha o que está em `dev` e **dá o veredito** de que aquilo pode ir pro ar. Não é automático, não é por PR aprovado, não é porque o CI ficou verde.
+- **Ninguém promove por conta própria** — nem o agente, nem o resto do time.
+- `dev` é o **branch padrão do repositório** (desde 2026-09-15). É onde o trabalho entra, então é onde o `Closes #N` precisa funcionar; `main` continua sendo o destino de produção, e ser padrão no GitHub não tem nada a ver com isso.
+
+### Fechar issue é passo manual, não automático
+
+O `Closes #N` no PR **não fecha nada neste repo**: o GitHub só fecha issue automaticamente quando o PR entra no **branch padrão**. Por isso o padrão do repositório é `dev` — que é onde o trabalho entra. `main` continua recebendo merge só quando o time decidir promover.
+
+Mesmo com o padrão certo, confira depois do merge: issue entregue e aberta faz o quadro mentir, e foi o que aconteceu com sete issues até 2026-09-15.
 
 ### O PR fica aberto até as duas revisões — sem exceção
 

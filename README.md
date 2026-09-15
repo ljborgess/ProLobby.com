@@ -179,8 +179,10 @@ Luciano no caminho crítico, Rafael em bot e infra, Felipe em produto visível.
 Luciano atribui issue e aprova PR. Quem entra pra codar começa por
 [`docs/time/`](docs/time/README.md).
 
-Trabalho corre em `dev`; `main` só recebe merge quando o time decidir
-promover.
+`main` é o que vai pra produção. `dev` é onde o produto é construído e
+visto funcionando, e é o branch padrão do repositório — todo PR aponta pra
+`dev`. Promover `dev` para `main` é decisão explícita do Luciano, nunca
+efeito colateral de PR aprovado.
 
 <br>
 
