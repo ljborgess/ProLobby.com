@@ -43,7 +43,11 @@ export function verifyWebhookSignature(
   return timingSafeEqual(provided, expected)
 }
 
-export function isWebhookTimestampFresh(occurredAtIso: string, now: Date, maxSkewMs: number): boolean {
+export function isWebhookTimestampFresh(
+  occurredAtIso: string,
+  now: Date,
+  maxSkewMs: number,
+): boolean {
   const occurredAt = new Date(occurredAtIso)
   if (Number.isNaN(occurredAt.getTime())) {
     return false

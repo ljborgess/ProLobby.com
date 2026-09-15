@@ -23,7 +23,7 @@ describe('webhook server', () => {
       .post('/events')
       .set('Content-Type', 'application/json')
       .set(WEBHOOK_SIGNATURE_HEADER, signWebhookBody(secret, raw))
-      .send(raw)
+      .send(raw.toString('utf8'))
   }
 
   it('accepts a well-formed signed platform event', async () => {
@@ -50,7 +50,7 @@ describe('webhook server', () => {
       .post('/events')
       .set('Content-Type', 'application/json')
       .set(WEBHOOK_SIGNATURE_HEADER, signWebhookBody(SECRET, raw))
-      .send(tampered)
+      .send(tampered.toString('utf8'))
 
     expect(res.status).toBe(401)
   })

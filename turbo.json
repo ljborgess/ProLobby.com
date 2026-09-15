@@ -10,7 +10,14 @@
       "cache": false,
       "persistent": true,
       // Same rule as e2e: undeclared variables never reach the process.
-      "env": ["DATABASE_URL", "JWT_SECRET", "CORS_ORIGINS", "PORT", "DISCORD_BOT_TOKEN", "WEBHOOK_SECRET"]
+      "env": [
+        "DATABASE_URL",
+        "JWT_SECRET",
+        "CORS_ORIGINS",
+        "PORT",
+        "DISCORD_BOT_TOKEN",
+        "WEBHOOK_SECRET"
+      ]
     },
     "lint": {},
     "type-check": {
