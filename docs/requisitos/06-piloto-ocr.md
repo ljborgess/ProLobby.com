@@ -46,6 +46,38 @@ Nos servidores BR de Pro Clubs, pedindo: *"manda um print da tela do seu Virtual
 - Roda em paralelo ao recrutamento do beta ([Lançamento](../negocio/04-lancamento.md)) — é conversa nos mesmos servidores, com os mesmos contatos.
 - **Prints do piloto não são dado de produção**: usados só pra medir, apagados no fim, e ninguém é cadastrado por causa deles. Vale pedir autorização de uso na própria mensagem.
 
+## Quando o piloto roda (decidido em 2026-09-15)
+
+O piloto foi **adiado, não descartado**, por um motivo simples: os prints de estranhos ainda não existem, e não dá pra medir sem dado. Adiar sem gatilho é esquecer, então ficam três:
+
+- **Gatilho duro — o piloto tem que ter rodado antes de a Fase 2.2 começar.** Antes de *começar*, não de terminar. É o último ponto em que a resposta ainda muda o que se constrói, em vez de invalidar o que já foi construído.
+- **Gatilho macio — 20 prints já bastam pra primeira rodada.** Não espera os 50. Com 20 já dá pra ver se está em 90% ou em 40%, e é essa diferença que decide o projeto, não a terceira casa decimal. Os 50 refinam.
+- **Alarme — três semanas sem print nenhum** significa que a coleta não está acontecendo e precisa virar tarefa com hora marcada, não intenção.
+
+**Rodar com prints dos sócios não fecha este bloqueador.** Serve pra validar que o script funciona, e o relatório sai carimbado como amostra interna. O número do risco nº 2 só existe com print de estranho.
+
+**A coleta não compete com issue nenhuma.** É mensagem em servidor de Discord, não é engenharia, e roda em paralelo a tudo — e é exatamente por isso que ela nunca é a coisa mais urgente e nunca acontece.
+
+## Como pedir, e o que pode ser feito com o print
+
+Print de tela de Virtual Pro tem **gamertag**, que identifica pessoa real. Sem autorização no ato do pedido, o projeto junta 50 imagens identificáveis de estranhos sem base pra tratar nenhuma delas — e entra em contradição com a própria seção de LGPD no primeiro dado que coleta.
+
+Três regras:
+
+1. **A autorização vai no próprio pedido**, em uma linha, sem juridiquês. Quem manda o print consente ao mandar.
+2. **Imagem nunca entra no git.** Nem em branch, nem em PR, nem "temporariamente" — git não esquece, e print commitado e removido depois continua no histórico. Pasta local, `.gitignore` desde o primeiro commit do script.
+3. **O gabarito é versionado, as imagens não.** As imagens são apagadas quando o piloto fecha.
+
+Mensagem pra mandar:
+
+> Fala, pessoal. Tô construindo uma plataforma de amistosos de Pro Clubs e preciso testar uma parada antes: um leitor automático da tela do Virtual Pro.
+>
+> Se puderem me mandar **um print da tela do seu Virtual Pro** (aquela com overall, posição e atributos), ajuda demais. Serve print de console e foto da TV com o celular — na real, **foto torta ajuda mais**, porque é o caso difícil que eu preciso medir.
+>
+> Uso só pra medir a taxa de acerto do leitor, **apago tudo quando terminar o teste**, não cadastro ninguém e não publico print de ninguém. Se topar, é só mandar aqui ou no direct.
+
+**Pedir foto torta é proposital.** Sem isso todo mundo manda screenshot nativo limpo, o número vem lindo, e a descoberta de que foto de celular quebra acontece em produção. Print ruim é o dado mais valioso do piloto.
+
 ## Critério de aprovação
 
 **80% dos prints aceitos de primeira** — confiança ≥85% sem reenvio, com os campos corretos.
