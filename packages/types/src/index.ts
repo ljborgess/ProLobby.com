@@ -15,9 +15,14 @@ export {
 } from './webhook-event'
 export {
   WEBHOOK_MAX_SKEW_MS,
+  readWebhookSecret,
   WEBHOOK_SIGNATURE_HEADER,
   isWebhookTimestampFresh,
   signWebhookBody,
   verifyWebhookSignature,
 } from './webhook-signature'
-export { sampleLobbyClosedEvent, samplePlatformEvent, sampleQuotaAlertEvent } from './webhook-fixtures'
+export {
+  sampleLobbyClosedEvent,
+  samplePlatformEvent,
+  sampleQuotaAlertEvent,
+} from './webhook-fixtures'

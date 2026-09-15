@@ -9,11 +9,7 @@ import { WebhookClient } from './webhook-client'
 
 @Module({
   imports: [MikroOrmModule.forFeature([EventDelivery, ModerationCase])],
-  providers: [
-    { provide: Clock, useClass: SystemClock },
-    WebhookClient,
-    EventDeliveryService,
-  ],
+  providers: [{ provide: Clock, useClass: SystemClock }, WebhookClient, EventDeliveryService],
   exports: [EventDeliveryService],
 })
 export class BotIntegrationModule {}

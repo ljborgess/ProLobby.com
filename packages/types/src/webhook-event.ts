@@ -65,7 +65,11 @@ export type SystemQuotaAlertEvent = z.infer<typeof systemQuotaAlertEventSchema>
 export type PlatformEvent = z.infer<typeof platformEventSchema>
 export type QuotaResource = z.infer<typeof quotaResourceSchema>
 
-export const PLATFORM_EVENT_TYPES = ['lobby.closed', 'account.punished', 'system.quota_alert'] as const
+export const PLATFORM_EVENT_TYPES = [
+  'lobby.closed',
+  'account.punished',
+  'system.quota_alert',
+] as const
 
 export type PlatformEventType = (typeof PLATFORM_EVENT_TYPES)[number]
 

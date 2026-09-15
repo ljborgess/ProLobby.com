@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import {
   WEBHOOK_SIGNATURE_HEADER,
+  readWebhookSecret,
   signWebhookBody,
   type PlatformEvent,
 } from '@prolobby/types'
@@ -26,14 +27,4 @@ export class WebhookClient {
 
     return { status: response.status }
   }
-}
-
-export function readWebhookSecret(): string {
-  const secret = process.env.WEBHOOK_SECRET
-  if (!secret || secret === 'changeme') {
-    throw new Error(
-      'WEBHOOK_SECRET is required and must not be the placeholder — it authenticates kick/ban/channel commands (items 1 and 6 of the security checklist)',
-    )
-  }
-  return secret
 }

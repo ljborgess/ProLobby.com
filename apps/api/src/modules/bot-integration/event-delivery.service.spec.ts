@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/postgresql'
 import { sampleLobbyClosedEvent } from '@prolobby/types'
 
 import { Clock } from '../../common/time/clock'
@@ -44,13 +44,21 @@ class FakeClock extends Clock {
 describe('EventDeliveryService', () => {
   const event = sampleLobbyClosedEvent()
 
-  const createService = (webhook: Pick<WebhookClient, 'post'>, clock: Clock, pending: EventDelivery[] = []) => {
+  const createService = (
+    webhook: Pick<WebhookClient, 'post'>,
+    clock: Clock,
+    pending: EventDelivery[] = [],
+  ) => {
     const em = {
       fork: () => em,
       find: jest.fn().mockResolvedValue(pending),
       findOne: jest.fn(),
       findOneOrFail: jest.fn(),
-      create: jest.fn((_cls: unknown, data: object) => ({ id: 'delivery-1', attempts: 0, ...data })),
+      create: jest.fn((_cls: unknown, data: object) => ({
+        id: 'delivery-1',
+        attempts: 0,
+        ...data,
+      })),
       persist: jest.fn(),
       flush: jest.fn().mockResolvedValue(undefined),
     }
@@ -90,6 +98,8 @@ describe('EventDeliveryService', () => {
       attempts: 1,
       deliveredAt: undefined,
       nextAttemptAt: new Date(clock.now().getTime() + 5_000),
+      targetKind: EventDeliveryTargetKind.LOBBY,
+      createdAt: clock.now(),
     } as EventDelivery
 
     const { service, em } = createService({ post }, clock, [pending])
@@ -118,7 +128,9 @@ describe('EventDeliveryService', () => {
       type: event.type,
       payload: event.payload,
       attempts: 0,
-    }
+      targetKind: EventDeliveryTargetKind.LOBBY,
+      createdAt: clock.now(),
+    } as EventDelivery
     em.create.mockReturnValue(row)
     em.findOne.mockResolvedValue(row)
 

@@ -38,7 +38,10 @@ describe('webhook server', () => {
   })
 
   it('rejects a signature from another secret', async () => {
-    const res = await post(sampleLobbyClosedEvent({ occurredAt: clock.now().toISOString() }), OTHER_SECRET)
+    const res = await post(
+      sampleLobbyClosedEvent({ occurredAt: clock.now().toISOString() }),
+      OTHER_SECRET,
+    )
     expect(res.status).toBe(401)
   })
 

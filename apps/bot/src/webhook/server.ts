@@ -3,6 +3,7 @@ import {
   WEBHOOK_MAX_SKEW_MS,
   WEBHOOK_SIGNATURE_HEADER,
   isKnownPlatformEventType,
+  readWebhookSecret,
   isWebhookTimestampFresh,
   platformEventSchema,
   verifyWebhookSignature,
@@ -96,12 +97,4 @@ function isPayloadTooLarge(err: unknown): boolean {
   return typed.status === 413 || typed.type === 'entity.too.large'
 }
 
-export function readWebhookSecret(): string {
-  const secret = process.env.WEBHOOK_SECRET
-  if (!secret || secret === 'changeme') {
-    throw new Error(
-      'WEBHOOK_SECRET is required and must not be the placeholder — it authenticates kick/ban/channel commands (items 1 and 6 of the security checklist)',
-    )
-  }
-  return secret
-}
+export { readWebhookSecret }

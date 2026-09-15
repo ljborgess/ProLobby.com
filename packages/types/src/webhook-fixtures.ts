@@ -6,7 +6,9 @@ const NIL = (n: number) => `11111111-1111-1111-1111-${n.toString().padStart(12, 
  * A lobby.closed payload sized for the real case: 10 humans, two captains.
  * Used by webhook tests so they exercise the contract, not `{}`.
  */
-export function sampleLobbyClosedEvent(overrides: Partial<LobbyClosedEvent> = {}): LobbyClosedEvent {
+export function sampleLobbyClosedEvent(
+  overrides: Partial<LobbyClosedEvent> = {},
+): LobbyClosedEvent {
   const participantAccountIds = Array.from({ length: 10 }, (_, i) => NIL(i + 1))
 
   return {

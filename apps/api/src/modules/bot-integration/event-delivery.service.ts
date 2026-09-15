@@ -59,9 +59,7 @@ export class EventDeliveryService implements OnModuleDestroy {
 
     const now = this.clock.now().getTime()
     for (const row of pending) {
-      const delay = row.nextAttemptAt
-        ? Math.max(0, row.nextAttemptAt.getTime() - now)
-        : 0
+      const delay = row.nextAttemptAt ? Math.max(0, row.nextAttemptAt.getTime() - now) : 0
       this.arm(row.id, delay)
     }
   }
@@ -157,6 +155,9 @@ export class EventDeliveryService implements OnModuleDestroy {
       em.create(ModerationCase, {
         type: ModerationCaseType.BOT_DELIVERY_FAILURE,
         origin: ModerationCaseOrigin.SYSTEM,
+        // Traceable without digging through logs — a moderator opening this
+        // case sees which lobby the bot never confirmed, when there is one.
+        lobbyId: row.targetKind === EventDeliveryTargetKind.LOBBY ? row.targetId : undefined,
       }),
     )
     this.logger.error(`delivery exhausted for event ${row.eventId} (${row.type})`)
