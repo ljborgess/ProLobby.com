@@ -7,6 +7,19 @@ Decisões de arquitetura (não implementação/stack — ver [Bot: permissões e
 - **Plataforma dispara pro bot via webhook/API interna** — toda vez que um evento relevante acontece no backend (verificação aprovada, lobby fechou, resultado processado, punição aplicada), a plataforma chama um endpoint do bot. Bot não fica consultando/verificando por conta própria (polling) — reage ao que a plataforma manda.
 - **Decisão de negócio fica na plataforma, execução no bot**: quem decide o quê (ex.: qual é o capitão daquele lobby, critério de reputação) é sempre a plataforma — bot só executa a ação técnica no Discord (criar canal, conceder cargo, postar mensagem). Bot não toma decisão de regra de produto.
 
+## Como o bot sabe que foi a plataforma que chamou
+
+Decidido em 2026-09-15, junto com a correção do achado abaixo. O contrato de assinatura, por extenso, porque o handler de cada RF da Fase 3 vai depender dele:
+
+- **A plataforma assina `timestamp + "." + corpo cru`** com HMAC-SHA256 e o segredo compartilhado (`WEBHOOK_SECRET`), e manda dois cabeçalhos: `x-webhook-signature` (o HMAC em hex) e `x-webhook-timestamp` (o instante ISO em que **assinou**).
+- **O bot recusa com 401** o que não bater: sem assinatura, sem timestamp, segredo errado, corpo alterado depois de assinado, ou timestamp fora de **5 minutos**.
+- **O timestamp assinado não é o `occurredAt` do evento.** São coisas diferentes e a distinção é o que faz o retry funcionar:
+  - `occurredAt` diz **quando o evento aconteceu** e nunca muda, nem depois de quatro tentativas.
+  - `x-webhook-timestamp` diz **quando esta tentativa foi assinada**, e é novo a cada envio.
+  - **Por que separar**: uma entrega recuperada do banco depois de um restart pode sair horas depois do evento. Com a janela presa ao `occurredAt`, ou o bot recusa a entrega legítima, ou o remetente precisa reescrever quando o evento aconteceu pra passar — foi o que aconteceu na primeira versão, e destruía a única marca de quando o lobby fechou. A janela protege contra **replay** (coisa de transporte); `occurredAt` é **dado de negócio**.
+- **O timestamp tem formato fixo** (`AAAA-MM-DDTHH:MM:SS.sssZ`). Sem isso, como o separador é um ponto e a data já tem um, `("<ts>.<corpo>", "")` e `("<ts>", "<corpo>")` produziriam o mesmo HMAC.
+- **Replay dentro dos 5 minutos ainda é possível**, e quem fecha isso é a idempotência do bot descrita acima (checar o estado real no Discord antes de agir), não a assinatura.
+
 ## Vínculo Discord ↔ conta da plataforma
 
 - **OAuth2 padrão do Discord** — jogador clica "vincular Discord" na plataforma, é redirecionado pro Discord, autoriza, Discord retorna o Discord ID pra plataforma vincular à conta. Sem digitação manual de ID (evita erro de digitação, confirma que a pessoa é dona daquele Discord de fato).

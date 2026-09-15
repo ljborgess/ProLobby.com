@@ -15,10 +15,11 @@ export {
 } from './webhook-event'
 export {
   WEBHOOK_MAX_SKEW_MS,
-  readWebhookSecret,
   WEBHOOK_SIGNATURE_HEADER,
+  WEBHOOK_TIMESTAMP_HEADER,
   isWebhookTimestampFresh,
-  signWebhookBody,
+  readWebhookSecret,
+  signWebhookPayload,
   verifyWebhookSignature,
 } from './webhook-signature'
 export {
