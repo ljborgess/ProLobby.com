@@ -1,10 +1,11 @@
 import { EntityManager } from '@mikro-orm/postgresql'
 import { BadRequestException, Injectable, Logger } from '@nestjs/common'
-import { createHash, randomBytes } from 'node:crypto'
 
+import { deliverWithoutThrowing } from '../../common/mail/deliver'
 import { MailSender, TransactionalEmail } from '../../common/mail/mail.types'
 import { Account } from './account.entity'
 import { AccountState } from './account.enums'
+import { generateToken, hashToken } from './account.token'
 import { EmailVerification } from './email-verification.entity'
 
 /** 24 hours — see the note on EmailVerification.expiresAt. */
@@ -56,8 +57,8 @@ export class EmailVerificationService {
       this.logger.log(`reissued verification for account ${account.id}, invalidated ${invalidated}`)
     }
 
-    // 32 bytes of CSPRNG. The value travels by email; only its hash is stored.
-    const token = randomBytes(32).toString('base64url')
+    // The value travels by email; only its hash is stored — see account.token.
+    const token = generateToken()
 
     em.persist(
       em.create(EmailVerification, {
@@ -81,31 +82,11 @@ export class EmailVerificationService {
     // committed. Throwing here would answer 500 with the account created, the
     // person would retry, hit the "address already taken" branch, and end up
     // owning an account they cannot reach.
-    void this.trySend({
-      to: account.email,
-      kind: TransactionalEmail.VERIFY_ADDRESS,
-      data: { token },
-    })
-  }
-
-  /**
-   * Sends, and never lets a delivery failure escape.
-   *
-   * Every caller here is in the middle of something that already succeeded —
-   * an account was created, a password was reset. Failing the whole operation
-   * because an email provider timed out trades a recoverable problem (no email
-   * yet) for an unrecoverable one (half-finished state).
-   */
-  private async trySend(email: Parameters<MailSender['send']>[0]): Promise<void> {
-    try {
-      await this.mailSender.send(email)
-    } catch (error) {
-      // Never log the payload: it carries the token.
-      this.logger.error(
-        `failed to deliver ${email.kind}`,
-        error instanceof Error ? error.stack : undefined,
-      )
-    }
+    void deliverWithoutThrowing(
+      this.mailSender,
+      { to: account.email, kind: TransactionalEmail.VERIFY_ADDRESS, data: { token } },
+      this.logger,
+    )
   }
 
   /**
@@ -121,11 +102,11 @@ export class EmailVerificationService {
   async notifyAlreadyRegistered(email: string): Promise<void> {
     // Not awaited, same reasoning as sendVerification: the response must not
     // reveal, by how long it took, which branch was taken.
-    void this.trySend({
-      to: email,
-      kind: TransactionalEmail.ADDRESS_ALREADY_REGISTERED,
-      data: {},
-    })
+    void deliverWithoutThrowing(
+      this.mailSender,
+      { to: email, kind: TransactionalEmail.ADDRESS_ALREADY_REGISTERED, data: {} },
+      this.logger,
+    )
   }
 
   /**
@@ -215,16 +196,4 @@ export class EmailVerificationService {
       createdAt: { $lt: new Date(now.getTime() - UNVERIFIED_ACCOUNT_TTL_MS) },
     })
   }
-}
-
-/**
- * SHA-256, not argon2.
- *
- * The token is 32 random bytes, so there is nothing to brute-force and no
- * reason to pay a slow hash on every verification click. argon2 exists to
- * defend low-entropy secrets that people choose; this one is not chosen by
- * anyone.
- */
-function hashToken(token: string): string {
-  return createHash('sha256').update(token).digest('hex')
 }
