@@ -156,9 +156,11 @@ Turborepo + pnpm workspaces, testes (Vitest/Jest/Playwright) e CI (GitHub Action
 autenticação) em andamento: cadastro, login e sessão, verificação de e-mail e aceite de
 Termos já estão em `dev`. Fases e ordem no [PRD Mestre](https://github.com/ljborgess/ProLobby.com/issues/64).
 
-**Tempo estimado**: beta pronto entre o fim de dezembro de 2026 e o início de março de 2027,
-e abertura pública entre meados de janeiro e meados de abril de 2027. É estimativa com faixa,
-não prazo. Premissas em [Ordem de implementação](docs/negocio/02-implementacao.md).
+**Tamanho estimado — não é prazo.** O dimensionamento de setembro de 2026 apontou algo entre
+o fim de dezembro de 2026 e o início de março de 2027 pro produto ficar utilizável, mas **não
+há data de beta nem de abertura definida**: o desenvolvimento anda por fluxo concluído, não
+por calendário. A faixa dá noção de tamanho e nada além. Premissas em
+[Ordem de implementação](docs/negocio/02-implementacao.md).
 
 Nove áreas de requisito levantadas, com RF e RNF numerados e rastreáveis em
 [`docs/requisitos/`](docs/requisitos/README.md).

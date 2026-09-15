@@ -123,6 +123,12 @@ O recrutamento dos ~24 convidados do beta não depende de nenhuma trilha de cód
 
 **Dezembro e janeiro caem no meio do caminho.** Com festas de fim de ano num time part-time, o realista é mirar a metade de cima de cada faixa.
 
+> **Estas datas não são prazo, meta nem compromisso** (registrado em 2026-09-15).
+>
+> Não existe data de beta nem de abertura definida. O projeto anda por **fluxo concluído**, não por calendário: uma fase começa quando a anterior fecha, e nenhuma é apressada pra caber numa data.
+>
+> O exercício acima serve pra uma coisa só — dar noção de **tamanho** ("isso é trabalho de meses, não de semanas"), o que ajuda a decidir quanta gente entra e o que roda em paralelo. Qualquer decisão que trate a faixa como promessa — comunicar data pra fora, dimensionar custo contra ela, cortar escopo pra alcançá-la — está usando o número pra uma coisa que ele não sustenta.
+
 ### Quanto os dois devs novos mudam a conta
 
 Com o Luciano sozinho, as trilhas paralelas entram na fila do caminho crítico: piloto e OCR da 2.2, telas de todas as fases, handlers do bot, perfil e ranking, LGPD e Termos. Isso soma **7 a 12 semanas**, e o beta ficaria pronto em **22 a 36 semanas** (meados de fevereiro a fim de maio de 2027).
