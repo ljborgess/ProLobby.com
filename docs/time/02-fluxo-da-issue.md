@@ -24,10 +24,19 @@ gh issue list --assignee @me --state open
 4. **Implementar com teste que prova o critério de aceite.** Na API, e2e contra Postgres real — não mock de banco.
 5. **Pipeline local completo** (abaixo). Não abra PR vermelho esperando o CI achar.
 6. **Commit** em Conventional Commits, **em português, assunto em minúscula** — o commitlint recusa `feat: Adiciona...` e `feat: Postgres...`.
-7. **PR contra `dev`**, com `Closes #N` e as **7 seções do template todas preenchidas** (abaixo).
+7. **PR contra `dev`** — sempre `dev`, nunca `main`, nunca a branch de feature de outra pessoa, mesmo quando seu trabalho depende do dela. Com `Closes #N` e as **7 seções do template todas preenchidas** (abaixo).
 8. **Code review e security review** feitos pela sua IA (Claude Code ou Cursor), publicados **como comentário no PR**. Achado 🔴 ou 🟡 se corrige no próprio PR, com teste. Ver [guia 4](04-trabalhando-com-ia.md#o-review-antes-de-pedir-aprovação).
 9. **Pedir review do Luciano.** **Não faça merge.** O PR fica aberto até a aprovação, mesmo com CI verde.
 10. **Depois do merge**: merge em `dev` **não fecha a issue sozinho**. Feche à mão, com um comentário dizendo em qual PR foi entregue.
+
+## `dev` e `main`
+
+`main` é o que vai pra produção. `dev` é onde o produto é construído e visto
+funcionando antes disso. Na prática, pra quem está codando: **você só encosta
+em `dev`.** Branch sai de `dev`, PR volta pra `dev`, pronto.
+
+Promover `dev` para `main` é decisão do Luciano, feita quando ele olha o que
+está em `dev` e dá o veredito. Não acontece por PR aprovado nem por CI verde.
 
 ## Pipeline local
 
