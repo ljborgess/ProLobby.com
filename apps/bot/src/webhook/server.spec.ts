@@ -102,7 +102,7 @@ describe('webhook server — global rate limit', () => {
         .post('/events')
         .set('Content-Type', 'application/json')
         .set(WEBHOOK_SIGNATURE_HEADER, signature)
-        .send(raw)
+        .send(raw.toString('utf8'))
 
     for (let i = 0; i < WEBHOOK_RATE_LIMIT_MAX; i += 1) {
       const res = await send()
@@ -126,7 +126,7 @@ describe('webhook server — global rate limit', () => {
         .post('/events')
         .set('Content-Type', 'application/json')
         .set(WEBHOOK_SIGNATURE_HEADER, signWebhookBody(SECRET, raw))
-        .send(raw)
+        .send(raw.toString('utf8'))
 
       expect(res.status).toBe(202)
     }
@@ -148,7 +148,7 @@ describe('webhook server — global rate limit', () => {
       .post('/events')
       .set('Content-Type', 'application/json')
       .set(WEBHOOK_SIGNATURE_HEADER, signWebhookBody(SECRET, raw))
-      .send(raw)
+      .send(raw.toString('utf8'))
 
     expect(allowed.status).toBe(202)
   })
