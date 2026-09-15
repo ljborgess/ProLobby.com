@@ -31,6 +31,7 @@ Nunca pare nem apague container de outro projeto pra liberar a porta.
 Crie `apps/api/.env` a partir de `apps/api/.env.example`.
 
 - `JWT_SECRET` **não pode ser** `changeme` nem vazio — a API se recusa a subir, de propósito. Gere um com `openssl rand -base64 48`.
+- `WEBHOOK_SECRET` segue a mesma regra no bot (e na API quando ela dispara evento). Placeholder no `.env.example`, nunca um valor real.
 - `.env` **nunca** vai pro git. Segredo nenhum (token de bot, chave, senha) vai pra commit, issue, PR, log ou chat — nem "só pra testar".
 
 ## Confere que está tudo de pé
@@ -39,6 +40,7 @@ Crie `apps/api/.env` a partir de `apps/api/.env.example`.
 pnpm format:check
 DATABASE_URL=postgres://prolobby:prolobby@localhost:5432/prolobby \
 JWT_SECRET=qualquer-coisa-que-nao-seja-changeme \
+WEBHOOK_SECRET=qualquer-coisa-que-nao-seja-changeme \
 pnpm turbo lint type-check test build e2e
 ```
 
