@@ -59,7 +59,7 @@ Sequência canônica em **[#64 — PRD Mestre](https://github.com/ljborgess/ProL
 4. **[#63](https://github.com/ljborgess/ProLobby.com/issues/63) — checklist no jogo**, antes de a **Fase 3** começar. São minutos de jogo; a partir da 3, o retrabalho fica caro. **Rodar em FC 27** (lançamento 25/09/2026, acesso antecipado 18/09), assim como a coleta de prints do piloto — nada medido em FC 26 vale pro beta.
    - **[#130](https://github.com/ljborgess/ProLobby.com/issues/130) — domínio e contas de infra no nome do projeto**, com os 4 sócios. Trava o e-mail do cadastro (Resend) e o primeiro deploy (#121).
 5. Fechada a 2.1, abrir a **2.2** (Rafael + Felipe) e a **2.3** (Luciano) em paralelo, pelo caminho PRD → issues → sub-issues.
-6. **João (`jgbriel-io`) tem convite pendente no repo, e o papel dele no código é decisão pra frente** (Luciano, 2026-09-14). Não entra na divisão nem na estimativa até ser decidido. Se aceitar o convite, passam a ser 4 pessoas com `push`, o que dispara o gatilho de revisão de branch protection do [ADR-006](docs/adr/006-backend-separado-e-tooling.md).
+6. **João (`jgbriel-io`) é sócio com voto, sem papel operacional por ora** (Luciano, 2026-09-16): fora do código e da moderação, por outras prioridades. Continua nas decisões "dos 4 sócios" — titularidade, contas e domínio, passar do free tier. Convite pendente no repo; o papel dele no código segue como decisão pra frente (2026-09-14). Não entra na divisão nem na estimativa até ser decidido. Se aceitar o convite, passam a ser 4 pessoas com `push`, o que dispara o gatilho de revisão de branch protection do [ADR-006](docs/adr/006-backend-separado-e-tooling.md).
 7. **Recrutamento dos ~24 convidados do beta** começa agora, em paralelo. É a única etapa que não depende de código ([Lançamento](docs/negocio/04-lancamento.md)).
 
 ## Os dois bloqueadores — leia isto antes de qualquer coisa
@@ -148,5 +148,7 @@ Tabela completa em `produto/05-produto/03-backlog.md`. Nenhuma é de requisito:
 ## Decidido: sem divisão de papéis
 
 Os 4 (Luciano, Rafael, João, Felipe) trabalham em conjunto, sem papel fixo por disciplina. Não é pendência, é decisão tomada.
+
+**Operacionalmente são 3** (Luciano, Rafael, Felipe) desde 2026-09-16: são os que codam e os que moderam. O João é sócio com voto e fica fora do trabalho do dia a dia por ora. Onde o dossiê diz "os 4", vale pra decisão e titularidade; onde conta pessoas trabalhando (moderação, review, estimativa), são 3.
 
 **Recorte de código (atualizado em 2026-09-14)**: dentro do desenvolvimento, **Luciano, Rafael e Felipe codam**. O trabalho é dividido **por área, pra paralelizar**, não por papel fixo: Luciano no caminho crítico, Rafael em bot e infra, Felipe em produto visível. Luciano lidera de fato (dono do contexto completo do dossiê): atribui issue e aprova os PRs do Rafael e do Felipe; o PR dele é revisado por ele mesmo, com review do agente publicado no PR. Isso não reabre a decisão acima sobre papel fixo no projeto como um todo, só descreve como o fluxo de código anda (ver [CONTRIBUTING.md](CONTRIBUTING.md) e [ADR-006](docs/adr/006-backend-separado-e-tooling.md)).
