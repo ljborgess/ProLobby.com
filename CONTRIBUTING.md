@@ -56,6 +56,17 @@ Dois branches, com papéis diferentes e nenhuma ambiguidade:
 - **Ninguém promove por conta própria** — nem o agente, nem o resto do time.
 - `dev` é o **branch padrão do repositório** (desde 2026-09-15). É onde o trabalho entra, então é onde o `Closes #N` precisa funcionar; `main` continua sendo o destino de produção, e ser padrão no GitHub não tem nada a ver com isso.
 
+### Trabalho em andamento precisa ser visível (decidido em 2026-09-16)
+
+O fluxo acima só produz sinal quando o trabalho **acabou**: um PR pronto, com as 7 seções e o review. Até lá, silêncio — e silêncio não distingue "lendo o projeto", "travado no Docker" e "não comecei". A auditoria de 2026-09-16 achou uma fase inteira parada 5 dias sem que ninguém pudesse dizer por quê.
+
+Dois sinais, os dois baratos:
+
+1. **Comente na issue quando pegar.** Uma linha: "peguei, começando por X". Transforma silêncio ambíguo em silêncio informativo.
+2. **Abra PR como rascunho (draft) no primeiro commit**, mesmo que seja só o esqueleto. Dá pra ver andando, e dá pra ajudar antes do fim em vez de depois. Marque "Ready for review" quando o pipeline local passar.
+
+**Issue atribuída sem nenhum dos dois sinais em 5 dias úteis volta pro caminho crítico.** Não é punição: uma fase inteira não pode ficar parada esperando um sinal que o processo não pedia.
+
 ### Fechar issue é passo manual, não automático
 
 O `Closes #N` no PR **não fecha nada neste repo**: o GitHub só fecha issue automaticamente quando o PR entra no **branch padrão**. Por isso o padrão do repositório é `dev` — que é onde o trabalho entra. `main` continua recebendo merge só quando o time decidir promover.
@@ -174,13 +185,13 @@ src/
 │   ├── health/          # health.controller.ts
 │   └── security/        # ValidationPipe global, throttler, helmet/CORS
 └── modules/
-    ├── conta/           # RF-019 a RF-026, RF-070, RF-072, RF-074, RF-078
-    ├── personagem/      # RF-027 a RF-031, RF-063 a RF-065, RF-073 (cadastro/ciclo de vida + verificação por OCR)
-    ├── fila/            # RF-001 a RF-011, RF-034, RF-076
+    ├── account/         # RF-019 a RF-026, RF-070, RF-072, RF-074, RF-078
+    ├── character/       # RF-027 a RF-031, RF-063 a RF-065, RF-073 (cadastro/ciclo de vida + verificação por OCR)
+    ├── queue/           # RF-001 a RF-011, RF-034, RF-076
     ├── lobby/           # RF-032, RF-033, RF-051, RF-052, RF-080
-    ├── resultado/       # RF-012, RF-013, RF-041 a RF-046, RF-066, RF-067
+    ├── result/          # RF-012, RF-013, RF-041 a RF-046, RF-066, RF-067
     ├── ranking/         # RF-014 a RF-018, RF-071, RF-077
-    ├── moderacao/       # RF-035 a RF-040, RF-068, RF-069, RF-075, RF-079
+    ├── moderation/      # RF-035 a RF-040, RF-068, RF-069, RF-075, RF-079
     └── bot-integration/ # RF-058, RF-059 — só entrega de evento (retry, sequência, idempotência)
 ```
 

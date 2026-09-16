@@ -31,6 +31,17 @@
   - Consequência prática: a fila fecha mais devagar, porque precisa achar **par de mesma categoria**, não só gente. Custo aceito deliberadamente — equilíbrio é o produto; velocidade de fila é conveniência.
   - Quem sobra sem par na própria categoria espera o próximo lobby (mesma regra do excedente ímpar).
 - **Piso de 4 humanos por lado (8 no total)** pra abrir partida. Abaixo disso a partida vira majoritariamente IA e perde sentido competitivo — elo ficaria difícil de justificar.
+- **Piso é 8; o número de planejamento é 12** (medido em 2026-09-16). O piso está tecnicamente certo — 8 pessoas *podem* formar 4 pares. Mas só fecham se as categorias caírem certas, e a conta diz que isso é raro:
+
+  | Gente na fila | Chance de fechar |
+  |---|---|
+  | 8 | **6% a 9%** |
+  | 10 | 59% a 72% |
+  | **12** | **93% a 98%** |
+  | 14+ | praticamente sempre |
+
+  Recrutamento, largada coordenada e critério de beta miram **12**, não 8 — um número que só funciona 7% das noites não serve pra planejar. Cálculo: cada categoria precisa de par (contagem par), e cada par tem que caber nos slots do lado (GK 1, ZAG 4, MEI 2, PON 2, ATA 2); quem sobra espera o próximo lobby. Contraintuitivo e confirmado: **poucos goleiros não atrapalham** — só se usa 1 por lado, então o clássico "ninguém quer ser goleiro" não é o gargalo aqui.
+- **Simetria relaxa com o tempo, como a banda de elo já relaxa.** Passados **8 minutos** sem fechar, a categoria sem par deixa de ser exigida: os **dois** lados abrem mão do humano naquela categoria e a IA cobre os dois. A simetria continua valendo (os dois lados ficam iguais), e a partida destrava. Mesma filosofia da expansão de ±150 pra ±400 — aplicada à variável que de fato trava a fila numa base pequena.
 - **Pré-requisito de capitão pra fechar o lobby**: cada lado precisa ter, entre os humanos escalados, **ao menos 1 jogador com clube EA declarado com vagas suficientes pros outros humanos do lado** (ver [Personagens e verificação](../02-jogador/01-verificacao.md) e [RF-006](../../requisitos/05-funcionais.md#rf-006--lobby-só-fecha-com-candidato-a-capitão-em-cada-lado)) — é critério de fechamento de lobby, não de entrada na fila (qualquer um entra na fila, com clube ou sem).
   - Motivo: o piso de 4 encolheu a lista de candidatos a capitão de 11 pra 4 por lado. Sem esse critério, a cascata de escolha de capitão ([Discord e lobby](03-lobby.md)) esgota com frequência alta numa base pequena, e o lobby é desfeito depois de todo mundo já ter confirmado entrada — a pior forma de falhar, porque desperdiça a confirmação de 8 pessoas. Melhor não fechar o lobby do que fechar e desfazer.
   - Não elimina o caso de cascata esgotada (a declaração pode estar desatualizada e ser recusada na confirmação de 30s — ver [Discord e lobby](03-lobby.md)), só o torna raro em vez de comum.
