@@ -2,6 +2,7 @@ import { MikroOrmModule } from '@mikro-orm/nestjs'
 import { Module } from '@nestjs/common'
 
 import { ModerationCase } from '../moderation/moderation-case.entity'
+import { ReputationEvent } from '../ranking/reputation-event.entity'
 import { AccountRecoveryService } from './account-recovery.service'
 import { AccountController } from './account.controller'
 import { Account } from './account.entity'
@@ -11,6 +12,7 @@ import { EmailVerification } from './email-verification.entity'
 import { EmailVerificationService } from './email-verification.service'
 import { PasswordReset } from './password-reset.entity'
 import { PasswordResetService } from './password-reset.service'
+import { PunishmentStatusService } from './punishment-status.service'
 import { SessionController } from './session.controller'
 import { SessionService } from './session.service'
 import { TermsAcceptance } from './terms-acceptance.entity'
@@ -25,6 +27,7 @@ import { WaitingListService } from './waiting-list.service'
       PasswordReset,
       TermsAcceptance,
       ModerationCase,
+      ReputationEvent,
       WaitingListEntry,
     ]),
   ],
@@ -35,6 +38,7 @@ import { WaitingListService } from './waiting-list.service'
     CapacityService,
     EmailVerificationService,
     PasswordResetService,
+    PunishmentStatusService,
     SessionService,
     WaitingListService,
   ],
