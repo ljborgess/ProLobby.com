@@ -1,197 +1,190 @@
 <div align="center">
 
-# PROLOBBY
+# ProLobby
 
-**Matchmaking e comunidade competitiva pra EA FC Pro Clubs**
+**Matchmaking competitivo e identidade verificada para EA FC Pro Clubs**
 
-![Status](https://img.shields.io/badge/STATUS-SCAFFOLD-0c1322?style=for-the-badge&labelColor=070b14&color=22c55e)
-![Fase](https://img.shields.io/badge/FASE-MVP-0c1322?style=for-the-badge&labelColor=070b14&color=f5b841)
-![Stack](https://img.shields.io/badge/STACK-NEXT.JS%20%2B%20NESTJS%20%2B%20DISCORD.JS-0c1322?style=for-the-badge&labelColor=070b14&color=6b7a94)
+[![CI](https://github.com/ljborgess/ProLobby.com/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/ljborgess/ProLobby.com/actions/workflows/ci.yml)
+![Node](https://img.shields.io/badge/node-22-339933?logo=node.js&logoColor=white)
+![pnpm](https://img.shields.io/badge/pnpm-10-F69220?logo=pnpm&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
+![Status](https://img.shields.io/badge/status-em%20desenvolvimento-f5b841)
 
-`fila` → `lobby` → `capitão` → `partida` → `resultado` → `ranking` → `antifraude`
+[Como funciona](#como-funciona) · [Arquitetura](#arquitetura) · [Começando](#começando) ·
+[Documentação](#documentação) · [Contribuindo](#contribuindo)
 
 </div>
 
-<br>
+---
 
-## Sistema
+## Sobre
 
-ProLobby transforma fila em partida real de Pro Clubs. Jogador entra por
-posição, o sistema monta dois lados equilibrados por elo — de 4 a 11 humanos
-cada, com a IA do próprio jogo cobrindo o resto dos 11 — e coordena tudo:
-Discord, resultado, ranking. A partida em si roda dentro do EA FC.
+O ProLobby transforma a fila individual em partida organizada de Pro Clubs. O jogador entra na
+fila pela posição que joga, o sistema monta dois times equilibrados por elo e coordena o resto:
+capitão, canais de voz no Discord, validação do resultado e ranking.
 
-Identidade visual herdada do design system de
-[`escalacao-brasileirao`](https://github.com/rafaeljs08/escalacao-brasileirao).
-ProLobby é projeto novo e independente — nada de backend/dados de lá.
+A partida acontece dentro do EA FC. A plataforma não executa o jogo: organiza, verifica e mede.
 
-<br>
+## Como funciona
 
-## Pipeline
+| Etapa | O que acontece |
+|---|---|
+| **1. Identidade** | O jogador envia o print do Virtual Pro; OCR extrai overall, posição e gamertag. Sem API pública da EA, toda verificação é evidência |
+| **2. Fila** | Entrada individual por categoria: goleiro, zaga, meio, ponta ou ataque |
+| **3. Matchmaking** | Dois lados equilibrados por elo, categoria contra categoria, com simetria obrigatória. A IA do jogo completa as vagas vazias |
+| **4. Lobby** | Um capitão por lado, escolhido por reputação, empresta o próprio clube. O bot cria os canais de voz |
+| **5. Resultado** | Print da tela final confirma placar e elenco; elo e reputação atualizam por categoria |
+| **6. Governança** | Disputa, denúncia e apelação passam por moderação com trava de conflito de interesse |
 
-<table>
-<tr><td width="90"><code>01</code></td><td><b>Cadastro</b></td><td>Personagem verificado por print + OCR — EA FC não tem API pública, toda verificação é evidência enviada pelo jogador</td></tr>
-<tr><td><code>02</code></td><td><b>Fila</b></td><td>Escolhe posição (goleiro / zaga / meio / ponta / ataque), entra na fila individual por categoria</td></tr>
-<tr><td><code>03</code></td><td><b>Lobby</b></td><td>8 a 22 humanos, simetria por categoria entre os lados — a IA do próprio jogo cobre as vagas restantes dos 11</td></tr>
-<tr><td><code>04</code></td><td><b>Capitão</b></td><td>1 jogador real por lado, escolhido por reputação, empresta o próprio clube EA — sem host de rede, Pro Clubs roda em servidor dedicado</td></tr>
-<tr><td><code>05</code></td><td><b>Partida</b></td><td>Amistoso Online entre os dois clubes, dentro do jogo — plataforma não executa, só coordena</td></tr>
-<tr><td><code>06</code></td><td><b>Resultado</b></td><td>Print + OCR confirmam placar, elo e reputação atualizam por categoria</td></tr>
-<tr><td><code>07</code></td><td><b>Antifraude</b></td><td>Hash antes do OCR, roster do print final conferido contra o lobby, timeout progressivo por recusa</td></tr>
-</table>
+Regras completas, com o motivo de cada decisão, no [dossiê de produto](docs/produto/README.md).
 
-<details>
-<summary><b>Por que "capitão" e não "host"?</b></summary>
-<br>
+## Arquitetura
 
-O produto assumia originalmente que um jogador criava uma sala privada e
-convidava os outros 21. Pesquisa confirmou que **esse mecanismo não existe**
-em Pro Clubs — o jogo só permite liga, Drop-In (fila da própria EA) ou
-Amistoso Online entre clubes. Como Pro Clubs roda em servidor dedicado (não
-P2P), também não existe "host" cujo ping afete os outros.
+```mermaid
+flowchart LR
+    U[Jogador] --> CF[Cloudflare]
+    CF -->|túnel| WEB[apps/web<br/>Next.js]
+    CF -->|túnel| API[apps/api<br/>NestJS]
+    WEB --> API
+    API --> DB[(Neon<br/>Postgres)]
+    API -->|webhook assinado| BOT[apps/bot<br/>discord.js]
+    BOT --> DC[Discord]
+```
 
-O mecanismo real: cada lado do lobby usa o clube pessoal de um dos próprios
-jogadores humanos daquele lado — o **capitão**, escolhido por maior reputação
-entre quem tem clube com vaga. Detalhe completo, achados de pesquisa e checklist de teste
-prático em
-[`docs/produto/03-partida/01-mecanica.md`](docs/produto/03-partida/01-mecanica.md).
+A API concentra toda a regra de negócio. O front-end não decide autorização, e o bot só executa
+o que a API manda, por webhook assinado com HMAC. Nenhuma porta fica exposta: todo tráfego
+entra pelo túnel da Cloudflare.
 
-</details>
+| Camada | Tecnologia |
+|---|---|
+| Front-end | Next.js (App Router), React 19, Tailwind CSS |
+| API | NestJS, MikroORM, PostgreSQL |
+| Bot | Node.js, discord.js |
+| Contratos | `packages/types`, schemas zod compartilhados |
+| Monorepo | Turborepo, pnpm workspaces |
+| Testes | Jest, Vitest, Playwright, e2e contra Postgres real |
+| Infraestrutura | Neon (São Paulo), VM Oracle Cloud, Cloudflare Tunnel |
 
-<br>
+As decisões e seus trade-offs estão nos [ADRs](docs/adr/README.md).
 
-## Módulos
+### Estrutura do repositório
 
-<table>
-<tr><th align="left">Módulo</th><th align="left">Cobre</th></tr>
-<tr><td><b>Identidade</b></td><td>Personagem verificado por print + OCR em 3 idiomas, até 5 categorias por conta, atributos travados, 1 gamertag por plataforma</td></tr>
-<tr><td><b>Matchmaking</b></td><td>Fila por posição, equilíbrio por elo categoria-contra-categoria, timeout com feedback de categoria faltante</td></tr>
-<tr><td><b>Partida</b></td><td>Capitão dinâmico, formação votada, coordenação via Discord (canais de voz por time + texto compartilhado)</td></tr>
-<tr><td><b>Resultado</b></td><td>Report com print/OCR, validação de clube e de roster, zero-report penalizado só se a partida aconteceu, contestação de 48h, disputa sem prova anula a partida</td></tr>
-<tr><td><b>Ranking</b></td><td>Elo por categoria, reputação por conta, seed inicial por overall, rollback retroativo, punição a smurfing/conluio</td></tr>
-<tr><td><b>Governança</b></td><td>Moderação, LGPD, retenção de dados, termos de uso, idade mínima 16 anos</td></tr>
-<tr><td><b>Social</b></td><td>Perfil público (elo, reputação, histórico agregado) — print e Discord ID continuam privados</td></tr>
-<tr><td><b>Onboarding</b></td><td>Conta → personagem → Discord, cada etapa desbloqueia acesso incremental</td></tr>
-</table>
+```text
+apps/
+├── web/        # Next.js — interface
+├── api/        # NestJS — regra de negócio, autenticação, banco
+└── bot/        # discord.js — cargos, canais e notificações
+packages/
+├── types/      # contratos compartilhados (eventos, assinatura de webhook)
+├── eslint-config/
+└── tsconfig/
+docs/           # dossiê de produto, requisitos, ADRs e guia do time
+```
 
-Detalhado por fase (MVP / Fase 2 / Futuro) no
-[dossiê de produto](docs/produto/README.md). Itens deliberadamente
-adiados — moderador comunitário, fila por time pré-formado, torneio — no
-[backlog](docs/produto/05-produto/03-backlog.md). Stack técnica já decidida
-([ADR-005](docs/adr/005-stack-tecnica.md), [ADR-006](docs/adr/006-backend-separado-e-tooling.md)).
+## Começando
 
-<br>
+### Pré-requisitos
 
-## Discord
+- Node.js 22 (versão fixada em `.nvmrc`)
+- pnpm 10
+- Docker
 
-Servidor da comunidade é domínio próprio — cargos, canais, e o bot que
-automatiza tudo (cargo Verificado, canais de lobby, notificações,
-moderação):
+### Instalação
 
-<table>
-<tr><td><b>Cargos</b></td><td>Admin / Moderador fixos, cargo funcional Verificado (gate real de acesso)</td></tr>
-<tr><td><b>Canais</b></td><td>Estrutura unificada + 3 temporários por lobby (2 voz privados por time, 1 texto compartilhado)</td></tr>
-<tr><td><b>Bot</b></td><td>Motor único de automação — plataforma decide, bot executa. Kick/ban sempre manual</td></tr>
-<tr><td><b>Integração</b></td><td>Webhook plataforma → bot, OAuth2 pro vínculo de conta, retry se o bot cair</td></tr>
-</table>
+```bash
+git clone git@github.com:ljborgess/ProLobby.com.git
+cd ProLobby.com
+git checkout dev
+pnpm install
+```
 
-→ [`docs/discord/`](docs/discord/README.md)
+### Banco de dados
 
-<br>
+```bash
+docker compose up -d postgres
+```
 
-## Preview
+Se a porta 5432 já estiver em uso, suba em outra sem editar arquivo versionado:
 
-Artifact navegável — fila, lobby (capitão + 2 times), report de resultado,
-perfil público e ranking, com o design system real do projeto. Dados de
-exemplo.
+```bash
+POSTGRES_PORT=5442 docker compose up -d postgres
+```
 
-[Abrir a pré-visualização](https://claude.ai/code/artifact/8cde45d1-3279-4503-93f2-b1ccfdb86e6d) — atualizada conforme o design evolui.
+### Variáveis de ambiente
 
-<br>
+Copie os exemplos e preencha os segredos:
 
-## Referência visual
+```bash
+cp apps/api/.env.example apps/api/.env
+cp apps/bot/.env.example apps/bot/.env
+```
 
-ProLobby ainda não tem UI própria — a identidade abaixo (cores, fontes,
-raios, sombras) é herdada do design system de `escalacao-brasileirao`. As
-telas são do projeto de origem, servindo só de referência de estilo:
+`JWT_SECRET` e `WEBHOOK_SECRET` são obrigatórios, e a API se recusa a subir com valor vazio ou
+de exemplo. Gere cada um com:
 
-<p align="center">
-  <video src="docs/assets/demo-escalacao.mp4" width="920" autoplay loop muted playsinline></video>
-</p>
+```bash
+openssl rand -base64 48
+```
 
-<p align="center">
-  <img src="docs/assets/demo-lista-times.png" alt="Design system de origem — lista de times" width="440">
-  <img src="docs/assets/demo-campo.png" alt="Design system de origem — campo" width="440">
-</p>
-<p align="center">
-  <img src="docs/assets/demo-catalogo-atletas.png" alt="Design system de origem — catálogo" width="440">
-  <img src="docs/assets/demo-busca-elenco.png" alt="Design system de origem — busca" width="440">
-</p>
+### Migrações e execução
 
-<br>
+```bash
+pnpm --filter @prolobby/api exec mikro-orm migration:up
+pnpm dev
+```
+
+| Serviço | Endereço |
+|---|---|
+| Web | `http://localhost:3000` |
+| API | `http://localhost:3001` |
+| Bot (webhook) | `http://localhost:3002` |
+
+### Qualidade
+
+```bash
+pnpm format:check
+pnpm lint
+pnpm type-check
+pnpm test
+pnpm e2e
+```
+
+A suíte e2e roda contra um Postgres real e exige `DATABASE_URL`, `JWT_SECRET` e `WEBHOOK_SECRET`
+no ambiente. O CI roda o mesmo pipeline em todo pull request.
 
 ## Documentação
 
-<table>
-<tr><td><a href="docs/README.md"><code>docs/</code></a></td><td>Índice geral</td></tr>
-<tr><td><a href="docs/time/README.md"><code>docs/time/</code></a></td><td>Guia de quem coda: primeiro dia, fluxo de issue, regras que já pegaram bug, Claude Code e Cursor</td></tr>
-<tr><td><a href="docs/produto/README.md"><code>docs/produto/</code></a></td><td>Decisões de produto e o motivo de cada uma, por domínio</td></tr>
-<tr><td><a href="docs/produto/parametros.md"><code>parametros.md</code></a></td><td>Todos os números do sistema num lugar só (elo, reputação, prazos, limites)</td></tr>
-<tr><td><a href="docs/requisitos/README.md"><code>docs/requisitos/</code></a></td><td>O que o sistema faz: RF-001 a RF-081, RNF-001 a RNF-021, estados, modelo de dados, checklist de segurança</td></tr>
-<tr><td><a href="docs/adr/README.md"><code>docs/adr/</code></a></td><td>Decisão de arquitetura, com supersessão explícita — só o que custa refatoração pra desfazer</td></tr>
-<tr><td><a href="docs/negocio/README.md"><code>docs/negocio/</code></a></td><td>Tese de mercado, sustentabilidade, ordem de implementação e plano de lançamento</td></tr>
-<tr><td><a href="docs/discord/README.md"><code>docs/discord/</code></a></td><td>Estrutura do servidor Discord e do bot</td></tr>
-<tr><td><a href="HANDOFF.md"><code>HANDOFF.md</code></a></td><td>Pra retomar o trabalho em outra sessão/máquina — leia primeiro</td></tr>
-</table>
+| Área | Conteúdo |
+|---|---|
+| [Guia do time](docs/time/README.md) | Primeiro dia, fluxo de issue, regras que já evitaram bugs, uso de IA |
+| [Produto](docs/produto/README.md) | Decisões de produto por domínio, com o motivo de cada uma |
+| [Parâmetros](docs/produto/parametros.md) | Todos os números do sistema: elo, reputação, prazos e limites |
+| [Requisitos](docs/requisitos/README.md) | Requisitos funcionais e não funcionais, estados, modelo de dados |
+| [Segurança](docs/requisitos/08-seguranca-checklist.md) | Checklist aplicado a toda mudança de back-end, autenticação, banco ou upload |
+| [Decisões de arquitetura](docs/adr/README.md) | ADRs com contexto, alternativas e consequências |
+| [Discord](docs/discord/README.md) | Estrutura do servidor, cargos, canais e bot |
+| [Negócio](docs/negocio/README.md) | Mercado, sustentabilidade, ordem de implementação e lançamento |
 
-<br>
+## Contribuindo
 
-## Estado atual
+- `main` é produção; `dev` é a branch de desenvolvimento e o alvo de todo pull request
+- Código em inglês; issues, pull requests, commits e documentação em português
+- Todo pull request passa por code review e security review antes do merge
 
-Design de produto e requisitos fechados; **engenharia em andamento**. Stack decidida
-([ADR-005](docs/adr/005-stack-tecnica.md), [ADR-006](docs/adr/006-backend-separado-e-tooling.md)):
-`apps/web` (Next.js), `apps/api` (NestJS + MikroORM), `apps/bot` (Node.js + discord.js),
-Turborepo + pnpm workspaces, testes (Vitest/Jest/Playwright) e CI (GitHub Actions) rodando.
+O fluxo completo está no [`CONTRIBUTING.md`](CONTRIBUTING.md). Quem entra no time começa pelo
+[guia do time](docs/time/README.md).
 
-**Fase 1** (CI, processo de PR e servidor Discord) concluída. **Fase 2.1** (conta e
-autenticação) em andamento: cadastro, login e sessão, verificação de e-mail e aceite de
-Termos já estão em `dev`. Fases e ordem no [PRD Mestre](https://github.com/ljborgess/ProLobby.com/issues/64).
+## Status
 
-**Tamanho estimado — não é prazo.** O dimensionamento de setembro de 2026 apontou algo entre
-o fim de dezembro de 2026 e o início de março de 2027 pro produto ficar utilizável, mas **não
-há data de beta nem de abertura definida**: o desenvolvimento anda por fluxo concluído, não
-por calendário. A faixa dá noção de tamanho e nada além. Premissas em
-[Ordem de implementação](docs/negocio/02-implementacao.md).
+Em desenvolvimento. O núcleo de conta e autenticação está concluído na API, e o roadmap completo,
+fase a fase, está no [PRD Mestre](https://github.com/ljborgess/ProLobby.com/issues/64).
 
-Nove áreas de requisito levantadas, com RF e RNF numerados e rastreáveis em
-[`docs/requisitos/`](docs/requisitos/README.md).
+## Licença
 
-**Dois bloqueadores, decisão de seguir com a stack antes deles rodarem
-([ADR-005](docs/adr/005-stack-tecnica.md)):**
+Projeto privado. Todos os direitos reservados aos sócios.
 
-1. **[Checklist no jogo](docs/produto/03-partida/05-checklist.md)** — 8 testes,
-   custa minutos, valida o mecanismo de capitão/clube em que todo o fluxo de
-   partida se apoia. RF-051/052/055 podem exigir retrabalho quando rodar.
-2. **[Piloto de OCR](docs/requisitos/06-piloto-ocr.md)** — um script sobre 50
-   prints reais de estranhos, sem conta e sem banco. Dos cinco riscos do
-   projeto, é o único grande que exige código pra ser medido.
-
-Divisão de papéis no time já fechada — sem papel fixo, trabalho em conjunto.
-No código, três devs ativos desde 2026-09-14, divididos por área pra paralelizar:
-Luciano no caminho crítico, Rafael em bot e infra, Felipe em produto visível.
-Luciano atribui issue e aprova PR. Quem entra pra codar começa por
-[`docs/time/`](docs/time/README.md).
-
-`main` é o que vai pra produção. `dev` é onde o produto é construído e
-visto funcionando, e é o branch padrão do repositório — todo PR aponta pra
-`dev`. Promover `dev` para `main` é decisão explícita do Luciano, nunca
-efeito colateral de PR aprovado.
-
-<br>
+---
 
 <div align="center">
-
-**Luciano · Rafael · João · Felipe**
-
-<sub>em desenvolvimento — 2026</sub>
-
+<sub>Luciano · Rafael · João · Felipe</sub>
 </div>
