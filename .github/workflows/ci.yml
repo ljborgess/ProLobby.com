@@ -43,6 +43,8 @@ jobs:
       # ambiente do deploy e forja sessao de qualquer conta (RNF-021).
       JWT_SECRET: ci-secret-not-the-placeholder
       WEBHOOK_SECRET: ci-webhook-secret-not-the-placeholder
+      # 32 raw bytes, base64 — same discardable-runner rule as the two above.
+      EVIDENCE_ENCRYPTION_KEY: 'MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDE='
 
     steps:
       - uses: actions/checkout@v4

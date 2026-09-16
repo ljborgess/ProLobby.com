@@ -17,7 +17,8 @@
         "PORT",
         "DISCORD_BOT_TOKEN",
         "WEBHOOK_SECRET",
-        "BOT_WEBHOOK_URL"
+        "BOT_WEBHOOK_URL",
+        "EVIDENCE_ENCRYPTION_KEY"
       ]
     },
     "lint": {},
@@ -26,7 +27,7 @@
     },
     "test": {
       "dependsOn": ["^build"],
-      "env": ["THROTTLE_DISABLED", "WEBHOOK_SECRET", "BOT_WEBHOOK_URL"]
+      "env": ["THROTTLE_DISABLED", "WEBHOOK_SECRET", "BOT_WEBHOOK_URL", "EVIDENCE_ENCRYPTION_KEY"]
     },
     "e2e": {
       "cache": false,
@@ -47,7 +48,8 @@
         "CORS_ORIGINS",
         "THROTTLE_DISABLED",
         "WEBHOOK_SECRET",
-        "BOT_WEBHOOK_URL"
+        "BOT_WEBHOOK_URL",
+        "EVIDENCE_ENCRYPTION_KEY"
       ]
     }
   }

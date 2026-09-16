@@ -1,4 +1,4 @@
-import { Entity, Enum, Index, ManyToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core'
+import { Entity, Enum, Index, ManyToOne, Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core'
 import { randomUUID } from 'node:crypto'
 
 import { Account } from '../account/account.entity'
@@ -7,6 +7,9 @@ import {
   ModerationCaseState,
   ModerationCaseType,
 } from './moderation-case.enums'
+
+/** Name of the class-level @Unique below — shared so it can't drift from itself. */
+export const OPEN_ACCOUNT_RECOVERY_UNIQUE_INDEX = 'moderation_case_open_account_recovery_unique'
 
 /**
  * A case in the moderation queue.
@@ -18,6 +21,18 @@ import {
  * a case; the panel that resolves it is phase 5.
  */
 @Entity({ tableName: 'moderation_case' })
+@Unique({
+  name: OPEN_ACCOUNT_RECOVERY_UNIQUE_INDEX,
+  // Partial index: at most one *open* account_recovery case per account.
+  // AccountRecoveryService relies on this to decide a race between two
+  // concurrent requests, not on a count() read beforehand — see the comment
+  // there. A raw expression because MikroORM's normal unique index has no
+  // notion of a WHERE clause; this string must stay byte-identical to
+  // migration 20260916120000, which is what actually creates it — this
+  // decorator only exists so the schema generator (used by e2e tests'
+  // refreshDatabase()) knows about it too, and doesn't diff it away.
+  expression: `create unique index "${OPEN_ACCOUNT_RECOVERY_UNIQUE_INDEX}" on "moderation_case" ("target_account_id") where ("type" = 'account_recovery' and "state" = 'open')`,
+})
 export class ModerationCase {
   @PrimaryKey({ type: 'uuid' })
   id: string & Opt = randomUUID()
