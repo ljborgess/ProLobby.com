@@ -14,6 +14,7 @@ Nada aqui é burocracia inventada. Cada regra nasceu de um bug real que o padrã
 | 2 | [Fluxo de uma issue](02-fluxo-da-issue.md) | toda issue: da atribuição ao fechamento |
 | 3 | [Regras que já pegaram bug](03-regras-que-ja-pegaram-bug.md) | antes de codar a primeira, e de novo quando travar |
 | 4 | [Trabalhando com IA: Claude Code ou Cursor](04-trabalhando-com-ia.md) | toda sessão: o prompt de abertura e o review |
+| 5 | [Recados — o que mudou pra cada um](05-recados.md) | **toda sessão, antes de pegar trabalho** |
 
 ## Onde está o resto
 
