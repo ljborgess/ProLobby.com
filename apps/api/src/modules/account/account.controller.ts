@@ -8,12 +8,14 @@ import { AccountState } from './account.enums'
 import { AccountService } from './account.service'
 import { AcceptTermsDto } from './dto/accept-terms.dto'
 import { ConfirmPasswordResetDto } from './dto/confirm-password-reset.dto'
+import { JoinWaitingListDto } from './dto/join-waiting-list.dto'
 import { RequestPasswordResetDto } from './dto/request-password-reset.dto'
 import { ResendVerificationDto } from './dto/resend-verification.dto'
 import { SignUpDto } from './dto/sign-up.dto'
 import { VerifyEmailDto } from './dto/verify-email.dto'
 import { EmailVerificationService } from './email-verification.service'
 import { PasswordResetService } from './password-reset.service'
+import { WaitingListService } from './waiting-list.service'
 
 @Controller('accounts')
 export class AccountController {
@@ -21,6 +23,7 @@ export class AccountController {
     private readonly accountService: AccountService,
     private readonly emailVerificationService: EmailVerificationService,
     private readonly passwordResetService: PasswordResetService,
+    private readonly waitingListService: WaitingListService,
   ) {}
 
   /**
@@ -144,5 +147,30 @@ export class AccountController {
     // The guard has already authenticated; the id is all this needs, and
     // request.account itself is read-only (see RequestWithAccount).
     await this.accountService.acceptTerms(request.account!.id, dto.version)
+  }
+
+  /**
+   * Joins the sign-up waiting list — RF-078.
+   *
+   * Always 202, idempotent: the screen that calls this only appears after
+   * sign-up itself answered `signup_paused`, so there is no unknown-address
+   * case to keep indistinguishable here the way RF-070 requires elsewhere —
+   * this address never had a chance to have an account.
+   *
+   * This is capture only. The email sent *when sign-up reopens* needs
+   * something to notice that it reopened and run once — a scheduled job,
+   * which does not exist yet (#106). Building one as a side effect of this
+   * endpoint would be solving that issue by accident, in the wrong place.
+   */
+  @Public()
+  @Post('waiting-list')
+  @HttpCode(HttpStatus.ACCEPTED)
+  // The signup bucket: an unauthenticated write of an email address, same
+  // per-hour farming concern as creating the account itself.
+  @Throttle({ signup: {} })
+  async joinWaitingList(@Body() dto: JoinWaitingListDto): Promise<{ message: string }> {
+    await this.waitingListService.join(dto.email)
+
+    return { message: 'added_to_waiting_list' }
   }
 }

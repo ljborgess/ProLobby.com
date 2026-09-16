@@ -12,10 +12,18 @@ import { PasswordResetService } from './password-reset.service'
 import { SessionController } from './session.controller'
 import { SessionService } from './session.service'
 import { TermsAcceptance } from './terms-acceptance.entity'
+import { WaitingListEntry } from './waiting-list-entry.entity'
+import { WaitingListService } from './waiting-list.service'
 
 @Module({
   imports: [
-    MikroOrmModule.forFeature([Account, EmailVerification, PasswordReset, TermsAcceptance]),
+    MikroOrmModule.forFeature([
+      Account,
+      EmailVerification,
+      PasswordReset,
+      TermsAcceptance,
+      WaitingListEntry,
+    ]),
   ],
   controllers: [AccountController, SessionController],
   providers: [
@@ -24,6 +32,7 @@ import { TermsAcceptance } from './terms-acceptance.entity'
     EmailVerificationService,
     PasswordResetService,
     SessionService,
+    WaitingListService,
   ],
   exports: [AccountService, EmailVerificationService],
 })
