@@ -88,7 +88,7 @@ navegador → Cloudflare (DNS, HTTPS, CDN, DDoS) → túnel → VM Oracle São P
 | Teto grátis | Pausar cadastro alivia? | Ação |
 |---|---|---|
 | OCR: 1.000 chamadas/mês | sim | pausa cadastro em 90% ([RF-072](../requisitos/05-funcionais.md#rf-072--cadastro-pausa-perto-do-teto-do-free-tier-sem-gasto-automático), já decidido) |
-| E-mail: teto diário do provedor | sim | pausa cadastro em 90%, quando o provedor for escolhido |
+| E-mail: teto diário do provedor | sim | pausa cadastro em **90 e-mails/dia** (Resend grátis, [ADR-008](008-provedor-de-email.md)) |
 | Neon: 0,5 GB de armazenamento | não | alerta em 70% e 90% |
 | Neon: 100 CU-horas/mês de compute | não | alerta em 70% e 90% |
 | **Neon: 5 GB/mês de saída** — estourou, o banco é suspenso até o próximo ciclo | não | **alerta em 60% e 80%** |

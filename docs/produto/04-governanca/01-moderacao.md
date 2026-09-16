@@ -4,6 +4,7 @@
 
 ## Quem modera
 
+- **Atualizado em 2026-09-16: são 3 moderadores** (Luciano, Rafael, Felipe). O João não entra por ora. Com 3, **mínimo de 2 elegíveis pra punir**, e disputa sem quórum tem limite por conta — regra em [RF-075](../../requisitos/05-funcionais.md#rf-075--caso-sem-3-moderadores-elegíveis-resolve-em-desfecho-neutro).
 - Fase 1 (MVP): moderação feita pelos 4 (Luciano, Rafael, João, Felipe), com painel simples de fila de casos pendentes. Requisitos de segurança do painel (2FA obrigatório pros 4, log de auditoria de toda ação de moderador) documentados em [Dados pessoais e LGPD](02-lgpd.md#requisitos-de-segurança-independentes-de-stack) — o painel é o alvo de maior risco se comprometido (poder de kick/ban/editar disputa).
 - **Conflito de interesse — regra formal, não mais bom senso.** O sistema **bloqueia tecnicamente** a ação do moderador sobre um caso em que ele é parte: alvo da denúncia, autor dela, ou participante da partida em disputa ([Requisitos transversais](../../requisitos/01-transversais.md)). **Decidem os outros 3.**
   - O desenho anterior dizia que os 4 decidiam juntos mesmo assim, apostando no bom senso do grupo. Isso era exatamente o que um usuário contestaria — e numa comunidade BR de Pro Clubs pequena, esse tipo de história circula rápido. A trava custa pouco e não depende de confiança.
