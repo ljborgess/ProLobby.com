@@ -58,6 +58,15 @@ O piloto foi **adiado, não descartado**, por um motivo simples: os prints de es
 
 **A coleta não compete com issue nenhuma.** É mensagem em servidor de Discord, não é engenharia, e roda em paralelo a tudo — e é exatamente por isso que ela nunca é a coisa mais urgente e nunca acontece.
 
+## Edição do jogo: medir em FC 27 (decidido em 2026-09-16)
+
+**O EA FC 27 sai em 25/09/2026**, com acesso antecipado em 18/09. O beta roda inteiro em FC 27, e edição nova arquiva personagem e exige reverificação ([Escopo](../produto/05-produto/02-escopo.md)).
+
+- **Print de FC 26 serve só pra desenvolver o script.** A taxa de acerto que decide a Fase 2.2 é medida em **FC 27**.
+- **O Clubs muda de lugar**: passa a ficar dentro do hub "The Grounds", só em PS5, Xbox Series, Switch 2 e PC. Tela do Virtual Pro, overall, arquétipo e categorias podem ter mudado — os campos que o OCR lê só se confirmam no jogo.
+- **A semana de lançamento é a melhor janela de coleta**: YouTube e Twitch lotam de conteúdo de Clubs.
+- **Coleta automática não é viável.** Testado em 2026-09-16: Reddit e X bloqueiam acesso automatizado, e busca web devolve site de montar build, não print de jogador. A fonte pública precisa de uma pessoa abrindo o vídeo e tirando o print.
+
 ## De onde vêm os prints (decidido em 2026-09-16)
 
 Pedir em servidor de Discord tem fricção social alta e, na prática, não andou. **Os primeiros 20 vêm de fonte pública**, sem depender de ninguém responder:

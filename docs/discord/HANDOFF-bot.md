@@ -7,7 +7,7 @@
 - Monorepo pnpm workspaces + Turborepo: `apps/web` (Next.js/TypeScript, só frontend), `apps/api` (NestJS, toda regra de negócio), `apps/bot` (Node.js + TypeScript + discord.js), `packages/types` (contrato do evento webhook).
 - MikroORM e JWT no NestJS ([ADR-006](../adr/006-backend-separado-e-tooling.md)). Banco na Neon em São Paulo; `web`, `api` e `bot` na mesma VM Oracle Cloud em São Paulo, atrás da Cloudflare ([ADR-009](../adr/009-neon-cloudflare-vm.md)).
 - Escalabilidade: sharding desnecessário (1 servidor só), rate limit resolvido por execução sequencial (RF-059).
-- **Retry não é do bot.** Revogado em 2026-09-11: quem guarda entrega e reagenda é a API, na entidade `EntregaEvento` ([RF-058](../requisitos/05-funcionais.md#rf-058--entrega-de-evento-tem-retry-com-registro)); o bot é **idempotente**, checando o estado real no Discord antes de agir ([RNF-018](../requisitos/07-nao-funcionais.md)). Fila em memória no bot perde evento em restart e causa duplo efeito — era exatamente o bug que a auditoria fechou.
+- **Retry não é do bot.** Revogado em 2026-09-11: quem guarda entrega e reagenda é a API, na entidade `EntregaEvento` ([RF-058](../requisitos/05-funcionais.md#rf-058--evento-da-plataforma-pro-bot-tem-retry-e-vira-caso-ao-esgotar)); o bot é **idempotente**, checando o estado real no Discord antes de agir ([RNF-018](../requisitos/07-nao-funcionais.md)). Fila em memória no bot perde evento em restart e causa duplo efeito — era exatamente o bug que a auditoria fechou.
 - Protocolo webhook, não polling — [ADR-003](../adr/003-webhook-nao-polling.md).
 - Escopo e permissões do bot — RF-047 a RF-062, [docs/discord/03-bot.md](03-bot.md).
 - Servidor criado manualmente, Server Members Intent ativado à mão — RF-062.
