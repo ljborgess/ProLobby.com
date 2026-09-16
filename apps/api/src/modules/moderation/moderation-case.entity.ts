@@ -60,6 +60,18 @@ export class ModerationCase {
   @Property({ type: 'text', nullable: true })
   decision?: string
 
+  /**
+   * Local filesystem path to an attached screenshot — RF-025.
+   *
+   * Provisional (ADR-009): real print storage is the Oracle Object Storage
+   * bucket, wired up with the rest of the upload pipeline in phase 2.2. This
+   * column exists so account recovery has somewhere to put the evidence a
+   * moderator needs *now*, without waiting for that pipeline — swapping the
+   * writer later is a one-function change, not a migration.
+   */
+  @Property({ type: 'text', nullable: true })
+  evidencePath?: string
+
   @Property()
   openedAt: Date & Opt = new Date()
 }
