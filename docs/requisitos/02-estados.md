@@ -10,7 +10,7 @@ Por que importa como requisito: a regra "conta fica bloqueada de nova fila até 
 
 | # | Estado | Fila do jogador | Como sai |
 |---|---|---|---|
-| 1 | `buscando` | ocupada | fecha roster → 2 · timeout de 10 min sem piso → cancelado · jogador sai → livre |
+| 1 | `buscando` | ocupada | fecha roster → 2 · **10 min sem piso → continua buscando**, com aviso do que falta a cada 5 min ([RF-007](05-funcionais.md#rf-007--timeout-de-fila-avisa-o-que-falta)) · jogador sai → livre |
 | 2 | `aguardando_jogadores` | ocupada | todos confirmam em 30 s → 3 · alguém não confirma → volta a 1 |
 | 3 | `aguardando_capitao` | ocupada | 2 capitães confirmam em 30 s → 4 · cascata esgota, **ou passa de 5 min de cascata** → `cancelado_sem_culpa` ([RF-080](05-funcionais.md#rf-080--cascata-de-capitão-tem-teto-de-5-min)) |
 | 4 | `aguardando_convite` | ocupada | todos marcam convite recebido em 5 min → 5 · alguém não recebeu **por vaga insuficiente** → `cancelado_sem_culpa` · alguém não recebeu **sem motivo declarado** → `cancelado_por_capitao` |

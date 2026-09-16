@@ -15,6 +15,8 @@ O que se limita é o **público**, não o produto. Produto inteiro no ar, para u
 - Cobrar antes de saber se o OCR aceita print de estranho e se a fila fecha sozinha é vender promessa sem lastro.
 - **O Fundador é um ativo de um tiro só** — a janela de 30 dias / 50 pessoas vale porque só existe uma vez. Gastá-la inteira num beta de 25 convidados queima a escassez com quem apoiaria de qualquer forma.
 
+> **Revogado em 2026-09-16 — a pré-venda do beta não acontece.** Ver [Validar preço sem abrir empresa](#validar-preço-sem-abrir-empresa-decidido-em-2026-09-16) logo abaixo. O texto original fica como registro do raciocínio que foi derrubado.
+
 ### Pré-venda na última semana — o único jeito de não apostar às cegas
 
 Revisão consciente do "zero cobrança": **na última semana do beta, o Fundador abre pros 24 convidados, a R$ 49, sem desconto nenhum.**
@@ -25,6 +27,25 @@ Motivo: sem isso você chega na abertura pública apostando um preço que ningu�
 - **Preço cheio, sem desconto** — coerente com a decisão de não dar Fundador de graça nem barato a quem testou ([recompensa do beta](#o-que-o-grupo-recebe)). O que o beta ganha é o cargo Beta; o Fundador ele compra como qualquer um.
 - Gasta ~5 das 50 vagas. Barato pelo que informa.
 - Exige **entidade legal (ME no Simples, não MEI) e Termos já prontos** antes dessa semana — não é o fim do beta, é o fim menos sete dias. Isso antecipa a formalização no cronograma.
+
+### Validar preço sem abrir empresa (decidido em 2026-09-16)
+
+A pré-venda acima derrubava a única vantagem estrutural do projeto por um número que não sustenta decisão:
+
+| | |
+|---|---|
+| Receita esperada | ~5 × R$ 49 = **R$ 245** |
+| Custo que ela dispara | **R$ 250/mês** (ME no Simples + contador, obrigatória antes do primeiro real) |
+| Fôlego comprado | **menos de 1 mês** |
+| Custo antes de cobrar | **~R$ 3/mês** (ADR-009) |
+
+E a medição não mede: 5 de 24 tem intervalo de confiança de ~7% a ~42% — não separa "vende as 50 vagas" de "vende 4". A amostra ainda é a menos representativa possível: entrou de graça e conhece os fundadores, o grupo que [esta mesma página](#quem-participa-metade-conhecido-metade-estranho) diz que aprova o que o público reprovaria.
+
+No lugar:
+
+1. **Nenhuma cobrança no beta.** Custo ~zero se mantém, e o projeto sobrevive indefinidamente enquanto valida.
+2. **Lista de espera do Fundador com o preço visível**, divulgada nos servidores BR onde os estranhos foram recrutados — não no grupo de dentro. "Me avisa quando abrir, a R$ 49" é sinal mais barato e de público mais parecido com o da abertura.
+3. **Abrir a ME é gatilho numérico, não fase do calendário**: quando a lista de espera do Fundador passar de **50 interessados** (o número de vagas), ou quando o custo de infra deixar de caber no free tier. Mesma técnica que o projeto já usa em RF-072 e no gatilho de ~700 contas da assinatura.
 
 ### Por que o beta existe
 
@@ -70,8 +91,12 @@ Sem Fundador grátis nem com desconto, por um motivo contra-intuitivo: **quem te
 O beta termina quando **todos** estes forem verdade:
 
 - **10 partidas completas de ponta a ponta** — fila, lobby, partida, resultado confirmado pelos dois lados.
-- **Fila fechando sozinha em pelo menos metade delas**, sem nenhum dos 4 organizando por fora.
+- **Fila fechando, em duas fases distintas** (separadas em 2026-09-16). A frase anterior — "fechando sozinha em metade, sem ninguém organizando por fora" — era inalcançável por construção: a solução de cold start **é** a largada coordenada ("hoje 20h, todo mundo na fila"), e anunciar horário é organizar por fora.
+  - **Fase A — noite coordenada**: a fila fecha com **12+ pessoas na fila** em noite anunciada. Prova que o matchmaking funciona quando há gente. Número de planejamento em [Fila](../produto/03-partida/02-fila.md#quantos-humanos-por-partida).
+  - **Fase B — noite não anunciada**: a fila fecha pelo menos uma vez em noite sem nenhum aviso dos 4. É esta que diz se o produto anda sozinho, e é ela que decide a abertura.
+- **Pelo menos metade dos humanos nas partidas que contam são do grupo de estranhos.** Sem isso, os ~12 conhecidos cumprem o critério inteiro sozinhos — exatamente o que esta página diz que não vale medir.
 - **OCR aceitando 80%+ dos prints de primeira** (confiança ≥85%, sem reenvio). Abaixo disso o gargalo é o upload, e vira suporte manual em escala.
+- **Tempo por caso manual cronometrado** (decidido em 2026-09-16). O 80% mede se o OCR lê; não mede se o fallback aguenta. Com 24 pessoas, qualquer taxa de falha é absorvível numa noite — o gargalo só aparece depois de abrir. Então: cronometrar cada correção manual de OCR (RF-073) do beta e escrever **antes da abertura** o teto: *acima de N casos manuais por semana, verificação obrigatória vira amostragem* (a alternativa já prevista em [Piloto de OCR](../requisitos/06-piloto-ocr.md#o-que-cada-resultado-decide)). N sai do tempo medido × horas que os moderadores reais têm.
 - **Zero lobby cancelado por bug.** Cancelamento por regra não conta — convite não confirmado em 5 min é a regra funcionando como desenhada ([Lobby](../produto/03-partida/03-lobby.md)).
 
 ### Como esses números são medidos

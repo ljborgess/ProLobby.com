@@ -6,7 +6,7 @@ Registro de decisão **técnica difícil de reverter**. Domínio próprio, ao la
 
 O dossiê de `produto/` já registra decisão com contexto, alternativa descartada e motivo — em substância, já é um corpo de ADRs organizado por domínio em vez de cronologicamente. **Transcrever tudo aqui criaria ~40 documentos duplicados que passariam a divergir**, e deriva de número já aconteceu neste projeto: foi exatamente o motivo de [`parametros.md`](../produto/parametros.md) existir.
 
-Então aqui entra só o que o dossiê de produto não cobre bem: **escolha técnica que custa refatoração pra desfazer.** As maiores ainda não foram tomadas — stack, banco, framework, motor de OCR, hospedagem — e vêm depois dos [dois bloqueadores](../../HANDOFF.md). Sem lugar definido, elas virariam mensagem de commit, que é onde decisão de arquitetura morre.
+Então aqui entra só o que o dossiê de produto não cobre bem: **escolha técnica que custa refatoração pra desfazer.** As maiores já foram tomadas — stack e framework (005, 006), sessão (007), e-mail (008), banco e hospedagem (009). Motor de OCR continua em aberto até o [piloto](../requisitos/06-piloto-ocr.md). Sem lugar definido, elas virariam mensagem de commit, que é onde decisão de arquitetura morre.
 
 ## Gatilho: escrever ou não?
 

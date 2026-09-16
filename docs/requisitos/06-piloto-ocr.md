@@ -58,6 +58,26 @@ O piloto foi **adiado, não descartado**, por um motivo simples: os prints de es
 
 **A coleta não compete com issue nenhuma.** É mensagem em servidor de Discord, não é engenharia, e roda em paralelo a tudo — e é exatamente por isso que ela nunca é a coisa mais urgente e nunca acontece.
 
+## De onde vêm os prints (decidido em 2026-09-16)
+
+Pedir em servidor de Discord tem fricção social alta e, na prática, não andou. **Os primeiros 20 vêm de fonte pública**, sem depender de ninguém responder:
+
+| Fonte | O que tirar |
+|---|---|
+| YouTube / Twitch (VODs de Pro Clubs) | vídeo pausado na tela do Virtual Pro |
+| Reddit (r/EASportsFC, r/proclubs) | posts de build do Virtual Pro |
+| X / TikTok | foto de tela tirada com celular — o pior caso |
+
+É a mesma população que o piloto precisa medir: gente que ninguém orientou, enquadrando do jeito que deu, em vários idiomas e plataformas.
+
+**Ressalva que importa:** print tirado de vídeo carrega compressão de vídeo que o print original não tem. Isso deixa o teste **mais duro que a realidade** — se o motor acertar 80% em frame de YouTube, acerta mais em print nativo. O piloto passa a medir o piso, não o teto, que é o lado certo de errar.
+
+Anotar a **origem** de cada imagem no gabarito (`publico-video`, `publico-post`, `pedido`), pra separar a taxa por fonte — se o resultado ficar perto de 80%, é essa quebra que diz se o número real é melhor.
+
+**Pedir nos servidores continua valendo, em paralelo** — print nativo sem compressão é o dado mais limpo. Só deixou de ser o caminho único e bloqueante.
+
+As regras abaixo (nunca no git, apagar ao fim, gabarito versionado) valem igual pra print de fonte pública.
+
 ## Como pedir, e o que pode ser feito com o print
 
 Print de tela de Virtual Pro tem **gamertag**, que identifica pessoa real. Sem autorização no ato do pedido, o projeto junta 50 imagens identificáveis de estranhos sem base pra tratar nenhuma delas — e entra em contradição com a própria seção de LGPD no primeiro dado que coleta.

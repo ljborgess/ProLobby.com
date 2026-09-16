@@ -136,7 +136,7 @@ telas são do projeto de origem, servindo só de referência de estilo:
 <tr><td><a href="docs/time/README.md"><code>docs/time/</code></a></td><td>Guia de quem coda: primeiro dia, fluxo de issue, regras que já pegaram bug, Claude Code e Cursor</td></tr>
 <tr><td><a href="docs/produto/README.md"><code>docs/produto/</code></a></td><td>Decisões de produto e o motivo de cada uma, por domínio</td></tr>
 <tr><td><a href="docs/produto/parametros.md"><code>parametros.md</code></a></td><td>Todos os números do sistema num lugar só (elo, reputação, prazos, limites)</td></tr>
-<tr><td><a href="docs/requisitos/README.md"><code>docs/requisitos/</code></a></td><td>O que o sistema faz: RF-001 a RF-073, RNF-001 a RNF-020, estados, modelo de dados, checklist de segurança</td></tr>
+<tr><td><a href="docs/requisitos/README.md"><code>docs/requisitos/</code></a></td><td>O que o sistema faz: RF-001 a RF-081, RNF-001 a RNF-021, estados, modelo de dados, checklist de segurança</td></tr>
 <tr><td><a href="docs/adr/README.md"><code>docs/adr/</code></a></td><td>Decisão de arquitetura, com supersessão explícita — só o que custa refatoração pra desfazer</td></tr>
 <tr><td><a href="docs/negocio/README.md"><code>docs/negocio/</code></a></td><td>Tese de mercado, sustentabilidade, ordem de implementação e plano de lançamento</td></tr>
 <tr><td><a href="docs/discord/README.md"><code>docs/discord/</code></a></td><td>Estrutura do servidor Discord e do bot</td></tr>

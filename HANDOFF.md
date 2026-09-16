@@ -8,7 +8,7 @@ Ver [`README.md`](README.md). Origem: ideia nasceu numa sessão sobre o projeto 
 
 ## Estado atual (2026-09-14)
 
-- **Fase**: design de produto e requisitos fechados; **engenharia em andamento**. **Fase 1** (CI, processo de PR, servidor Discord) concluída em 2026-09-11. **Fase 2.1** (núcleo de conta) em andamento, com 11 de 26 issues fechadas: schema base, segurança transversal da API, cadastro, login e sessão ([ADR-007](docs/adr/007-sessao-jwt.md)), verificação de e-mail ([ADR-008](docs/adr/008-provedor-de-email.md)) e aceite de Termos já estão em `dev`.
+- **Fase**: design de produto e requisitos fechados; **engenharia em andamento**. **Fase 1** (CI, processo de PR, servidor Discord) concluída em 2026-09-11. **Fase 2.1** (núcleo de conta): todo o código do caminho crítico em `dev` — schema base, segurança da API, cadastro, login e sessão ([ADR-007](docs/adr/007-sessao-jwt.md)), verificação de e-mail ([ADR-008](docs/adr/008-provedor-de-email.md)), Termos, redefinição de senha, recuperação por dois fatores, status de punição e fila de espera. **Faltam 3 issues, todas do paralelo**: #106 (scheduler), #87 (tela), #101 (bot protection).
 - **Time de código: três devs ativos desde 2026-09-14.** Luciano no caminho crítico (Claude Code), Rafael no paralelo de bot e infra (Cursor), Felipe no paralelo de produto visível (Claude Code). A ordem de cada um está no [grafo da Fase 2.1](CONTRIBUTING.md#grafo-vivo--fase-21-núcleo-de-conta-trabalho-aberto-em-2026-09-14) e no #64.
 - **Review**: PR do Rafael e do Felipe precisa da aprovação do Luciano. PR do Luciano é revisado por ele mesmo, com code review e security review do agente publicados no PR ([CONTRIBUTING](CONTRIBUTING.md#quem-revisa-o-pr-do-luciano-decidido-em-2026-09-14)).
 - **Quem entra pra codar** começa por [`docs/time/`](docs/time/README.md): primeiro dia, fluxo de uma issue, regras que já pegaram bug, Claude Code e Cursor.
@@ -87,7 +87,7 @@ docs/
 │   ├── 06-piloto-ocr       bloqueador nº 2
 │   ├── 07-nao-funcionais   RNF-001 a RNF-021
 │   └── 08-seguranca-checklist   18 itens + 9b, aplicar desde a 1ª linha de código de backend
-├── adr/          decisão técnica difícil de reverter (001 a 008; 005/006 stack, 007 sessão, 008 e-mail)
+├── adr/          decisão técnica difícil de reverter (001 a 009; 005/006 stack, 007 sessão, 008 e-mail, 009 infra)
 ├── research/     auditorias do dossiê (a de 2026-09-11 mudou regra, não só texto)
 ├── time/         guia de quem coda: primeiro dia · fluxo da issue · regras · Claude Code e Cursor
 ├── discord/      01-cargos · 02-canais · 03-bot · 04-integracao

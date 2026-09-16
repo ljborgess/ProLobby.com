@@ -68,6 +68,8 @@ Uma partida 11v11 completa exigiria 22 pessoas simultâneas na fila com a distri
 
 Com isso, a meta de fila cai de 22 pra **8 pessoas** (piso de 4 humanos por lado, com simetria obrigatória entre os times — ver [Fila e matchmaking](../produto/03-partida/02-fila.md)). Diferença entre inviável e alcançável já na primeira semana.
 
+**Corrigido em 2026-09-16: planejar com 12, não com 8.** O piso de 8 continua correto, mas 8 pessoas só formam uma partida válida em **6% a 9%** das composições — a simetria por categoria e os slots por posição derrubam quase todas. Com 12 na fila a chance passa de 93%. A meta de recrutamento, a largada coordenada e o critério do beta usam **12**; o 8 é o mínimo técnico, não o alvo. Conta e tabela em [Fila e matchmaking](../produto/03-partida/02-fila.md#quantos-humanos-por-partida).
+
 **Complemento — plataforma completa, largada coordenada**:
 
 - A plataforma **não tem limitação técnica nenhuma**: fila contínua, aberta 24/7 desde o dia 1, produto inteiro funcionando como desenhado. Nada é cortado ou simplificado pro lançamento.
