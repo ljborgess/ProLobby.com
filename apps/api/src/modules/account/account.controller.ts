@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, Req } from '@nestjs/common'
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req } from '@nestjs/common'
 import { Throttle } from '@nestjs/throttler'
 
 import { AllowStates, Public, SkipTermsCheck } from '../../common/auth/auth.decorators'
@@ -14,6 +14,7 @@ import { SignUpDto } from './dto/sign-up.dto'
 import { VerifyEmailDto } from './dto/verify-email.dto'
 import { EmailVerificationService } from './email-verification.service'
 import { PasswordResetService } from './password-reset.service'
+import { PunishmentStatus, PunishmentStatusService } from './punishment-status.service'
 
 @Controller('accounts')
 export class AccountController {
@@ -21,6 +22,7 @@ export class AccountController {
     private readonly accountService: AccountService,
     private readonly emailVerificationService: EmailVerificationService,
     private readonly passwordResetService: PasswordResetService,
+    private readonly punishmentStatusService: PunishmentStatusService,
   ) {}
 
   /**
@@ -144,5 +146,26 @@ export class AccountController {
     // The guard has already authenticated; the id is all this needs, and
     // request.account itself is read-only (see RequestWithAccount).
     await this.accountService.acceptTerms(request.account!.id, dto.version)
+  }
+
+  /**
+   * The account's own punishment, if it has one — gap found in the review of
+   * #103. `suspensionEndsAt` and `@AllowStates(SUSPENDED)` had existed since
+   * #75 and #82 respectively, and nothing put them together: a suspended
+   * account logged in and got 403 from everything, with no way to tell a
+   * suspension from a ban.
+   *
+   * `BANNED` is listed too — it is the other route RF-081 requires a banned
+   * account to reach (the first is signing in itself, which never checks
+   * state). This is not yet the whole of RF-081: filing the appeal is a
+   * separate, unbuilt endpoint (RF-037), and `ModerationCase` has no link
+   * from an appeal case back to the case it appeals, so this route cannot
+   * say whether one is already open. It returns the case id so that future
+   * endpoint has something to point at.
+   */
+  @Get('punishment-status')
+  @AllowStates(AccountState.ACTIVE, AccountState.SUSPENDED, AccountState.BANNED)
+  async punishmentStatus(@Req() request: RequestWithAccount): Promise<PunishmentStatus> {
+    return this.punishmentStatusService.statusFor(request.account!)
   }
 }
