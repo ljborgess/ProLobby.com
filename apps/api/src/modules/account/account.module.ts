@@ -16,6 +16,8 @@ import { PunishmentStatusService } from './punishment-status.service'
 import { SessionController } from './session.controller'
 import { SessionService } from './session.service'
 import { TermsAcceptance } from './terms-acceptance.entity'
+import { WaitingListEntry } from './waiting-list-entry.entity'
+import { WaitingListService } from './waiting-list.service'
 
 @Module({
   imports: [
@@ -26,6 +28,7 @@ import { TermsAcceptance } from './terms-acceptance.entity'
       TermsAcceptance,
       ModerationCase,
       ReputationEvent,
+      WaitingListEntry,
     ]),
   ],
   controllers: [AccountController, SessionController],
@@ -37,6 +40,7 @@ import { TermsAcceptance } from './terms-acceptance.entity'
     PasswordResetService,
     PunishmentStatusService,
     SessionService,
+    WaitingListService,
   ],
   exports: [AccountService, EmailVerificationService],
 })

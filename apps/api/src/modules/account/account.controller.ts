@@ -22,6 +22,7 @@ import { AccountState } from './account.enums'
 import { AccountService } from './account.service'
 import { AcceptTermsDto } from './dto/accept-terms.dto'
 import { ConfirmPasswordResetDto } from './dto/confirm-password-reset.dto'
+import { JoinWaitingListDto } from './dto/join-waiting-list.dto'
 import { RequestAccountRecoveryDto } from './dto/request-account-recovery.dto'
 import { RequestPasswordResetDto } from './dto/request-password-reset.dto'
 import { ResendVerificationDto } from './dto/resend-verification.dto'
@@ -31,6 +32,7 @@ import { EmailVerificationService } from './email-verification.service'
 import { detectRealImageType } from './evidence-image'
 import { PasswordResetService } from './password-reset.service'
 import { PunishmentStatus, PunishmentStatusService } from './punishment-status.service'
+import { WaitingListService } from './waiting-list.service'
 
 /** Item 16 of the security checklist: 10 MB, checked before anything is read. */
 const EVIDENCE_MAX_BYTES = 10 * 1024 * 1024
@@ -44,6 +46,7 @@ export class AccountController {
     private readonly passwordResetService: PasswordResetService,
     private readonly accountRecoveryService: AccountRecoveryService,
     private readonly punishmentStatusService: PunishmentStatusService,
+    private readonly waitingListService: WaitingListService,
   ) {}
 
   /**
@@ -237,5 +240,30 @@ export class AccountController {
   @AllowStates(AccountState.ACTIVE, AccountState.SUSPENDED, AccountState.BANNED)
   async punishmentStatus(@Req() request: RequestWithAccount): Promise<PunishmentStatus> {
     return this.punishmentStatusService.statusFor(request.account!)
+  }
+
+  /**
+   * Joins the sign-up waiting list — RF-078.
+   *
+   * Always 202, idempotent: the screen that calls this only appears after
+   * sign-up itself answered `signup_paused`, so there is no unknown-address
+   * case to keep indistinguishable here the way RF-070 requires elsewhere —
+   * this address never had a chance to have an account.
+   *
+   * This is capture only. The email sent *when sign-up reopens* needs
+   * something to notice that it reopened and run once — a scheduled job,
+   * which does not exist yet (#106). Building one as a side effect of this
+   * endpoint would be solving that issue by accident, in the wrong place.
+   */
+  @Public()
+  @Post('waiting-list')
+  @HttpCode(HttpStatus.ACCEPTED)
+  // The signup bucket: an unauthenticated write of an email address, same
+  // per-hour farming concern as creating the account itself.
+  @Throttle({ signup: {} })
+  async joinWaitingList(@Body() dto: JoinWaitingListDto): Promise<{ message: string }> {
+    await this.waitingListService.join(dto.email)
+
+    return { message: 'added_to_waiting_list' }
   }
 }
