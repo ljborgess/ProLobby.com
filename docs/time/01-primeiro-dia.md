@@ -4,7 +4,7 @@ Uma vez só, antes da primeira issue.
 
 ## Máquina
 
-Precisa de Node 20+, pnpm, Docker e `gh` (GitHub CLI) logado.
+Precisa de Node 22 (fixado em `.nvmrc`), pnpm, Docker e `gh` (GitHub CLI) logado.
 
 ```bash
 git clone git@github.com:ljborgess/ProLobby.com.git
