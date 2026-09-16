@@ -1,20 +1,40 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req } from '@nestjs/common'
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Req,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common'
+import { FileInterceptor } from '@nestjs/platform-express'
 import { Throttle } from '@nestjs/throttler'
+import { memoryStorage } from 'multer'
 
 import { AllowStates, Public, SkipTermsCheck } from '../../common/auth/auth.decorators'
 import type { RequestWithAccount } from '../../common/auth/session.guard'
 
+import { AccountRecoveryService } from './account-recovery.service'
 import { AccountState } from './account.enums'
 import { AccountService } from './account.service'
 import { AcceptTermsDto } from './dto/accept-terms.dto'
 import { ConfirmPasswordResetDto } from './dto/confirm-password-reset.dto'
+import { RequestAccountRecoveryDto } from './dto/request-account-recovery.dto'
 import { RequestPasswordResetDto } from './dto/request-password-reset.dto'
 import { ResendVerificationDto } from './dto/resend-verification.dto'
 import { SignUpDto } from './dto/sign-up.dto'
 import { VerifyEmailDto } from './dto/verify-email.dto'
 import { EmailVerificationService } from './email-verification.service'
+import { detectRealImageType } from './evidence-image'
 import { PasswordResetService } from './password-reset.service'
 import { PunishmentStatus, PunishmentStatusService } from './punishment-status.service'
+
+/** Item 16 of the security checklist: 10 MB, checked before anything is read. */
+const EVIDENCE_MAX_BYTES = 10 * 1024 * 1024
+const DECLARED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 
 @Controller('accounts')
 export class AccountController {
@@ -22,6 +42,7 @@ export class AccountController {
     private readonly accountService: AccountService,
     private readonly emailVerificationService: EmailVerificationService,
     private readonly passwordResetService: PasswordResetService,
+    private readonly accountRecoveryService: AccountRecoveryService,
     private readonly punishmentStatusService: PunishmentStatusService,
   ) {}
 
@@ -146,6 +167,55 @@ export class AccountController {
     // The guard has already authenticated; the id is all this needs, and
     // request.account itself is read-only (see RequestWithAccount).
     await this.accountService.acceptTerms(request.account!.id, dto.version)
+  }
+
+  /**
+   * Opens an account recovery case — RF-025, RF-070.
+   *
+   * Always 202 with the same message: whether the address exists, whether the
+   * security answer matched, whether a case was actually opened — none of it
+   * is observable here. See AccountRecoveryService for where the real work,
+   * and the enumeration guard, happens.
+   *
+   * The file checks below (missing, oversized, wrong format) are ordinary
+   * input validation, not account-related, so they answer immediately and
+   * plainly — a 400 here reveals nothing about any account.
+   */
+  @Public()
+  @Post('recovery-cases')
+  @HttpCode(HttpStatus.ACCEPTED)
+  // The login bucket: this compares a secret (the security answer), same
+  // family as sign-in and password reset.
+  @Throttle({ login: {} })
+  @UseInterceptors(
+    FileInterceptor('evidence', {
+      storage: memoryStorage(),
+      limits: { fileSize: EVIDENCE_MAX_BYTES },
+      fileFilter: (_req, file, callback) => {
+        callback(null, DECLARED_IMAGE_TYPES.includes(file.mimetype))
+      },
+    }),
+  )
+  requestAccountRecovery(
+    @Body() dto: RequestAccountRecoveryDto,
+    @UploadedFile() evidence?: Express.Multer.File,
+  ): { message: string } {
+    if (!evidence) {
+      // Missing entirely, or rejected by fileFilter above (wrong declared
+      // type or none at all). Either way it never reached multer's buffer.
+      throw new BadRequestException('evidence_required')
+    }
+
+    // fileFilter only saw the declared Content-Type, which the client
+    // controls; this reads the bytes it cannot fake (item 16 checklist).
+    const realType = detectRealImageType(evidence.buffer)
+    if (!realType) {
+      throw new BadRequestException('evidence_not_an_image')
+    }
+
+    this.accountRecoveryService.request(dto.email, dto.securityAnswer, evidence.buffer, realType)
+
+    return { message: 'recovery_request_received' }
   }
 
   /**
