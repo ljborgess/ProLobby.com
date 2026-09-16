@@ -1,6 +1,8 @@
 import { MikroOrmModule } from '@mikro-orm/nestjs'
 import { Module } from '@nestjs/common'
 
+import { ModerationCase } from '../moderation/moderation-case.entity'
+import { AccountRecoveryService } from './account-recovery.service'
 import { AccountController } from './account.controller'
 import { Account } from './account.entity'
 import { AccountService } from './account.service'
@@ -15,10 +17,17 @@ import { TermsAcceptance } from './terms-acceptance.entity'
 
 @Module({
   imports: [
-    MikroOrmModule.forFeature([Account, EmailVerification, PasswordReset, TermsAcceptance]),
+    MikroOrmModule.forFeature([
+      Account,
+      EmailVerification,
+      PasswordReset,
+      TermsAcceptance,
+      ModerationCase,
+    ]),
   ],
   controllers: [AccountController, SessionController],
   providers: [
+    AccountRecoveryService,
     AccountService,
     CapacityService,
     EmailVerificationService,
