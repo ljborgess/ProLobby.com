@@ -1,6 +1,8 @@
 import { MikroOrmModule } from '@mikro-orm/nestjs'
 import { Module } from '@nestjs/common'
 
+import { ModerationCase } from '../moderation/moderation-case.entity'
+import { AccountRecoveryService } from './account-recovery.service'
 import { AccountController } from './account.controller'
 import { Account } from './account.entity'
 import { AccountService } from './account.service'
@@ -22,11 +24,13 @@ import { WaitingListService } from './waiting-list.service'
       EmailVerification,
       PasswordReset,
       TermsAcceptance,
+      ModerationCase,
       WaitingListEntry,
     ]),
   ],
   controllers: [AccountController, SessionController],
   providers: [
+    AccountRecoveryService,
     AccountService,
     CapacityService,
     EmailVerificationService,
