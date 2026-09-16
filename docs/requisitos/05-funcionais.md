@@ -354,7 +354,7 @@ Por que precisou existir: nada restaurava a reputação ao fim da pena, e a recu
 
 - **2 ou mais elegíveis** decidem, por unanimidade, em até 48 h.
 - **Menos de 2 elegíveis**: desfecho neutro **imediato**, sem esperar 48 h por uma decisão que não pode acontecer.
-- **Disputa anulada por falta de quórum fica registrada no nome de quem abriu.** A **2ª disputa sem quórum em 30 dias** (janela móvel, mesmo contador de [RF-069](#rf-069--denúncia-infundada-reincidente-gera-punição)) aberta pela mesma conta **não anula**: o resultado original fica valendo. Fecha o exploit de perder uma partida com 2 sócios dentro e disputar só pra apagar a derrota — quem teve problema real é protegido na primeira, quem usa a brecha como estratégia pega uma vez.
+- **Disputa anulada por falta de quórum fica registrada no nome de quem abriu.** A **2ª disputa sem quórum em 30 dias** (janela móvel, mesmo contador de [RF-069](#rf-069--denúncia-reincidente-sem-fundamento-vira-caso-de-conduta)) aberta pela mesma conta **não anula**: o resultado original fica valendo. Fecha o exploit de perder uma partida com 2 sócios dentro e disputar só pra apagar a derrota — quem teve problema real é protegido na primeira, quem usa a brecha como estratégia pega uma vez.
 
 Texto original, mantido como registro:
 
