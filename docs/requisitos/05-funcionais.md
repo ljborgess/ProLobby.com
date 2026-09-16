@@ -350,6 +350,14 @@ Por que precisou existir: nada restaurava a reputação ao fim da pena, e a recu
 ### RF-075 · Caso sem 3 moderadores elegíveis resolve em desfecho neutro
 **Origem**: gap encontrado em auditoria, decidido em 2026-09-11 · [produto/04-governanca/01-moderacao.md](../produto/04-governanca/01-moderacao.md)
 
+**Correção de 2026-09-16 — são 3 moderadores, e 1 sozinho nunca pune.** O João não entra na moderação por ora (outras prioridades), então os moderadores são Luciano, Rafael e Felipe. Com 3, basta 2 estarem na partida em disputa pra sobrar **1 elegível** — e "unanimidade de 1" deixava uma pessoa só decidir, inclusive banir. A regra passa a ser:
+
+- **2 ou mais elegíveis** decidem, por unanimidade, em até 48 h.
+- **Menos de 2 elegíveis**: desfecho neutro **imediato**, sem esperar 48 h por uma decisão que não pode acontecer.
+- **Disputa anulada por falta de quórum fica registrada no nome de quem abriu.** A **2ª disputa sem quórum em 30 dias** (janela móvel, mesmo contador de [RF-069](#rf-069--denúncia-reincidente-sem-fundamento-vira-caso-de-conduta)) aberta pela mesma conta **não anula**: o resultado original fica valendo. Fecha o exploit de perder uma partida com 2 sócios dentro e disputar só pra apagar a derrota — quem teve problema real é protegido na primeira, quem usa a brecha como estratégia pega uma vez.
+
+Texto original, mantido como registro:
+
 **Aceite**: restando menos de 3 moderadores elegíveis ([RF-035](#rf-035--moderador-parte-do-caso-é-travado-decidem-os-outros-3)), o caso fica aberto por **48 h** aguardando decisão unânime dos elegíveis que sobraram. Sem unanimidade nesse prazo — ou sem nenhum elegível — o sistema aplica o **desfecho neutro** e encerra: disputa de placar vira partida anulada (elo revertido pra todos, nenhuma penalidade de reputação, fila liberada, mesmo tratamento de [RF-044](#rf-044--disputa-sem-evidência-decisiva-anula-a-partida)), e denúncia ou apelação é arquivada sem punição. O desfecho neutro entra no log de auditoria com motivo "sem quórum".
 
 Por que precisou existir: com 4 moderadores e 2 deles envolvidos no mesmo caso, sobram 2 elegíveis **permanentemente** — "esperar até haver 3" nunca termina, e as contas envolvidas ficam presas em `em_disputa` com a fila bloqueada junto. O desfecho neutro nunca pune sem quórum, então o pior caso é um resultado anulado, não uma punição injusta.
@@ -521,7 +529,7 @@ Mitiga o furo aberto pela ressalva da Virtual Pro única: nada impedia verificar
 | Teto grátis | Pausar cadastro alivia? | Ação |
 |---|---|---|
 | OCR: 1.000 chamadas/mês | sim | pausa cadastro em 90% (acima) |
-| E-mail: teto diário do provedor ([ADR-008](../adr/008-provedor-de-email.md)) | sim | pausa cadastro em 90% do teto diário, quando o provedor for escolhido |
+| E-mail: teto diário do provedor ([ADR-008](../adr/008-provedor-de-email.md)) | sim | pausa cadastro em **90 e-mails/dia** (Resend grátis, ~100/dia — escolhido em 2026-09-16) |
 | Neon: 0,5 GB de armazenamento | não | alerta em 70% e 90% |
 | Neon: 100 CU-horas/mês | não | alerta em 70% e 90% |
 | Neon: 5 GB/mês de saída — estourou, banco suspenso até o próximo ciclo | não | alerta em 60% e 80% |

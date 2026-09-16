@@ -178,7 +178,7 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 | Alerta — Neon armazenamento (0,5 GB) e compute (100 CU-h/mês) | 70% e 90% | [RF-072](../requisitos/05-funcionais.md) |
 | Alerta — Neon saída (5 GB/mês) | 60% e 80% | [RF-072](../requisitos/05-funcionais.md) |
 | Alerta — Object Storage (20 GB) | 80% | [RF-072](../requisitos/05-funcionais.md) |
-| Pausa de cadastro — e-mail | 90% do teto diário do provedor | [RF-072](../requisitos/05-funcionais.md) |
+| Pausa de cadastro — e-mail | **90 e-mails/dia** (90% do teto de ~100/dia do Resend grátis) | [RF-072](../requisitos/05-funcionais.md), [ADR-008](../adr/008-provedor-de-email.md) |
 | Domínio | `.com.br`, ~R$ 40/ano | [ADR-009](../adr/009-neon-cloudflare-vm.md) |
 | Retenção do log de auditoria | 2 anos | [RNF-012](../requisitos/07-nao-funcionais.md) |
 | Navegadores suportados | 2 últimas versões de Chrome, Safari, Firefox, Edge — desktop e celular | [RNF-014](../requisitos/07-nao-funcionais.md) |

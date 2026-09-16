@@ -17,6 +17,13 @@ A questão ficou visível ao implementar a [verificação de e-mail](https://git
 
 A escolha concreta (Resend, Amazon SES ou equivalente) fica para o momento do deploy, porque depende de preço e de região disponível — mas **o formato da decisão está fechado**: é provedor externo, não SMTP próprio.
 
+### Provedor escolhido: Resend, plano grátis (decidido em 2026-09-16)
+
+- **Sem cartão de crédito.** Não existe caminho de cobrança automática, o que respeita [RF-072](../requisitos/05-funcionais.md#rf-072--cadastro-pausa-perto-do-teto-do-free-tier-sem-gasto-automático): passar do free tier nunca vira custo sem decisão dos sócios.
+- **Teto de ~100 e-mails/dia** (confirmar no painel ao criar a conta). O volume real são 3 tipos de e-mail — verificação, endereço já cadastrado, redefinição de senha — e dezenas por semana no beta. **A pausa de cadastro fica em 90 e-mails/dia.**
+- **Pré-requisito: domínio próprio.** SPF e DKIM exigem DNS sob controle. Ordem: comprar o `.com.br` → DNS na Cloudflare ([ADR-009](009-neon-cloudflare-vm.md)) → conta no Resend. Até lá, o cadastro não envia e-mail fora do ambiente local.
+- **Amazon SES fica como plano de migração**, e só por um motivo: é o único com região em São Paulo. Se a consulta jurídica apontar risco na transferência internacional, a troca é uma linha — o envio já está atrás de `MailSender`. Não foi o primeiro porque exige cartão na conta AWS.
+
 ### Por que não SMTP na própria VM
 
 Seria a opção coerente com "dado nunca sai do Brasil" ([Sustentabilidade](../negocio/03-sustentabilidade.md)), e foi avaliada com seriedade por isso.
