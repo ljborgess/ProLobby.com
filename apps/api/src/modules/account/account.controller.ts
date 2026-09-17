@@ -16,6 +16,7 @@ import { memoryStorage } from 'multer'
 
 import { AllowStates, Public, SkipTermsCheck } from '../../common/auth/auth.decorators'
 import type { RequestWithAccount } from '../../common/auth/session.guard'
+import type { ModerationCase } from '../moderation/moderation-case.entity'
 
 import { AccountRecoveryService } from './account-recovery.service'
 import { AccountState } from './account.enums'
@@ -23,6 +24,7 @@ import { AccountService } from './account.service'
 import { AcceptTermsDto } from './dto/accept-terms.dto'
 import { ConfirmPasswordResetDto } from './dto/confirm-password-reset.dto'
 import { JoinWaitingListDto } from './dto/join-waiting-list.dto'
+import { OpenPunishmentAppealDto } from './dto/open-punishment-appeal.dto'
 import { RequestAccountRecoveryDto } from './dto/request-account-recovery.dto'
 import { RequestPasswordResetDto } from './dto/request-password-reset.dto'
 import { ResendVerificationDto } from './dto/resend-verification.dto'
@@ -31,6 +33,7 @@ import { VerifyEmailDto } from './dto/verify-email.dto'
 import { EmailVerificationService } from './email-verification.service'
 import { detectRealImageType } from './evidence-image'
 import { PasswordResetService } from './password-reset.service'
+import { PunishmentAppealService } from './punishment-appeal.service'
 import { PunishmentStatus, PunishmentStatusService } from './punishment-status.service'
 import { WaitingListService } from './waiting-list.service'
 
@@ -46,6 +49,7 @@ export class AccountController {
     private readonly passwordResetService: PasswordResetService,
     private readonly accountRecoveryService: AccountRecoveryService,
     private readonly punishmentStatusService: PunishmentStatusService,
+    private readonly punishmentAppealService: PunishmentAppealService,
     private readonly waitingListService: WaitingListService,
   ) {}
 
@@ -230,11 +234,9 @@ export class AccountController {
    *
    * `BANNED` is listed too — it is the other route RF-081 requires a banned
    * account to reach (the first is signing in itself, which never checks
-   * state). This is not yet the whole of RF-081: filing the appeal is a
-   * separate, unbuilt endpoint (RF-037), and `ModerationCase` has no link
-   * from an appeal case back to the case it appeals, so this route cannot
-   * say whether one is already open. It returns the case id so that future
-   * endpoint has something to point at.
+   * state). Filing the appeal itself is the separate route below
+   * (`punishment-appeals`); the case id this returns is what that route
+   * points the appeal at.
    */
   @Get('punishment-status')
   @AllowStates(AccountState.ACTIVE, AccountState.SUSPENDED, AccountState.BANNED)
@@ -265,5 +267,34 @@ export class AccountController {
     await this.waitingListService.join(dto.email)
 
     return { message: 'added_to_waiting_list' }
+  }
+
+  /**
+   * Files an appeal against the account's own punishment — RF-081, RF-037.
+   *
+   * Authenticated, unlike recovery-cases: a banned account signs in
+   * normally (ADR-007) and reaches this like any other route it is allowed.
+   * There is no enumeration concern to hide behind a fixed response — the
+   * account is already known — so a real 400/409 on failure is the honest
+   * answer, not a fixed 202.
+   *
+   * Scoped to BANNED only for now (see PunishmentAppealService for why).
+   */
+  @Post('punishment-appeals')
+  @HttpCode(HttpStatus.CREATED)
+  @AllowStates(AccountState.BANNED)
+  // The login bucket: filing an appeal is a rare, deliberate action for a
+  // real account, the same profile as password reset or sign-in.
+  @Throttle({ login: {} })
+  async openPunishmentAppeal(
+    @Req() request: RequestWithAccount,
+    @Body() dto: OpenPunishmentAppealDto,
+  ): Promise<{ caseId: string }> {
+    const appeal: ModerationCase = await this.punishmentAppealService.open(
+      request.account!,
+      dto.message,
+    )
+
+    return { caseId: appeal.id }
   }
 }

@@ -12,6 +12,7 @@ import { EmailVerification } from './email-verification.entity'
 import { EmailVerificationService } from './email-verification.service'
 import { PasswordReset } from './password-reset.entity'
 import { PasswordResetService } from './password-reset.service'
+import { PunishmentAppealService } from './punishment-appeal.service'
 import { PunishmentStatusService } from './punishment-status.service'
 import { SessionController } from './session.controller'
 import { SessionService } from './session.service'
@@ -38,6 +39,7 @@ import { WaitingListService } from './waiting-list.service'
     CapacityService,
     EmailVerificationService,
     PasswordResetService,
+    PunishmentAppealService,
     PunishmentStatusService,
     SessionService,
     WaitingListService,
