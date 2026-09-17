@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common'
 
 import { ModerationCase } from '../moderation/moderation-case.entity'
 import { ReputationEvent } from '../ranking/reputation-event.entity'
+import { AccountCleanupJob } from './account-cleanup.job'
 import { AccountRecoveryService } from './account-recovery.service'
 import { AccountController } from './account.controller'
 import { Account } from './account.entity'
@@ -34,6 +35,7 @@ import { WaitingListService } from './waiting-list.service'
   ],
   controllers: [AccountController, SessionController],
   providers: [
+    AccountCleanupJob,
     AccountRecoveryService,
     AccountService,
     CapacityService,
