@@ -1,0 +1,14 @@
+# Intended Cloudflare Tunnel ingress — ADR-009 / #121.
+#
+# The tunnel token and credentials stay on the VM, never in git. This file is
+# the routing spec the dashboard (or a credentials-file install) must match.
+# The unit test in apps/api/src/common/deploy/production-compose.spec.ts
+# locks the public surface: Next.js only, never the Nest API, never /events.
+#
+# Cloudflare Access (Zero Trust, second factor) wraps the hostname so only
+# the four partners open it on the first internal deploy.
+
+ingress:
+  - hostname: prolobby.com.br
+    service: http://web:3000
+  - service: http_status:404

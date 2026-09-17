@@ -15,11 +15,11 @@ services:
     volumes:
       - prolobby-postgres-data:/var/lib/postgresql/data
 
-    # Production (ADR-009): web, api, bot and cloudflared share this Compose
-    # file with NO `ports:` on those services. The bot's POST /events is
-    # reached only on the internal Docker network — never by the Cloudflare
-    # tunnel. HMAC (WEBHOOK_SECRET) is still required if someone publishes
-    # the port or forwards a path.
+    # Production (ADR-009 / #121) is docker-compose.prod.yml — web, api, bot
+    # and cloudflared, with NO `ports:` on any of them. This file stays the
+    # local Postgres. The bot's POST /events is reached only on the internal
+    # Docker network — never by the Cloudflare tunnel. HMAC (WEBHOOK_SECRET)
+    # is still required if someone publishes the port or forwards a path.
 
 volumes:
   prolobby-postgres-data:
