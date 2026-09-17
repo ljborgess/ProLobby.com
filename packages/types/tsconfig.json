@@ -1,8 +1,11 @@
 {
   "extends": "@prolobby/tsconfig/base.json",
   "compilerOptions": {
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
+    // CommonJS, como o resto do monorepo (nenhum package.json declara
+    // "type": "module"). Emitindo ESNext, o `dist` sairia com import
+    // relativo sem extensão e o Node recusaria a carregar em produção.
+    "module": "CommonJS",
+    "moduleResolution": "Node",
     "declaration": true,
     "outDir": "./dist",
     "rootDir": "./src"

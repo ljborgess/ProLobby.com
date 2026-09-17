@@ -1,7 +1,12 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "rootDir": "./src"
+    "rootDir": "./src",
+    // Desligado de propósito: o nest-cli roda com `deleteOutDir: true`, que
+    // apaga o `dist` antes de compilar. Com build incremental, o tsc lê o
+    // .tsbuildinfo, conclui que nada mudou e não emite nada — o build
+    // "passa" com exit 0 e deixa o `dist` vazio. Os dois não convivem.
+    "incremental": false
   },
   "include": ["src"],
   "exclude": ["node_modules", "test", "dist", "**/*spec.ts"]
