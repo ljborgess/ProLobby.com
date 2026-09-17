@@ -25,7 +25,12 @@ export function middleware(request: NextRequest): NextResponse {
 
   const csp = [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
+    // 'unsafe-eval' only under `next dev`: React rebuilds server callstacks
+    // with eval() there and logs an error on every page without it. Production
+    // React never calls eval(), and the e2e suite runs against `next start`.
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${
+      process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''
+    }`,
     // Tailwind injects style attributes at runtime; there is no nonce path
     // for those, and a stylesheet cannot exfiltrate the way a script can.
     "style-src 'self' 'unsafe-inline'",
