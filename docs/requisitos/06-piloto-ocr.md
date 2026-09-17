@@ -126,4 +126,4 @@ Nos dois últimos casos, o elo perde a âncora de overall verificado no seed ([R
 
 ## Depois deste piloto
 
-Com o checklist e o piloto rodados, os dois riscos que exigiam descoberta estão medidos. Só então faz sentido decidir stack e construir a plataforma na ordem por dependência já desenhada — e os RFs das fatias seguintes são escritos pouco antes de cada uma virar código, não todos agora: três parâmetros do dossiê estão marcados como "a calibrar" e vão mudar com o que estes dois testes retornarem.
+Com o checklist e o piloto rodados, os dois riscos que exigiam descoberta estão medidos. Só então faz sentido decidir stack e construir a plataforma na ordem por dependência já desenhada — e os RFs das fatias seguintes são escritos pouco antes de cada uma virar código, não todos agora: quatro parâmetros do dossiê estão marcados como "a calibrar" e vão mudar com o que estes dois testes retornarem.
