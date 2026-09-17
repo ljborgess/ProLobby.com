@@ -213,6 +213,8 @@ Dentro de um módulo: `*.controller.ts`, `*.service.ts`, `*.module.ts` e `*.spec
 
 ### `apps/web` (Next.js App Router)
 
+> **O visual é provisório** (decidido em 2026-09-17): o front-end será redesenhado depois. Tela nova segue o padrão das atuais, sem investir em polimento estético — o esforço vai em comportamento, acessibilidade, i18n e segurança. Detalhes em [Visão](docs/produto/01-visao/01-visao.md#o-visual-atual-é-base-provisória--o-front-end-será-redesenhado-decidido-em-2026-09-17).
+
 ```
 src/
 ├── app/

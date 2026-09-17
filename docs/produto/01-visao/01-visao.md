@@ -12,6 +12,16 @@ Projeto novo e independente — domínios diferentes (um é dado real de campeon
 
 Reaproveitamento aprovado: **identidade visual (design system) do front-end atual** — não o backend/dados.
 
+### O visual atual é base provisória — o front-end será redesenhado (decidido em 2026-09-17)
+
+**O layout das telas vai ser redesenhado depois.** O que existe hoje em `apps/web` (home, cadastro, login) **não é o desenho final** — é a base funcional sobre a qual o produto está sendo construído.
+
+Até o redesenho, a regra é **manter o padrão que está sendo produzido**:
+
+- Toda tela nova segue o mesmo design system abaixo (tokens, fontes, paleta) e o mesmo jeito de montar formulário e texto traduzido que as telas atuais já usam.
+- **Não vale a pena polir visual agora**: esforço de layout, animação ou refinamento estético é retrabalho garantido. O esforço vai em comportamento — acessibilidade (RNF-015), i18n (RNF-016), segurança e estados de erro.
+- O que **sobrevive** ao redesenho, e por isso precisa estar certo desde já: os textos no dicionário de `src/content/`, a separação entre componente e regra, os rótulos acessíveis, e os tokens do design system concentrados num lugar só — é isso que deixa o redesenho barato.
+
 ### Design system herdado (`futebol/static/futebol/css/app.css`)
 - Fontes: `Sora` (display/headings), `Inter` (texto)
 - Paleta escura: fundo `#070b14` / `#0c1322`, superfícies translúcidas brancas (4.5%–8% opacidade)

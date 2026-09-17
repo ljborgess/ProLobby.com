@@ -8,6 +8,16 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 
 ## 2026-09-17 · Para todos
 
+### O visual do front-end é provisório
+
+O layout de `apps/web` **vai ser redesenhado depois**. As telas atuais (home, cadastro, login) são base, não desenho final.
+
+- **Tela nova segue o padrão das atuais**: mesmo design system, mesmo jeito de montar formulário e texto traduzido.
+- **Não invista em polimento visual** — é retrabalho garantido. O esforço vai em comportamento: acessibilidade, i18n, estados de erro e segurança.
+- O que sobrevive ao redesenho e precisa estar certo agora: texto no dicionário de `src/content/`, rótulo acessível e token do design system num lugar só.
+
+Detalhes em [Visão](../produto/01-visao/01-visao.md#o-visual-atual-é-base-provisória--o-front-end-será-redesenhado-decidido-em-2026-09-17).
+
 ### `main` virou o branch padrão
 
 - **Ao abrir PR pela interface do GitHub, a base vem em `main`. Troque pra `dev` antes de criar.** Pela linha de comando: `gh pr create --base dev`.
