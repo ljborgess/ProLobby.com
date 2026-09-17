@@ -1,6 +1,9 @@
+import { EntityManager } from '@mikro-orm/postgresql'
 import { Test } from '@nestjs/testing'
 
-import { AppModule } from '../src/app.module'
+import { AuthModule } from '../src/common/auth/auth.module'
+import { HashService } from '../src/common/auth/hash.service'
+import { AccountRecoveryService } from '../src/modules/account/account-recovery.service'
 import { ConsoleMailSender } from '../src/common/mail/console-mail.sender'
 import { MailModule } from '../src/common/mail/mail.module'
 import { MailSender } from '../src/common/mail/mail.types'
@@ -28,28 +31,44 @@ describe('secrets are validated at boot', () => {
     process.env = ORIGINAL
   })
 
-  const boot = () => Test.createTestingModule({ imports: [AppModule] }).compile()
+  /*
+   * Only the pieces that validate, never the whole AppModule. Booting
+   * AppModule connects MikroORM before the failing provider throws, and a
+   * compile() that rejects leaves nothing to close — the pool stayed open and
+   * Jest exited 1 after every test had passed ("did not exit one second after
+   * the test run"). Stubbing the database keeps these tests about the one
+   * thing they check.
+   */
+  const bootRecovery = () =>
+    Test.createTestingModule({
+      providers: [
+        AccountRecoveryService,
+        { provide: EntityManager, useValue: {} },
+        { provide: HashService, useValue: {} },
+      ],
+    }).compile()
 
-  it.each([
-    ['EVIDENCE_ENCRYPTION_KEY', 'it encrypts account-recovery evidence at rest'],
-    ['JWT_SECRET', 'it signs every session'],
-  ])(
-    'refuses to start without %s, because %s',
-    async (variable) => {
-      delete process.env[variable]
+  const bootAuth = () => Test.createTestingModule({ imports: [AuthModule] }).compile()
 
-      await expect(boot()).rejects.toThrow(new RegExp(variable))
-    },
-    60_000,
-  )
+  it('refuses to start without EVIDENCE_ENCRYPTION_KEY, because it encrypts account-recovery evidence at rest', async () => {
+    delete process.env.EVIDENCE_ENCRYPTION_KEY
+
+    await expect(bootRecovery()).rejects.toThrow(/EVIDENCE_ENCRYPTION_KEY/)
+  })
+
+  it('refuses to start without JWT_SECRET, because it signs every session', async () => {
+    delete process.env.JWT_SECRET
+
+    await expect(bootAuth()).rejects.toThrow(/JWT_SECRET/)
+  })
 
   it('refuses a key that decodes to the wrong length, not just a missing one', async () => {
     // 31 bytes: passes a truthiness check, fails AES-256. The shape of
     // mistake a hand-typed value actually produces.
     process.env.EVIDENCE_ENCRYPTION_KEY = Buffer.alloc(31).toString('base64')
 
-    await expect(boot()).rejects.toThrow(/32 bytes/)
-  }, 60_000)
+    await expect(bootRecovery()).rejects.toThrow(/32 bytes/)
+  })
 })
 
 /**
