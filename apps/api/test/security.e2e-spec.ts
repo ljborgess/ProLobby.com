@@ -9,6 +9,7 @@ import { AppModule } from '../src/app.module'
 import { Public } from '../src/common/auth/auth.decorators'
 import { applySecurity } from '../src/common/security/security.config'
 import { SESSION_COOKIE_NAME, sessionCookieOptions } from '../src/common/security/session-cookie'
+import { LOGIN_THROTTLE } from '../src/common/security/throttler.config'
 
 class SampleDto {
   @IsEmail()
@@ -44,16 +45,23 @@ class SecurityProbeController {
     return { ok: true }
   }
 
+  /** No `@Throttle`: whatever the default throttler allows, and nothing else. */
+  @Public()
+  @Get('undecorated')
+  undecorated(): { ok: true } {
+    return { ok: true }
+  }
+
   @Public()
   @Post('login-bucket')
-  @Throttle({ login: { limit: 5, ttl: 60_000 } })
+  @Throttle(LOGIN_THROTTLE)
   loginBucket() {
     return { ok: true }
   }
 
   @Public()
   @Post('login-bucket-cf')
-  @Throttle({ login: { limit: 5, ttl: 60_000 } })
+  @Throttle(LOGIN_THROTTLE)
   loginBucketCf() {
     return { ok: true }
   }
@@ -152,6 +160,33 @@ describe('transversal security', () => {
       // out anyone who mistypes a password once — and the test would stay green.
       expect(statuses.slice(0, 5).every((status) => status < 400)).toBe(true)
       expect(statuses.slice(5).every((status) => status === 429)).toBe(true)
+    })
+
+    it('does not apply a strict limit to a route that never asked for one', async () => {
+      const server = app.getHttpServer()
+      const statuses: number[] = []
+
+      // Ten is past both strict limits that used to leak onto every route:
+      // the 5/min of LOGIN_THROTTLE and the 10/hour of SIGNUP_THROTTLE. With
+      // named throttlers this answered 429 from the 6th request on — and no
+      // test noticed, because every other one stops below five.
+      for (let attempt = 0; attempt < 10; attempt += 1) {
+        const res = await request(server).get('/security-probe/undecorated')
+        statuses.push(res.status)
+      }
+
+      expect(statuses.every((status) => status === 200)).toBe(true)
+    })
+
+    it('counts an undecorated route only under the default limit', async () => {
+      const res = await request(app.getHttpServer()).get('/security-probe/undecorated')
+
+      // One ceiling, and it is the permissive one. A second `x-ratelimit-*`
+      // family here means some other bucket is counting this route again.
+      expect(res.headers['x-ratelimit-limit']).toBe('120')
+      expect(
+        Object.keys(res.headers).filter((name) => name.startsWith('x-ratelimit-limit')),
+      ).toEqual(['x-ratelimit-limit'])
     })
   })
 
