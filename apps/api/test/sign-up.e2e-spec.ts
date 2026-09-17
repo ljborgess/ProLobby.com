@@ -83,6 +83,36 @@ describe('POST /accounts (sign-up)', () => {
     })
   })
 
+  describe('item 12 checklist — honeypot (#101)', () => {
+    it('answers exactly like a real sign-up, but creates no account', async () => {
+      const real = await request(app.getHttpServer())
+        .post('/accounts')
+        .send(validBody('honeypot-real@test.local'))
+      const bot = await request(app.getHttpServer())
+        .post('/accounts')
+        .send({ ...validBody('honeypot-bot@test.local'), website: 'http://spam.example' })
+
+      // RF-070's rule extends here: a detected bot must not be able to tell
+      // it was caught, so the two responses have to be indistinguishable.
+      expect(bot.status).toBe(real.status)
+      expect(bot.body).toEqual(real.body)
+      await expect(
+        orm.em.fork().count(Account, { email: 'honeypot-bot@test.local' }),
+      ).resolves.toBe(0)
+    })
+
+    it('still creates the account when the field is sent empty — a real form always sends it', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/accounts')
+        .send({ ...validBody('honeypot-empty@test.local'), website: '' })
+
+      expect(res.status).toBe(202)
+      await expect(
+        orm.em.fork().count(Account, { email: 'honeypot-empty@test.local' }),
+      ).resolves.toBe(1)
+    })
+  })
+
   describe('RF-021 — minimum age', () => {
     it('refuses someone under 16 without creating an account', async () => {
       const tooYoung = new Date()

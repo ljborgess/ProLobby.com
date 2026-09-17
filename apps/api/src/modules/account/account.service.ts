@@ -29,6 +29,18 @@ export class AccountService {
    * by email, to the person who owns that address.
    */
   async signUp(dto: SignUpDto): Promise<void> {
+    // Honeypot (item 12 checklist, #101): a real person never fills this —
+    // it is hidden by CSS in the actual form (apps/web) but never removed
+    // from the markup, so a script filling every input it finds fills this
+    // one too. Checked before anything else costs CPU or counts against
+    // RF-072's capacity, and answered by doing nothing at all: same return,
+    // same shape, same silence as every other branch below — RF-070's "the
+    // response must never reveal what happened" applies here just as much
+    // as to "does this email exist".
+    if (dto.website) {
+      return
+    }
+
     // RF-072: near the free-tier ceiling, sign-up pauses. Checked first, before
     // any hashing, because the whole point is not to spend resources.
     if (await this.capacityService.isSignUpPaused()) {

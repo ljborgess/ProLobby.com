@@ -2,6 +2,7 @@ import { Transform } from 'class-transformer'
 import {
   IsDateString,
   IsEmail,
+  IsOptional,
   IsString,
   Length,
   Matches,
@@ -78,4 +79,21 @@ export class SignUpDto {
    */
   @Matches(/^\d{4}-\d{2}-\d{2}$/)
   acceptedTermsVersion!: string
+
+  /**
+   * Honeypot — item 12 of the security checklist, issue #101.
+   *
+   * A field the real form (apps/web) hides from a person with CSS but never
+   * removes from the markup; a script that fills every input it finds fills
+   * this one too. `@IsOptional` on purpose, not `@IsEmpty`: a validation
+   * failure here would be a 400 that a *different* shape than a normal
+   * sign-up — and RF-070's rule extends to this case as much as to "does
+   * this email exist" — the response must never say "we caught you".
+   * `AccountService.signUp` is where a filled value actually does something
+   * (nothing, on purpose).
+   */
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  website?: string
 }
