@@ -11,6 +11,10 @@ import {
 /** Name of the class-level @Unique below — shared so it can't drift from itself. */
 export const OPEN_ACCOUNT_RECOVERY_UNIQUE_INDEX = 'moderation_case_open_account_recovery_unique'
 
+/** Name of the class-level @Unique below — shared so it can't drift from itself. */
+export const ONE_APPEAL_PER_PUNISHMENT_UNIQUE_INDEX =
+  'moderation_case_one_appeal_per_punishment_unique'
+
 /**
  * A case in the moderation queue.
  *
@@ -32,6 +36,16 @@ export const OPEN_ACCOUNT_RECOVERY_UNIQUE_INDEX = 'moderation_case_open_account_
   // decorator only exists so the schema generator (used by e2e tests'
   // refreshDatabase()) knows about it too, and doesn't diff it away.
   expression: `create unique index "${OPEN_ACCOUNT_RECOVERY_UNIQUE_INDEX}" on "moderation_case" ("target_account_id") where ("type" = 'account_recovery' and "state" = 'open')`,
+})
+@Unique({
+  name: ONE_APPEAL_PER_PUNISHMENT_UNIQUE_INDEX,
+  // One appeal per punishment, ever (RF-037) — not scoped to OPEN: a
+  // resolved or dismissed appeal still counts. Reopening with new evidence
+  // is a moderator action at resolution time (phase 5), not a second row
+  // filed here. Byte-identical to migration 20260917100000 — see the note
+  // on the account-recovery index above for why this has to be a raw
+  // expression and stay in sync by hand.
+  expression: `create unique index "${ONE_APPEAL_PER_PUNISHMENT_UNIQUE_INDEX}" on "moderation_case" ("appeals_case_id") where ("type" = 'punishment_appeal')`,
 })
 export class ModerationCase {
   @PrimaryKey({ type: 'uuid' })
@@ -86,6 +100,19 @@ export class ModerationCase {
    */
   @Property({ type: 'text', nullable: true })
   evidencePath?: string
+
+  /** Why the appellant thinks the punishment is wrong — RF-081, RF-037. */
+  @Property({ type: 'text', nullable: true })
+  appealMessage?: string
+
+  /**
+   * The case this one appeals — set only on `PUNISHMENT_APPEAL`. The unique
+   * index above is what actually enforces RF-037 (one appeal per
+   * punishment); this column is what a moderator follows to see what is
+   * being contested.
+   */
+  @ManyToOne(() => ModerationCase, { nullable: true, deleteRule: 'set null' })
+  appealsCase?: ModerationCase
 
   @Property()
   openedAt: Date & Opt = new Date()
