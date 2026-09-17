@@ -1,26 +1,61 @@
 @import 'tailwindcss';
 
+/**
+ * Design tokens — issue #87.
+ *
+ * Values are the design system inherited from `escalacao-brasileirao`
+ * (docs/produto/01-visao/01-visao.md): dark background, Sora for display,
+ * Inter for body text, three border radii, two shadow scales.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-bg: #070b14;
+  --color-surface: #0c1322;
+  /* Translucent white surfaces, for cards floated over --color-bg. */
+  --color-surface-weak: rgb(255 255 255 / 4.5%);
+  --color-surface-strong: rgb(255 255 255 / 8%);
+
+  --color-accent: #22c55e;
+  --color-accent-strong: #15803d;
+  --color-gold: #f5b841;
+  --color-danger: #f26d6d;
+
+  --color-text: #e8edf7;
+  --color-text-soft: #9aa8bf;
+  --color-text-weak: #6b7a94;
+
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
+
+  --shadow-default: 0 20px 45px rgb(0 0 0 / 35%);
+  --shadow-sm: 0 8px 20px rgb(0 0 0 / 25%);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-background: var(--color-bg);
+  --color-surface: var(--color-surface);
+  --color-surface-weak: var(--color-surface-weak);
+  --color-surface-strong: var(--color-surface-strong);
+  --color-accent: var(--color-accent);
+  --color-accent-strong: var(--color-accent-strong);
+  --color-gold: var(--color-gold);
+  --color-danger: var(--color-danger);
+  --color-foreground: var(--color-text);
+  --color-foreground-soft: var(--color-text-soft);
+  --color-foreground-weak: var(--color-text-weak);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+
+  --shadow-default: var(--shadow-default);
+  --shadow-sm: var(--shadow-sm);
+
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-sora);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
 }
