@@ -2,7 +2,7 @@ import { EntityManager } from '@mikro-orm/postgresql'
 import { Injectable } from '@nestjs/common'
 
 import { ModerationCase } from '../moderation/moderation-case.entity'
-import { ModerationCaseState } from '../moderation/moderation-case.enums'
+import { ModerationCaseState, ModerationCaseType } from '../moderation/moderation-case.enums'
 import { ReputationEvent } from '../ranking/reputation-event.entity'
 import { Account } from './account.entity'
 import { AccountState } from './account.enums'
@@ -73,9 +73,16 @@ export class PunishmentStatusService {
    * `ReputationEvent` has no free-text field to explain a decision like this.
    */
   private async bannedStatus(account: Account): Promise<PunishmentStatus> {
+    // Appeals are excluded on purpose: a resolved appeal is the most recent
+    // resolved case on the account, and showing its decision would replace
+    // "why you were banned" with "why your appeal was turned down".
     const moderationCase = await this.em.findOne(
       ModerationCase,
-      { targetAccount: account.id, state: ModerationCaseState.RESOLVED },
+      {
+        targetAccount: account.id,
+        state: ModerationCaseState.RESOLVED,
+        type: { $ne: ModerationCaseType.PUNISHMENT_APPEAL },
+      },
       { orderBy: { resolvedAt: 'DESC' } },
     )
 

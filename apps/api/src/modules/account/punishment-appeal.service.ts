@@ -30,9 +30,20 @@ export class PunishmentAppealService {
     // (documented there): a case unrelated to the ban, resolved later, could
     // be picked instead. Appealing the wrong case is still visible to a
     // moderator reading it, so this is a display risk, not a security one.
+    //
+    // Appeals themselves are excluded, and that part is not cosmetic: once a
+    // moderator resolves an appeal, it becomes the account's most recently
+    // resolved case. Without this filter the next appeal would target the
+    // previous appeal — a different `appealsCase`, so the unique index below
+    // allows it — and RF-037 ("one appeal per punishment") would be defeated
+    // by an endless chain.
     const targetCase = await em.findOne(
       ModerationCase,
-      { targetAccount: account.id, state: ModerationCaseState.RESOLVED },
+      {
+        targetAccount: account.id,
+        state: ModerationCaseState.RESOLVED,
+        type: { $ne: ModerationCaseType.PUNISHMENT_APPEAL },
+      },
       { orderBy: { resolvedAt: 'DESC' } },
     )
 
