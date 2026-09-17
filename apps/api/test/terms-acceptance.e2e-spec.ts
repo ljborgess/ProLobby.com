@@ -75,10 +75,10 @@ describe('terms acceptance (RF-026)', () => {
 
   /** Signs up, puts the account in the given state, signs in, returns the cookie. */
   const sessionFor = async (email: string, state = AccountState.ACTIVE): Promise<string> => {
-    await request(app.getHttpServer()).post('/accounts').send(signUpBody(email))
+    await request(app.getHttpServer()).post('/api/accounts').send(signUpBody(email))
     await setState(email, state)
     const res = await request(app.getHttpServer())
-      .post('/sessions')
+      .post('/api/sessions')
       .send({ email, password: PASSWORD })
     return cookieOf(res)
   }
@@ -108,7 +108,7 @@ describe('terms acceptance (RF-026)', () => {
   describe('at sign-up', () => {
     it('records the accepted version together with the account', async () => {
       const res = await request(app.getHttpServer())
-        .post('/accounts')
+        .post('/api/accounts')
         .send(signUpBody('signup-terms@test.local'))
 
       expect(res.status).toBe(202)
@@ -124,7 +124,7 @@ describe('terms acceptance (RF-026)', () => {
       const withoutTerms: Partial<ReturnType<typeof signUpBody>> = signUpBody('no-terms@test.local')
       delete withoutTerms.acceptedTermsVersion
 
-      const res = await request(app.getHttpServer()).post('/accounts').send(withoutTerms)
+      const res = await request(app.getHttpServer()).post('/api/accounts').send(withoutTerms)
 
       expect(res.status).toBe(400)
       await expect(orm.em.fork().count(Account, { email: 'no-terms@test.local' })).resolves.toBe(0)
@@ -132,7 +132,7 @@ describe('terms acceptance (RF-026)', () => {
 
     it('refuses a stale form carrying an older version', async () => {
       const res = await request(app.getHttpServer())
-        .post('/accounts')
+        .post('/api/accounts')
         .send(signUpBody('stale-form@test.local', '2000-01-01'))
 
       // Consent is to the text being shown today, not to whatever version an
@@ -152,7 +152,7 @@ describe('terms acceptance (RF-026)', () => {
       await forgetAcceptances('held@test.local')
 
       const res = await request(app.getHttpServer())
-        .get('/terms-probe/default')
+        .get('/api/terms-probe/default')
         .set('Cookie', cookie)
 
       expect(res.status).toBe(403)
@@ -173,7 +173,7 @@ describe('terms acceptance (RF-026)', () => {
       expect('2000-01-01' < LATEST_MATERIAL_TERMS_VERSION).toBe(true)
 
       const res = await request(app.getHttpServer())
-        .get('/terms-probe/default')
+        .get('/api/terms-probe/default')
         .set('Cookie', cookie)
 
       // Having accepted *something* is not enough; it has to be at or after
@@ -187,14 +187,14 @@ describe('terms acceptance (RF-026)', () => {
       await forgetAcceptances('accepts@test.local')
 
       const accept = await request(app.getHttpServer())
-        .post('/accounts/terms-acceptances')
+        .post('/api/accounts/terms-acceptances')
         .set('Cookie', cookie)
         .send({ version: CURRENT_TERMS_VERSION })
 
       expect(accept.status).toBe(204)
 
       const after = await request(app.getHttpServer())
-        .get('/terms-probe/default')
+        .get('/api/terms-probe/default')
         .set('Cookie', cookie)
 
       expect(after.status).toBe(200)
@@ -210,7 +210,7 @@ describe('terms acceptance (RF-026)', () => {
       await em.flush()
 
       await request(app.getHttpServer())
-        .post('/accounts/terms-acceptances')
+        .post('/api/accounts/terms-acceptances')
         .set('Cookie', cookie)
         .send({ version: CURRENT_TERMS_VERSION })
 
@@ -226,11 +226,11 @@ describe('terms acceptance (RF-026)', () => {
       await forgetAcceptances('twice-accept@test.local')
 
       const first = await request(app.getHttpServer())
-        .post('/accounts/terms-acceptances')
+        .post('/api/accounts/terms-acceptances')
         .set('Cookie', cookie)
         .send({ version: CURRENT_TERMS_VERSION })
       const second = await request(app.getHttpServer())
-        .post('/accounts/terms-acceptances')
+        .post('/api/accounts/terms-acceptances')
         .set('Cookie', cookie)
         .send({ version: CURRENT_TERMS_VERSION })
 
@@ -245,7 +245,7 @@ describe('terms acceptance (RF-026)', () => {
 
       const accept = () =>
         request(app.getHttpServer())
-          .post('/accounts/terms-acceptances')
+          .post('/api/accounts/terms-acceptances')
           .set('Cookie', cookie)
           .send({ version: CURRENT_TERMS_VERSION })
 
@@ -262,7 +262,7 @@ describe('terms acceptance (RF-026)', () => {
       const cookie = await sessionFor('accept-old@test.local')
 
       const res = await request(app.getHttpServer())
-        .post('/accounts/terms-acceptances')
+        .post('/api/accounts/terms-acceptances')
         .set('Cookie', cookie)
         .send({ version: '2000-01-01' })
 
@@ -272,7 +272,7 @@ describe('terms acceptance (RF-026)', () => {
 
     it('requires a session', async () => {
       const res = await request(app.getHttpServer())
-        .post('/accounts/terms-acceptances')
+        .post('/api/accounts/terms-acceptances')
         .send({ version: CURRENT_TERMS_VERSION })
 
       expect(res.status).toBe(401)
@@ -283,7 +283,7 @@ describe('terms acceptance (RF-026)', () => {
       await forgetAcceptances('suspended-accept@test.local')
 
       const res = await request(app.getHttpServer())
-        .post('/accounts/terms-acceptances')
+        .post('/api/accounts/terms-acceptances')
         .set('Cookie', cookie)
         .send({ version: CURRENT_TERMS_VERSION })
 
@@ -298,7 +298,7 @@ describe('terms acceptance (RF-026)', () => {
       await forgetAcceptances('banned-terms@test.local')
 
       const res = await request(app.getHttpServer())
-        .get('/terms-probe/appeal')
+        .get('/api/terms-probe/appeal')
         .set('Cookie', cookie)
 
       // Appealing is exercising a right, not using the platform — making it

@@ -10,7 +10,7 @@ import { relay } from '@/common/api/proxy-response'
  * limiter (item 11 of the security checklist, issue #99).
  */
 export async function POST(request: Request): Promise<Response> {
-  const apiResponse = await apiFetch('/accounts', {
+  const apiResponse = await apiFetch('/api/accounts', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: await request.text(),

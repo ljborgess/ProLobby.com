@@ -11,7 +11,7 @@ import { relay } from '@/common/api/proxy-response'
  * servers that are allowed to.
  */
 export async function POST(request: Request): Promise<Response> {
-  const apiResponse = await apiFetch('/sessions', {
+  const apiResponse = await apiFetch('/api/sessions', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: await request.text(),

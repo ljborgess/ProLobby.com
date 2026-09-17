@@ -29,15 +29,27 @@ export const globalValidationPipe = new ValidationPipe({
 })
 
 /**
- * The only piece of security that cannot live inside the module.
+ * The pieces that cannot live inside the module, because they are configured
+ * on the application object rather than through a provider or middleware.
  *
- * CORS is configured on the application object — not through a provider, not
- * through a middleware — so it has to be applied by whoever bootstraps.
- * Everything else (validation, helmet, cookie parsing) moved into AppModule
- * precisely so this function stays this small: the less it does, the less
- * forgetting to call it can break.
+ * Everything that *can* live in AppModule (validation, helmet, cookie
+ * parsing) does, precisely so this function stays this small: the less it
+ * does, the less forgetting to call it can break.
+ *
+ * The route prefix is here and not in `main.ts` for the same reason the
+ * validation pipe is in AppModule: `main.ts` runs in production and in no
+ * test at all. A prefix that exists only there would leave every e2e suite
+ * calling `/accounts` and passing, while production served `/api/accounts` —
+ * green tests proving the wrong routing.
  */
 export function applySecurity(app: INestApplication): void {
+  // ADR-009: the tunnel routes `prolobby.com.br/api/*` here and everything
+  // else to the Next.js app, which owns its own server-side handlers under
+  // `/bff/*`. The two must not claim the same prefix — when they did, the
+  // tunnel won and the handler that forwards `CF-Connecting-IP` and relays
+  // the session cookie never ran.
+  app.setGlobalPrefix('api')
+
   // Item 9: the front end reads the session from an HttpOnly cookie, so the
   // browser must be allowed to send it. `credentials: true` is meaningless
   // without an explicit origin — the spec forbids `*` together with

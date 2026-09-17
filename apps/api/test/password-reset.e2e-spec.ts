@@ -37,18 +37,18 @@ describe('password reset (RF-024)', () => {
   let service: PasswordResetService
 
   const signUp = (email: string) =>
-    request(app.getHttpServer()).post('/accounts').send(signUpBody(email))
+    request(app.getHttpServer()).post('/api/accounts').send(signUpBody(email))
 
   const askForReset = (email: string) =>
-    request(app.getHttpServer()).post('/accounts/password-resets').send({ email })
+    request(app.getHttpServer()).post('/api/accounts/password-resets').send({ email })
 
   const confirm = (token: string, password = NEW_PASSWORD) =>
     request(app.getHttpServer())
-      .post('/accounts/password-resets/confirmations')
+      .post('/api/accounts/password-resets/confirmations')
       .send({ token, password })
 
   const signInStatus = async (email: string, password: string): Promise<number> =>
-    (await request(app.getHttpServer()).post('/sessions').send({ email, password })).status
+    (await request(app.getHttpServer()).post('/api/sessions').send({ email, password })).status
 
   /** Issues a link for the address and returns the token that was emailed. */
   const issueToken = async (email: string): Promise<string> => {

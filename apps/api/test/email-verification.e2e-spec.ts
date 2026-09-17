@@ -64,7 +64,7 @@ describe('email verification', () => {
   const flushMail = () => new Promise((resolve) => setImmediate(resolve))
 
   const signUp = async (email: string) => {
-    const res = await request(app.getHttpServer()).post('/accounts').send(signUpBody(email))
+    const res = await request(app.getHttpServer()).post('/api/accounts').send(signUpBody(email))
     await flushMail()
     return res
   }
@@ -162,7 +162,7 @@ describe('email verification', () => {
       await signUp('verify@test.local')
 
       const res = await request(app.getHttpServer())
-        .post('/accounts/verifications')
+        .post('/api/accounts/verifications')
         .send({ token: tokenFrom() })
 
       expect(res.status).toBe(204)
@@ -176,9 +176,9 @@ describe('email verification', () => {
       await signUp('twice@test.local')
       const token = tokenFrom()
 
-      await request(app.getHttpServer()).post('/accounts/verifications').send({ token })
+      await request(app.getHttpServer()).post('/api/accounts/verifications').send({ token })
       const second = await request(app.getHttpServer())
-        .post('/accounts/verifications')
+        .post('/api/accounts/verifications')
         .send({ token })
 
       // Clicking twice is what people actually do. Answering "invalid" would
@@ -198,10 +198,10 @@ describe('email verification', () => {
       await em.flush()
 
       const expired = await request(app.getHttpServer())
-        .post('/accounts/verifications')
+        .post('/api/accounts/verifications')
         .send({ token })
       const unknown = await request(app.getHttpServer())
-        .post('/accounts/verifications')
+        .post('/api/accounts/verifications')
         .send({ token: 'a'.repeat(43) })
 
       // Telling "expired" apart from "unknown" would confirm a token had once
@@ -222,10 +222,10 @@ describe('email verification', () => {
       expect(secondToken).not.toBe(firstToken)
 
       const stale = await request(app.getHttpServer())
-        .post('/accounts/verifications')
+        .post('/api/accounts/verifications')
         .send({ token: firstToken })
       const current = await request(app.getHttpServer())
-        .post('/accounts/verifications')
+        .post('/api/accounts/verifications')
         .send({ token: secondToken })
 
       // An old link sitting in an inbox must not verify an address later.
@@ -245,7 +245,7 @@ describe('email verification', () => {
       account.state = AccountState.BANNED
       await em.flush()
 
-      await request(app.getHttpServer()).post('/accounts/verifications').send({ token })
+      await request(app.getHttpServer()).post('/api/accounts/verifications').send({ token })
 
       const after = await orm.em.fork().findOneOrFail(Account, { email: 'bannedverify@test.local' })
       // The address is verified, but only an UNVERIFIED account is promoted —
@@ -277,7 +277,7 @@ describe('email verification', () => {
       mail.clear()
 
       const res = await request(app.getHttpServer())
-        .post('/accounts/verifications/resend')
+        .post('/api/accounts/verifications/resend')
         .send({ email: 'recovered@test.local' })
       await flushMail()
 
@@ -289,7 +289,7 @@ describe('email verification', () => {
       expect(token).toBeTruthy()
 
       const verified = await request(app.getHttpServer())
-        .post('/accounts/verifications')
+        .post('/api/accounts/verifications')
         .send({ token })
       expect(verified.status).toBe(204)
     })
@@ -301,12 +301,12 @@ describe('email verification', () => {
 
       await signUp('alreadydone@test.local')
       await request(app.getHttpServer())
-        .post('/accounts/verifications')
+        .post('/api/accounts/verifications')
         .send({ token: tokenFrom() })
 
       const responses = await Promise.all(
         ['pending@test.local', 'alreadydone@test.local', 'nobody-at-all@test.local'].map((email) =>
-          request(app.getHttpServer()).post('/accounts/verifications/resend').send({ email }),
+          request(app.getHttpServer()).post('/api/accounts/verifications/resend').send({ email }),
         ),
       )
 
@@ -321,12 +321,12 @@ describe('email verification', () => {
     it('does not email an address that is already verified', async () => {
       await signUp('nospam@test.local')
       await request(app.getHttpServer())
-        .post('/accounts/verifications')
+        .post('/api/accounts/verifications')
         .send({ token: tokenFrom() })
       mail.clear()
 
       await request(app.getHttpServer())
-        .post('/accounts/verifications/resend')
+        .post('/api/accounts/verifications/resend')
         .send({ email: 'nospam@test.local' })
       await flushMail()
 
@@ -340,7 +340,7 @@ describe('email verification', () => {
       const first = tokenFrom()
 
       await request(app.getHttpServer())
-        .post('/accounts/verifications/resend')
+        .post('/api/accounts/verifications/resend')
         .send({ email: 'resent@test.local' })
       await flushMail()
       const second = tokenFrom()
@@ -348,7 +348,7 @@ describe('email verification', () => {
       expect(second).not.toBe(first)
 
       const stale = await request(app.getHttpServer())
-        .post('/accounts/verifications')
+        .post('/api/accounts/verifications')
         .send({ token: first })
 
       // The old link is spent, not merely superseded: it answers 204 because
@@ -360,7 +360,7 @@ describe('email verification', () => {
       expect(account.emailVerified).toBe(false)
 
       const current = await request(app.getHttpServer())
-        .post('/accounts/verifications')
+        .post('/api/accounts/verifications')
         .send({ token: second })
       expect(current.status).toBe(204)
     })
@@ -390,7 +390,7 @@ describe('email verification', () => {
     it('never deletes a verified account, however old', async () => {
       await signUp('old-but-verified@test.local')
       await request(app.getHttpServer())
-        .post('/accounts/verifications')
+        .post('/api/accounts/verifications')
         .send({ token: tokenFrom() })
 
       const em = orm.em.fork()

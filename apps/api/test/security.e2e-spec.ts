@@ -90,7 +90,7 @@ describe('transversal security', () => {
   describe('input validation', () => {
     it('accepts a body that matches the DTO', async () => {
       const res = await request(app.getHttpServer())
-        .post('/security-probe')
+        .post('/api/security-probe')
         .send({ email: 'person@test.local', age: 20 })
 
       expect(res.status).toBe(201)
@@ -98,7 +98,7 @@ describe('transversal security', () => {
 
     it('rejects an unknown property instead of silently dropping it', async () => {
       const res = await request(app.getHttpServer())
-        .post('/security-probe')
+        .post('/api/security-probe')
         .send({ email: 'person@test.local', age: 20, reputation: 100 })
 
       // 400, not 201 with the field ignored: silent stripping would hide the
@@ -109,14 +109,16 @@ describe('transversal security', () => {
 
     it('rejects a value that breaks the rule', async () => {
       const res = await request(app.getHttpServer())
-        .post('/security-probe')
+        .post('/api/security-probe')
         .send({ email: 'not-an-email', age: 15 })
 
       expect(res.status).toBe(400)
     })
 
     it('does not leak a stack trace in the error body', async () => {
-      const res = await request(app.getHttpServer()).post('/security-probe').send({ age: 'twenty' })
+      const res = await request(app.getHttpServer())
+        .post('/api/security-probe')
+        .send({ age: 'twenty' })
 
       expect(res.status).toBe(400)
       const body = JSON.stringify(res.body)
@@ -127,7 +129,7 @@ describe('transversal security', () => {
 
   describe('security headers', () => {
     it('sets the headers helmet is here for', async () => {
-      const res = await request(app.getHttpServer()).get('/security-probe/headers')
+      const res = await request(app.getHttpServer()).get('/api/security-probe/headers')
 
       expect(res.headers['x-content-type-options']).toBe('nosniff')
       expect(res.headers['strict-transport-security']).toBeDefined()
@@ -138,7 +140,7 @@ describe('transversal security', () => {
     })
 
     it('does not advertise the framework', async () => {
-      const res = await request(app.getHttpServer()).get('/security-probe/headers')
+      const res = await request(app.getHttpServer()).get('/api/security-probe/headers')
 
       // Knowing the stack makes picking a matching CVE trivial.
       expect(res.headers['x-powered-by']).toBeUndefined()
@@ -151,7 +153,7 @@ describe('transversal security', () => {
       const statuses: number[] = []
 
       for (let attempt = 0; attempt < 7; attempt += 1) {
-        const res = await request(server).post('/security-probe/login-bucket').send({})
+        const res = await request(server).post('/api/security-probe/login-bucket').send({})
         statuses.push(res.status)
       }
 
@@ -171,7 +173,7 @@ describe('transversal security', () => {
       // named throttlers this answered 429 from the 6th request on — and no
       // test noticed, because every other one stops below five.
       for (let attempt = 0; attempt < 10; attempt += 1) {
-        const res = await request(server).get('/security-probe/undecorated')
+        const res = await request(server).get('/api/security-probe/undecorated')
         statuses.push(res.status)
       }
 
@@ -179,7 +181,7 @@ describe('transversal security', () => {
     })
 
     it('counts an undecorated route only under the default limit', async () => {
-      const res = await request(app.getHttpServer()).get('/security-probe/undecorated')
+      const res = await request(app.getHttpServer()).get('/api/security-probe/undecorated')
 
       // One ceiling, and it is the permissive one. A second `x-ratelimit-*`
       // family here means some other bucket is counting this route again.
@@ -193,7 +195,7 @@ describe('transversal security', () => {
   describe('rate limiting behind Cloudflare (#99)', () => {
     const spend = (cfConnectingIp?: string) => {
       const server = app.getHttpServer()
-      const req = request(server).post('/security-probe/login-bucket-cf')
+      const req = request(server).post('/api/security-probe/login-bucket-cf')
       return cfConnectingIp ? req.set('cf-connecting-ip', cfConnectingIp) : req.send({})
     }
 
