@@ -95,7 +95,7 @@ export function SignUpForm() {
 
     setStatus('submitting')
     try {
-      const response = await fetch('/api/accounts', {
+      const response = await fetch('/bff/accounts', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
@@ -122,7 +122,7 @@ export function SignUpForm() {
   if (status === 'submitted') {
     return (
       <p role="status" className="text-base text-foreground">
-        Enviamos um e-mail com as instruções.
+        {content.checkYourEmail}
       </p>
     )
   }
