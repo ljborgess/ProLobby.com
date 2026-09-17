@@ -170,9 +170,16 @@ export function SignUpForm() {
         hint={content.securityQuestionHint}
         error={errors.securityQuestion}
       />
+      {/*
+       * autoComplete off: the answer is a credential, not a profile field —
+       * it is one of the two factors that recover an account without email or
+       * Discord (RF-025). Letting a browser save and replay it puts the
+       * recovery path behind whatever protects that browser profile.
+       */}
       <TextField
         name="securityAnswer"
         type="text"
+        autoComplete="off"
         label={content.securityAnswerLabel}
         error={errors.securityAnswer}
       />
