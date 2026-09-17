@@ -1,0 +1,106 @@
+# Production topology — ADR-009 / #121.
+#
+# Used on the Oracle VM: `docker compose -f docker-compose.prod.yml up -d`.
+# Local development keeps using docker-compose.yml (Postgres with a published
+# port). This file must never include Postgres: the database is Neon.
+#
+# No `ports:` on any service. Breaking that rule does not fail the Compose
+# file — it only makes CF-Connecting-IP forgeable (item 11). The unit test
+# in apps/api/src/common/deploy/production-compose.spec.ts is what catches it.
+#
+# Browser traffic lands on Next.js. The Nest API and the bot stay on the
+# Docker network: issue #87 made the browser speak only to same-origin
+# `/api/*` on the web app. Routing `/api/*` at the tunnel to Nest would
+# bypass that proxy. POST /events is not on the tunnel either.
+
+name: prolobby
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      HOSTNAME: 0.0.0.0
+      PORT: '3000'
+      API_URL: http://api:3001
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 40s
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: '3001'
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      CORS_ORIGINS: ${CORS_ORIGINS:?CORS_ORIGINS is required}
+      WEBHOOK_SECRET: ${WEBHOOK_SECRET:?WEBHOOK_SECRET is required}
+      BOT_WEBHOOK_URL: http://bot:3002/events
+      EVIDENCE_ENCRYPTION_KEY: ${EVIDENCE_ENCRYPTION_KEY:?EVIDENCE_ENCRYPTION_KEY is required}
+    depends_on:
+      api-migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3001/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 30s
+
+  # Owner-role URL only. The API process itself never sees DATABASE_DIRECT_URL
+  # — prolobby_app has no DDL (ADR-009 decision 1).
+  api-migrate:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: 'no'
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_DIRECT_URL:?DATABASE_DIRECT_URL is required}
+    command: ['node_modules/.bin/mikro-orm', 'migration:up']
+
+  bot:
+    build:
+      context: .
+      dockerfile: apps/bot/Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: '3002'
+      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:?DISCORD_BOT_TOKEN is required}
+      WEBHOOK_SECRET: ${WEBHOOK_SECRET:?WEBHOOK_SECRET is required}
+
+  cloudflared:
+    image: cloudflare/cloudflared:2025.8.1
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN:?CLOUDFLARE_TUNNEL_TOKEN is required}
+    depends_on:
+      web:
+        condition: service_healthy
+    # Ingress lives in the Cloudflare dashboard and must match
+    # deploy/cloudflared.yml — hostname → web:3000, nothing else.

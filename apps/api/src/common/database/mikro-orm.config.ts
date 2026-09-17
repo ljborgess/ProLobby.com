@@ -11,6 +11,14 @@ export default defineConfig({
   entitiesTs: ['./src/**/*.entity.ts'],
   debug: process.env.NODE_ENV !== 'production',
   extensions: [Migrator],
+  // Neon hibernates after 5 minutes idle and drops leftover connections
+  // (ADR-009). Starting at zero lets the pool reconnect on the next request
+  // instead of holding a dead client overnight and burning CU-hours.
+  pool: {
+    min: 0,
+    max: 10,
+    idleTimeoutMillis: 10_000,
+  },
   migrations: {
     path: './dist/common/database/migrations',
     pathTs: './src/common/database/migrations',
