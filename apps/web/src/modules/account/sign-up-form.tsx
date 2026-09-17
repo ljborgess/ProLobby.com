@@ -105,6 +105,7 @@ export function SignUpForm() {
           securityQuestion: data.get('securityQuestion'),
           securityAnswer: data.get('securityAnswer'),
           acceptedTermsVersion: CURRENT_TERMS_VERSION,
+          website: data.get('website'),
         }),
       })
 
@@ -127,7 +128,19 @@ export function SignUpForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
+    <form onSubmit={handleSubmit} noValidate className="relative flex flex-col gap-4">
+      {/*
+       * Honeypot — item 12 of the security checklist, issue #101. Hidden
+       * with CSS, never removed from the markup: a person never sees or
+       * tabs into it, but a script that fills every input it finds fills
+       * this one too. `aria-hidden` + `tabIndex={-1}` keep it out of a
+       * screen reader's and a keyboard user's way; `autoComplete="off"`
+       * stops a browser from offering to fill it for a real person.
+       */}
+      <div className="absolute -left-full h-0 w-0 overflow-hidden" aria-hidden="true">
+        <label htmlFor="website">Website</label>
+        <input type="text" id="website" name="website" tabIndex={-1} autoComplete="off" />
+      </div>
       <TextField
         name="email"
         type="email"
