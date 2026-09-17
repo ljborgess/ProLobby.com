@@ -5,10 +5,15 @@ import { MailSender, type OutgoingEmail } from './mail.types'
 /**
  * Writes the email to the log instead of sending it.
  *
- * The default until a provider is wired up, and the only sender used in tests.
- * Refuses to run in production: an account that silently never receives its
- * verification link is indistinguishable from a broken sign-up, and this class
- * would make that the default behaviour.
+ * What runs in development, in tests, and in the internal beta until the
+ * domain exists and Resend can be configured (ADR-008, #130).
+ *
+ * The production guard below is now a second line of defence: MailModule
+ * already refuses to build this sender when NODE_ENV is production, and says
+ * why. It stays because the reason it exists does not depend on the module —
+ * an account that silently never receives its verification link is
+ * indistinguishable from a broken sign-up, and anyone constructing this class
+ * directly deserves the same refusal.
  */
 @Injectable()
 export class ConsoleMailSender extends MailSender {

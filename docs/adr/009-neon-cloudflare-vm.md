@@ -36,7 +36,7 @@ navegador → Cloudflare (DNS, HTTPS, CDN, DDoS) → túnel → VM Oracle São P
 - **Duas roles**, com menor privilégio:
   - `prolobby_app` — lê e escreve dado, **sem DDL**. É a da API.
   - `prolobby_owner` — dona do schema. Só migrations, dump e restore.
-  - A migration que cria o arranjo concede as permissões e o `ALTER DEFAULT PRIVILEGES`, pra toda tabela futura já nascer acessível à `prolobby_app`.
+  - A migration que cria o arranjo concede as permissões e o `ALTER DEFAULT PRIVILEGES`, pra toda tabela futura já nascer acessível à `prolobby_app`. **Escrita em 2026-09-17** (`Migration20260917150000`): a role em si nasce no console da Neon, que gera a senha — `CREATE ROLE` em migration versionada exigiria privilégio que a role dona não tem e poria uma senha no repositório. A migration é condicional à existência da role, então local e CI, onde ela não existe, aplicam sem erro.
 
 ### 2 · Backup: `pg_dump` diário feito pela VM
 
