@@ -59,9 +59,9 @@ Operação que pode chegar duas vezes (duplo clique, retry) se garante com **ín
 
 ```bash
 cd apps/api
-pnpm exec mikro-orm schema:drop --run --drop-migrations-table
-pnpm exec mikro-orm migration:up
-pnpm exec mikro-orm migration:create
+pnpm mikro-orm schema:drop --run --drop-migrations-table
+pnpm mikro-orm migration:up
+pnpm mikro-orm migration:create
 ```
 
 - Confira que a migration tem `down()` simétrico.
