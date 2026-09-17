@@ -43,6 +43,20 @@ const ONE_DAY_MS = 24 * 60 * 60 * 1000
 export class AccountRecoveryService {
   private readonly logger = new Logger(AccountRecoveryService.name)
 
+  /**
+   * Read at construction — that is, at boot — and not inside `saveEvidence`.
+   *
+   * `request()` is fire-and-forget on purpose (see its doc comment), so an
+   * exception raised in the request path becomes a log line while the person
+   * still gets the 202 that says their recovery was accepted. A missing or
+   * malformed key would therefore lose every recovery in silence, and item 5
+   * of the security checklist would stop existing without anything failing.
+   *
+   * Failing here instead kills the process at startup, which is how
+   * JWT_SECRET already behaves (see AuthModule).
+   */
+  private readonly evidenceKey = readEvidenceEncryptionKey()
+
   constructor(
     private readonly em: EntityManager,
     private readonly hashService: HashService,
@@ -150,8 +164,7 @@ export class AccountRecoveryService {
 
   /** Encrypted at rest — item 5 of the security checklist / RNF-009. */
   private async saveEvidence(evidence: Buffer, extension: string): Promise<string> {
-    const key = readEvidenceEncryptionKey()
-    const encrypted = encryptAtRest(key, evidence)
+    const encrypted = encryptAtRest(this.evidenceKey, evidence)
 
     await mkdir(EVIDENCE_DIR, { recursive: true })
     const path = join(EVIDENCE_DIR, `${randomUUID()}.${extension}.enc`)
