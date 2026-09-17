@@ -60,12 +60,12 @@ describe('sessions', () => {
    * for the wrong reason.
    */
   const sessionFor = async (email: string, state = AccountState.ACTIVE): Promise<string> => {
-    await request(app.getHttpServer()).post('/accounts').send(signUpBody(email))
+    await request(app.getHttpServer()).post('/api/accounts').send(signUpBody(email))
     if (state !== AccountState.UNVERIFIED) {
       await setState(email, state)
     }
     const res = await request(app.getHttpServer())
-      .post('/sessions')
+      .post('/api/sessions')
       .send({ email, password: PASSWORD })
     return cookieOf(res)
   }
@@ -101,10 +101,10 @@ describe('sessions', () => {
 
   describe('sign in', () => {
     it('returns the session in an HttpOnly cookie, never in the body', async () => {
-      await request(app.getHttpServer()).post('/accounts').send(signUpBody('login@test.local'))
+      await request(app.getHttpServer()).post('/api/accounts').send(signUpBody('login@test.local'))
 
       const res = await request(app.getHttpServer())
-        .post('/sessions')
+        .post('/api/sessions')
         .send({ email: 'login@test.local', password: PASSWORD })
 
       expect(res.status).toBe(200)
@@ -115,41 +115,41 @@ describe('sessions', () => {
     })
 
     it('accepts the email in any case, like sign-up does', async () => {
-      await request(app.getHttpServer()).post('/accounts').send(signUpBody('case@test.local'))
+      await request(app.getHttpServer()).post('/api/accounts').send(signUpBody('case@test.local'))
 
       const res = await request(app.getHttpServer())
-        .post('/sessions')
+        .post('/api/sessions')
         .send({ email: 'CASE@Test.Local', password: PASSWORD })
 
       expect(res.status).toBe(200)
     })
 
     it('does not let a new session disturb an existing one (RF-022)', async () => {
-      await request(app.getHttpServer()).post('/accounts').send(signUpBody('two@test.local'))
+      await request(app.getHttpServer()).post('/api/accounts').send(signUpBody('two@test.local'))
       await setState('two@test.local', AccountState.ACTIVE)
 
       const first = await request(app.getHttpServer())
-        .post('/sessions')
+        .post('/api/sessions')
         .send({ email: 'two@test.local', password: PASSWORD })
       const second = await request(app.getHttpServer())
-        .post('/sessions')
+        .post('/api/sessions')
         .send({ email: 'two@test.local', password: PASSWORD })
 
       // Both still work: the lock that matters (one queue entry) is per
       // account, not per session.
       for (const cookie of [cookieOf(first), cookieOf(second)]) {
         const probe = await request(app.getHttpServer())
-          .get('/guard-probe/default')
+          .get('/api/guard-probe/default')
           .set('Cookie', cookie)
         expect(probe.status).toBe(200)
       }
     })
 
     it('sets a cookie whose lifetime matches the token', async () => {
-      await request(app.getHttpServer()).post('/accounts').send(signUpBody('maxage@test.local'))
+      await request(app.getHttpServer()).post('/api/accounts').send(signUpBody('maxage@test.local'))
 
       const res = await request(app.getHttpServer())
-        .post('/sessions')
+        .post('/api/sessions')
         .send({ email: 'maxage@test.local', password: PASSWORD })
 
       // Both read from SESSION_TTL_SECONDS, so one cannot outlive the other.
@@ -159,13 +159,13 @@ describe('sessions', () => {
 
   describe('RF-070 — the answer never says which one failed', () => {
     it('gives the same response for a wrong password and an unknown email', async () => {
-      await request(app.getHttpServer()).post('/accounts').send(signUpBody('known@test.local'))
+      await request(app.getHttpServer()).post('/api/accounts').send(signUpBody('known@test.local'))
 
       const wrongPassword = await request(app.getHttpServer())
-        .post('/sessions')
+        .post('/api/sessions')
         .send({ email: 'known@test.local', password: 'wrong-but-long-enough' })
       const unknownEmail = await request(app.getHttpServer())
-        .post('/sessions')
+        .post('/api/sessions')
         .send({ email: 'nobody@test.local', password: PASSWORD })
 
       expect(wrongPassword.status).toBe(401)
@@ -175,19 +175,21 @@ describe('sessions', () => {
     })
 
     it('verifies a hash even when the email does not exist', async () => {
-      await request(app.getHttpServer()).post('/accounts').send(signUpBody('spy-known@test.local'))
+      await request(app.getHttpServer())
+        .post('/api/accounts')
+        .send(signUpBody('spy-known@test.local'))
 
       const hashService = app.get(HashService)
       const spy = jest.spyOn(hashService, 'matches')
 
       await request(app.getHttpServer())
-        .post('/sessions')
+        .post('/api/sessions')
         .send({ email: 'spy-known@test.local', password: 'wrong-but-long-enough' })
       const onKnownEmail = spy.mock.calls.length
 
       spy.mockClear()
       await request(app.getHttpServer())
-        .post('/sessions')
+        .post('/api/sessions')
         .send({ email: 'ghost@test.local', password: 'wrong-but-long-enough' })
       const onUnknownEmail = spy.mock.calls.length
 
@@ -206,14 +208,14 @@ describe('sessions', () => {
 
   describe('the guard is closed by default (ADR-007)', () => {
     it('refuses a request with no session', async () => {
-      const res = await request(app.getHttpServer()).get('/guard-probe/default')
+      const res = await request(app.getHttpServer()).get('/api/guard-probe/default')
 
       expect(res.status).toBe(401)
     })
 
     it('refuses a tampered token', async () => {
       const res = await request(app.getHttpServer())
-        .get('/guard-probe/default')
+        .get('/api/guard-probe/default')
         .set('Cookie', `${SESSION_COOKIE_NAME}=not.a.jwt`)
 
       expect(res.status).toBe(401)
@@ -222,7 +224,7 @@ describe('sessions', () => {
     it('keeps sign-up and health reachable without a session', async () => {
       await expect(
         request(app.getHttpServer())
-          .get('/health')
+          .get('/api/health')
           .then((res) => res.status),
       ).resolves.toBe(200)
     })
@@ -233,10 +235,10 @@ describe('sessions', () => {
       const cookie = await sessionFor('unverified@test.local', AccountState.UNVERIFIED)
 
       const opened = await request(app.getHttpServer())
-        .get('/guard-probe/appeal')
+        .get('/api/guard-probe/appeal')
         .set('Cookie', cookie)
       const closed = await request(app.getHttpServer())
-        .get('/guard-probe/default')
+        .get('/api/guard-probe/default')
         .set('Cookie', cookie)
 
       // The default is ACTIVE, so a route only reaches an unverified account
@@ -252,10 +254,10 @@ describe('sessions', () => {
       await setState('banned@test.local', AccountState.BANNED)
 
       const appeal = await request(app.getHttpServer())
-        .get('/guard-probe/appeal')
+        .get('/api/guard-probe/appeal')
         .set('Cookie', cookie)
       const anythingElse = await request(app.getHttpServer())
-        .get('/guard-probe/default')
+        .get('/api/guard-probe/default')
         .set('Cookie', cookie)
 
       // The right to appeal (RF-037) cannot depend on Discord: someone banned
@@ -269,14 +271,14 @@ describe('sessions', () => {
       const cookie = await sessionFor('justbanned@test.local')
 
       const before = await request(app.getHttpServer())
-        .get('/guard-probe/default')
+        .get('/api/guard-probe/default')
         .set('Cookie', cookie)
       expect(before.status).toBe(200)
 
       await setState('justbanned@test.local', AccountState.BANNED)
 
       const after = await request(app.getHttpServer())
-        .get('/guard-probe/default')
+        .get('/api/guard-probe/default')
         .set('Cookie', cookie)
 
       // This is the whole reason the token carries no state: otherwise a
@@ -289,10 +291,10 @@ describe('sessions', () => {
       await setState('deleted@test.local', AccountState.DELETED)
 
       const existingSession = await request(app.getHttpServer())
-        .get('/guard-probe/appeal')
+        .get('/api/guard-probe/appeal')
         .set('Cookie', cookie)
       const freshSignIn = await request(app.getHttpServer())
-        .post('/sessions')
+        .post('/api/sessions')
         .send({ email: 'deleted@test.local', password: PASSWORD })
 
       expect(existingSession.status).toBe(403)
@@ -305,7 +307,7 @@ describe('sessions', () => {
     it('clears the cookie', async () => {
       const cookie = await sessionFor('logout@test.local')
 
-      const res = await request(app.getHttpServer()).delete('/sessions').set('Cookie', cookie)
+      const res = await request(app.getHttpServer()).delete('/api/sessions').set('Cookie', cookie)
 
       expect(res.status).toBe(204)
       // Cleared with the same options it was written with — a mismatch makes

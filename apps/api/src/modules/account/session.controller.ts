@@ -5,6 +5,7 @@ import type { Response } from 'express'
 import { Public } from '../../common/auth/auth.decorators'
 import { SESSION_TTL_MS } from '../../common/auth/session.constants'
 import { SESSION_COOKIE_NAME, sessionCookieOptions } from '../../common/security/session-cookie'
+import { LOGIN_THROTTLE } from '../../common/security/throttler.config'
 import { SignInDto } from './dto/sign-in.dto'
 import { SessionService } from './session.service'
 
@@ -24,7 +25,7 @@ export class SessionController {
   @HttpCode(HttpStatus.OK)
   // The login bucket: this is where guessing pays off, and a legitimate person
   // does not sign in six times a minute.
-  @Throttle({ login: {} })
+  @Throttle(LOGIN_THROTTLE)
   async signIn(
     @Body() dto: SignInDto,
     @Res({ passthrough: true }) response: Response,

@@ -39,13 +39,13 @@ describe('punishment appeal (RF-081, RF-037)', () => {
 
   /** Signs up, puts the account in the given state, signs in, returns the cookie. */
   const sessionFor = async (email: string, state = AccountState.ACTIVE): Promise<string> => {
-    await request(app.getHttpServer()).post('/accounts').send(signUpBody(email))
+    await request(app.getHttpServer()).post('/api/accounts').send(signUpBody(email))
     const em = orm.em.fork()
     const account = await em.findOneOrFail(Account, { email })
     account.state = state
     await em.flush()
     const res = await request(app.getHttpServer())
-      .post('/sessions')
+      .post('/api/sessions')
       .send({ email, password: PASSWORD })
     return cookieOf(res)
   }
@@ -67,9 +67,19 @@ describe('punishment appeal (RF-081, RF-037)', () => {
     return punishment.id
   }
 
+  /** A moderator deciding a case — what closes an appeal in phase 5. */
+  const resolveCase = async (caseId: string, decision: string): Promise<void> => {
+    const em = orm.em.fork()
+    const moderationCase = await em.findOneOrFail(ModerationCase, { id: caseId })
+    moderationCase.state = ModerationCaseState.RESOLVED
+    moderationCase.resolvedAt = new Date()
+    moderationCase.decision = decision
+    await em.flush()
+  }
+
   const appeal = (cookie: string, message = APPEAL_MESSAGE) =>
     request(app.getHttpServer())
-      .post('/accounts/punishment-appeals')
+      .post('/api/accounts/punishment-appeals')
       .set('Cookie', cookie)
       .send({ message })
 
@@ -130,6 +140,44 @@ describe('punishment appeal (RF-081, RF-037)', () => {
     expect(first.status).toBe(201)
     expect(second.status).toBe(409)
     expect(await appealsFor(email)).toHaveLength(1)
+  })
+
+  it('refuses a second appeal even after a moderator resolved the first (RF-037)', async () => {
+    const email = 'appeal-chain@test.local'
+    const cookie = await sessionFor(email, AccountState.BANNED)
+    const punishmentCaseId = await givePunishmentCase(email)
+
+    const first = await appeal(cookie)
+    expect(first.status).toBe(201)
+
+    // The moderator decides the appeal. That resolution makes the *appeal*
+    // the account's most recently resolved case — and an appeal is not a
+    // punishment, so it must never become the target of another one.
+    await resolveCase(first.body.caseId, 'Recurso negado — o print confere.')
+
+    const second = await appeal(cookie, 'Terceira via: quero que olhem de novo.')
+
+    expect(second.status).toBe(409)
+    const filed = await appealsFor(email)
+    expect(filed).toHaveLength(1)
+    expect(filed[0]?.appealsCase?.id).toBe(punishmentCaseId)
+  })
+
+  it('keeps showing the ban reason after the appeal is resolved', async () => {
+    const email = 'appeal-reason@test.local'
+    const cookie = await sessionFor(email, AccountState.BANNED)
+    await givePunishmentCase(email)
+
+    const filed = await appeal(cookie)
+    await resolveCase(filed.body.caseId, 'Recurso negado — o print confere.')
+
+    const status = await request(app.getHttpServer())
+      .get('/api/accounts/punishment-status')
+      .set('Cookie', cookie)
+
+    // The decision shown to a banned person is what got them banned, not the
+    // note a moderator left when turning their appeal down.
+    expect(status.body.reason).toBe('Print adulterado comprovado — banimento aplicado.')
   })
 
   it('lets two simultaneous appeals still leave exactly one filed', async () => {

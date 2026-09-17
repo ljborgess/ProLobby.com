@@ -40,19 +40,19 @@ describe('punishment status (gap found in review of #103)', () => {
 
   /** Signs up, puts the account in the given state, signs in, returns the cookie. */
   const sessionFor = async (email: string, state = AccountState.ACTIVE): Promise<string> => {
-    await request(app.getHttpServer()).post('/accounts').send(signUpBody(email))
+    await request(app.getHttpServer()).post('/api/accounts').send(signUpBody(email))
     const em = orm.em.fork()
     const account = await em.findOneOrFail(Account, { email })
     account.state = state
     await em.flush()
     const res = await request(app.getHttpServer())
-      .post('/sessions')
+      .post('/api/sessions')
       .send({ email, password: PASSWORD })
     return cookieOf(res)
   }
 
   const statusFor = (cookie: string) =>
-    request(app.getHttpServer()).get('/accounts/punishment-status').set('Cookie', cookie)
+    request(app.getHttpServer()).get('/api/accounts/punishment-status').set('Cookie', cookie)
 
   beforeAll(async () => {
     process.env.THROTTLE_DISABLED = 'true'

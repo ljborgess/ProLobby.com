@@ -12,7 +12,7 @@ describe('sign-up waiting list (RF-078)', () => {
   let orm: MikroORM
 
   const join = (email: string) =>
-    request(app.getHttpServer()).post('/accounts/waiting-list').send({ email })
+    request(app.getHttpServer()).post('/api/accounts/waiting-list').send({ email })
 
   const entriesFor = (email: string): Promise<WaitingListEntry[]> =>
     orm.em.fork().find(WaitingListEntry, { email })
@@ -83,7 +83,7 @@ describe('sign-up waiting list (RF-078)', () => {
 
     expect(res.status).toBe(202)
     const status = await request(app.getHttpServer())
-      .post('/sessions')
+      .post('/api/sessions')
       .send({ email: 'wait-no-account@test.local', password: 'irrelevant-password' })
     // 401, not "account found but wrong password in some other shape" — there
     // is no account to find.

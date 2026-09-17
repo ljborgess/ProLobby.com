@@ -25,6 +25,7 @@ export interface AuthContent {
     emailInvalid: string
     passwordTooShort: string
     ageTooYoung: string
+    checkYourEmail: string
   }
   signIn: {
     title: string
@@ -35,6 +36,7 @@ export interface AuthContent {
     submitting: string
     switchToSignUp: string
     invalidCredentials: string
+    networkError: string
   }
   languageSwitcher: {
     label: string
@@ -62,6 +64,7 @@ export const AUTH_CONTENT: Record<Locale, AuthContent> = {
       emailInvalid: 'Esse e-mail não parece válido.',
       passwordTooShort: 'Precisa de pelo menos 12 caracteres.',
       ageTooYoung: 'É preciso ter 16 anos ou mais.',
+      checkYourEmail: 'Enviamos um e-mail com as instruções.',
     },
     signIn: {
       title: 'Entrar',
@@ -72,6 +75,7 @@ export const AUTH_CONTENT: Record<Locale, AuthContent> = {
       submitting: 'Entrando…',
       switchToSignUp: 'Não tem conta? Criar agora',
       invalidCredentials: 'E-mail ou senha incorretos.',
+      networkError: 'Não deu pra entrar agora. Confere a conexão e tenta de novo.',
     },
     languageSwitcher: {
       label: 'Idioma',
@@ -97,6 +101,7 @@ export const AUTH_CONTENT: Record<Locale, AuthContent> = {
       emailInvalid: 'Ese correo no parece válido.',
       passwordTooShort: 'Necesita al menos 12 caracteres.',
       ageTooYoung: 'Debes tener 16 años o más.',
+      checkYourEmail: 'Te enviamos un correo con las instrucciones.',
     },
     signIn: {
       title: 'Entrar',
@@ -107,6 +112,7 @@ export const AUTH_CONTENT: Record<Locale, AuthContent> = {
       submitting: 'Entrando…',
       switchToSignUp: '¿No tienes cuenta? Crear ahora',
       invalidCredentials: 'Correo o contraseña incorrectos.',
+      networkError: 'No se pudo entrar ahora. Revisa la conexión e intenta de nuevo.',
     },
     languageSwitcher: {
       label: 'Idioma',

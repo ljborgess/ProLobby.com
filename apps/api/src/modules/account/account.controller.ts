@@ -16,6 +16,7 @@ import { memoryStorage } from 'multer'
 
 import { AllowStates, Public, SkipTermsCheck } from '../../common/auth/auth.decorators'
 import type { RequestWithAccount } from '../../common/auth/session.guard'
+import { LOGIN_THROTTLE, SIGNUP_THROTTLE } from '../../common/security/throttler.config'
 import type { ModerationCase } from '../moderation/moderation-case.entity'
 
 import { AccountRecoveryService } from './account-recovery.service'
@@ -67,7 +68,7 @@ export class AccountController {
   // Its own bucket, counted per hour: the threat is account farming, and
   // farming is measured by the day. The login bucket would look strict at
   // 5/min and still allow 300 accounts an hour from one address.
-  @Throttle({ signup: {} })
+  @Throttle(SIGNUP_THROTTLE)
   async signUp(@Body() dto: SignUpDto): Promise<{ message: string }> {
     await this.accountService.signUp(dto)
 
@@ -90,7 +91,7 @@ export class AccountController {
   @HttpCode(HttpStatus.ACCEPTED)
   // The login bucket, not the signup one: the cost here is an email to
   // somebody else's inbox, so the limit guards a stranger, not this server.
-  @Throttle({ login: {} })
+  @Throttle(LOGIN_THROTTLE)
   async resendVerification(@Body() dto: ResendVerificationDto): Promise<{ message: string }> {
     await this.emailVerificationService.resend(dto.email)
 
@@ -111,7 +112,7 @@ export class AccountController {
   @Public()
   @Post('verifications')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Throttle({ login: {} })
+  @Throttle(LOGIN_THROTTLE)
   async verifyEmail(@Body() dto: VerifyEmailDto): Promise<void> {
     await this.emailVerificationService.verify(dto.token)
   }
@@ -129,7 +130,7 @@ export class AccountController {
   @HttpCode(HttpStatus.ACCEPTED)
   // The login bucket: the cost of this endpoint is an email to somebody
   // else's inbox, so the limit guards a stranger, not this server.
-  @Throttle({ login: {} })
+  @Throttle(LOGIN_THROTTLE)
   requestPasswordReset(@Body() dto: RequestPasswordResetDto): { message: string } {
     this.passwordResetService.request(dto.email)
 
@@ -147,7 +148,7 @@ export class AccountController {
   @Public()
   @Post('password-resets/confirmations')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Throttle({ login: {} })
+  @Throttle(LOGIN_THROTTLE)
   async confirmPasswordReset(@Body() dto: ConfirmPasswordResetDto): Promise<void> {
     await this.passwordResetService.confirm(dto.token, dto.password)
   }
@@ -193,7 +194,7 @@ export class AccountController {
   @HttpCode(HttpStatus.ACCEPTED)
   // The login bucket: this compares a secret (the security answer), same
   // family as sign-in and password reset.
-  @Throttle({ login: {} })
+  @Throttle(LOGIN_THROTTLE)
   @UseInterceptors(
     FileInterceptor('evidence', {
       storage: memoryStorage(),
@@ -262,7 +263,7 @@ export class AccountController {
   @HttpCode(HttpStatus.ACCEPTED)
   // The signup bucket: an unauthenticated write of an email address, same
   // per-hour farming concern as creating the account itself.
-  @Throttle({ signup: {} })
+  @Throttle(SIGNUP_THROTTLE)
   async joinWaitingList(@Body() dto: JoinWaitingListDto): Promise<{ message: string }> {
     await this.waitingListService.join(dto.email)
 
@@ -285,7 +286,7 @@ export class AccountController {
   @AllowStates(AccountState.BANNED)
   // The login bucket: filing an appeal is a rare, deliberate action for a
   // real account, the same profile as password reset or sign-in.
-  @Throttle({ login: {} })
+  @Throttle(LOGIN_THROTTLE)
   async openPunishmentAppeal(
     @Req() request: RequestWithAccount,
     @Body() dto: OpenPunishmentAppealDto,

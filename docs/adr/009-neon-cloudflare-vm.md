@@ -36,7 +36,7 @@ navegador → Cloudflare (DNS, HTTPS, CDN, DDoS) → túnel → VM Oracle São P
 - **Duas roles**, com menor privilégio:
   - `prolobby_app` — lê e escreve dado, **sem DDL**. É a da API.
   - `prolobby_owner` — dona do schema. Só migrations, dump e restore.
-  - A migration que cria o arranjo concede as permissões e o `ALTER DEFAULT PRIVILEGES`, pra toda tabela futura já nascer acessível à `prolobby_app`.
+  - A migration que cria o arranjo concede as permissões e o `ALTER DEFAULT PRIVILEGES`, pra toda tabela futura já nascer acessível à `prolobby_app`. **Escrita em 2026-09-17** (`Migration20260917150000`): a role em si nasce no console da Neon, que gera a senha — `CREATE ROLE` em migration versionada exigiria privilégio que a role dona não tem e poria uma senha no repositório. A migration é condicional à existência da role, então local e CI, onde ela não existe, aplicam sem erro.
 
 ### 2 · Backup: `pg_dump` diário feito pela VM
 
@@ -62,7 +62,8 @@ navegador → Cloudflare (DNS, HTTPS, CDN, DDoS) → túnel → VM Oracle São P
 
 - **Nenhuma porta aberta na VM** — nem 80, nem 443, nem 22. Nginx e Caddy deixam de ser necessários.
 - **Web e API no mesmo endereço**: `prolobby.com.br` é o web, e `prolobby.com.br/api/*` vai pra API por regra de caminho do túnel. O cookie de sessão fica na mesma origem, e o CORS só existe no desenvolvimento local.
-- A API ganha o prefixo `/api` no bootstrap (`setGlobalPrefix`). Não é regra de segurança, então não repete o problema de proteção que só existe no `main.ts`.
+- A API ganha o prefixo `/api` em `applySecurity()`, **não no `main.ts`** (corrigido em 2026-09-17). O `main.ts` não roda em teste nenhum: um prefixo só lá deixaria os e2e chamando `/accounts` e passando, enquanto produção serve `/api/accounts` — teste verde provando o roteamento errado.
+- **Os Route Handlers do `apps/web` vivem em `/bff/*`**, nunca em `/api/*` (corrigido em 2026-09-17). Eles estavam em `/api/accounts` e `/api/sessions`, exatamente os caminhos que a regra acima manda pro NestJS: em produção o túnel desviaria antes, e o handler que repassa o `CF-Connecting-IP` e faz o relay do cookie de sessão nunca executaria. Quebra invisível — não falha build nem teste, só o deploy.
 - **SSH pelo Cloudflare Access**, com segundo fator, só chave.
 
 ### 6 · IP real e rate limit
@@ -109,7 +110,7 @@ O endereço da Neon é público, e restringir por IP (IP Allow) só existe no pl
 2. Senha aleatória gerada pela Neon, só em variável de ambiente.
 3. SSL com `channel_binding` (decisão 1).
 4. Botão de pânico no runbook: trocar a senha das duas roles e reiniciar o compose.
-5. Segundo fator obrigatório nos painéis da Neon, da Oracle e da Cloudflare, com as contas em e-mail do projeto, não pessoal.
+5. Segundo fator obrigatório nos painéis da Neon, da Oracle e da Cloudflare. As contas ficam no e-mail pessoal do Luciano (decisão 7, 2026-09-17) — o segundo fator é o que sustenta esta compensação, já que não há e-mail dedicado.
 
 ### 11 · LGPD: dado armazenado fica no Brasil, e o resto é declarado
 

@@ -8,7 +8,7 @@ Lista numerada e rastreável. Formato e regras em [README](README.md).
 
 Cobre as 9 áreas do produto, mais os [não-funcionais](07-nao-funcionais.md) em arquivo próprio.
 
-> **Ressalva viva**: três parâmetros do dossiê estão marcados como "a calibrar" e vão mudar com o retorno do [checklist no jogo](../produto/03-partida/05-checklist.md) e do [piloto de OCR](06-piloto-ocr.md) — os 5 min de confirmação de convite, os 60 min de expiração por zero-report, e se o modelo de 5 personagens sobrevive ao que o jogo oferece. Os RFs que dependem deles serão revisados, não reescritos do zero.
+> **Ressalva viva**: quatro parâmetros do dossiê estão marcados como "a calibrar" e vão mudar com o retorno do [checklist no jogo](../produto/03-partida/05-checklist.md) e do [piloto de OCR](06-piloto-ocr.md) — os 5 min de confirmação de convite, os 60 min de expiração por zero-report, se o modelo de 5 personagens sobrevive ao que o jogo oferece, e o threshold de variância de Laplaciano do [pré-OCR](../produto/parametros.md). Os RFs que dependem deles serão revisados, não reescritos do zero.
 
 A numeração é estável — **RF nunca é renumerado nem reaproveitado**. Requisito derrubado fica marcado como revogado, com o motivo, porque saber o que foi descartado vale tanto quanto saber o que vale.
 

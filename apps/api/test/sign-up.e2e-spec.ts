@@ -48,7 +48,7 @@ describe('POST /accounts (sign-up)', () => {
   describe('RF-019 — open sign-up', () => {
     it('creates an account with sane defaults', async () => {
       const res = await request(app.getHttpServer())
-        .post('/accounts')
+        .post('/api/accounts')
         .send(validBody('new@test.local'))
 
       expect(res.status).toBe(202)
@@ -61,7 +61,7 @@ describe('POST /accounts (sign-up)', () => {
     })
 
     it('never stores the password or the security answer in the clear', async () => {
-      await request(app.getHttpServer()).post('/accounts').send(validBody('hashed@test.local'))
+      await request(app.getHttpServer()).post('/api/accounts').send(validBody('hashed@test.local'))
 
       const account = await orm.em.fork().findOneOrFail(Account, { email: 'hashed@test.local' })
       expect(account.passwordHash).not.toContain('a-long-enough-password')
@@ -71,7 +71,7 @@ describe('POST /accounts (sign-up)', () => {
 
     it('refuses a body carrying a field the form does not expose', async () => {
       const res = await request(app.getHttpServer())
-        .post('/accounts')
+        .post('/api/accounts')
         .send({ ...validBody('massassign@test.local'), reputation: 100, role: 'admin' })
 
       // Item 8: rejected, not silently stripped — otherwise nobody would ever
@@ -86,10 +86,10 @@ describe('POST /accounts (sign-up)', () => {
   describe('item 12 checklist — honeypot (#101)', () => {
     it('answers exactly like a real sign-up, but creates no account', async () => {
       const real = await request(app.getHttpServer())
-        .post('/accounts')
+        .post('/api/accounts')
         .send(validBody('honeypot-real@test.local'))
       const bot = await request(app.getHttpServer())
-        .post('/accounts')
+        .post('/api/accounts')
         .send({ ...validBody('honeypot-bot@test.local'), website: 'http://spam.example' })
 
       // RF-070's rule extends here: a detected bot must not be able to tell
@@ -103,7 +103,7 @@ describe('POST /accounts (sign-up)', () => {
 
     it('still creates the account when the field is sent empty — a real form always sends it', async () => {
       const res = await request(app.getHttpServer())
-        .post('/accounts')
+        .post('/api/accounts')
         .send({ ...validBody('honeypot-empty@test.local'), website: '' })
 
       expect(res.status).toBe(202)
@@ -119,7 +119,7 @@ describe('POST /accounts (sign-up)', () => {
       tooYoung.setUTCFullYear(tooYoung.getUTCFullYear() - 15)
 
       const res = await request(app.getHttpServer())
-        .post('/accounts')
+        .post('/api/accounts')
         .send({ ...validBody('young@test.local'), birthDate: tooYoung.toISOString().slice(0, 10) })
 
       expect(res.status).toBe(400)
@@ -130,10 +130,10 @@ describe('POST /accounts (sign-up)', () => {
   describe('RF-020 + RF-070 — one email, and the screen never says so', () => {
     it('normalises case, so the same address cannot be taken twice', async () => {
       const first = await request(app.getHttpServer())
-        .post('/accounts')
+        .post('/api/accounts')
         .send(validBody('Person@Test.Local'))
       const second = await request(app.getHttpServer())
-        .post('/accounts')
+        .post('/api/accounts')
         .send(validBody('person@test.local'))
 
       expect(first.status).toBe(202)
@@ -146,10 +146,10 @@ describe('POST /accounts (sign-up)', () => {
 
     it('answers identically for a free and for a taken address', async () => {
       const free = await request(app.getHttpServer())
-        .post('/accounts')
+        .post('/api/accounts')
         .send(validBody('free@test.local'))
       const taken = await request(app.getHttpServer())
-        .post('/accounts')
+        .post('/api/accounts')
         .send(validBody('free@test.local'))
 
       expect(taken.status).toBe(free.status)
@@ -162,11 +162,15 @@ describe('POST /accounts (sign-up)', () => {
       const hashService = app.get(HashService)
       const spy = jest.spyOn(hashService, 'hash')
 
-      await request(app.getHttpServer()).post('/accounts').send(validBody('spy-free@test.local'))
+      await request(app.getHttpServer())
+        .post('/api/accounts')
+        .send(validBody('spy-free@test.local'))
       const onFreeAddress = spy.mock.calls.length
 
       spy.mockClear()
-      await request(app.getHttpServer()).post('/accounts').send(validBody('spy-free@test.local'))
+      await request(app.getHttpServer())
+        .post('/api/accounts')
+        .send(validBody('spy-free@test.local'))
       const onTakenAddress = spy.mock.calls.length
 
       spy.mockRestore()

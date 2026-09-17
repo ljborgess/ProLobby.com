@@ -4,28 +4,14 @@ import type { NextConfig } from 'next'
  * Security headers — item 18 of the security checklist.
  *
  * apps/api deliberately leaves CSP off (see its app.module.ts): it serves
- * JSON, not HTML, and the page policy belongs here. This is that policy.
+ * JSON, not HTML, and the page policy belongs here.
  *
- * Baseline only: no cross-origin `connect-src` yet, because apps/web has no
- * page calling apps/api across origins. The login screen (issue #87) will
- * need one — add it there, calibrated against the real API origin, not
- * guessed here.
+ * The CSP itself is **not** in this list: it needs a nonce that changes on
+ * every response, and what `headers()` returns is static. It is set in
+ * `src/middleware.ts`, which also explains what the static version broke.
+ * Everything below is the same on every response, so it stays here.
  */
 const SECURITY_HEADERS = [
-  {
-    key: 'Content-Security-Policy',
-    value: [
-      "default-src 'self'",
-      "script-src 'self'",
-      "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data:",
-      "font-src 'self'",
-      "connect-src 'self'",
-      "frame-ancestors 'none'",
-      "base-uri 'self'",
-      "form-action 'self'",
-    ].join('; '),
-  },
   { key: 'X-Frame-Options', value: 'DENY' },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },

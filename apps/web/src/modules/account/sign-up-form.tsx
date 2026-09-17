@@ -95,7 +95,7 @@ export function SignUpForm() {
 
     setStatus('submitting')
     try {
-      const response = await fetch('/api/accounts', {
+      const response = await fetch('/bff/accounts', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
@@ -122,13 +122,13 @@ export function SignUpForm() {
   if (status === 'submitted') {
     return (
       <p role="status" className="text-base text-foreground">
-        Enviamos um e-mail com as instruções.
+        {content.checkYourEmail}
       </p>
     )
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="relative flex flex-col gap-4">
+    <form onSubmit={handleSubmit} method="post" noValidate className="relative flex flex-col gap-4">
       {/*
        * Honeypot — item 12 of the security checklist, issue #101. Hidden
        * with CSS, never removed from the markup: a person never sees or
@@ -170,9 +170,16 @@ export function SignUpForm() {
         hint={content.securityQuestionHint}
         error={errors.securityQuestion}
       />
+      {/*
+       * autoComplete off: the answer is a credential, not a profile field —
+       * it is one of the two factors that recover an account without email or
+       * Discord (RF-025). Letting a browser save and replay it puts the
+       * recovery path behind whatever protects that browser profile.
+       */}
       <TextField
         name="securityAnswer"
         type="text"
+        autoComplete="off"
         label={content.securityAnswerLabel}
         error={errors.securityAnswer}
       />

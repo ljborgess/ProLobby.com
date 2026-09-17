@@ -11,6 +11,7 @@ import { AccountService } from './account.service'
 import { CapacityService } from './capacity.service'
 import { EmailVerification } from './email-verification.entity'
 import { EmailVerificationService } from './email-verification.service'
+import { FailedSignIn } from './failed-sign-in.entity'
 import { PasswordReset } from './password-reset.entity'
 import { PasswordResetService } from './password-reset.service'
 import { PunishmentAppealService } from './punishment-appeal.service'
@@ -26,6 +27,7 @@ import { WaitingListService } from './waiting-list.service'
     MikroOrmModule.forFeature([
       Account,
       EmailVerification,
+      FailedSignIn,
       PasswordReset,
       TermsAcceptance,
       ModerationCase,

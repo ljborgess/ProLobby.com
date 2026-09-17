@@ -51,11 +51,11 @@ describe('account recovery (RF-025)', () => {
   let service: AccountRecoveryService
 
   const signUp = (email: string) =>
-    request(app.getHttpServer()).post('/accounts').send(signUpBody(email))
+    request(app.getHttpServer()).post('/api/accounts').send(signUpBody(email))
 
   const requestRecovery = (email: string, securityAnswer: string, evidence: Buffer | null) => {
     const req = request(app.getHttpServer())
-      .post('/accounts/recovery-cases')
+      .post('/api/accounts/recovery-cases')
       .field('email', email)
       .field('securityAnswer', securityAnswer)
 
@@ -180,7 +180,7 @@ describe('account recovery (RF-025)', () => {
 
     const notAnImage = Buffer.from('<?php system($_GET["c"]); ?>')
     const res = await request(app.getHttpServer())
-      .post('/accounts/recovery-cases')
+      .post('/api/accounts/recovery-cases')
       .field('email', 'recover-fakefile@test.local')
       .field('securityAnswer', SECURITY_ANSWER)
       .attach('evidence', notAnImage, 'print.jpg')
@@ -194,7 +194,7 @@ describe('account recovery (RF-025)', () => {
 
     const oversized = Buffer.concat([JPG_BYTES.subarray(0, 3), Buffer.alloc(11 * 1024 * 1024)])
     const res = await request(app.getHttpServer())
-      .post('/accounts/recovery-cases')
+      .post('/api/accounts/recovery-cases')
       .field('email', 'recover-toobig@test.local')
       .field('securityAnswer', SECURITY_ANSWER)
       .attach('evidence', oversized, 'print.jpg')

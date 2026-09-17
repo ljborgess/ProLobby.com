@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { TextField } from '@/common/ui/text-field'
 import { useAuthContent } from '@/hooks/use-auth-content'
 
-type Status = 'idle' | 'submitting' | 'error'
+type Status = 'idle' | 'submitting' | 'error' | 'networkError'
 
 /**
  * The sign-in form — RF-022, issue #87.
@@ -33,13 +33,25 @@ export function SignInForm() {
     setEmailError(undefined)
 
     setStatus('submitting')
-    const response = await fetch('/api/sessions', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ email, password: data.get('password') }),
-    })
+
+    let response: Response
+    try {
+      response = await fetch('/bff/sessions', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email, password: data.get('password') }),
+      })
+    } catch {
+      // Without this the button stays disabled in 'submitting' forever on a
+      // dropped connection, with nothing on screen explaining why.
+      setStatus('networkError')
+      return
+    }
 
     if (!response.ok) {
+      // 429 included: the message stays "wrong credentials" on purpose, so a
+      // rate-limited attempt does not confirm that the address exists
+      // (RF-070).
       setStatus('error')
       return
     }
@@ -51,7 +63,7 @@ export function SignInForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
+    <form onSubmit={handleSubmit} method="post" noValidate className="flex flex-col gap-4">
       <TextField
         name="email"
         type="email"
@@ -66,9 +78,9 @@ export function SignInForm() {
         label={content.passwordLabel}
       />
 
-      {status === 'error' && (
+      {(status === 'error' || status === 'networkError') && (
         <p role="alert" className="text-sm text-danger">
-          {content.invalidCredentials}
+          {status === 'networkError' ? content.networkError : content.invalidCredentials}
         </p>
       )}
 
