@@ -2,6 +2,7 @@ import { MikroOrmModule } from '@mikro-orm/nestjs'
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { APP_GUARD, APP_PIPE } from '@nestjs/core'
+import { ScheduleModule } from '@nestjs/schedule'
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
 import cookieParser from 'cookie-parser'
 import helmet from 'helmet'
@@ -20,6 +21,10 @@ import { BotIntegrationModule } from './modules/bot-integration/bot-integration.
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     MikroOrmModule.forRoot(mikroOrmConfig),
+    // Registered once, at the root — feature modules just declare @Cron()
+    // providers (AccountCleanupJob is the first) and this is what makes them
+    // fire. #106.
+    ScheduleModule.forRoot(),
     ThrottlerModule.forRoot({ ...throttlerConfig, skipIf: throttlingDisabled }),
     AuthModule,
     MailModule,
