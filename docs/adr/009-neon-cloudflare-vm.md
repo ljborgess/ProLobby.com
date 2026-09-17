@@ -76,7 +76,7 @@ navegador → Cloudflare (DNS, HTTPS, CDN, DDoS) → túnel → VM Oracle São P
 - **`.com.br` no Registro.br (~R$ 40/ano)**, com DNS na Cloudflare.
 - **Ainda não comprado** (2026-09-17) — segue no primeiro deploy interno, logo depois de a Fase 2.1 fechar.
 - **Titularidade decidida em 2026-09-17** ([#130](https://github.com/ljborgess/ProLobby.com/issues/130)): domínio e contas de infra (Cloudflare, Neon, Oracle, Resend) ficam no CPF do **Luciano**, com acordo escrito entre os 4 — transferido pro CNPJ quando a ME existir. Fecha a pendência de titularidade nesse ponto.
-- **E-mail do projeto**: `prolobbysuporte@gmail.com`, dono de todas as contas acima — nunca e-mail pessoal de um sócio.
+- **E-mail do projeto**: ainda em aberto (2026-09-17) — `prolobbysuporte@gmail.com` foi provisório, cotado pra troca antes das contas abaixo saírem do papel. Decidido o definitivo, é ele quem vira dono de todas as contas acima — nunca e-mail pessoal de um sócio.
 
 ### 8 · Cloudflare configurada pra ver o mínimo
 
