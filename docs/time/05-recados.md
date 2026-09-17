@@ -6,6 +6,17 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 
 ---
 
+## 2026-09-17 · Para todos
+
+### `main` virou o branch padrão
+
+- **Ao abrir PR pela interface do GitHub, a base vem em `main`. Troque pra `dev` antes de criar.** Pela linha de comando: `gh pr create --base dev`.
+- **`Closes #N` não fecha a issue quando o PR entra em `dev`.** Quem mergeia fecha à mão, com comentário apontando o PR.
+- **Branch de PR é apagado sozinho no merge.** Pra continuar trabalhando, crie branch nova a partir de `dev` atualizado.
+- Só existem `dev` e `main`. Branches antigos já mergeados foram apagados.
+
+---
+
 ## 2026-09-16 · Para todos
 
 ### Trabalho em andamento precisa aparecer

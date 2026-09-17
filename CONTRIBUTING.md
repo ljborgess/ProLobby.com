@@ -54,7 +54,7 @@ Dois branches, com papéis diferentes e nenhuma ambiguidade:
 - **Nenhum PR aponta pra `main`.** Trabalho entra em `dev`, roda em `dev`, é revisado em `dev`.
 - **`dev` → `main` é promoção, não merge de rotina.** Acontece quando o Luciano olha o que está em `dev` e **dá o veredito** de que aquilo pode ir pro ar. Não é automático, não é por PR aprovado, não é porque o CI ficou verde.
 - **Ninguém promove por conta própria** — nem o agente, nem o resto do time.
-- `dev` é o **branch padrão do repositório** (desde 2026-09-15). É onde o trabalho entra, então é onde o `Closes #N` precisa funcionar; `main` continua sendo o destino de produção, e ser padrão no GitHub não tem nada a ver com isso.
+- **`main` é o branch padrão do repositório** (desde 2026-09-17; entre 15 e 17/09 foi `dev`). Consequência prática: **ao abrir PR pela interface do GitHub, a base vem pré-selecionada em `main` — troque pra `dev` antes de criar.** Pela linha de comando, sempre `gh pr create --base dev`.
 
 ### Trabalho em andamento precisa ser visível (decidido em 2026-09-16)
 
@@ -69,9 +69,9 @@ Dois sinais, os dois baratos:
 
 ### Fechar issue é passo manual, não automático
 
-O `Closes #N` no PR **não fecha nada neste repo**: o GitHub só fecha issue automaticamente quando o PR entra no **branch padrão**. Por isso o padrão do repositório é `dev` — que é onde o trabalho entra. `main` continua recebendo merge só quando o time decidir promover.
+O `Closes #N` no PR **não fecha a issue quando o PR entra em `dev`**: o GitHub só fecha automaticamente quando o merge cai no **branch padrão**, que é `main`. Todo PR entra em `dev`, então **quem mergeia fecha a issue à mão**, com um comentário apontando o PR que entregou. O `Closes #N` continua no PR: ele fecha a issue sozinho no dia em que `dev` for promovido pra `main`, e até lá serve de rastro.
 
-Mesmo com o padrão certo, confira depois do merge: issue entregue e aberta faz o quadro mentir, e foi o que aconteceu com sete issues até 2026-09-15.
+Issue entregue e aberta faz o quadro mentir — foi o que aconteceu com sete issues até 2026-09-15.
 
 ### O PR fica aberto até as duas revisões — sem exceção
 
