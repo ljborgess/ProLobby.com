@@ -128,7 +128,7 @@ export function SignUpForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="relative flex flex-col gap-4">
+    <form onSubmit={handleSubmit} method="post" noValidate className="relative flex flex-col gap-4">
       {/*
        * Honeypot — item 12 of the security checklist, issue #101. Hidden
        * with CSS, never removed from the markup: a person never sees or
