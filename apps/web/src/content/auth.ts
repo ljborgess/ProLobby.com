@@ -1,0 +1,115 @@
+import type { Locale } from './locale'
+
+/**
+ * Text for the sign-up and sign-in screens — issue #87. One object per
+ * locale, so a missing key is a TypeScript error, not a silent blank in
+ * production.
+ */
+export interface AuthContent {
+  signUp: {
+    title: string
+    subtitle: string
+    emailLabel: string
+    passwordLabel: string
+    passwordHint: string
+    birthDateLabel: string
+    securityQuestionLabel: string
+    securityQuestionHint: string
+    securityAnswerLabel: string
+    acceptTerms: string
+    submit: string
+    submitting: string
+    switchToSignIn: string
+    genericError: string
+    fieldRequired: string
+    emailInvalid: string
+    passwordTooShort: string
+    ageTooYoung: string
+  }
+  signIn: {
+    title: string
+    subtitle: string
+    emailLabel: string
+    passwordLabel: string
+    submit: string
+    submitting: string
+    switchToSignUp: string
+    invalidCredentials: string
+  }
+  languageSwitcher: {
+    label: string
+  }
+}
+
+export const AUTH_CONTENT: Record<Locale, AuthContent> = {
+  pt: {
+    signUp: {
+      title: 'Criar conta',
+      subtitle: 'Verificação por print, fila por posição, partida de verdade.',
+      emailLabel: 'E-mail',
+      passwordLabel: 'Senha',
+      passwordHint: 'Mínimo de 12 caracteres.',
+      birthDateLabel: 'Data de nascimento',
+      securityQuestionLabel: 'Pergunta de segurança',
+      securityQuestionHint: 'Usada se você perder o e-mail e o Discord ao mesmo tempo.',
+      securityAnswerLabel: 'Resposta',
+      acceptTerms: 'Li e aceito os Termos de Uso.',
+      submit: 'Criar conta',
+      submitting: 'Criando conta…',
+      switchToSignIn: 'Já tem conta? Entrar',
+      genericError: 'Não deu pra criar a conta agora. Tenta de novo em instantes.',
+      fieldRequired: 'Preenche este campo.',
+      emailInvalid: 'Esse e-mail não parece válido.',
+      passwordTooShort: 'Precisa de pelo menos 12 caracteres.',
+      ageTooYoung: 'É preciso ter 16 anos ou mais.',
+    },
+    signIn: {
+      title: 'Entrar',
+      subtitle: 'Continue de onde parou.',
+      emailLabel: 'E-mail',
+      passwordLabel: 'Senha',
+      submit: 'Entrar',
+      submitting: 'Entrando…',
+      switchToSignUp: 'Não tem conta? Criar agora',
+      invalidCredentials: 'E-mail ou senha incorretos.',
+    },
+    languageSwitcher: {
+      label: 'Idioma',
+    },
+  },
+  es: {
+    signUp: {
+      title: 'Crear cuenta',
+      subtitle: 'Verificación por captura, cola por posición, partido de verdad.',
+      emailLabel: 'Correo electrónico',
+      passwordLabel: 'Contraseña',
+      passwordHint: 'Mínimo 12 caracteres.',
+      birthDateLabel: 'Fecha de nacimiento',
+      securityQuestionLabel: 'Pregunta de seguridad',
+      securityQuestionHint: 'Se usa si pierdes el correo y Discord al mismo tiempo.',
+      securityAnswerLabel: 'Respuesta',
+      acceptTerms: 'Leí y acepto los Términos de Uso.',
+      submit: 'Crear cuenta',
+      submitting: 'Creando cuenta…',
+      switchToSignIn: '¿Ya tienes cuenta? Entrar',
+      genericError: 'No se pudo crear la cuenta ahora. Intenta de nuevo en un momento.',
+      fieldRequired: 'Completa este campo.',
+      emailInvalid: 'Ese correo no parece válido.',
+      passwordTooShort: 'Necesita al menos 12 caracteres.',
+      ageTooYoung: 'Debes tener 16 años o más.',
+    },
+    signIn: {
+      title: 'Entrar',
+      subtitle: 'Continúa donde lo dejaste.',
+      emailLabel: 'Correo electrónico',
+      passwordLabel: 'Contraseña',
+      submit: 'Entrar',
+      submitting: 'Entrando…',
+      switchToSignUp: '¿No tienes cuenta? Crear ahora',
+      invalidCredentials: 'Correo o contraseña incorrectos.',
+    },
+    languageSwitcher: {
+      label: 'Idioma',
+    },
+  },
+}
