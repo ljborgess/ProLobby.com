@@ -50,6 +50,13 @@ class SecurityProbeController {
   loginBucket() {
     return { ok: true }
   }
+
+  @Public()
+  @Post('login-bucket-cf')
+  @Throttle({ login: { limit: 5, ttl: 60_000 } })
+  loginBucketCf() {
+    return { ok: true }
+  }
 }
 
 describe('transversal security', () => {
@@ -145,6 +152,46 @@ describe('transversal security', () => {
       // out anyone who mistypes a password once — and the test would stay green.
       expect(statuses.slice(0, 5).every((status) => status < 400)).toBe(true)
       expect(statuses.slice(5).every((status) => status === 429)).toBe(true)
+    })
+  })
+
+  describe('rate limiting behind Cloudflare (#99)', () => {
+    const spend = (cfConnectingIp?: string) => {
+      const server = app.getHttpServer()
+      const req = request(server).post('/security-probe/login-bucket-cf')
+      return cfConnectingIp ? req.set('cf-connecting-ip', cfConnectingIp) : req.send({})
+    }
+
+    it('tracks distinct CF-Connecting-IP values as distinct clients in production', async () => {
+      const original = process.env.NODE_ENV
+      process.env.NODE_ENV = 'production'
+
+      try {
+        const first: number[] = []
+        for (let attempt = 0; attempt < 5; attempt += 1) {
+          first.push((await spend('203.0.113.10')).status)
+        }
+        // A different real client, same in-memory storage: spending its own
+        // bucket must not be affected by the one above.
+        const second = await spend('203.0.113.20')
+
+        expect(first.every((status) => status < 400)).toBe(true)
+        expect(second.status).toBe(201)
+      } finally {
+        process.env.NODE_ENV = original
+      }
+    })
+
+    it('falls back to req.ip in production when the header is absent, without breaking', async () => {
+      const original = process.env.NODE_ENV
+      process.env.NODE_ENV = 'production'
+
+      try {
+        const res = await spend(undefined)
+        expect(res.status).toBe(201)
+      } finally {
+        process.env.NODE_ENV = original
+      }
     })
   })
 

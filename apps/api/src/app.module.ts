@@ -3,13 +3,14 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { APP_GUARD, APP_PIPE } from '@nestjs/core'
 import { ScheduleModule } from '@nestjs/schedule'
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
+import { ThrottlerModule } from '@nestjs/throttler'
 import cookieParser from 'cookie-parser'
 import helmet from 'helmet'
 
 import { AuthModule } from './common/auth/auth.module'
 import { SessionGuard } from './common/auth/session.guard'
 import mikroOrmConfig from './common/database/mikro-orm.config'
+import { CfConnectingIpThrottlerGuard } from './common/security/cf-connecting-ip-throttler.guard'
 import { HealthController } from './common/health/health.controller'
 import { MailModule } from './common/mail/mail.module'
 import { globalValidationPipe } from './common/security/security.config'
@@ -35,7 +36,7 @@ import { BotIntegrationModule } from './modules/bot-integration/bot-integration.
   providers: [
     // Order matters: the throttler runs first, so an unauthenticated flood is
     // refused before it costs a JWT verification and a database read.
-    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_GUARD, useClass: CfConnectingIpThrottlerGuard },
     // Closed by default (ADR-007): a route with no decorator needs a session
     // and an active account. Forgetting one locks a route down, which gets
     // noticed — rather than opening one, which produces no error at all.
