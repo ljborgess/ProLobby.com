@@ -77,7 +77,9 @@ navegador → Cloudflare (DNS, HTTPS, CDN, DDoS) → túnel → VM Oracle São P
 - **`.com.br` no Registro.br (~R$ 40/ano)**, com DNS na Cloudflare.
 - **Ainda não comprado** (2026-09-17) — segue no primeiro deploy interno, logo depois de a Fase 2.1 fechar.
 - **Titularidade decidida em 2026-09-17** ([#130](https://github.com/ljborgess/ProLobby.com/issues/130)): domínio e contas de infra (Cloudflare, Neon, Oracle, Resend) ficam no CPF do **Luciano**, com acordo escrito entre os 4 — transferido pro CNPJ quando a ME existir. Fecha a pendência de titularidade nesse ponto.
-- **E-mail do projeto**: ainda em aberto (2026-09-17) — `prolobbysuporte@gmail.com` foi provisório, cotado pra troca antes das contas abaixo saírem do papel. Decidido o definitivo, é ele quem vira dono de todas as contas acima — nunca e-mail pessoal de um sócio.
+- **E-mail do projeto**: decidido em 2026-09-17 usar o pessoal do Luciano, mesmo caminho já em uso na Neon — não cria e-mail dedicado por ora. Mesma pendência de continuidade que a Neon: migra pra um e-mail do projeto se e quando decidirem criar um.
+  - **Isto reverte o que este ADR dizia** ("nunca e-mail pessoal de um sócio") e **contraria o padrão do domínio Discord**, onde o servidor, a aplicação e o token ficam numa conta separada não-pessoal com 2FA — decisão já executada em 2026-09-11 ([runbook](../discord/06-runbook-servidor.md)). A assimetria é consciente e vale registrar o motivo: no Discord a credencial **é** o ativo e não há como recuperá-la sem quem tem a conta, enquanto conta de infra tem recuperação por titularidade (CPF, cobrança, suporte do fornecedor) e a titularidade já está fechada no mesmo CPF. O custo de um e-mail dedicado agora é gerir mais uma credencial com 2FA que ninguém abre.
+  - **Gatilho de revisão**: no **primeiro gasto recorrente** ou quando a ME existir, o e-mail dedicado entra junto da transferência pro CNPJ. Antes disso, o risco aceito é conhecido — perder acesso ao e-mail pessoal do Luciano trava recuperação de Neon, Cloudflare, Oracle e Resend ao mesmo tempo.
 
 ### 8 · Cloudflare configurada pra ver o mínimo
 

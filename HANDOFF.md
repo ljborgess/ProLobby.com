@@ -6,9 +6,10 @@ Pra quem (Claude Code, outra sessão/máquina) for continuar este projeto a part
 
 Ver [`README.md`](README.md). Origem: ideia nasceu numa sessão sobre o projeto `escalacao-brasileirao` (Django, escalação de Brasileirão via API), mas ProLobby é **projeto novo e independente** — só a identidade visual (design system) foi herdada de lá, nada de backend/dados.
 
-## Estado atual (2026-09-14)
+## Estado atual (2026-09-18)
 
-- **Fase**: design de produto e requisitos fechados; **engenharia em andamento**. **Fase 1** (CI, processo de PR, servidor Discord) concluída em 2026-09-11. **Fase 2.1** (núcleo de conta): todo o código do caminho crítico em `dev` — schema base, segurança da API, cadastro, login e sessão ([ADR-007](docs/adr/007-sessao-jwt.md)), verificação de e-mail ([ADR-008](docs/adr/008-provedor-de-email.md)), Termos, redefinição de senha, recuperação por dois fatores, status de punição e fila de espera. **Faltam 3 issues, todas do paralelo**: #106 (scheduler), #87 (tela), #101 (bot protection).
+- **Fase**: design de produto e requisitos fechados; **engenharia em andamento**. **Fase 1** (CI, processo de PR, servidor Discord) concluída em 2026-09-11. **Fase 2.1** (núcleo de conta) **concluída em 2026-09-17**: schema base, segurança da API, cadastro, login e sessão ([ADR-007](docs/adr/007-sessao-jwt.md)), verificação de e-mail ([ADR-008](docs/adr/008-provedor-de-email.md)), Termos, redefinição de senha, recuperação por dois fatores, status de punição, fila de espera, scheduler de conta não verificada (#106), primeira tela real com design tokens e i18n pt/es (#87), bot protection no cadastro (#101) e rate limit por `CF-Connecting-IP` (#99).
+- **Fase 2.3 (vínculo Discord) aberta em 2026-09-18**, antes da 2.2, porque não depende do piloto de OCR: a RF-055 concede o cargo Verificado "em qualquer ordem de chegada", então o vínculo anda sem personagem verificado. Duas issues nasceram — [#149](https://github.com/ljborgess/ProLobby.com/issues/149) (OAuth2 + recusa de identidade banida) e [#150](https://github.com/ljborgess/ProLobby.com/issues/150) (RF-060). **RF-055 e RF-056 não têm issue**: esperam a 2.2, e a RF-055 espera também o #63. A 2.2 segue bloqueada pelo piloto de OCR.
 - **Time de código: três devs ativos desde 2026-09-14.** Luciano no caminho crítico (Claude Code), Rafael no paralelo de bot e infra (Cursor), Felipe no paralelo de produto visível (Claude Code). A ordem de cada um está no [grafo da Fase 2.1](CONTRIBUTING.md#grafo-vivo--fase-21-núcleo-de-conta-trabalho-aberto-em-2026-09-14) e no #64.
 - **Review**: PR do Rafael e do Felipe precisa da aprovação do Luciano. PR do Luciano é revisado por ele mesmo, com code review e security review do agente publicados no PR ([CONTRIBUTING](CONTRIBUTING.md#quem-revisa-o-pr-do-luciano-decidido-em-2026-09-14)).
 - **Quem entra pra codar** começa por [`docs/time/`](docs/time/README.md): primeiro dia, fluxo de uma issue, regras que já pegaram bug, Claude Code e Cursor.
@@ -32,13 +33,13 @@ O repo continua **privado, no plano Free**, e a regra de "PR de terceiro precisa
 
 - **[#4] Webhook do bot sem autenticação** — `apps/bot/src/webhook/server.ts` aceita qualquer requisição em `POST /events`. Inofensivo hoje (nenhum handler faz nada), perigoso no dia do primeiro handler: o endpoint comanda kick/ban ([RF-048](docs/requisitos/05-funcionais.md#rf-048--kick-e-ban-só-por-comando-de-admin-ou-moderador)) e canal de lobby. Itens 6 e 7 do [checklist de segurança](docs/requisitos/08-seguranca-checklist.md). Inclui tipar o `platformEventSchema`, hoje `payload: z.record(z.unknown())`.
 - **[#5] CI não sobe Postgres** — `.github/workflows/ci.yml` sem `services:`. Quebra no PR da #1, que é o que fundamenta todo o resto. Mesma issue cobre a falta de template de PR/issue, que é o que faria o checklist de segurança ser olhado na hora certa.
+- **[#149] `account.discord_id` guarda o Discord ID em texto puro** — contra a RNF-009 e o item 5 do checklist. O modelo de dados mandava hash + cifra desde 2026-09-11 e o schema da API nunca acompanhou. **Ainda em `dev`**; o conserto está no PR #151, em revisão. **Registrado porque a classe do erro se repete**: decisão fechada no dossiê que não chega ao código não falha teste nenhum, e esta só apareceu porque a fatia que ia escrever a coluna foi lida junto com o checklist de segurança. O PR traz o teste de regressão que faltava — afirma que a coluna legível não existe.
 
 ### Aberto no código (ainda sem issue — entram junto da fatia que os usa)
 
-- **`apps/api` não tem `class-validator`/`class-transformer` nem `ValidationPipe` global** com `whitelist`/`forbidNonWhitelisted`. Itens 8 e 14 do checklist ficam sem base. Está escrito no corpo da issue #2, que é onde a peça nasce.
-- **`@nestjs/throttler` instalado mas não plugado** no `AppModule` (item 11), e nada de cookie `HttpOnly`/`Secure`/`SameSite` nem CORS (item 9). Também na #2.
-- **`apps/web` é boilerplate puro do create-next-app**: fonte Geist onde o design system pede `Sora`/`Inter`, paleta branca onde o design system é escuro (`#070b14`, ver [visão](docs/produto/01-visao/01-visao.md)), `lang="en"` no `layout.tsx` e `<title>Create Next App</title>`. **Decidido em 2026-09-08**: o front segue o artefato de preview em React, e o desenho de view fica pra depois — mas **tokens do design system e i18n pt/es ([RNF-016](docs/requisitos/07-nao-funcionais.md#rnf-016--interface-e-mensagens-em-português-e-espanhol)) são baratos agora e caros como retrofit**, então entram junto da primeira tela real.
-- **Nenhuma das 13 telas** do inventário ([transversais](docs/requisitos/01-transversais.md)) existe. Esperado nesta fase, registrado pra não parecer esquecimento.
+> Os quatro itens que estavam aqui fecharam na Fase 2.1 (2026-09-17): `ValidationPipe` global com `whitelist`/`forbidNonWhitelisted`, `@nestjs/throttler` plugado no `AppModule`, cookie de sessão e CORS, e o `apps/web` saindo do boilerplate com tokens do design system e i18n pt/es (#87). Mantidos abaixo só os que continuam abertos.
+
+- **Do inventário de 13 telas** ([transversais](docs/requisitos/01-transversais.md)), existem cadastro e login. As outras, não — esperado nesta fase, registrado pra não parecer esquecimento. O visual das que existem é **base provisória** e será redesenhado ([decidido em 2026-09-17](docs/produto/01-visao/01-visao.md)).
 
 ### Corrigido nesta rodada — não reabrir
 
@@ -53,12 +54,12 @@ O repo continua **privado, no plano Free**, e a regra de "PR de terceiro precisa
 
 Sequência canônica em **[#64 — PRD Mestre](https://github.com/ljborgess/ProLobby.com/issues/64)**. A Fase 1 inteira (#66–#70) já fechou. Agora:
 
-1. **Fechar a Fase 2.1** pelo grafo: Luciano #90 → #91 → #104; Rafael #81 → #93 → #94/#95; Felipe #106 → #87 → #101.
+1. ~~**Fechar a Fase 2.1** pelo grafo: Luciano #90 → #91 → #104; Rafael #81 → #93 → #94/#95; Felipe #106 → #87 → #101.~~ **Concluída em 2026-09-17.** O trabalho de código corrente é a **Fase 2.3**: #149 → #150.
 2. **[#50](https://github.com/ljborgess/ProLobby.com/issues/50) — piloto de OCR**, emendado pelo Rafael no fim do webhook. Precisa sair **antes da Fase 2.2**, porque escolhe o motor de OCR.
-3. **Primeiro deploy interno** ([ADR-009](docs/adr/009-neon-cloudflare-vm.md)), pelo Rafael depois do piloto, em paralelo com o começo da 2.2. Fechado pelo Cloudflare Access (só os 4 abrem), com o teste de restauração do backup. Antes dele: comprar o `.com.br`, fechar o acordo escrito de titularidade entre os 4 e criar as contas da Neon, da Oracle e da Cloudflare com e-mail do projeto e segundo fator. As issues nascem quando a 2.2 abrir.
-4. **[#63](https://github.com/ljborgess/ProLobby.com/issues/63) — checklist no jogo**, antes de a **Fase 3** começar. São minutos de jogo; a partir da 3, o retrabalho fica caro. **Rodar em FC 27** (lançamento 25/09/2026, acesso antecipado 18/09), assim como a coleta de prints do piloto — nada medido em FC 26 vale pro beta.
+3. **Primeiro deploy interno** ([ADR-009](docs/adr/009-neon-cloudflare-vm.md)), pelo Rafael depois do piloto, em paralelo com o começo da 2.2. Fechado pelo Cloudflare Access (só os 4 abrem), com o teste de restauração do backup. Pré-requisitos (#130), estado em 2026-09-17: **titularidade decidida** (CPF do Luciano) e contas de **Neon, Cloudflare e Oracle criadas com segundo fator** no e-mail pessoal do Luciano — decidido não criar e-mail dedicado por ora. **Falta o `.com.br`**, cujo nome ainda não foi escolhido, e o Resend depende dele pra SPF/DKIM.
+4. **[#63](https://github.com/ljborgess/ProLobby.com/issues/63) — checklist no jogo**, antes de a **Fase 3** começar. São minutos de jogo; a partir da 3, o retrabalho fica caro. **Rodar em FC 27** (lançamento 25/09/2026, acesso antecipado 18/09), assim como a coleta de prints do piloto — nada medido em FC 26 vale pro beta. Antes de entrar no jogo, ler o [levantamento por fonte pública](docs/research/fontes-checklist-jogo-2026-09-18.md): diz o que fonte da EA já sustenta, o que continua sem fonte, e uma ordem por incerteza. **Não responde nenhum dos 8 testes.**
    - **[#130](https://github.com/ljborgess/ProLobby.com/issues/130) — domínio e contas de infra no nome do projeto**, com os 4 sócios. Trava o e-mail do cadastro (Resend) e o primeiro deploy (#121).
-5. Fechada a 2.1, abrir a **2.2** (Rafael + Felipe) e a **2.3** (Luciano) em paralelo, pelo caminho PRD → issues → sub-issues.
+5. ~~Fechada a 2.1, abrir a **2.2** (Rafael + Felipe) e a **2.3** (Luciano) em paralelo~~ — a **2.3 abriu em 2026-09-18** (#149, #150). A **2.2** não pode abrir antes do piloto, porque é ele que escolhe o motor de OCR.
 6. **João (`jgbriel-io`) é sócio com voto, sem papel operacional por ora** (Luciano, 2026-09-16): fora do código e da moderação, por outras prioridades. Continua nas decisões "dos 4 sócios" — titularidade, contas e domínio, passar do free tier. Convite pendente no repo; o papel dele no código segue como decisão pra frente (2026-09-14). Não entra na divisão nem na estimativa até ser decidido. Se aceitar o convite, passam a ser 4 pessoas com `push`, o que dispara o gatilho de revisão de branch protection do [ADR-006](docs/adr/006-backend-separado-e-tooling.md).
 7. **Recrutamento dos ~24 convidados do beta** começa agora, em paralelo. É a única etapa que não depende de código ([Lançamento](docs/negocio/04-lancamento.md)).
 
@@ -130,7 +131,8 @@ Tabela completa em `produto/05-produto/03-backlog.md`. Nenhuma é de requisito:
 |---|---|
 | Os dois bloqueadores acima | execução |
 | Stack técnica | **decidida em 2026-09-08**, antes dos bloqueadores (ver [ADR-005](docs/adr/005-stack-tecnica.md)) — risco aceito: RF-051/052/055 podem exigir retrabalho quando o checklist rodar |
-| Titular das contas e rateio entre os 4 | acordo entre sócios, antes do 1º gasto recorrente |
+| Rateio entre os 4 | acordo entre sócios, antes do 1º gasto recorrente — a **titularidade** fechou em 2026-09-17 (CPF do Luciano, [ADR-009](docs/adr/009-neon-cloudflare-vm.md)) |
+| Nome do domínio `.com.br` | decisão aberta — trava a compra, o Resend e o 1º deploy (#130, #121) |
 | Consulta jurídica | três assuntos numa consulta: redação de apoio/CDC, LGPD 16-17, entidade legal |
 | Desenho de torneio/liga | adiado por decisão: validar o núcleo primeiro |
 
