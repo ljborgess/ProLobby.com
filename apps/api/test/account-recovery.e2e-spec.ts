@@ -16,6 +16,7 @@ import {
 import {
   ACCOUNT_RECOVERY_MAX_PER_DAY,
   AccountRecoveryService,
+  EVIDENCE_RETENTION_DAYS,
 } from '../src/modules/account/account-recovery.service'
 import { Account } from '../src/modules/account/account.entity'
 import { AccountState } from '../src/modules/account/account.enums'
@@ -278,5 +279,59 @@ describe('account recovery (RF-025)', () => {
 
     const cases = await casesFor(email)
     expect(cases).toHaveLength(ACCOUNT_RECOVERY_MAX_PER_DAY)
+  })
+
+  /**
+   * The 90-day retention of the LGPD policy. ADR-009 puts the real rule on the
+   * storage bucket, which does not exist until phase 2.2 — and the first
+   * internal deploy (#121) comes earlier, so without this sweep a real
+   * screenshot would sit on the VM with no deadline at all.
+   */
+  describe('evidence retention', () => {
+    const olderThanRetention = () =>
+      new Date(Date.now() - (EVIDENCE_RETENTION_DAYS + 1) * 24 * 60 * 60 * 1000)
+
+    it('deletes the file and clears the path once the retention is past', async () => {
+      const email = 'recover-retention@test.local'
+      await signUp(email)
+      await service.open(email, SECURITY_ANSWER, JPG_BYTES, 'jpg')
+
+      const opened = await waitForCase(email)
+      const path = opened.evidencePath
+      expect(path).toBeDefined()
+      await expect(readFile(path as string)).resolves.toBeDefined()
+
+      // Age the case: retention counts from when it was opened.
+      const em = orm.em.fork()
+      const stored = await em.findOneOrFail(ModerationCase, { id: opened.id })
+      stored.openedAt = olderThanRetention()
+      await em.flush()
+
+      await expect(service.deleteExpiredEvidence()).resolves.toBe(1)
+
+      await expect(readFile(path as string)).rejects.toThrow()
+      const after = await orm.em.fork().findOneOrFail(ModerationCase, { id: opened.id })
+      // Cleared together with the file: a path pointing at nothing reads as
+      // lost storage, not as deletion on schedule.
+      expect(after.evidencePath).toBeNull()
+    })
+
+    it('leaves a screenshot still inside the retention window alone', async () => {
+      const email = 'recover-retention-fresh@test.local'
+      await signUp(email)
+      await service.open(email, SECURITY_ANSWER, JPG_BYTES, 'jpg')
+
+      const opened = await waitForCase(email)
+
+      await service.deleteExpiredEvidence()
+
+      const after = await orm.em.fork().findOneOrFail(ModerationCase, { id: opened.id })
+      expect(after.evidencePath).toBe(opened.evidencePath)
+      await expect(readFile(opened.evidencePath as string)).resolves.toBeDefined()
+    })
+
+    it('counts nothing and touches nothing when there is no expired evidence', async () => {
+      await expect(service.deleteExpiredEvidence(new Date(0))).resolves.toBe(0)
+    })
   })
 })

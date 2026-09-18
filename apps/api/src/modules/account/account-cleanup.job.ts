@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
 
+import { AccountRecoveryService } from './account-recovery.service'
 import { EmailVerificationService } from './email-verification.service'
 
 /**
@@ -26,7 +27,10 @@ import { EmailVerificationService } from './email-verification.service'
 export class AccountCleanupJob {
   private readonly logger = new Logger(AccountCleanupJob.name)
 
-  constructor(private readonly emailVerificationService: EmailVerificationService) {}
+  constructor(
+    private readonly emailVerificationService: EmailVerificationService,
+    private readonly accountRecoveryService: AccountRecoveryService,
+  ) {}
 
   /**
    * Runs once a day, in UTC (RNF-017) — the exact hour does not matter, only
@@ -48,6 +52,32 @@ export class AccountCleanupJob {
     } catch (error) {
       this.logger.error(
         'failed to delete expired unverified accounts',
+        error instanceof Error ? error.stack : undefined,
+      )
+    }
+  }
+
+  /**
+   * The 90-day retention of an attached screenshot (LGPD policy).
+   *
+   * **Provisional**, and a separate method rather than a second step of the one
+   * above: ADR-009 puts this rule on the storage bucket, which deletes without
+   * any job running. It lives here only until phase 2.2 wires that bucket up,
+   * because the first internal deploy (#121) comes earlier and would otherwise
+   * keep real screenshots with no deadline at all. When the bucket lands, this
+   * method is deleted, not migrated.
+   *
+   * Its own try/catch and its own schedule entry, so a failure here neither
+   * hides nor blocks the account deletion above.
+   */
+  @Cron(CronExpression.EVERY_DAY_AT_1AM, { timeZone: 'UTC' })
+  async deleteExpiredEvidence(): Promise<void> {
+    try {
+      const deleted = await this.accountRecoveryService.deleteExpiredEvidence()
+      this.logger.log(`deleted ${deleted} screenshot(s) past the 90-day retention`)
+    } catch (error) {
+      this.logger.error(
+        'failed to delete expired evidence screenshots',
         error instanceof Error ? error.stack : undefined,
       )
     }

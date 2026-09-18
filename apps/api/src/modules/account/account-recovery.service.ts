@@ -39,6 +39,24 @@ export const ACCOUNT_RECOVERY_MAX_PER_DAY = 3
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000
 
+/**
+ * Retention for an attached screenshot — 90 days (LGPD policy, RNF-008).
+ *
+ * The decided mechanism is **not** this: ADR-009 puts the rule on the Oracle
+ * Object Storage bucket itself, precisely so deletion does not depend on an
+ * application job running. This exists because the bucket does not, and the
+ * first internal deploy (#121) lands *before* the upload pipeline of phase 2.2
+ * — so there is a window where a real recovery screenshot sits on the VM under
+ * `uploads/` with nothing to ever delete it. A promise of 90 days that only
+ * holds after phase 2.2 is not a promise.
+ *
+ * **Provisional.** When the bucket takes over, this method and its call in
+ * AccountCleanupJob go away with the local directory.
+ */
+export const EVIDENCE_RETENTION_DAYS = 90
+
+const EVIDENCE_RETENTION_MS = EVIDENCE_RETENTION_DAYS * ONE_DAY_MS
+
 @Injectable()
 export class AccountRecoveryService {
   private readonly logger = new Logger(AccountRecoveryService.name)
@@ -160,6 +178,61 @@ export class AccountRecoveryService {
       }
       throw error
     }
+  }
+
+  /**
+   * Deletes screenshots past the 90-day retention — see
+   * EVIDENCE_RETENTION_DAYS for why an application job does this at all.
+   *
+   * The path is cleared in the same pass, so a resolved case never points at a
+   * file that is gone: a moderator opening a dead link cannot tell "deleted on
+   * schedule" from "storage lost it", and the second reading is the one that
+   * costs an afternoon.
+   *
+   * The file goes first. If the flush fails afterwards the row still names a
+   * deleted file, which the next run cleans up; doing it the other way round
+   * would drop the only pointer to a file that then stays on disk forever —
+   * exactly the leak this method exists to close.
+   *
+   * @returns how many screenshots were deleted.
+   */
+  async deleteExpiredEvidence(now: Date = new Date()): Promise<number> {
+    const em = this.em.fork()
+    const expired = await em.find(ModerationCase, {
+      evidencePath: { $ne: null },
+      openedAt: { $lt: new Date(now.getTime() - EVIDENCE_RETENTION_MS) },
+    })
+
+    let deleted = 0
+
+    for (const moderationCase of expired) {
+      const path = moderationCase.evidencePath
+      if (!path) {
+        continue
+      }
+
+      try {
+        // `force`: a file already gone is the desired end state, not an error.
+        await rm(path, { force: true })
+      } catch (error) {
+        // One unreadable path must not stop the rest of the sweep — the whole
+        // point is that retention does not depend on everything being perfect.
+        this.logger.error(
+          `failed to delete expired evidence for case ${moderationCase.id}`,
+          error instanceof Error ? error.stack : undefined,
+        )
+        continue
+      }
+
+      moderationCase.evidencePath = undefined
+      deleted += 1
+    }
+
+    if (deleted > 0) {
+      await em.flush()
+    }
+
+    return deleted
   }
 
   /** Encrypted at rest — item 5 of the security checklist / RNF-009. */
