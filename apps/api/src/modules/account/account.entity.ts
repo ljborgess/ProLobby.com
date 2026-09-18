@@ -63,8 +63,13 @@ export class Account {
    *
    * The HMAC uses the same secret as `BlockedIdentity` and `PlatformGamertag` —
    * see `hashIdentity`, which explains why a per-table secret breaks RF-079.
+   *
+   * Hidden like the two password-shaped hashes above, and for a reason of its
+   * own: the value is deterministic, so a hash in any response turns that
+   * endpoint into an oracle — hash a Discord ID, compare, and learn whether it
+   * is linked here. Item 17 of the security checklist.
    */
-  @Property({ length: 64, nullable: true })
+  @Property({ length: 64, nullable: true, hidden: true })
   @Unique()
   discordIdHash?: string
 

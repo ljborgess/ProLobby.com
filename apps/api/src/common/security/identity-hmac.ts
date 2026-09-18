@@ -36,6 +36,15 @@ export function hashIdentity(secret: Buffer, value: string): string {
  * invalidates every stored hash at once — uniqueness, lookups and the whole ban
  * list — so it needs a re-hash of the ciphertext columns, not a new value in the
  * environment.
+ *
+ * **Still missing: the boot-time check.** `secrets-at-boot.e2e-spec.ts` proves
+ * every other secret refuses to start the app, and its own header says
+ * `EVIDENCE_ENCRYPTION_KEY` is what made that spec necessary — it used to fail
+ * on first use instead of at boot. This one fails on first use today. It is
+ * deliberately not wired yet: nothing reads it, so a provider added now would
+ * force the variable onto every e2e suite and every fresh clone to guard a
+ * feature that does not exist. The module that first injects it wires it, and
+ * adds the case to that spec in the same commit.
  */
 export function readIdentityHmacSecret(): Buffer {
   const encoded = process.env.IDENTITY_HMAC_SECRET

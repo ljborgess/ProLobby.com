@@ -58,15 +58,21 @@ describe('account table', () => {
     ).rejects.toThrow()
   })
 
-  it('refuses two accounts with the same Discord ID, but allows many without one', async () => {
+  // The column is the HMAC, never the readable Discord ID (RNF-009 / item 5 of
+  // the security checklist). Uniqueness has to hold on the hash, because that
+  // is the only form the ID is ever stored in — a unique index on a column
+  // that no longer exists would let two accounts claim the same Discord.
+  it('refuses two accounts with the same Discord ID hash, but allows many without one', async () => {
     const connection = orm.em.getConnection()
+    const hash = 'a'.repeat(64)
+
     await connection.execute(
-      `insert into "account" (${baseColumns}, "discord_id") values (${baseValues('discord-a@test.local')}, '123')`,
+      `insert into "account" (${baseColumns}, "discord_id_hash") values (${baseValues('discord-a@test.local')}, '${hash}')`,
     )
 
     await expect(
       connection.execute(
-        `insert into "account" (${baseColumns}, "discord_id") values (${baseValues('discord-b@test.local')}, '123')`,
+        `insert into "account" (${baseColumns}, "discord_id_hash") values (${baseValues('discord-b@test.local')}, '${hash}')`,
       ),
     ).rejects.toThrow()
 
@@ -77,5 +83,23 @@ describe('account table', () => {
     await connection.execute(
       `insert into "account" (${baseColumns}) values (${baseValues('unlinked-2@test.local')})`,
     )
+  })
+
+  /**
+   * The regression guard for RNF-009 on this table. A readable `discord_id`
+   * column is what the data model ruled out in 2026-09-11 and what the schema
+   * carried anyway until 2026-09-18 — nothing failed while it existed, which
+   * is exactly why it survived. This test is the thing that would have failed.
+   */
+  it('stores the Discord ID only as hash and ciphertext, never in plain text', async () => {
+    const columns = await orm.em.getConnection().execute<{ column_name: string }[]>(
+      `select column_name from information_schema.columns
+         where table_name = 'account' and column_name like 'discord%'`,
+    )
+    const names = columns.map((column) => column.column_name)
+
+    expect(names).toContain('discord_id_hash')
+    expect(names).toContain('discord_id_encrypted')
+    expect(names).not.toContain('discord_id')
   })
 })
