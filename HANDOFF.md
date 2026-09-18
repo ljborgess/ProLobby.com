@@ -33,13 +33,13 @@ O repo continua **privado, no plano Free**, e a regra de "PR de terceiro precisa
 
 - **[#4] Webhook do bot sem autenticação** — `apps/bot/src/webhook/server.ts` aceita qualquer requisição em `POST /events`. Inofensivo hoje (nenhum handler faz nada), perigoso no dia do primeiro handler: o endpoint comanda kick/ban ([RF-048](docs/requisitos/05-funcionais.md#rf-048--kick-e-ban-só-por-comando-de-admin-ou-moderador)) e canal de lobby. Itens 6 e 7 do [checklist de segurança](docs/requisitos/08-seguranca-checklist.md). Inclui tipar o `platformEventSchema`, hoje `payload: z.record(z.unknown())`.
 - **[#5] CI não sobe Postgres** — `.github/workflows/ci.yml` sem `services:`. Quebra no PR da #1, que é o que fundamenta todo o resto. Mesma issue cobre a falta de template de PR/issue, que é o que faria o checklist de segurança ser olhado na hora certa.
+- **[#149] `account.discord_id` guarda o Discord ID em texto puro** — contra a RNF-009 e o item 5 do checklist. O modelo de dados mandava hash + cifra desde 2026-09-11 e o schema da API nunca acompanhou. **Ainda em `dev`**; o conserto está no PR #151, em revisão. **Registrado porque a classe do erro se repete**: decisão fechada no dossiê que não chega ao código não falha teste nenhum, e esta só apareceu porque a fatia que ia escrever a coluna foi lida junto com o checklist de segurança. O PR traz o teste de regressão que faltava — afirma que a coluna legível não existe.
 
 ### Aberto no código (ainda sem issue — entram junto da fatia que os usa)
 
 > Os quatro itens que estavam aqui fecharam na Fase 2.1 (2026-09-17): `ValidationPipe` global com `whitelist`/`forbidNonWhitelisted`, `@nestjs/throttler` plugado no `AppModule`, cookie de sessão e CORS, e o `apps/web` saindo do boilerplate com tokens do design system e i18n pt/es (#87). Mantidos abaixo só os que continuam abertos.
 
 - **Do inventário de 13 telas** ([transversais](docs/requisitos/01-transversais.md)), existem cadastro e login. As outras, não — esperado nesta fase, registrado pra não parecer esquecimento. O visual das que existem é **base provisória** e será redesenhado ([decidido em 2026-09-17](docs/produto/01-visao/01-visao.md)).
-- **`account.discord_id` guardava o Discord ID em texto puro**, contra a RNF-009 e o item 5 do checklist — o modelo de dados mandava hash + cifra desde 2026-09-11 e o schema da API nunca acompanhou. Corrigido na #149 (PR #151), com `identity-hmac.ts` novo e `IDENTITY_HMAC_SECRET` no ambiente. **Registrado porque a classe do erro se repete**: decisão fechada no dossiê que não chega ao código não falha teste nenhum, e neste caso só apareceu porque a fatia que ia escrever a coluna foi lida junto com o checklist de segurança.
 
 ### Corrigido nesta rodada — não reabrir
 
