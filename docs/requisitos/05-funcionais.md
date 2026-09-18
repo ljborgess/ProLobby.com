@@ -2,7 +2,7 @@
 
 Lista numerada e rastreável. Formato e regras em [README](README.md).
 
-**Status: 9 áreas levantadas, RF-001 a RF-081, RNF-001 a RNF-021.** Nenhuma área permanece sem varredura de lacuna.
+**Status: 9 áreas levantadas, RF-001 a RF-082, RNF-001 a RNF-021.** Nenhuma área permanece sem varredura de lacuna.
 
 > **Auditoria de 2026-09-11**: varredura de fluxo ponta a ponta fechou 24 achados — 6 quebras de fluxo (entre elas um estado inalcançável e um loop de suspensão que virava banimento), 6 lacunas de modelo de dados, 7 ambiguidades e 5 de processo/repo. RF-074 a RF-080 nasceram daí; RF-006, RF-034, RF-035, RF-043, RF-058, RF-066, RF-071 e RF-072 foram corrigidos no lugar. Relatório completo em [research/auditoria-2026-09-11.md](../research/auditoria-2026-09-11.md).
 
@@ -556,6 +556,17 @@ O modo restrito só é implementável porque o token de sessão **não** carrega
 **Aceite**: ao banir uma conta, o sistema grava o **hash** (HMAC com segredo do servidor) do Discord ID e do par (plataforma, gamertag) numa lista de bloqueio própria, sem guardar o valor legível. Cadastro, vínculo de Discord e verificação de personagem consultam essa lista. A exclusão de conta por pedido LGPD apaga a conta e anonimiza o histórico como já previsto, **e não apaga a lista de bloqueio**.
 
 Por que precisou existir: o banimento era vinculado a Discord ID + gamertag guardados **na própria conta** ([Ranking](../produto/02-jogador/02-ranking.md)), e a exclusão LGPD apaga a identidade e libera o e-mail ([RF-020](#rf-020--um-e-mail-uma-conta)) — então bastava pedir exclusão logo após o banimento pra recriar tudo limpo, com o mesmo Discord e o mesmo gamertag. Guardar hash em vez de valor mantém o bloqueio funcionando sem manter dado pessoal legível de quem pediu exclusão; a base legal é exercício regular de direito, e a ressalva entra nos [Termos](../produto/04-governanca/03-termos.md) junto com a do registro fiscal.
+
+### RF-082 · Vínculo de Discord não se desfaz por conta própria
+**Origem**: gap encontrado em grilling de desenho do vínculo, decidido em 2026-09-18 · [discord/04-integracao.md](../discord/04-integracao.md#vínculo-discord--conta-da-plataforma)
+
+**Aceite**: a plataforma **não** oferece "desvincular Discord". Vinculado uma vez, o Discord ID fica naquela conta; trocar exige **chamado de moderação**, do tipo "troca de identidade vinculada" ([Moderação](../produto/04-governanca/01-moderacao.md#casos-que-caem-em-moderação)) — o mesmo tipo que atende a troca de gamertag no console, descrita em [Verificação](../produto/02-jogador/01-verificacao.md). Autorizar de novo o **mesmo** Discord na **mesma** conta é bem-sucedido e não grava nada. Sair do servidor Discord não desfaz o vínculo, como a [RF-060](#rf-060--sair-do-servidor-discord-bloqueia-a-fila-até-voltar) já determina.
+
+Por que precisou existir: o vínculo é exclusivo pra que banimento e reputação tenham onde se fixar ([RF-079](#rf-079--banimento-sobrevive-à-exclusão-de-conta)), mas nada dizia se a pessoa podia desfazê-lo. A leitura natural — todo produto tem botão de desvincular — reabre por dentro exatamente o furo que a lista de bloqueio fecha por fora: **a lista só pega quem foi banido.** Quem está com reputação baixa, sem punição nenhuma, desvincularia o Discord, criaria conta nova e vincularia o mesmo Discord nela, zerando os 0–100 sem nunca ter sido banido. A reputação deixaria de custar algo.
+
+Carência ("desvincula, mas o Discord só entra em outra conta depois de N dias") foi avaliada e descartada: fecharia o furo pela metade e criaria um quarto parâmetro "a calibrar" sem nenhum dado pra calibrar.
+
+**O que a moderação precisa olhar no chamado de troca**: se o Discord de destino já está em outra conta, e se a conta de origem tem punição em curso. Sem isso o chamado vira o botão que este RF acabou de recusar.
 
 ### RF-073 · Correção manual de OCR pela moderação, campo a campo
 **Origem**: decidido em 2026-09-08 · [produto/02-jogador/01-verificacao.md](../produto/02-jogador/01-verificacao.md)

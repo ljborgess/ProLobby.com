@@ -23,6 +23,9 @@ Decidido em 2026-09-15, junto com a correção do achado abaixo. O contrato de a
 ## Vínculo Discord ↔ conta da plataforma
 
 - **OAuth2 padrão do Discord** — jogador clica "vincular Discord" na plataforma, é redirecionado pro Discord, autoriza, Discord retorna o Discord ID pra plataforma vincular à conta. Sem digitação manual de ID (evita erro de digitação, confirma que a pessoa é dona daquele Discord de fato).
+- **Escopo `identify`, e só.** O Discord ID é o único dado que a plataforma guarda da autorização; o token do Discord não é persistido. Saber se a pessoa está no servidor não precisa de escopo nenhum — quem enxerga membro é o bot, pelo próprio token, com o Server Members Intent, e é assim que a [RF-060](../requisitos/05-funcionais.md#rf-060--sair-do-servidor-discord-bloqueia-a-fila-até-voltar) detecta saída e volta.
+- **Não existe "desvincular"** ([RF-082](../requisitos/05-funcionais.md#rf-082--vínculo-de-discord-não-se-desfaz-por-conta-própria), decidido em 2026-09-18). Vinculado é vinculado; trocar é chamado de moderação. Botão de desvincular deixaria qualquer pessoa com reputação baixa zerar os 0–100 numa conta nova com o mesmo Discord, sem nunca ter sido banida — a lista de bloqueio não pega esse caso, porque ela só guarda quem foi banido.
+- **O Discord ID não fica legível no banco** ([RNF-009](../requisitos/07-nao-funcionais.md#rnf-009--dado-sensível-criptografado-em-repouso)): hash HMAC pra unicidade, busca e cruzamento com a lista de bloqueio, cifra pro valor exibível. O HMAC usa o **mesmo segredo** de `GamertagPlataforma` e `IdentidadeBloqueada` — segredo por tabela faria o mesmo Discord ID gerar hashes diferentes, e a checagem de ban da [RF-079](../requisitos/05-funcionais.md#rf-079--banimento-sobrevive-à-exclusão-de-conta) nunca casaria.
 
 ## Falha de comunicação (bot fora do ar)
 

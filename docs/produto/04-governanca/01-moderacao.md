@@ -22,6 +22,7 @@
 - Acúmulo de avaliação negativa por pares (5 negativos em 30 dias, de pessoas diferentes em partidas diferentes — ver [Ranking, reputação e punição](../02-jogador/02-ranking.md))
 - Recuperação de conta com e-mail e Discord perdidos (ver [Onboarding](../05-produto/01-onboarding.md))
 - Ausência reportada com nota individual 0.0 no print — possível bug de perda de controle do jogo, não abandono real (ver [Resultado de partida](../03-partida/04-resultado.md))
+- **Troca de identidade vinculada** — gamertag alterado no console (ver [Verificação](../02-jogador/01-verificacao.md)) ou troca do Discord vinculado ([RF-082](../../requisitos/05-funcionais.md#rf-082--vínculo-de-discord-não-se-desfaz-por-conta-própria)). **Acrescentado em 2026-09-18**: o caso de gamertag já existia no código como tipo (`gamertag_change`) e nunca constou desta lista, que é a fonte dos tipos ([Modelo de dados](../../requisitos/03-dados.md#casomoderacao)); o de Discord nasceu com a RF-082. O que o moderador confere nos dois: se a identidade de destino já está em outra conta, e se a conta de origem tem punição em curso — sem isso o chamado vira o botão de desvincular que a RF-082 recusa.
 
 ## Limite de denúncia — contra inundação da fila
 
