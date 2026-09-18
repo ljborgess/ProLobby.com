@@ -50,14 +50,32 @@ export class Account {
   securityAnswerHash!: string
 
   /**
-   * Null until phase 2.3 (OAuth2 linking). Unique and exclusive: one Discord
-   * account never links to two platform accounts, otherwise banning by
-   * Discord ID + gamertag becomes decoration and smurfing gets trivial
+   * Null until the Discord account is linked (phase 2.3). Unique and exclusive:
+   * one Discord account never links to two platform accounts, otherwise banning
+   * by Discord ID + gamertag becomes decoration and smurfing gets trivial
    * (docs/produto/03-partida/03-lobby.md).
+   *
+   * Two columns rather than one plain `discordId`, per the data model decision
+   * of 2026-09-11 (docs/requisitos/03-dados.md): RNF-009 forbids a Discord ID in
+   * plain text, but it is also the key that carries uniqueness, the bot's lookup
+   * and the ban-list comparison. The HMAC serves all three; the ciphertext
+   * serves display and the bot calls that need the real ID back.
+   *
+   * The HMAC uses the same secret as `BlockedIdentity` and `PlatformGamertag` —
+   * see `hashIdentity`, which explains why a per-table secret breaks RF-079.
+   *
+   * Hidden like the two password-shaped hashes above, and for a reason of its
+   * own: the value is deterministic, so a hash in any response turns that
+   * endpoint into an oracle — hash a Discord ID, compare, and learn whether it
+   * is linked here. Item 17 of the security checklist.
    */
-  @Property({ length: 32, nullable: true })
+  @Property({ length: 64, nullable: true, hidden: true })
   @Unique()
-  discordId?: string
+  discordIdHash?: string
+
+  /** AES-256-GCM, via `encryptAtRest`. Hidden: it is never part of a response. */
+  @Property({ type: 'blob', nullable: true, hidden: true })
+  discordIdEncrypted?: Buffer
 
   @Enum({ items: () => AccountRole, default: AccountRole.USER })
   role: AccountRole & Opt = AccountRole.USER
