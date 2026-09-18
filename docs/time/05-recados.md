@@ -8,6 +8,16 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 
 ## 2026-09-17 · Para todos
 
+### `pnpm dev` agora lê o `.env` de cada app
+
+Antes, API, bot e CLI de migration **ignoravam** `apps/*/.env`: só funcionavam com variável exportada no shell. Sem ela, a API caía no banco da porta 5432 (o de outro projeto, em quem usa a 5442) e falhava com `auth_failed`. E exportar o `.env` no shell vazava `PORT=3001` pro Next, que roubava a porta da API.
+
+- **`pnpm dev` e `pnpm start` carregam o `.env` do próprio app.** Não exporte `.env` no shell; se já tem alias ou script que faz isso, apague.
+- **Migration:** `pnpm --filter @prolobby/api mikro-orm migration:up` (ou `pnpm mikro-orm ...` dentro de `apps/api`). O `pnpm exec mikro-orm` antigo continua sem ler o `.env`.
+- **Variável no shell ganha do `.env`.** Um `DATABASE_URL` esquecido no terminal ainda manda.
+- **`PORT` saiu da lista do turbo.** Cada app lê a porta do próprio `.env`.
+- Testes e e2e não mudaram: continuam recebendo `DATABASE_URL` pelo comando.
+
 ### O visual do front-end é provisório
 
 O layout de `apps/web` **vai ser redesenhado depois**. As telas atuais (home, cadastro, login) são base, não desenho final.
@@ -93,4 +103,4 @@ A tela precisa repassar o cabeçalho `CF-Connecting-IP` nas chamadas feitas pelo
 
 ### 4. Postgres local na porta 5442?
 
-Se a porta 5432 da sua máquina já estiver ocupada por outro projeto, suba com `POSTGRES_PORT=5442 docker compose up -d postgres` e use `DATABASE_URL=postgres://prolobby:prolobby@localhost:5442/prolobby`.
+Se a porta 5432 da sua máquina já estiver ocupada por outro projeto, suba com `POSTGRES_PORT=5442 docker compose up -d postgres` e use `DATABASE_URL=postgres://prolobby:prolobby@localhost:5442/prolobby` no `apps/api/.env` (e no comando dos testes).

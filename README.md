@@ -129,7 +129,7 @@ openssl rand -base64 48
 ### Migrações e execução
 
 ```bash
-pnpm --filter @prolobby/api exec mikro-orm migration:up
+pnpm --filter @prolobby/api mikro-orm migration:up
 pnpm dev
 ```
 

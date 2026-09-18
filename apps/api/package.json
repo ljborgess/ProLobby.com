@@ -4,8 +4,9 @@
   "private": true,
   "scripts": {
     "build": "nest build",
-    "dev": "nest start --watch",
-    "start": "nest start",
+    "dev": "node --env-file-if-exists=.env node_modules/@nestjs/cli/bin/nest.js start --watch",
+    "start": "node --env-file-if-exists=.env node_modules/@nestjs/cli/bin/nest.js start",
+    "mikro-orm": "node --env-file-if-exists=.env node_modules/@mikro-orm/cli/cli.js",
     "start:prod": "node dist/main",
     "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
     "type-check": "tsc --noEmit -p tsconfig.json",

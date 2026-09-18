@@ -10,11 +10,13 @@
       "cache": false,
       "persistent": true,
       // Same rule as e2e: undeclared variables never reach the process.
+      // Each app loads its own .env (node --env-file-if-exists). PORT stays
+      // out on purpose: a shell PORT would reach every app at once and web,
+      // api and bot would fight over the same port.
       "env": [
         "DATABASE_URL",
         "JWT_SECRET",
         "CORS_ORIGINS",
-        "PORT",
         "DISCORD_BOT_TOKEN",
         "WEBHOOK_SECRET",
         "BOT_WEBHOOK_URL",

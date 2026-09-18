@@ -20,8 +20,9 @@ Se outro projeto na sua máquina já usa a 5432, **não edite o `docker-compose.
 
 ```bash
 POSTGRES_PORT=5442 docker compose up -d postgres
-# e em todo comando que fala com o banco:
+# no apps/api/.env (vale pra pnpm dev e pnpm --filter @prolobby/api mikro-orm):
 # DATABASE_URL=postgres://prolobby:prolobby@localhost:5442/prolobby
+# testes e e2e não leem o .env: passe DATABASE_URL no comando, como abaixo
 ```
 
 Nunca pare nem apague container de outro projeto pra liberar a porta.
