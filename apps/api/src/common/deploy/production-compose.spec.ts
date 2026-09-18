@@ -17,6 +17,22 @@ describe('production compose (ADR-009 / #121)', () => {
     )
   })
 
+  /**
+   * The API healthcheck probed `/health` while the route is `/api/health` —
+   * `applySecurity` puts a global prefix on everything, with no exclusion. A
+   * 404 makes `r.ok` false, so the container never becomes healthy, and `web`
+   * waits on `condition: service_healthy` forever: the whole deploy stops on a
+   * URL nobody could see was wrong. Third time this prefix bites (the tunnel
+   * path and `main.ts` were the other two), hence a test and not just a fix.
+   */
+  it('probes the API health route behind the global prefix, not at the root', () => {
+    const api = composeServiceBlock(prod, 'api')
+
+    expect(api).toContain('/api/health')
+    // Belt and braces: catches a later edit that drops the prefix back.
+    expect(api).not.toMatch(/127\.0\.0\.1:3001\/health/)
+  })
+
   it('publishes no ports on any production service — item 11 / ADR-009', () => {
     for (const name of composeServiceNames(prod)) {
       expect(serviceDeclaresPorts(composeServiceBlock(prod, name))).toBe(false)
