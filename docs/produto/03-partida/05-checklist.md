@@ -4,6 +4,8 @@
 
 > **Rodar em FC 27, não em FC 26** (2026-09-16). O EA FC 27 sai em 25/09/2026 (acesso antecipado em 18/09) e o Clubs passa a ficar no hub "The Grounds", só em PS5, Xbox Series, Switch 2 e PC. Os 8 testes são de mecânica do jogo: confirmar em FC 26 agora pode validar algo que muda nove dias depois. Rodar na primeira semana de FC 27, em console da geração nova.
 
+> **Antes de entrar no jogo, leia o [levantamento por fonte pública (2026-09-18)](../../research/fontes-checklist-jogo-2026-09-18.md)**: diz o que fonte da EA já sustenta (testes 6 e 7), o que só existe em FC 26 e o que continua sem nenhuma fonte, com uma ordem de execução por incerteza. **Não é resultado de teste** — nenhum teste abaixo está respondido.
+
 Este é o **bloqueador nº 1 do projeto**. Custa minutos e nenhum dinheiro, mas valida (ou derruba) o mecanismo em que todo o fluxo de partida está apoiado — ver [Mecânica real do EA FC Pro Clubs](01-mecanica.md).
 
 Fazer isso **antes** de escrever código: gastar engenharia no fluxo de capitão/clube sem confirmar que ele funciona é o jeito mais caro de descobrir que precisa mudar.
