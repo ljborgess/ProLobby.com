@@ -115,9 +115,15 @@ Três regras do dossiê dependem desse log, não só o rollback:
 - **Reverter uma penalidade sem deixar rastro no histórico de reincidência** exige marcar o evento como revertido, não apagá-lo.
 
 ### CasoModeracao
-`tipo` · `estado` · `aberto_em` · `origem` (sistema / usuário / mensagem no Discord) · `lobby` · `conta_alvo` · `aberto_por` · `resolvido_por` · `resolvido_em` · `decisao`
+`tipo` · `estado` · `aberto_em` · `origem` (sistema / usuário / mensagem no Discord) · `lobby` · `conta_alvo` · `aberto_por` · `resolvido_por` · `resolvido_em` · `decisao` · `caminho_evidencia` · `mensagem_apelacao` · `caso_apelado`
 
 Os tipos são os já enumerados em [Moderação](../produto/04-governanca/01-moderacao.md), incluindo os abertos automaticamente.
+
+**As três últimas colunas foram acrescentadas em 2026-09-18**, e existiam no código antes de existirem aqui — achado de varredura, mesma classe do `discord_id` em texto puro:
+
+- **`caminho_evidencia`** — print anexado ao caso, hoje o de recuperação de conta ([RF-025](05-funcionais.md#rf-025--recuperação-sem-e-mail-e-sem-discord-exige-dois-fatores)). Guarda **caminho**, nunca a imagem: o arquivo fica cifrado fora do banco, e a coluna é zerada quando a retenção de 90 dias apaga o print ([LGPD](../produto/04-governanca/02-lgpd.md)). **Importa estar aqui** porque este documento é a espinha do inventário de dado pessoal — coluna que aponta pra print e não consta do inventário é dado pessoal fora do mapa.
+- **`mensagem_apelacao`** — o que a pessoa alega ([RF-037](05-funcionais.md#rf-037--uma-apelação-por-punição-reabertura-só-com-fato-novo), [RF-081](05-funcionais.md#rf-081--conta-banida-faz-login-em-modo-restrito-só-pra-apelar)).
+- **`caso_apelado`** — o caso que esta apelação contesta, preenchido só em apelação. É o índice único sobre ele que faz valer "uma apelação por punição" da RF-037, não uma leitura anterior.
 
 **`aberto_por` — gap fechado em 2026-09-08**: conta que abriu o caso (denunciante, contestante), ou `sistema` nos casos automáticos (acúmulo de avaliação negativa, retry de webhook esgotado). Sem esse campo, três requisitos não têm onde se apoiar: [RF-036](05-funcionais.md#rf-036--denunciado-nunca-vê-quem-denunciou) (painel precisa ver quem denunciou), [RF-068](05-funcionais.md#rf-068--máximo-de-3-denúncias-abertas-por-conta) (contar denúncias abertas por conta) e [RF-012](05-funcionais.md#rf-012--qualquer-humano-da-partida-contesta-uma-vez-cada) (bloquear 2ª contestação da mesma pessoa).
 
