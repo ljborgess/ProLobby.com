@@ -22,6 +22,29 @@ Até o redesenho, a regra é **manter o padrão que está sendo produzido**:
 - **Não vale a pena polir visual agora**: esforço de layout, animação ou refinamento estético é retrabalho garantido. O esforço vai em comportamento — acessibilidade (RNF-015), i18n (RNF-016), segurança e estados de erro.
 - O que **sobrevive** ao redesenho, e por isso precisa estar certo desde já: os textos no dicionário de `src/content/`, a separação entre componente e regra, os rótulos acessíveis, e os tokens do design system concentrados num lugar só — é isso que deixa o redesenho barato.
 
+#### O gatilho do redesenho é o fim da Fase 2.5 (decidido em 2026-09-18)
+
+A decisão acima dizia "depois" e não dizia depois de quê — o mesmo formato que deixou os [dois bloqueadores](../../../HANDOFF.md) parados por semanas. Passa a ter condição: **o redesenho começa quando a fila existir**, no fim da [Fase 2.5](../../negocio/02-implementacao.md).
+
+Por que a fila e não antes: é a **primeira tela em que movimento faz trabalho**, não enfeite. Espera sem fim previsível, pareamento acontecendo, convite com 30 s correndo ([RF-009](../../requisitos/05-funcionais.md#rf-009--recusar-ou-não-confirmar-gera-timeout-progressivo-de-fila)), lobby fechando — tudo isso é estado que a pessoa precisa entender sem ler texto. Animar cadastro e login antes disso é decorar formulário que vai ser jogado fora.
+
+Por que não mais tarde (antes do beta): acumularia o redesenho inteiro no momento mais tenso do projeto, e as telas de fila e lobby são justamente as que mais ganham em ser desenhadas com o comportamento já pronto ao lado.
+
+#### Animação: nativo primeiro, biblioteca por necessidade demonstrada (decidido em 2026-09-18)
+
+Vale a partir do redesenho — antes dele a regra acima (não polir) continua valendo, animação incluída.
+
+- **Default é a plataforma**: CSS (transição, `@starting-style`, keyframes) e View Transitions entre rotas. Custo zero de bundle, zero dependência, nada pra manter.
+- **Biblioteca entra quando a interação exigir**, e a interação precisa ser nomeada antes de instalar. Os três casos que CSS não resolve bem: **elemento compartilhado entre telas** (o card do lobby que transiciona de posição em vez de piscar), **gesto com física** (arrastar com mola e inércia) e **stagger orquestrado por estado**. Nenhum dos três aparece em formulário; todos podem aparecer em fila e lobby.
+- **Não é proibição de biblioteca** — é o critério que ela precisa vencer. Motion (o antigo Framer Motion) é a escolha madura pros três casos acima, e a conversa sobre ela acontece com a tela real na mão.
+
+**Restrições que qualquer escolha vai ter que caber**, registradas pra a decisão não travar depois:
+
+- **CSP com nonce e `strict-dynamic`** (`apps/web/src/middleware.ts`): biblioteca que injeta `style` inline passa, porque `style-src` já permite; qualquer coisa que dependa de `eval` não passa, e a política não vai ser afrouxada por animação.
+- **Orçamento de bundle contra a [RNF-001](../../requisitos/07-nao-funcionais.md#rnf-001--ação-comum-responde-em-menos-de-1-s)** (p95 abaixo de 1 s): o cold start da Neon já consome 0,5 a 1 s antes de qualquer JavaScript do cliente ([ADR-009](../../adr/009-neon-cloudflare-vm.md)), então o que sobra é pouco e precisa ser medido, não estimado.
+- **Compatível com RSC do Next 16**: animação vive em componente de cliente, e a fronteira precisa ser explícita — não é motivo pra transformar árvore inteira em cliente.
+- **Respeitar `prefers-reduced-motion` é pré-requisito, não recurso** — [RNF-015](../../requisitos/07-nao-funcionais.md#rnf-015--piso-de-acessibilidade). Biblioteca que não oferece caminho pra isso está fora por acessibilidade, antes de qualquer critério técnico.
+
 ### Design system herdado (`futebol/static/futebol/css/app.css`)
 - Fontes: `Sora` (display/headings), `Inter` (texto)
 - Paleta escura: fundo `#070b14` / `#0c1322`, superfícies translúcidas brancas (4.5%–8% opacidade)

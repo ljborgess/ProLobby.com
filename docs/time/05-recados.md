@@ -6,6 +6,20 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 
 ---
 
+## 2026-09-18 · Para todos
+
+### Animação tem gatilho agora, e o gatilho não é hoje
+
+A regra "não polir visual" continua valendo, e animação está dentro dela. O que mudou é que o redesenho deixou de ser "depois" e ganhou condição: **começa quando a fila existir**, no fim da Fase 2.5.
+
+- **Não instale biblioteca de animação** (Motion, GSAP, o que for) antes disso. Quando chegar a hora, o default é CSS e View Transitions; biblioteca entra só se a interação exigir, e a interação precisa ser nomeada antes de instalar — os três casos previstos são elemento compartilhado entre telas, gesto com física e stagger orquestrado por estado.
+- **Se você já precisa de transição hoje**, use CSS. É o que sobrevive ao redesenho e não cobra bundle.
+- **`prefers-reduced-motion` entrou no piso de acessibilidade** ([RNF-015](../requisitos/07-nao-funcionais.md#rnf-015--piso-de-acessibilidade)): toda animação respeita, e **nada comunica estado só por movimento** — se pulsa pra dizer "esperando", tem texto ou ícone dizendo o mesmo. Vale pra qualquer CSS que você escrever agora, não só pra depois.
+
+Racional completo em [Visão](../produto/01-visao/01-visao.md#o-visual-atual-é-base-provisória--o-front-end-será-redesenhado-decidido-em-2026-09-17).
+
+---
+
 ## 2026-09-17 · Para todos
 
 ### `pnpm dev` agora lê o `.env` de cada app

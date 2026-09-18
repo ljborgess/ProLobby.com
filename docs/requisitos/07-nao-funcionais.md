@@ -123,6 +123,13 @@ Por que 2 anos e não "para sempre": o log **liga pessoa a denúncia e punição
 
 **Aceite**: contraste legível, navegação por teclado nos fluxos principais, rótulo em todo campo, mensagem de erro que diz o que fazer, área de toque generosa e nada que dependa de hover pra funcionar.
 
+**Movimento entrou no piso (2026-09-18)**, antes de existir animação no produto — retrofit de acessibilidade é o mais caro de todos:
+
+- **Toda animação respeita `prefers-reduced-motion`.** Quem desligou movimento no sistema recebe a mudança de estado sem ela. Não é preferência estética: movimento involuntário causa náusea e enxaqueca em parte das pessoas, e ignorar a preferência é barreira igual a contraste ruim.
+- **Nada comunica estado só por movimento.** Se um elemento pulsa pra dizer "esperando", a mesma informação existe em texto ou ícone — o mesmo princípio de "nada depende de hover" acima, e de não usar cor como único sinal.
+
+A política de como animar (nativo primeiro, biblioteca por necessidade demonstrada) e o gatilho do redesenho estão na [Visão](../produto/01-visao/01-visao.md#o-visual-atual-é-base-provisória--o-front-end-será-redesenhado-decidido-em-2026-09-17). Este RNF é o piso que ela não pode furar.
+
 ### RNF-016 · Interface e mensagens em português e espanhol
 **Origem**: [produto/05-produto/02-escopo.md](../produto/05-produto/02-escopo.md)
 
