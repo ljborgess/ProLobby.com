@@ -1,6 +1,7 @@
 import { apiFetch } from '@/common/api/client'
 import { forwardedIpFrom } from '@/common/api/forwarded-ip'
 import { relay } from '@/common/api/proxy-response'
+import { rejectCrossSite } from '@/common/api/same-origin'
 
 /**
  * Thin proxy to `POST /sessions` (sign-in, RF-022) — issue #87.
@@ -11,12 +12,17 @@ import { relay } from '@/common/api/proxy-response'
  * servers that are allowed to.
  */
 export async function POST(request: Request): Promise<Response> {
-  const apiResponse = await apiFetch('/api/sessions', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: await request.text(),
-    forwardedIp: forwardedIpFrom(request),
-  })
+  const refused = rejectCrossSite(request, { jsonBody: true })
+  if (refused) {
+    return refused
+  }
 
-  return relay(apiResponse)
+  return relay(
+    apiFetch('/api/sessions', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: await request.text(),
+      forwardedIp: forwardedIpFrom(request),
+    }),
+  )
 }

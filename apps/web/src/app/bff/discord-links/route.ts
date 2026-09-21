@@ -1,6 +1,7 @@
 import { apiFetch } from '@/common/api/client'
 import { forwardedIpFrom } from '@/common/api/forwarded-ip'
 import { relay } from '@/common/api/proxy-response'
+import { rejectCrossSite } from '@/common/api/same-origin'
 
 /**
  * Thin proxy to `POST /accounts/discord-links` — starts the Discord link, #149.
@@ -10,13 +11,18 @@ import { relay } from '@/common/api/proxy-response'
  * still never reads the cookie itself.
  */
 export async function POST(request: Request): Promise<Response> {
+  const refused = rejectCrossSite(request, { jsonBody: false })
+  if (refused) {
+    return refused
+  }
+
   const cookie = request.headers.get('cookie')
 
-  const apiResponse = await apiFetch('/api/accounts/discord-links', {
-    method: 'POST',
-    headers: cookie ? { cookie } : undefined,
-    forwardedIp: forwardedIpFrom(request),
-  })
-
-  return relay(apiResponse)
+  return relay(
+    apiFetch('/api/accounts/discord-links', {
+      method: 'POST',
+      headers: cookie ? { cookie } : undefined,
+      forwardedIp: forwardedIpFrom(request),
+    }),
+  )
 }

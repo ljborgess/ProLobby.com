@@ -48,6 +48,13 @@ export function SignInForm() {
       return
     }
 
+    // 502: the proxy could not reach the API. Saying "wrong password" here sends
+    // the person to reset a password that was right all along.
+    if (response.status === 502) {
+      setStatus('networkError')
+      return
+    }
+
     if (!response.ok) {
       // 429 included: the message stays "wrong credentials" on purpose, so a
       // rate-limited attempt does not confirm that the address exists
