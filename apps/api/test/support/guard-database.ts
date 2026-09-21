@@ -1,3 +1,6 @@
+// A module, not a script: as a script its top-level `name` collides with the DOM global.
+export {}
+
 /**
  * Refuses to run the e2e suites against a database that is not meant for them —
  * audit of 2026-09-21.
