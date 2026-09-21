@@ -23,6 +23,7 @@ import { AccountRecoveryService } from './account-recovery.service'
 import { AccountState } from './account.enums'
 import { AccountService } from './account.service'
 import { AcceptTermsDto } from './dto/accept-terms.dto'
+import { CompleteDiscordLinkDto } from './dto/complete-discord-link.dto'
 import { ConfirmPasswordResetDto } from './dto/confirm-password-reset.dto'
 import { JoinWaitingListDto } from './dto/join-waiting-list.dto'
 import { OpenPunishmentAppealDto } from './dto/open-punishment-appeal.dto'
@@ -31,6 +32,7 @@ import { RequestPasswordResetDto } from './dto/request-password-reset.dto'
 import { ResendVerificationDto } from './dto/resend-verification.dto'
 import { SignUpDto } from './dto/sign-up.dto'
 import { VerifyEmailDto } from './dto/verify-email.dto'
+import { DiscordLinkService } from './discord-link.service'
 import { EmailVerificationService } from './email-verification.service'
 import { detectRealImageType } from './evidence-image'
 import { PasswordResetService } from './password-reset.service'
@@ -52,6 +54,7 @@ export class AccountController {
     private readonly punishmentStatusService: PunishmentStatusService,
     private readonly punishmentAppealService: PunishmentAppealService,
     private readonly waitingListService: WaitingListService,
+    private readonly discordLinkService: DiscordLinkService,
   ) {}
 
   /**
@@ -224,6 +227,51 @@ export class AccountController {
     this.accountRecoveryService.request(dto.email, dto.securityAnswer, evidence.buffer, realType)
 
     return { message: 'recovery_request_received' }
+  }
+
+  /**
+   * Whether the Discord is linked — what the account screen shows. A GET with
+   * no side effect (item 9b), and a boolean only: never the ID or its hash.
+   */
+  @Get('discord-links/current')
+  @AllowStates(AccountState.ACTIVE, AccountState.UNVERIFIED)
+  async currentDiscordLink(@Req() request: RequestWithAccount): Promise<{ linked: boolean }> {
+    return { linked: await this.discordLinkService.isLinked(request.account!.id) }
+  }
+
+  /**
+   * Starts the Discord link — #149. Returns where to send the person; the state
+   * and PKCE pair behind that URL are recorded here, single use, for 10 minutes.
+   *
+   * POST, not GET: it writes a row, and item 9b of the security checklist rests
+   * on no GET ever changing state. Open to an unverified email too — the link is
+   * a queue prerequisite (RF-002), not a reward for verifying, and RF-055 says
+   * any arrival order is normal.
+   */
+  @Post('discord-links')
+  @HttpCode(HttpStatus.CREATED)
+  @AllowStates(AccountState.ACTIVE, AccountState.UNVERIFIED)
+  @Throttle(LOGIN_THROTTLE)
+  async startDiscordLink(
+    @Req() request: RequestWithAccount,
+  ): Promise<{ authorizationUrl: string }> {
+    return this.discordLinkService.start(request.account!.id)
+  }
+
+  /**
+   * Finishes the Discord link. The `apps/web` callback forwards here as a POST
+   * with the session cookie, so `client_secret` never leaves this process and no
+   * GET on this API changes state (item 9b).
+   */
+  @Post('discord-links/callbacks')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @AllowStates(AccountState.ACTIVE, AccountState.UNVERIFIED)
+  @Throttle(LOGIN_THROTTLE)
+  async completeDiscordLink(
+    @Req() request: RequestWithAccount,
+    @Body() dto: CompleteDiscordLinkDto,
+  ): Promise<void> {
+    await this.discordLinkService.complete(request.account!.id, dto.state, dto.code)
   }
 
   /**

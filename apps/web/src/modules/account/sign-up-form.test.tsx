@@ -29,4 +29,36 @@ describe('SignUpForm', () => {
 
     expect(screen.getByText('É preciso ter 16 anos ou mais.')).toBeInTheDocument()
   })
+
+  it('tells the person a security question needs 8 characters, before the API says 400', () => {
+    renderWithLocale(<SignUpForm />)
+
+    expect(screen.getByText(/Mínimo de 8 caracteres/)).toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText('Pergunta de segurança'), { target: { value: 'Babi' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Criar conta' }))
+
+    expect(screen.getByText('A pergunta precisa de pelo menos 8 caracteres.')).toBeInTheDocument()
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('accepts a security question of exactly 8 characters', () => {
+    renderWithLocale(<SignUpForm />)
+
+    fireEvent.change(screen.getByLabelText('Pergunta de segurança'), {
+      target: { value: '12345678' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Criar conta' }))
+
+    expect(screen.queryByText('A pergunta precisa de pelo menos 8 caracteres.')).toBeNull()
+  })
+
+  it('says it in Spanish too', () => {
+    renderWithLocale(<SignUpForm />, 'es')
+
+    fireEvent.change(screen.getByLabelText('Pregunta de seguridad'), { target: { value: 'Babi' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }))
+
+    expect(screen.getByText('La pregunta necesita al menos 8 caracteres.')).toBeInTheDocument()
+  })
 })

@@ -15,6 +15,8 @@ export interface AuthContent {
     birthDateLabel: string
     securityQuestionLabel: string
     securityQuestionHint: string
+    securityQuestionTooShort: string
+    securityAnswerTooShort: string
     securityAnswerLabel: string
     acceptTerms: string
     submit: string
@@ -53,7 +55,10 @@ export const AUTH_CONTENT: Record<Locale, AuthContent> = {
       passwordHint: 'Mínimo de 12 caracteres.',
       birthDateLabel: 'Data de nascimento',
       securityQuestionLabel: 'Pergunta de segurança',
-      securityQuestionHint: 'Usada se você perder o e-mail e o Discord ao mesmo tempo.',
+      securityQuestionHint:
+        'Mínimo de 8 caracteres. Usada se você perder o e-mail e o Discord ao mesmo tempo.',
+      securityQuestionTooShort: 'A pergunta precisa de pelo menos 8 caracteres.',
+      securityAnswerTooShort: 'A resposta precisa de pelo menos 2 caracteres.',
       securityAnswerLabel: 'Resposta',
       acceptTerms: 'Li e aceito os Termos de Uso.',
       submit: 'Criar conta',
@@ -90,7 +95,10 @@ export const AUTH_CONTENT: Record<Locale, AuthContent> = {
       passwordHint: 'Mínimo 12 caracteres.',
       birthDateLabel: 'Fecha de nacimiento',
       securityQuestionLabel: 'Pregunta de seguridad',
-      securityQuestionHint: 'Se usa si pierdes el correo y Discord al mismo tiempo.',
+      securityQuestionHint:
+        'Mínimo 8 caracteres. Se usa si pierdes el correo y Discord al mismo tiempo.',
+      securityQuestionTooShort: 'La pregunta necesita al menos 8 caracteres.',
+      securityAnswerTooShort: 'La respuesta necesita al menos 2 caracteres.',
       securityAnswerLabel: 'Respuesta',
       acceptTerms: 'Leí y acepto los Términos de Uso.',
       submit: 'Crear cuenta',
