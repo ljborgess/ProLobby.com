@@ -26,6 +26,17 @@ export const VERIFICATION_TTL_MS = 24 * 60 * 60 * 1000
  */
 export const UNVERIFIED_ACCOUNT_TTL_MS = 30 * 24 * 60 * 60 * 1000
 
+/**
+ * Links re-sent per account per hour — item 11 of the security checklist.
+ *
+ * Three, like the password reset: a person who is not receiving the email tries
+ * a couple of times, and anything beyond that is either a flood aimed at a
+ * stranger or a loop in the client.
+ */
+export const VERIFICATION_RESEND_MAX_PER_HOUR = 3
+
+const ONE_HOUR_MS = 60 * 60 * 1000
+
 @Injectable()
 export class EmailVerificationService {
   private readonly logger = new Logger(EmailVerificationService.name)
@@ -121,12 +132,30 @@ export class EmailVerificationService {
    * ever sent and no way to ask for another.
    */
   async resend(email: string): Promise<void> {
-    const account = await this.em.fork().findOne(Account, { email: email.trim().toLowerCase() })
+    const em = this.em.fork()
+    const account = await em.findOne(Account, { email: email.trim().toLowerCase() })
 
     // Nothing to do for an unknown address, or for one already verified.
     // Re-sending to a verified account would let anyone spam a stranger
     // inbox by typing their address.
     if (!account || account.emailVerified) {
+      return
+    }
+
+    // Per-account cap — item 11 of the security checklist, mirroring
+    // PASSWORD_RESET_MAX_PER_HOUR. The per-IP bucket on the controller stops
+    // one machine; this stops one inbox from being flooded, whether the
+    // request came from the public route (any address) or from the button on
+    // the logged-in home (issue #171), which made this one click away.
+    const issuedLastHour = await em.count(EmailVerification, {
+      account: account.id,
+      createdAt: { $gt: new Date(Date.now() - ONE_HOUR_MS) },
+    })
+
+    if (issuedLastHour >= VERIFICATION_RESEND_MAX_PER_HOUR) {
+      // Worth seeing: either someone is hammering one inbox, or a person is
+      // stuck and not receiving the email.
+      this.logger.warn(`verification resend limit reached for account ${account.id}`)
       return
     }
 
