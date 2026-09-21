@@ -38,6 +38,7 @@ import { detectRealImageType } from './evidence-image'
 import { PasswordResetService } from './password-reset.service'
 import { PunishmentAppealService } from './punishment-appeal.service'
 import { PunishmentStatus, PunishmentStatusService } from './punishment-status.service'
+import type { QueuePrerequisites } from './queue-prerequisites'
 import { WaitingListService } from './waiting-list.service'
 
 /** Item 16 of the security checklist: 10 MB, checked before anything is read. */
@@ -227,6 +228,50 @@ export class AccountController {
     this.accountRecoveryService.request(dto.email, dto.securityAnswer, evidence.buffer, realType)
 
     return { message: 'recovery_request_received' }
+  }
+
+  /**
+   * What the person still has to do before the queue will take them — RF-002,
+   * issue #171.
+   *
+   * Costs no query: the guard already loaded the account to authorise the
+   * request, so this is a projection of what it holds. Booleans only, in the
+   * order RF-002 fixes for the refusal message (email → character → Discord),
+   * so the screen and that message never disagree about the order.
+   *
+   * `characterVerified` is deliberately absent until phase 2.2 exists: a
+   * pending item nobody can act on is noise, and the field arrives with the
+   * feature that can turn it true.
+   */
+  @Get('queue-prerequisites')
+  @AllowStates(AccountState.ACTIVE, AccountState.UNVERIFIED)
+  queuePrerequisites(@Req() request: RequestWithAccount): QueuePrerequisites {
+    const account = request.account!
+
+    return { emailVerified: account.emailVerified, discordLinked: account.discordIdHash != null }
+  }
+
+  /**
+   * Re-sends the verification link to *this* account — issue #171.
+   *
+   * The public sibling (`verifications/resend`) takes an address in the body,
+   * which a signed-in screen cannot use: the account's own email is never part
+   * of a response (item 17), so the page does not know it. This one reads it
+   * from the session instead.
+   *
+   * Always 202, like the public one: whether the address was already verified
+   * is not observable, and there is nothing else to say.
+   */
+  @Post('verifications/resends')
+  @HttpCode(HttpStatus.ACCEPTED)
+  @AllowStates(AccountState.ACTIVE, AccountState.UNVERIFIED)
+  // The login bucket: the cost is an email leaving the platform, and the
+  // per-account limit inside the service is what stops a flood of one inbox.
+  @Throttle(LOGIN_THROTTLE)
+  async resendMyVerification(@Req() request: RequestWithAccount): Promise<{ message: string }> {
+    await this.emailVerificationService.resend(request.account!.email)
+
+    return { message: 'check_your_email' }
   }
 
   /**

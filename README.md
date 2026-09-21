@@ -82,6 +82,15 @@ sequenceDiagram
 
 <img src="docs/assets/vinculo-discord-es.png" alt="A mesma tela em espanhol" width="320">
 
+### A home logada diz o que falta — [#171](https://github.com/ljborgess/ProLobby.com/issues/171)
+
+A tela de vínculo existia sem nada apontar pra ela. Agora a home, com sessão, lista os pré-requisitos da
+fila ([RF-002](docs/requisitos/05-funcionais.md)) com o estado de cada um e o caminho pra resolver. Sem sessão, ela continua igual.
+O vínculo **não** virou parte do cadastro: o [onboarding](docs/produto/05-produto/01-onboarding.md) mantém a conta existindo antes do Discord, e
+vincular antes de confirmar a conta prenderia o Discord numa conta abandonada ([RF-082](docs/requisitos/05-funcionais.md)).
+
+<img src="docs/assets/home-proximos-passos.png" alt="Home logada com os próximos passos: e-mail não verificado e Discord não vinculado" width="420">
+
 ### Cadastro avisa o mínimo da pergunta de segurança
 
 A API exige 8 caracteres e o formulário só mostrava "não deu pra criar a conta". Agora a dica mostra
