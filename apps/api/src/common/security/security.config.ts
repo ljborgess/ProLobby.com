@@ -1,5 +1,6 @@
 import { ValidationPipe } from '@nestjs/common'
 import type { INestApplication } from '@nestjs/common'
+import type { NestExpressApplication } from '@nestjs/platform-express'
 
 /**
  * The global validation pipe — items 8 and 14 of the security checklist.
@@ -49,6 +50,17 @@ export function applySecurity(app: INestApplication): void {
   // tunnel won and the handler that forwards `CF-Connecting-IP` and relays
   // the session cookie never ran.
   app.setGlobalPrefix('api')
+
+  // The bot signs the exact bytes it sends (#150), so the API must verify those
+  // bytes, not a re-serialised body: whitespace or key order would change the
+  // HMAC. Here and not in `main.ts` for the same reason as the prefix — a
+  // capture that only production has means every e2e proves a route that
+  // cannot authenticate.
+  ;(app as NestExpressApplication).useBodyParser('json', {
+    verify: (req: { rawBody?: Buffer }, _res: unknown, buf: Buffer) => {
+      req.rawBody = buf
+    },
+  })
 
   // Item 9: the front end reads the session from an HttpOnly cookie, so the
   // browser must be allowed to send it. `credentials: true` is meaningless

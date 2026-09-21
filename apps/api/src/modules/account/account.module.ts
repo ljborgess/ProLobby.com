@@ -9,6 +9,7 @@ import { AccountController } from './account.controller'
 import { Account } from './account.entity'
 import { AccountService } from './account.service'
 import { CapacityService } from './capacity.service'
+import { DiscordPresenceService } from './discord-presence.service'
 import { EmailVerification } from './email-verification.entity'
 import { EmailVerificationService } from './email-verification.service'
 import { FailedSignIn } from './failed-sign-in.entity'
@@ -41,6 +42,7 @@ import { WaitingListService } from './waiting-list.service'
     AccountRecoveryService,
     AccountService,
     CapacityService,
+    DiscordPresenceService,
     EmailVerificationService,
     PasswordResetService,
     PunishmentAppealService,
@@ -48,6 +50,6 @@ import { WaitingListService } from './waiting-list.service'
     SessionService,
     WaitingListService,
   ],
-  exports: [AccountService, EmailVerificationService],
+  exports: [AccountService, DiscordPresenceService, EmailVerificationService],
 })
 export class AccountModule {}

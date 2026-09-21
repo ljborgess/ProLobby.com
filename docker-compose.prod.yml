@@ -56,6 +56,7 @@ services:
       WEBHOOK_SECRET: ${WEBHOOK_SECRET:?WEBHOOK_SECRET is required}
       BOT_WEBHOOK_URL: http://bot:3002/events
       EVIDENCE_ENCRYPTION_KEY: ${EVIDENCE_ENCRYPTION_KEY:?EVIDENCE_ENCRYPTION_KEY is required}
+      IDENTITY_HMAC_SECRET: ${IDENTITY_HMAC_SECRET:?IDENTITY_HMAC_SECRET is required}
     depends_on:
       api-migrate:
         condition: service_completed_successfully

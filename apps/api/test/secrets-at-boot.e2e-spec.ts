@@ -4,6 +4,8 @@ import { Test } from '@nestjs/testing'
 import { AuthModule } from '../src/common/auth/auth.module'
 import { HashService } from '../src/common/auth/hash.service'
 import { AccountRecoveryService } from '../src/modules/account/account-recovery.service'
+import { DiscordPresenceService } from '../src/modules/account/discord-presence.service'
+import { BotEventsController } from '../src/modules/bot-integration/bot-events.controller'
 import { ConsoleMailSender } from '../src/common/mail/console-mail.sender'
 import { MailModule } from '../src/common/mail/mail.module'
 import { MailSender } from '../src/common/mail/mail.types'
@@ -121,4 +123,53 @@ describe('the mail sender is chosen at boot', () => {
 
     expect(moduleRef.get(MailSender)).toBeInstanceOf(ConsoleMailSender)
   }, 60_000)
+})
+
+/**
+ * The bot → platform channel (#150) authenticates with WEBHOOK_SECRET and keys
+ * the account lookup with IDENTITY_HMAC_SECRET. Either one missing must stop the
+ * boot: otherwise every event the bot sends is a 500 it retries, and the account
+ * never learns that its owner left the server.
+ */
+describe('the bot events channel is validated at boot', () => {
+  const ORIGINAL = process.env
+
+  beforeEach(() => {
+    process.env = { ...ORIGINAL }
+    process.env.WEBHOOK_SECRET = 'a-real-looking-webhook-secret'
+    process.env.IDENTITY_HMAC_SECRET = Buffer.alloc(32, 2).toString('base64')
+  })
+
+  afterAll(() => {
+    process.env = ORIGINAL
+  })
+
+  const bootPresence = () =>
+    Test.createTestingModule({
+      providers: [DiscordPresenceService, { provide: EntityManager, useValue: {} }],
+    }).compile()
+
+  const bootController = () =>
+    Test.createTestingModule({
+      controllers: [BotEventsController],
+      providers: [{ provide: DiscordPresenceService, useValue: {} }],
+    }).compile()
+
+  it('refuses to start without WEBHOOK_SECRET, because it authenticates the bot', async () => {
+    delete process.env.WEBHOOK_SECRET
+
+    await expect(bootController()).rejects.toThrow(/WEBHOOK_SECRET/)
+  })
+
+  it('refuses the placeholder WEBHOOK_SECRET', async () => {
+    process.env.WEBHOOK_SECRET = 'changeme'
+
+    await expect(bootController()).rejects.toThrow(/WEBHOOK_SECRET/)
+  })
+
+  it('refuses to start without IDENTITY_HMAC_SECRET, because it finds the account', async () => {
+    delete process.env.IDENTITY_HMAC_SECRET
+
+    await expect(bootPresence()).rejects.toThrow(/IDENTITY_HMAC_SECRET/)
+  })
 })

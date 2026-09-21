@@ -45,6 +45,7 @@ jobs:
       WEBHOOK_SECRET: ci-webhook-secret-not-the-placeholder
       # 32 raw bytes, base64 — same discardable-runner rule as the two above.
       EVIDENCE_ENCRYPTION_KEY: 'MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDE='
+      IDENTITY_HMAC_SECRET: 'YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU='
 
     steps:
       - uses: actions/checkout@v4

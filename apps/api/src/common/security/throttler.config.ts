@@ -70,3 +70,11 @@ export const SIGNUP_THROTTLE: ThrottleOptions = { default: { ttl: 3_600_000, lim
  * stops someone burning the OCR free tier before the account rule even runs.
  */
 export const UPLOAD_THROTTLE: ThrottleOptions = { default: { ttl: 3_600_000, limit: 30 } }
+
+/**
+ * The bot's events (#150). One caller, many events: a raid that empties the
+ * server is hundreds of "left" events in a minute, and the login bucket would
+ * refuse most of them. The HMAC, not this limit, is what authenticates — this
+ * only stops a leaked secret from being a free flood.
+ */
+export const BOT_EVENT_THROTTLE: ThrottleOptions = { default: { ttl: 60_000, limit: 300 } }
