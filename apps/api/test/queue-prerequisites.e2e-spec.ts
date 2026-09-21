@@ -13,6 +13,7 @@ import { AccountState } from '../src/modules/account/account.enums'
 import { TermsAcceptance } from '../src/modules/account/terms-acceptance.entity'
 import { CURRENT_TERMS_VERSION } from '../src/modules/account/terms.constants'
 import { MailSender, TransactionalEmail } from '../src/common/mail/mail.types'
+import { VERIFICATION_RESEND_MAX_PER_HOUR } from '../src/modules/account/email-verification.service'
 import { CapturingMailSender } from './support/capturing-mail-sender'
 
 const PASSWORD = 'a-long-enough-password'
@@ -171,6 +172,20 @@ describe('queue prerequisites (#171)', () => {
 
       expect(res.status).toBe(202)
       expect(mail.sent).toHaveLength(0)
+    })
+
+    it('stops at three per hour, so a click cannot flood an inbox', async () => {
+      const { email, cookie } = await account()
+      mail.sent.length = 0
+
+      for (let attempt = 0; attempt < VERIFICATION_RESEND_MAX_PER_HOUR + 2; attempt += 1) {
+        expect((await resend(cookie)).status).toBe(202)
+      }
+
+      // The sign-up link counts too: it is the first of the hour.
+      expect(mail.sentTo(email, TransactionalEmail.VERIFY_ADDRESS).length).toBe(
+        VERIFICATION_RESEND_MAX_PER_HOUR - 1,
+      )
     })
 
     it('needs a session', async () => {
