@@ -255,7 +255,7 @@ export class AccountController {
   /**
    * Re-sends the verification link to *this* account — issue #171.
    *
-   * The public sibling (`verifications/resend`) takes an address in the body,
+   * The public sibling (`verifications/resends`) takes an address in the body,
    * which a signed-in screen cannot use: the account's own email is never part
    * of a response (item 17), so the page does not know it. This one reads it
    * from the session instead.
@@ -330,7 +330,7 @@ export class AccountController {
    * `BANNED` is listed too — it is the other route RF-081 requires a banned
    * account to reach (the first is signing in itself, which never checks
    * state). Filing the appeal itself is the separate route below
-   * (`punishment-appeals`); the case id this returns is what that route
+   * (`me/punishment/appeals`); the case id this returns is what that route
    * points the appeal at.
    */
   @Get('me/punishment')
