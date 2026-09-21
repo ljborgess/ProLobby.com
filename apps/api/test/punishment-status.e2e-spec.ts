@@ -52,7 +52,7 @@ describe('punishment status (gap found in review of #103)', () => {
   }
 
   const statusFor = (cookie: string) =>
-    request(app.getHttpServer()).get('/api/accounts/punishment-status').set('Cookie', cookie)
+    request(app.getHttpServer()).get('/api/accounts/me/punishment').set('Cookie', cookie)
 
   beforeAll(async () => {
     process.env.THROTTLE_DISABLED = 'true'

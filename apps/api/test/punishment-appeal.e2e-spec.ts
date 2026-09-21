@@ -79,7 +79,7 @@ describe('punishment appeal (RF-081, RF-037)', () => {
 
   const appeal = (cookie: string, message = APPEAL_MESSAGE) =>
     request(app.getHttpServer())
-      .post('/api/accounts/punishment-appeals')
+      .post('/api/accounts/me/punishment/appeals')
       .set('Cookie', cookie)
       .send({ message })
 
@@ -172,7 +172,7 @@ describe('punishment appeal (RF-081, RF-037)', () => {
     await resolveCase(filed.body.caseId, 'Recurso negado — o print confere.')
 
     const status = await request(app.getHttpServer())
-      .get('/api/accounts/punishment-status')
+      .get('/api/accounts/me/punishment')
       .set('Cookie', cookie)
 
     // The decision shown to a banned person is what got them banned, not the

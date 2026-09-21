@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Put,
   Req,
   UploadedFile,
   UseInterceptors,
@@ -91,7 +92,7 @@ export class AccountController {
    * back from that.
    */
   @Public()
-  @Post('verifications/resend')
+  @Post('verifications/resends')
   @HttpCode(HttpStatus.ACCEPTED)
   // The login bucket, not the signup one: the cost here is an email to
   // somebody else's inbox, so the limit guards a stranger, not this server.
@@ -168,7 +169,7 @@ export class AccountController {
    * Banned accounts are left out: the terms check does not apply to them in the
    * first place (see SessionGuard), so they never need this route.
    */
-  @Post('terms-acceptances')
+  @Post('me/terms-acceptances')
   @HttpCode(HttpStatus.NO_CONTENT)
   @SkipTermsCheck()
   @AllowStates(AccountState.ACTIVE, AccountState.UNVERIFIED, AccountState.SUSPENDED)
@@ -243,7 +244,7 @@ export class AccountController {
    * pending item nobody can act on is noise, and the field arrives with the
    * feature that can turn it true.
    */
-  @Get('queue-prerequisites')
+  @Get('me/queue-prerequisites')
   @AllowStates(AccountState.ACTIVE, AccountState.UNVERIFIED)
   queuePrerequisites(@Req() request: RequestWithAccount): QueuePrerequisites {
     const account = request.account!
@@ -262,7 +263,7 @@ export class AccountController {
    * Always 202, like the public one: whether the address was already verified
    * is not observable, and there is nothing else to say.
    */
-  @Post('verifications/resends')
+  @Post('me/verifications/resends')
   @HttpCode(HttpStatus.ACCEPTED)
   @AllowStates(AccountState.ACTIVE, AccountState.UNVERIFIED)
   // The login bucket: the cost is an email leaving the platform, and the
@@ -278,7 +279,7 @@ export class AccountController {
    * Whether the Discord is linked — what the account screen shows. A GET with
    * no side effect (item 9b), and a boolean only: never the ID or its hash.
    */
-  @Get('discord-links/current')
+  @Get('me/discord-link')
   @AllowStates(AccountState.ACTIVE, AccountState.UNVERIFIED)
   async currentDiscordLink(@Req() request: RequestWithAccount): Promise<{ linked: boolean }> {
     return { linked: await this.discordLinkService.isLinked(request.account!.id) }
@@ -293,7 +294,7 @@ export class AccountController {
    * a queue prerequisite (RF-002), not a reward for verifying, and RF-055 says
    * any arrival order is normal.
    */
-  @Post('discord-links')
+  @Post('me/discord-link/attempts')
   @HttpCode(HttpStatus.CREATED)
   @AllowStates(AccountState.ACTIVE, AccountState.UNVERIFIED)
   @Throttle(LOGIN_THROTTLE)
@@ -308,7 +309,7 @@ export class AccountController {
    * with the session cookie, so `client_secret` never leaves this process and no
    * GET on this API changes state (item 9b).
    */
-  @Post('discord-links/callbacks')
+  @Put('me/discord-link')
   @HttpCode(HttpStatus.NO_CONTENT)
   @AllowStates(AccountState.ACTIVE, AccountState.UNVERIFIED)
   @Throttle(LOGIN_THROTTLE)
@@ -332,7 +333,7 @@ export class AccountController {
    * (`punishment-appeals`); the case id this returns is what that route
    * points the appeal at.
    */
-  @Get('punishment-status')
+  @Get('me/punishment')
   @AllowStates(AccountState.ACTIVE, AccountState.SUSPENDED, AccountState.BANNED)
   async punishmentStatus(@Req() request: RequestWithAccount): Promise<PunishmentStatus> {
     return this.punishmentStatusService.statusFor(request.account!)
@@ -352,7 +353,7 @@ export class AccountController {
    * endpoint would be solving that issue by accident, in the wrong place.
    */
   @Public()
-  @Post('waiting-list')
+  @Post('waiting-list-entries')
   @HttpCode(HttpStatus.ACCEPTED)
   // The signup bucket: an unauthenticated write of an email address, same
   // per-hour farming concern as creating the account itself.
@@ -374,7 +375,7 @@ export class AccountController {
    *
    * Scoped to BANNED only for now (see PunishmentAppealService for why).
    */
-  @Post('punishment-appeals')
+  @Post('me/punishment/appeals')
   @HttpCode(HttpStatus.CREATED)
   @AllowStates(AccountState.BANNED)
   // The login bucket: filing an appeal is a rare, deliberate action for a

@@ -28,7 +28,7 @@ export function DiscordLinkPanel({
 
     let response: Response
     try {
-      response = await fetch('/bff/discord-links', { method: 'POST' })
+      response = await fetch('/bff/accounts/me/discord-link/attempts', { method: 'POST' })
     } catch {
       setWorking(false)
       setFailure('networkError')

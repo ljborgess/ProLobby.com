@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default async function DiscordPage({ searchParams }: PageProps<'/account/discord'>) {
   const cookie = (await cookies()).toString()
-  const response = await apiFetch('/api/accounts/discord-links/current', {
+  const response = await apiFetch('/api/accounts/me/discord-link', {
     headers: { cookie },
     cache: 'no-store',
     forwardedIp: forwardedIpFrom(new Request('http://internal', { headers: await headers() })),

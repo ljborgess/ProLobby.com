@@ -53,7 +53,7 @@ describe('QueuePrerequisitesPanel', () => {
     fireEvent.click(screen.getByRole('button', { name: pt.email.resend }))
 
     await waitFor(() => expect(screen.getByRole('status').textContent).toBe(pt.email.resent))
-    expect(fetch).toHaveBeenCalledWith('/bff/verifications/resends', { method: 'POST' })
+    expect(fetch).toHaveBeenCalledWith('/bff/accounts/me/verifications/resends', { method: 'POST' })
     expect(screen.queryByRole('button', { name: pt.email.resend })).toBeNull()
   })
 

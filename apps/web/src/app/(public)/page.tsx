@@ -76,7 +76,7 @@ async function readPrerequisites(): Promise<QueuePrerequisites | null> {
   }
 
   try {
-    const response = await apiFetch('/api/accounts/queue-prerequisites', {
+    const response = await apiFetch('/api/accounts/me/queue-prerequisites', {
       headers: { cookie: jar.toString() },
       cache: 'no-store',
       forwardedIp: forwardedIpFrom(new Request('http://internal', { headers: await headers() })),

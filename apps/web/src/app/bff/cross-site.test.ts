@@ -5,7 +5,7 @@ const apiFetch = vi.fn()
 vi.mock('@/common/api/client', () => ({ apiFetch: (...args: unknown[]) => apiFetch(...args) }))
 
 import { POST as signUp } from './accounts/route'
-import { POST as startDiscordLink } from './discord-links/route'
+import { POST as startDiscordLink } from './accounts/me/discord-link/attempts/route'
 import { POST as signIn } from './sessions/route'
 
 const BODY = '{"email":"atk@example.com","password":"a=long-enough-password"}'

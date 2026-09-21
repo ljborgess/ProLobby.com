@@ -32,8 +32,10 @@ export async function GET(request: Request): Promise<Response> {
   const cookie = request.headers.get('cookie')
   let apiResponse: Response
   try {
-    apiResponse = await apiFetch('/api/accounts/discord-links/callbacks', {
-      method: 'POST',
+    apiResponse = await apiFetch('/api/accounts/me/discord-link', {
+      // PUT: finishing the link is writing the one link this account can have,
+      // and doing it twice with the same Discord changes nothing.
+      method: 'PUT',
       headers: { 'content-type': 'application/json', ...(cookie ? { cookie } : {}) },
       body: JSON.stringify({ state, code }),
       forwardedIp: forwardedIpFrom(request),

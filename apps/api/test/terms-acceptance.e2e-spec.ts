@@ -187,7 +187,7 @@ describe('terms acceptance (RF-026)', () => {
       await forgetAcceptances('accepts@test.local')
 
       const accept = await request(app.getHttpServer())
-        .post('/api/accounts/terms-acceptances')
+        .post('/api/accounts/me/terms-acceptances')
         .set('Cookie', cookie)
         .send({ version: CURRENT_TERMS_VERSION })
 
@@ -210,7 +210,7 @@ describe('terms acceptance (RF-026)', () => {
       await em.flush()
 
       await request(app.getHttpServer())
-        .post('/api/accounts/terms-acceptances')
+        .post('/api/accounts/me/terms-acceptances')
         .set('Cookie', cookie)
         .send({ version: CURRENT_TERMS_VERSION })
 
@@ -226,11 +226,11 @@ describe('terms acceptance (RF-026)', () => {
       await forgetAcceptances('twice-accept@test.local')
 
       const first = await request(app.getHttpServer())
-        .post('/api/accounts/terms-acceptances')
+        .post('/api/accounts/me/terms-acceptances')
         .set('Cookie', cookie)
         .send({ version: CURRENT_TERMS_VERSION })
       const second = await request(app.getHttpServer())
-        .post('/api/accounts/terms-acceptances')
+        .post('/api/accounts/me/terms-acceptances')
         .set('Cookie', cookie)
         .send({ version: CURRENT_TERMS_VERSION })
 
@@ -245,7 +245,7 @@ describe('terms acceptance (RF-026)', () => {
 
       const accept = () =>
         request(app.getHttpServer())
-          .post('/api/accounts/terms-acceptances')
+          .post('/api/accounts/me/terms-acceptances')
           .set('Cookie', cookie)
           .send({ version: CURRENT_TERMS_VERSION })
 
@@ -262,7 +262,7 @@ describe('terms acceptance (RF-026)', () => {
       const cookie = await sessionFor('accept-old@test.local')
 
       const res = await request(app.getHttpServer())
-        .post('/api/accounts/terms-acceptances')
+        .post('/api/accounts/me/terms-acceptances')
         .set('Cookie', cookie)
         .send({ version: '2000-01-01' })
 
@@ -272,7 +272,7 @@ describe('terms acceptance (RF-026)', () => {
 
     it('requires a session', async () => {
       const res = await request(app.getHttpServer())
-        .post('/api/accounts/terms-acceptances')
+        .post('/api/accounts/me/terms-acceptances')
         .send({ version: CURRENT_TERMS_VERSION })
 
       expect(res.status).toBe(401)
@@ -283,7 +283,7 @@ describe('terms acceptance (RF-026)', () => {
       await forgetAcceptances('suspended-accept@test.local')
 
       const res = await request(app.getHttpServer())
-        .post('/api/accounts/terms-acceptances')
+        .post('/api/accounts/me/terms-acceptances')
         .set('Cookie', cookie)
         .send({ version: CURRENT_TERMS_VERSION })
 

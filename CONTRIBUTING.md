@@ -172,6 +172,19 @@ Nome de módulo em `apps/api/src/modules/` e em `apps/web/src/modules/` segue o 
 
 Caminho de arquivo do dossiê citado em comentário fica como está (`docs/produto/03-partida/02-fila.md`) — é um caminho real, não texto. Vale também pra `RF-019` e afins: são identificadores, não palavras.
 
+## Nomes de rota
+
+**O caminho diz o recurso; o método diz a ação.** Decidido em 2026-09-21, depois de duas rotas de reenvio nascerem com nomes de escolas diferentes na mesma semana.
+
+- **Substantivo no caminho, nunca verbo.** `POST /accounts/verifications/resends`, não `/resend-verification`. Quem lê a URL sabe sobre o que ela é; quem lê o método sabe o que ela faz.
+- **Coleção no plural, recurso único no singular.** `/accounts` é coleção; `/accounts/me/discord-link` é um só por conta e nunca vira dois ([RF-082](docs/requisitos/05-funcionais.md)).
+- **O que depende da sessão vive sob `/accounts/me`.** É o que separa "reenviar para este e-mail" (público, com o endereço no corpo) de "reenviar para mim" (autenticado, sem corpo) sem inventar sufixo. Evita também palavra de enfeite como `current` ou `mine`.
+- **Ação que não é CRUD vira sub-recurso**, no plural, com o nome do que ela cria: `attempts`, `confirmations`, `resends`, `callbacks`. Começar o vínculo do Discord cria uma tentativa: `POST /accounts/me/discord-link/attempts`.
+- **`PUT` quando repetir não muda nada.** Concluir o vínculo é `PUT /accounts/me/discord-link`: o mesmo Discord de novo é sucesso e não grava nada, que é a regra do produto.
+- **`GET` nunca muda estado** — item 9b do [checklist de segurança](docs/requisitos/08-seguranca-checklist.md), e é o que sustenta a ausência de token anti-CSRF.
+- **Não existe `GET /accounts/me`** enquanto não houver perfil. `me` é espaço de nome, e cada campo exposto é uma decisão de vazamento (item 17).
+- **O `/bff` do `apps/web` espelha o caminho da API**, sem o prefixo `/api`: `/bff/accounts/me/discord-link/attempts` serve `/api/accounts/me/discord-link/attempts`. A exceção é `/bff/discord/callback`, que é URL registrada no portal do Discord, não recurso nosso.
+
 ## Estrutura de código
 
 Espelha o `plataforma-b2ml` (mesma empresa, mesmo padrão já validado): **módulo por domínio, não por tipo de arquivo**. Nomes de domínio = mesmos das `area:*` labels.

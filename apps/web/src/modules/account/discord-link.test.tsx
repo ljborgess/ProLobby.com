@@ -98,7 +98,7 @@ describe('DiscordLinkPanel', () => {
     await waitFor(() =>
       expect(assign).toHaveBeenCalledWith('https://discord.com/oauth2/authorize?x=1'),
     )
-    expect(fetch).toHaveBeenCalledWith('/bff/discord-links', { method: 'POST' })
+    expect(fetch).toHaveBeenCalledWith('/bff/accounts/me/discord-link/attempts', { method: 'POST' })
   })
 
   it.each([

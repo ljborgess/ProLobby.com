@@ -19,7 +19,7 @@ export async function POST(request: Request): Promise<Response> {
   const cookie = request.headers.get('cookie')
 
   return relay(
-    apiFetch('/api/accounts/discord-links', {
+    apiFetch('/api/accounts/me/discord-link/attempts', {
       method: 'POST',
       headers: cookie ? { cookie } : undefined,
       forwardedIp: forwardedIpFrom(request),
