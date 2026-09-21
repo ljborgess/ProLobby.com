@@ -11,7 +11,7 @@ Prazos apertados no fluxo tornam isso relevante — 30 s de confirmação de jog
 
 ## Decisão
 
-**A plataforma chama um endpoint do bot** quando o evento acontece. Sem confirmação em 10 s, reenvia — 3 tentativas, em 10 s, 20 s e 40 s. Esgotado, abre caso de moderação e a fila pausa.
+**A plataforma chama um endpoint do bot** quando o evento acontece. Sem confirmação em 10 s, reenvia 3 vezes, em 10 s, 20 s e 40 s (4 tentativas contando o envio original). Esgotado, abre caso de moderação e a fila pausa.
 
 Junto vem a divisão de responsabilidade: **decisão de regra fica na plataforma, execução no Discord fica no bot.** O bot nunca decide quem é capitão, quem é punido ou quando o lobby fecha.
 
@@ -29,4 +29,4 @@ Junto vem a divisão de responsabilidade: **decisão de regra fica na plataforma
 - **Queda do bot pausa a fila**, não derruba a plataforma ([RNF-008](../requisitos/07-nao-funcionais.md)). Perfil, histórico e report de resultado continuam funcionando.
 - **Retry esgotado é caso de moderação**, não alerta separado — reusa a esteira que já existe.
 - Ações do mesmo evento rodam **em sequência**, não em paralelo, pra respeitar o rate limit do Discord sem throttling próprio.
-- Custo aceito: sem fila durável, um evento pode ser perdido se o bot ficar fora além das 3 tentativas. O caso vira moderação manual em vez de silêncio.
+- Custo aceito: sem fila durável, um evento pode ser perdido se o bot ficar fora além dos 3 reenvios. O caso vira moderação manual em vez de silêncio.

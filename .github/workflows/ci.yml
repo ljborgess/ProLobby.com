@@ -18,7 +18,7 @@ jobs:
   lint-build-test:
     runs-on: ubuntu-latest
 
-    # Mesmos valores do docker-compose.yml da raiz — se divergirem, aparece o
+    # Mesmo usuario e senha do docker-compose.yml da raiz (banco: prolobby_e2e) — se divergirem, aparece o
     # "funciona local, quebra no CI" que esta issue existe pra evitar (#67).
     services:
       postgres:
@@ -26,7 +26,8 @@ jobs:
         env:
           POSTGRES_USER: prolobby
           POSTGRES_PASSWORD: prolobby
-          POSTGRES_DB: prolobby
+          # _e2e: the suites refuse any other name (test/support/guard-database.ts).
+          POSTGRES_DB: prolobby_e2e
         ports:
           - 5432:5432
         # Sem o health check o job começa a testar com o banco ainda subindo,
@@ -38,7 +39,7 @@ jobs:
           --health-retries 5
 
     env:
-      DATABASE_URL: postgres://prolobby:prolobby@localhost:5432/prolobby
+      DATABASE_URL: postgres://prolobby:prolobby@localhost:5432/prolobby_e2e
       # Descartavel e efemero no runner. O segredo real vive em variavel de
       # ambiente do deploy e forja sessao de qualquer conta (RNF-021).
       JWT_SECRET: ci-secret-not-the-placeholder

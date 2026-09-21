@@ -14,6 +14,9 @@ services:
       - '${POSTGRES_PORT:-5432}:5432'
     volumes:
       - prolobby-postgres-data:/var/lib/postgresql/data
+      # Creates prolobby_e2e on a fresh volume. An existing volume keeps its
+      # databases: `docker compose exec postgres createdb -U prolobby prolobby_e2e`.
+      - ./scripts/postgres-init:/docker-entrypoint-initdb.d:ro
 
     # Production (ADR-009 / #121) is docker-compose.prod.yml — web, api, bot
     # and cloudflared, with NO `ports:` on any of them. This file stays the

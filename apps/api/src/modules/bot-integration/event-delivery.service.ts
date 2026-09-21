@@ -206,6 +206,12 @@ export class EventDeliveryService implements OnModuleDestroy {
         // Traceable without digging through logs — a moderator opening this
         // case sees which lobby the bot never confirmed, when there is one.
         lobbyId: row.targetKind === EventDeliveryTargetKind.LOBBY ? row.targetId : undefined,
+        // Audit of 2026-09-21: an account-targeted event (`account.punished`)
+        // opened a case naming nobody, and the moderator could not tell whose
+        // role or ban never reached Discord. A primary key is enough here —
+        // MikroORM turns it into the reference.
+        targetAccount:
+          row.targetKind === EventDeliveryTargetKind.ACCOUNT ? row.targetId : undefined,
       }),
     )
     this.logger.error(`delivery gave up on event ${row.eventId} (${row.type}): ${reason}`)

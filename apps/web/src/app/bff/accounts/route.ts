@@ -1,6 +1,7 @@
 import { apiFetch } from '@/common/api/client'
 import { forwardedIpFrom } from '@/common/api/forwarded-ip'
 import { relay } from '@/common/api/proxy-response'
+import { rejectCrossSite } from '@/common/api/same-origin'
 
 /**
  * Thin proxy to `POST /accounts` (sign-up, RF-019) — issue #87.
@@ -10,12 +11,17 @@ import { relay } from '@/common/api/proxy-response'
  * limiter (item 11 of the security checklist, issue #99).
  */
 export async function POST(request: Request): Promise<Response> {
-  const apiResponse = await apiFetch('/api/accounts', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: await request.text(),
-    forwardedIp: forwardedIpFrom(request),
-  })
+  const refused = rejectCrossSite(request, { jsonBody: true })
+  if (refused) {
+    return refused
+  }
 
-  return relay(apiResponse)
+  return relay(
+    apiFetch('/api/accounts', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: await request.text(),
+      forwardedIp: forwardedIpFrom(request),
+    }),
+  )
 }

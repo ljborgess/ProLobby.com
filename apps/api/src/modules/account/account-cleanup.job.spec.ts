@@ -3,6 +3,7 @@ import { Logger } from '@nestjs/common'
 import { AccountCleanupJob } from './account-cleanup.job'
 import type { AccountRecoveryService } from './account-recovery.service'
 import type { EmailVerificationService } from './email-verification.service'
+import type { ExpiredRowsService } from './expired-rows.service'
 
 describe('AccountCleanupJob', () => {
   const asVerificationService = (deleteExpiredUnverified: jest.Mock): EmailVerificationService =>
@@ -18,6 +19,9 @@ describe('AccountCleanupJob', () => {
     new AccountCleanupJob(
       asVerificationService(deleteExpiredUnverified),
       asRecoveryService(deleteExpiredEvidence),
+      {
+        purge: jest.fn().mockRejectedValue(new Error('connection reset')),
+      } as unknown as ExpiredRowsService,
     )
 
   describe('unverified accounts', () => {
@@ -91,5 +95,14 @@ describe('AccountCleanupJob', () => {
       expect(deleteExpiredUnverified).toHaveBeenCalledTimes(1)
       jest.restoreAllMocks()
     })
+  })
+
+  it('does not throw when purging expired rows fails', async () => {
+    const errorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation()
+
+    await expect(jobWith().purgeExpiredRows()).resolves.toBeUndefined()
+
+    expect(errorSpy).toHaveBeenCalledWith('failed to purge expired rows', expect.any(String))
+    errorSpy.mockRestore()
   })
 })

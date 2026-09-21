@@ -15,6 +15,7 @@ import { DiscordLinkService } from './discord-link.service'
 import { DiscordOAuth, createDiscordOAuth } from './discord-oauth'
 import { EmailVerification } from './email-verification.entity'
 import { EmailVerificationService } from './email-verification.service'
+import { ExpiredRowsService } from './expired-rows.service'
 import { FailedSignIn } from './failed-sign-in.entity'
 import { PasswordReset } from './password-reset.entity'
 import { PasswordResetService } from './password-reset.service'
@@ -50,6 +51,7 @@ import { WaitingListService } from './waiting-list.service'
     DiscordLinkService,
     { provide: DiscordOAuth, useFactory: createDiscordOAuth },
     EmailVerificationService,
+    ExpiredRowsService,
     PasswordResetService,
     PunishmentAppealService,
     PunishmentStatusService,

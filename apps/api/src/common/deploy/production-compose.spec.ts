@@ -54,6 +54,23 @@ describe('production compose (ADR-009 / #121)', () => {
     expect(ingress).not.toContain(':3002')
   })
 
+  /**
+   * Audit of 2026-09-21: the API wrote account-recovery evidence inside the
+   * container, as `node`, into a root-owned tree, with no volume. Two failures
+   * in one: EACCES lost every recovery at once, and even writable, each deploy
+   * would have deleted the evidence behind every open case.
+   */
+  it('keeps account-recovery evidence on a volume the non-root process owns', () => {
+    const api = composeServiceBlock(prod, 'api')
+    const dockerfile = readRepoFile('apps/api/Dockerfile')
+
+    expect(api).toContain('api-evidence:/app/apps/api/uploads')
+    expect(api).toContain('EVIDENCE_DIR: /app/apps/api/uploads/account-recovery')
+    expect(withoutComments(prod)).toMatch(/^volumes:\n\s+api-evidence:/m)
+    expect(dockerfile).toContain('chown -R node:node /app/apps/api/uploads')
+    expect(dockerfile.indexOf('chown -R node:node')).toBeLessThan(dockerfile.indexOf('USER node'))
+  })
+
   it('sends the API at the bot over Docker DNS, not a published port', () => {
     const api = composeServiceBlock(prod, 'api')
     expect(api).toContain('BOT_WEBHOOK_URL: http://bot:3002/events')

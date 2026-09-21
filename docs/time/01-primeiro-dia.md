@@ -39,7 +39,7 @@ Crie `apps/api/.env` a partir de `apps/api/.env.example`.
 
 ```bash
 pnpm format:check
-DATABASE_URL=postgres://prolobby:prolobby@localhost:5432/prolobby \
+DATABASE_URL=postgres://prolobby:prolobby@localhost:5432/prolobby_e2e \
 JWT_SECRET=qualquer-coisa-que-nao-seja-changeme \
 WEBHOOK_SECRET=qualquer-coisa-que-nao-seja-changeme \
 pnpm turbo lint type-check test build e2e

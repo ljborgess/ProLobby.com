@@ -1,9 +1,9 @@
 import { randomUUID } from 'node:crypto'
-import { mkdir, rm, writeFile } from 'node:fs/promises'
+import { mkdir, rm, unlink, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
 import { EntityManager } from '@mikro-orm/postgresql'
-import { Injectable, Logger } from '@nestjs/common'
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
 
 import { HashService } from '../../common/auth/hash.service'
 import { isUniqueViolation } from '../../common/database/postgres-error'
@@ -23,8 +23,14 @@ import { normaliseSecurityAnswer } from './account.security-answer'
  * exactly this kind of local, dev-only file. Provisional or not, what lands
  * here is encrypted (see saveEvidence) — item 5 of the security checklist has
  * no "later phase" caveat for print, unlike item 4.
+ *
+ * `EVIDENCE_DIR` overrides it. Production sets it to a mounted volume: the
+ * container filesystem is recreated on every deploy, and evidence written there
+ * would vanish while its case still pointed at it.
  */
-const EVIDENCE_DIR = join(process.cwd(), 'uploads', 'account-recovery')
+function evidenceDir(): string {
+  return process.env.EVIDENCE_DIR ?? join(process.cwd(), 'uploads', 'account-recovery')
+}
 
 /**
  * Cases opened for one account per day — item 11 of the security checklist.
@@ -58,7 +64,7 @@ export const EVIDENCE_RETENTION_DAYS = 90
 const EVIDENCE_RETENTION_MS = EVIDENCE_RETENTION_DAYS * ONE_DAY_MS
 
 @Injectable()
-export class AccountRecoveryService {
+export class AccountRecoveryService implements OnModuleInit {
   private readonly logger = new Logger(AccountRecoveryService.name)
 
   /**
@@ -79,6 +85,31 @@ export class AccountRecoveryService {
     private readonly em: EntityManager,
     private readonly hashService: HashService,
   ) {}
+
+  /**
+   * Proves the evidence directory is writable before the first request needs it
+   * — same reasoning as the key above, found in the audit of 2026-09-21.
+   *
+   * The production image runs as `node` inside a tree owned by root, and the
+   * `mkdir` failed with EACCES. Because `request()` is fire-and-forget, every
+   * recovery with a correct answer answered 202 and opened no case: RF-025 was
+   * gone in production and no test could see it, since tests run as the owner
+   * of the checkout. A real write-and-delete here turns that into a failed boot.
+   */
+  async onModuleInit(): Promise<void> {
+    const dir = evidenceDir()
+    const probe = join(dir, `.write-probe-${randomUUID()}`)
+
+    try {
+      await mkdir(dir, { recursive: true })
+      await writeFile(probe, '')
+      await unlink(probe)
+    } catch (error) {
+      throw new Error(
+        `account-recovery evidence directory is not writable (${dir}) — every recovery would answer 202 and open no case (RF-025). Set EVIDENCE_DIR to a writable, persistent volume. Cause: ${error instanceof Error ? error.message : String(error)}`,
+      )
+    }
+  }
 
   /**
    * Starts a recovery request — RF-025, RF-070.
@@ -239,8 +270,9 @@ export class AccountRecoveryService {
   private async saveEvidence(evidence: Buffer, extension: string): Promise<string> {
     const encrypted = encryptAtRest(this.evidenceKey, evidence)
 
-    await mkdir(EVIDENCE_DIR, { recursive: true })
-    const path = join(EVIDENCE_DIR, `${randomUUID()}.${extension}.enc`)
+    const dir = evidenceDir()
+    await mkdir(dir, { recursive: true })
+    const path = join(dir, `${randomUUID()}.${extension}.enc`)
     await writeFile(path, encrypted)
     return path
   }

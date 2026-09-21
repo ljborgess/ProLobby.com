@@ -10,7 +10,7 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
 ![Status](https://img.shields.io/badge/status-em%20desenvolvimento-f5b841)
 
-[Como funciona](#como-funciona) · [Arquitetura](#arquitetura) · [Começando](#começando) ·
+[Como funciona](#como-funciona) · [Novidades](#novidades) · [Arquitetura](#arquitetura) · [Começando](#começando) ·
 [Documentação](#documentação) · [Contribuindo](#contribuindo)
 
 </div>
@@ -37,6 +37,74 @@ A partida acontece dentro do EA FC. A plataforma não executa o jogo: organiza, 
 | **6. Governança** | Disputa, denúncia e apelação passam por moderação com trava de conflito de interesse |
 
 Regras completas, com o motivo de cada decisão, no [dossiê de produto](docs/produto/README.md).
+
+## Novidades
+
+### Vínculo com o Discord — [#149](https://github.com/ljborgess/ProLobby.com/issues/149)
+
+O Discord é onde a partida acontece: o bot cria os canais do lobby e controla quem entra na fila.
+O vínculo liga a conta da plataforma ao usuário do Discord, e é pré-requisito da fila (RF-002).
+
+```mermaid
+sequenceDiagram
+    participant J as Jogador
+    participant W as apps/web
+    participant A as apps/api
+    participant D as Discord
+    J->>W: Vincular Discord
+    W->>A: POST /accounts/discord-links
+    A-->>W: URL de autorização (state + PKCE)
+    W->>D: Redireciona
+    J->>D: Autoriza (escopo identify)
+    D->>W: /bff/discord/callback?code&state
+    W->>A: POST /accounts/discord-links/callbacks
+    A->>D: Troca o code, lê só o ID
+    A->>A: Confere lista de banidos e grava hash + cifra
+    A-->>W: 204
+    W-->>J: Discord vinculado
+```
+
+| Sem vínculo | Vinculado |
+|:---:|:---:|
+| <img src="docs/assets/vinculo-discord-nao-vinculado.png" alt="Tela do Discord sem vínculo, com o botão Vincular Discord" width="320"> | <img src="docs/assets/vinculo-discord-vinculado.png" alt="Tela do Discord já vinculado, sem botão" width="320"> |
+
+| Discord de outra conta | Identidade banida |
+|:---:|:---:|
+| <img src="docs/assets/vinculo-discord-ja-vinculado.png" alt="Recusa: Discord já vinculado a outra conta" width="320"> | <img src="docs/assets/vinculo-discord-bloqueado.png" alt="Recusa genérica: conta bloqueada, com caminho de apelação" width="320"> |
+
+- **Um Discord, uma conta.** O vínculo é exclusivo e não tem botão de desvincular: trocar é chamado
+  de moderação (RF-082).
+- **Banido não volta.** O ID é cruzado com a lista de bloqueio na mesma transação da gravação. A
+  recusa não diz qual identidade disparou, pra tela não virar oráculo (RF-079).
+- **Nada legível no banco.** O Discord ID vira HMAC (busca e unicidade) e AES-256-GCM (exibição).
+  O token do Discord é usado uma vez e descartado.
+- **Português e espanhol**, como toda tela da plataforma.
+
+<img src="docs/assets/vinculo-discord-es.png" alt="A mesma tela em espanhol" width="320">
+
+### Cadastro avisa o mínimo da pergunta de segurança
+
+A API exige 8 caracteres e o formulário só mostrava "não deu pra criar a conta". Agora a dica mostra
+o mínimo e o erro aparece no campo, antes de enviar.
+
+<img src="docs/assets/cadastro-pergunta-8-caracteres.png" alt="Cadastro com o erro "A pergunta precisa de pelo menos 8 caracteres" no campo" width="320">
+
+### Saída do servidor bloqueia a fila — [#150](https://github.com/ljborgess/ProLobby.com/issues/150), em andamento
+
+O bot avisa a API quando alguém sai ou volta ao servidor, por um canal assinado com HMAC. Quem sai
+fica impedido de entrar na fila até voltar, sem moderador e sem desfazer o vínculo. A API já está no
+[PR #166](https://github.com/ljborgess/ProLobby.com/pull/166); faltam o bot e o aviso na tela.
+
+### Correções da auditoria de 2026-09-21
+
+| Problema | O que mudou |
+|---|---|
+| Em produção, toda recuperação de conta respondia "recebido" e não abria caso (disco sem permissão, sem volume) | Volume próprio, dono `node` na imagem, e o boot falha se não conseguir gravar |
+| Um site de terceiro conseguia logar o visitante na conta do atacante (CSRF de login) | Os proxies `/bff` recusam requisição de outro site e corpo que não seja JSON |
+| Com a API fora, o login dizia "senha incorreta" | Resposta 502 e mensagem de erro de conexão |
+| Tentativas de login, links de reset e states do Discord nunca eram apagados | Limpeza diária no job de manutenção |
+| Caso de falha de entrega ao bot não dizia qual conta foi afetada | O caso grava a conta |
+| O e2e apagava o banco usado no `pnpm dev` | O e2e só roda em banco com nome terminado em `_e2e` |
 
 ## Arquitetura
 
@@ -126,6 +194,11 @@ de exemplo. Gere cada um com:
 openssl rand -base64 48
 ```
 
+`EVIDENCE_ENCRYPTION_KEY` e `IDENTITY_HMAC_SECRET` também são obrigatórios, com 32 bytes cada
+(`openssl rand -base64 32`). O vínculo com o Discord usa `DISCORD_CLIENT_ID`,
+`DISCORD_CLIENT_SECRET` e `DISCORD_REDIRECT_URI` (o Client Secret do aplicativo, não o token do
+bot); sem eles, fora de produção, a tela de vínculo responde "indisponível".
+
 ### Migrações e execução
 
 ```bash
@@ -149,8 +222,15 @@ pnpm test
 pnpm e2e
 ```
 
-A suíte e2e roda contra um Postgres real e exige `DATABASE_URL`, `JWT_SECRET` e `WEBHOOK_SECRET`
-no ambiente. O CI roda o mesmo pipeline em todo pull request.
+A suíte e2e roda contra um Postgres real, num banco próprio: ela apaga todas as tabelas e se recusa
+a rodar em banco cujo nome não termine em `_e2e`.
+
+```bash
+docker compose exec postgres createdb -U prolobby prolobby_e2e   # só em volume antigo
+DATABASE_URL=postgres://prolobby:prolobby@localhost:5432/prolobby_e2e pnpm e2e
+```
+
+O CI roda o mesmo pipeline em todo pull request.
 
 ## Documentação
 
@@ -176,8 +256,9 @@ O fluxo completo está no [`CONTRIBUTING.md`](CONTRIBUTING.md). Quem entra no ti
 
 ## Status
 
-Em desenvolvimento. O núcleo de conta e autenticação está concluído na API, e o roadmap completo,
-fase a fase, está no [PRD Mestre](https://github.com/ljborgess/ProLobby.com/issues/64).
+Em desenvolvimento. Conta e autenticação (Fase 2.1) estão concluídas, o vínculo com o Discord
+(Fase 2.3) está no ar e a saída do servidor está em andamento. O roadmap completo, fase a fase,
+está no [PRD Mestre](https://github.com/ljborgess/ProLobby.com/issues/64).
 
 ## Licença
 

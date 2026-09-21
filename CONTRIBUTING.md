@@ -106,16 +106,18 @@ Em 2026-09-11, com só o Luciano ativo, "outra pessoa revisa" era uma **regra im
 
 ```bash
 docker compose up -d postgres
-pnpm turbo e2e
+DATABASE_URL=postgres://prolobby:prolobby@localhost:5432/prolobby_e2e pnpm turbo e2e
 ```
 
-No CI o banco sobe como `services:` do workflow, com os mesmos usuário, senha e nome de banco do `docker-compose.yml` — é o que evita o "funciona local, quebra no CI".
+**O e2e roda num banco próprio, `prolobby_e2e`, nunca no `prolobby` do `pnpm dev`.** As suítes apagam todas as tabelas, e o `test/support/guard-database.ts` recusa qualquer banco cujo nome não termine em `_e2e`. Volume novo já cria o banco (`scripts/postgres-init/`); volume antigo precisa de `docker compose exec postgres createdb -U prolobby prolobby_e2e` uma vez.
+
+No CI o banco sobe como `services:` do workflow, com o mesmo usuário e senha do `docker-compose.yml` e o nome `prolobby_e2e` — é o que evita o "funciona local, quebra no CI".
 
 **Se a porta 5432 já estiver ocupada** por outra stack na máquina (comum em quem toca mais de um projeto), não edite o `docker-compose.yml`:
 
 ```bash
 POSTGRES_PORT=5442 docker compose up -d postgres
-DATABASE_URL=postgres://prolobby:prolobby@localhost:5442/prolobby pnpm turbo e2e
+DATABASE_URL=postgres://prolobby:prolobby@localhost:5442/prolobby_e2e pnpm turbo e2e
 ```
 
 O container continua na 5432 por dentro; muda só o mapeamento no host.

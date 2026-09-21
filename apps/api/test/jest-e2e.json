@@ -13,6 +13,7 @@
     ]
   },
   "moduleFileExtensions": ["js", "json", "ts"],
+  "setupFiles": ["<rootDir>/test/support/guard-database.ts"],
   "testTimeout": 30000,
   "maxWorkers": 1
 }

@@ -10,7 +10,21 @@ import 'server-only'
  * two cookies (the session and, say, a future CSRF token) into a string
  * neither browser nor API meant.
  */
-export async function relay(apiResponse: Response): Promise<Response> {
+export async function relay(pending: Promise<Response>): Promise<Response> {
+  let apiResponse: Response
+  try {
+    apiResponse = await pending
+  } catch {
+    // The API is down or unreachable. Without this the handler threw, Next
+    // answered a bare 500, and the sign-in form told the person their password
+    // was wrong (audit of 2026-09-21). 502 and not 503: sign-up reads 503 as
+    // "sign-up paused" and would show success.
+    return Response.json(
+      { message: 'api_unavailable' },
+      { status: 502, headers: { 'cache-control': 'private, no-store' } },
+    )
+  }
+
   const body = await apiResponse.text()
   const headers = new Headers()
 

@@ -269,4 +269,42 @@ describe('EventDeliveryService', () => {
       expect.objectContaining({ occurredAt: occurredAt.toISOString() }),
     )
   })
+
+  it('names the account in the failure case when the event targeted an account', async () => {
+    const clock = new FakeClock()
+    const post = jest.fn().mockResolvedValue({ status: 400 })
+    const { service, em } = createService({ post }, clock)
+    const accountId = '0b9e6d3c-8b1a-4c1e-9f7a-2d5e8c3b1a90'
+    const punished = {
+      id: '5f0c2c1e-7a4b-4d2e-8c1f-3b6a9d8e7f10',
+      occurredAt: clock.now().toISOString(),
+      type: 'account.punished' as const,
+      payload: { accountId, kind: 'ban' as const },
+    }
+    const row = {
+      id: 'delivery-1',
+      eventId: punished.id,
+      type: punished.type,
+      payload: punished.payload,
+      occurredAt: clock.now(),
+      attempts: 0,
+      targetKind: EventDeliveryTargetKind.ACCOUNT,
+      targetId: accountId,
+      createdAt: clock.now(),
+    } as EventDelivery
+    em.create.mockReturnValue(row)
+    em.findOne.mockResolvedValue(row)
+
+    await service.enqueue(punished, { kind: EventDeliveryTargetKind.ACCOUNT, id: accountId })
+    await new Promise((resolve) => setImmediate(resolve))
+
+    expect(em.create).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        type: ModerationCaseType.BOT_DELIVERY_FAILURE,
+        targetAccount: accountId,
+        lobbyId: undefined,
+      }),
+    )
+  })
 })
