@@ -15,5 +15,11 @@ FROM base AS runner
 ENV NODE_ENV=production
 COPY --from=build /app /app
 WORKDIR /app/apps/api
+# The one directory the process writes to. Everything above is copied as root,
+# and `node` cannot create anything in it — account-recovery evidence failed
+# with EACCES and every recovery was lost in silence (audit of 2026-09-21).
+# Production mounts a volume here (docker-compose.prod.yml); owning the mount
+# point makes a fresh named volume start out owned by `node` too.
+RUN mkdir -p /app/apps/api/uploads/account-recovery && chown -R node:node /app/apps/api/uploads
 USER node
 CMD ["node", "dist/main.js"]

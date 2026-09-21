@@ -56,10 +56,15 @@ services:
       WEBHOOK_SECRET: ${WEBHOOK_SECRET:?WEBHOOK_SECRET is required}
       BOT_WEBHOOK_URL: http://bot:3002/events
       EVIDENCE_ENCRYPTION_KEY: ${EVIDENCE_ENCRYPTION_KEY:?EVIDENCE_ENCRYPTION_KEY is required}
+      EVIDENCE_DIR: /app/apps/api/uploads/account-recovery
       IDENTITY_HMAC_SECRET: ${IDENTITY_HMAC_SECRET:?IDENTITY_HMAC_SECRET is required}
       DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID:?DISCORD_CLIENT_ID is required}
       DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET:?DISCORD_CLIENT_SECRET is required}
       DISCORD_REDIRECT_URI: ${DISCORD_REDIRECT_URI:?DISCORD_REDIRECT_URI is required}
+    # Account-recovery evidence (RF-025). Without a volume, every deploy
+    # recreates the container and deletes the files their cases point at.
+    volumes:
+      - api-evidence:/app/apps/api/uploads
     depends_on:
       api-migrate:
         condition: service_completed_successfully
@@ -108,3 +113,6 @@ services:
         condition: service_healthy
     # Ingress lives in the Cloudflare dashboard and must match
     # deploy/cloudflared.yml — hostname → web:3000, nothing else.
+
+volumes:
+  api-evidence:

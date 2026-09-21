@@ -1,4 +1,7 @@
 import { EntityManager } from '@mikro-orm/postgresql'
+import { rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { Test } from '@nestjs/testing'
 
 import { AuthModule } from '../src/common/auth/auth.module'
@@ -56,6 +59,22 @@ describe('secrets are validated at boot', () => {
     delete process.env.EVIDENCE_ENCRYPTION_KEY
 
     await expect(bootRecovery()).rejects.toThrow(/EVIDENCE_ENCRYPTION_KEY/)
+  })
+
+  it('refuses to start when the evidence directory cannot be written — audit of 2026-09-21', async () => {
+    // A path under a regular file: mkdir fails the same way on every OS, which
+    // is the portable stand-in for the EACCES the production image produced.
+    const blocker = join(tmpdir(), `evidence-blocker-${Date.now()}`)
+    writeFileSync(blocker, '')
+    process.env.EVIDENCE_ENCRYPTION_KEY = Buffer.alloc(32, 1).toString('base64')
+    process.env.EVIDENCE_DIR = join(blocker, 'account-recovery')
+
+    try {
+      const moduleRef = await bootRecovery()
+      await expect(moduleRef.init()).rejects.toThrow(/evidence directory is not writable/)
+    } finally {
+      rmSync(blocker, { force: true })
+    }
   })
 
   it('refuses to start without JWT_SECRET, because it signs every session', async () => {
