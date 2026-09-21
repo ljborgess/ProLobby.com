@@ -188,6 +188,23 @@ describe('Discord link (#149)', () => {
     expect(res.body.message).toBe('account_already_linked')
   })
 
+  it('lets exactly one of two simultaneous callbacks with different Discords win', async () => {
+    const { cookie, email } = await account()
+    const [stateOne, stateTwo] = [await start(cookie), await start(cookie)]
+
+    const results = await Promise.all([
+      complete(cookie, stateOne, '131313131313131313'),
+      complete(cookie, stateTwo, '141414141414141414'),
+    ])
+
+    expect(results.map((res) => res.status).sort()).toEqual([204, 409])
+    const winner =
+      results.findIndex((res) => res.status === 204) === 0
+        ? '131313131313131313'
+        : '141414141414141414'
+    expect((await stored(email)).discordIdHash).toBe(hashIdentity(readIdentityHmacSecret(), winner))
+  })
+
   it('refuses a banned Discord, without saying which identity tripped it', async () => {
     const { cookie, email } = await account()
 

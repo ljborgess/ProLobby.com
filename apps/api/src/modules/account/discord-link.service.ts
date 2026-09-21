@@ -1,3 +1,4 @@
+import { LockMode } from '@mikro-orm/core'
 import { EntityManager } from '@mikro-orm/postgresql'
 import {
   BadRequestException,
@@ -95,7 +96,14 @@ export class DiscordLinkService {
           throw new ForbiddenException('discord_link_blocked')
         }
 
-        const account = await em.findOneOrFail(Account, { id: accountId })
+        // Locked for the rest of the transaction: two callbacks of one account,
+        // with two different Discords, would otherwise both read "no link yet" and
+        // the last write would win — a swap that RF-082 says only moderation may do.
+        const account = await em.findOneOrFail(
+          Account,
+          { id: accountId },
+          { lockMode: LockMode.PESSIMISTIC_WRITE },
+        )
 
         if (account.discordIdHash === discordIdHash) {
           return

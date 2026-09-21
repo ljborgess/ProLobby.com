@@ -73,32 +73,38 @@ export class HttpDiscordOAuth extends DiscordOAuth {
 
   // Bodies and tokens stay out of every error on purpose: the failure a caller
   // sees is `discord_unavailable`, and nothing Discord sent goes to a log.
-  private async post(url: string, form: Record<string, string>): Promise<unknown> {
-    return this.read(
-      await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams(form),
-        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-      }),
-    )
+  private post(url: string, form: Record<string, string>): Promise<unknown> {
+    return this.call(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams(form),
+    })
   }
 
-  private async get(url: string, accessToken: string): Promise<unknown> {
-    return this.read(
-      await fetch(url, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-      }),
-    )
+  private get(url: string, accessToken: string): Promise<unknown> {
+    return this.call(url, { headers: { Authorization: `Bearer ${accessToken}` } })
   }
 
-  private async read(response: Response): Promise<unknown> {
-    if (!response.ok) {
-      throw new BadGatewayException('discord_unavailable')
+  // A timeout, a dropped connection or a body that is not JSON all answer the
+  // same 502 as an error status: the caller cannot act on the difference, and a
+  // raw 500 would put the request (and its token) in a stack trace.
+  private async call(url: string, init: RequestInit): Promise<unknown> {
+    try {
+      const response = await fetch(url, {
+        ...init,
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      })
+
+      if (!response.ok) {
+        throw new BadGatewayException('discord_unavailable')
+      }
+
+      return await response.json()
+    } catch (error) {
+      throw error instanceof BadGatewayException
+        ? error
+        : new BadGatewayException('discord_unavailable')
     }
-
-    return response.json()
   }
 }
 

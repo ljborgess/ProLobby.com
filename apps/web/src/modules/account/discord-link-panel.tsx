@@ -41,8 +41,24 @@ export function DiscordLinkPanel({
       return
     }
 
-    const { authorizationUrl } = (await response.json()) as { authorizationUrl: string }
-    window.location.assign(authorizationUrl)
+    // The only place this screen sends the person is Discord. Anything else,
+    // or a body that is not JSON, is treated as a failure, never followed.
+    let target: URL
+    try {
+      const { authorizationUrl } = (await response.json()) as { authorizationUrl: string }
+      target = new URL(authorizationUrl)
+    } catch {
+      setWorking(false)
+      setFailure('error')
+      return
+    }
+    if (target.protocol !== 'https:' || target.hostname !== 'discord.com') {
+      setWorking(false)
+      setFailure('error')
+      return
+    }
+
+    window.location.assign(target.toString())
   }
 
   const shown = failure ?? status

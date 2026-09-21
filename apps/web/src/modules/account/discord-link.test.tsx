@@ -84,16 +84,43 @@ describe('DiscordLinkPanel', () => {
     const assign = vi.fn()
     vi.stubGlobal('location', { assign })
     vi.mocked(fetch).mockResolvedValue(
-      new Response(JSON.stringify({ authorizationUrl: 'https://discord.test/authorize' }), {
-        status: 201,
-      }),
+      new Response(
+        JSON.stringify({ authorizationUrl: 'https://discord.com/oauth2/authorize?x=1' }),
+        {
+          status: 201,
+        },
+      ),
     )
     renderWithLocale(<DiscordLinkPanel linked={false} />)
 
     fireEvent.click(screen.getByRole('button', { name: 'Vincular Discord' }))
 
-    await waitFor(() => expect(assign).toHaveBeenCalledWith('https://discord.test/authorize'))
+    await waitFor(() =>
+      expect(assign).toHaveBeenCalledWith('https://discord.com/oauth2/authorize?x=1'),
+    )
     expect(fetch).toHaveBeenCalledWith('/bff/discord-links', { method: 'POST' })
+  })
+
+  it.each([
+    ['another host', JSON.stringify({ authorizationUrl: 'https://evil.example/authorize' })],
+    ['plain http', JSON.stringify({ authorizationUrl: 'http://discord.com/oauth2/authorize' })],
+    [
+      'a lookalike host',
+      JSON.stringify({ authorizationUrl: 'https://discord.com.evil.example/x' }),
+    ],
+    ['a body that is not JSON', '<html>'],
+  ])('never follows %s, it shows an error', async (_name, body) => {
+    const assign = vi.fn()
+    vi.stubGlobal('location', { assign })
+    vi.mocked(fetch).mockResolvedValue(new Response(body, { status: 201 }))
+    renderWithLocale(<DiscordLinkPanel linked={false} />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Vincular Discord' }))
+
+    await waitFor(() =>
+      expect(screen.getByRole('alert').textContent).toBe(DISCORD_CONTENT.pt.statuses.error),
+    )
+    expect(assign).not.toHaveBeenCalled()
   })
 
   it('gets the button back when the connection drops, instead of hanging', async () => {
