@@ -27,7 +27,7 @@ Um script. Recebe uma pasta de prints e devolve um relatório.
 **Não precisa de**: conta, autenticação, banco, upload, interface, Discord, nada de produto.
 
 **Precisa medir, por print**:
-- Campos extraídos corretamente (nome, posição, overall, atributos, gamertag) contra o valor real anotado à mão.
+- Campos extraídos corretamente contra o valor real anotado à mão. A lista era "nome, posição, overall, atributos, gamertag" — **e a evidência de 2026-09-18 mostrou que gamertag e overall não estão na aba `Attributes` do FC 27**. Ver [a seção de evidência](#primeira-evidência-real-de-fc-27-2026-09-18) antes de fixar a lista de campos.
 - Confiança reportada pelo motor.
 - Idioma detectado (PT, ES, EN — ver [Personagens](../produto/02-jogador/01-verificacao.md)).
 - Origem: screenshot de console ou foto de tela.
@@ -66,6 +66,35 @@ O piloto foi **adiado, não descartado**, por um motivo simples: os prints de es
 - **O Clubs muda de lugar**: passa a ficar dentro do hub "The Grounds", só em PS5, Xbox Series, Switch 2 e PC. Tela do Virtual Pro, overall, arquétipo e categorias podem ter mudado — os campos que o OCR lê só se confirmam no jogo.
 - **A semana de lançamento é a melhor janela de coleta**: YouTube e Twitch lotam de conteúdo de Clubs.
 - **Coleta automática não é viável.** Testado em 2026-09-16: Reddit e X bloqueiam acesso automatizado, e busca web devolve site de montar build, não print de jogador. A fonte pública precisa de uma pessoa abrindo o vídeo e tirando o print.
+
+## Primeira evidência real de FC 27 (2026-09-18)
+
+Quatro capturas da tela do Virtual Pro foram olhadas: **três de FC 27** (aba `Attributes`, dois Pros diferentes, de VOD público) e **uma de layout anterior**, provavelmente FC 26. Não é medição de OCR — é leitura do que a tela contém. Muda o escopo do piloto em dois pontos de premissa.
+
+### A aba `Attributes` não tem gamertag nem overall
+
+Nenhuma das três capturas de FC 27 mostra texto que identifique a pessoa. O topo traz nível, AP e moeda; não traz gamertag. E o overall, que aparecia no canto superior direito no layout anterior, **não aparece** nessa aba no FC 27.
+
+Consequências, as duas graves:
+
+- **O print da aba `Attributes` não prova posse de nada.** A frase acima, de que o OCR extrai "nome, posição, overall, atributos, gamertag", assume campos que não estão ali. Sem gamertag na tela, qualquer pessoa cadastra o Pro de um streamer pausando um VOD — foi exatamente assim que estas capturas foram obtidas. O caso que [Verificação](../produto/02-jogador/01-verificacao.md) tratava como raro ("alguém verifica com print falsificado antes do dono real") deixa de exigir falsificação.
+- **O seed do elo perde a âncora nesta tela.** O overall verificado é a âncora do seed ([Ranking](../produto/02-jogador/02-ranking.md)). Onde ele vive no FC 27 — `Home`, HUD, outra aba — **não está confirmado**.
+
+**O que falta ver**: a aba `Home` do FC 27. É ela que decide se existe alguma tela do Virtual Pro com gamertag e overall juntos, ou se a verificação precisa de outro caminho.
+
+### O número na tela é configuração, não característica
+
+O mesmo modificador de **altura e peso** aparece com sinais opostos em atributos diferentes do mesmo Pro: **−5** em Acceleration e **+5** em Jumping. Cada atributo tem MIN/MAX próprios (Acceleration 70–90; Jumping 75–96), e o valor sobe com AP gasto (`Next Upgrade Cost`, com desconto em "Key Attribute of this Archetype"). No layout anterior, `Specializations` empurrava atributo acima disso (`Magician+ ACC 92 BAL 90 FIN 90`).
+
+Então o atributo lido é **valor derivado** de arquétipo + corpo + boosts + pontos gastos — e no FC 27 o reset de arquétipo não custa moeda nem consumível. Medir "o OCR leu 75 corretamente" continua válido como métrica de extração; **tratar 75 como característica do personagem, não.**
+
+### Detalhes que o script precisa encarar
+
+- **Rótulo truncado com reticências**, nas duas versões: `Interceptio…`, `Heading A…`, `Stand Tack…`, `Sprint Spe…`. O nome completo não está na tela, e o corte deve mudar com o idioma.
+- **Cabeçalho de grupo mudou entre versões**: `Ball Control`/`Scoring` no FC 27, `Dribbling`/`Shooting` no layout anterior. Extração ancorada em cabeçalho quebra na troca de edição — a prova visual de por que print de FC 26 não mede nada.
+- **Rótulo de aba varia** no próprio FC 27: a segunda aba apareceu como `Customise` num Pro e como `Finisher` (o nome do arquétipo) noutro. Âncora de aba é frágil.
+- **Skill Moves e Weak Foot são estrela**, não número. Contar estrela é extração de forma, não de texto — decidir se entram no escopo.
+- **Ruído real**: as capturas de VOD vêm com facecam cobrindo o canto e compressão de stream. É o caso difícil que o piloto quer medir; não descartar por isso.
 
 ## De onde vêm os prints (decidido em 2026-09-16)
 
