@@ -22,10 +22,18 @@ test.describe('visitante', () => {
     await expect(page.getByText('Próximos passos')).toHaveCount(0)
   })
 
-  test('a tela do Discord manda pro login quando não há sessão', async ({ page }) => {
+  /**
+   * Sem API atrás (é o caso desta suíte), a tela carrega dizendo que o vínculo
+   * está indisponível, em vez de estourar erro e sugerir que a conta quebrou.
+   * O caminho com a API no ar, que manda pro login sem sessão, está no `pnpm
+   * smoke`.
+   */
+  test('a tela do Discord carrega e avisa quando a API não responde', async ({ page }) => {
     await page.goto('/account/discord')
 
-    await expect(page).toHaveURL(/\/login$/)
+    await expect(
+      page.getByText('O vínculo com o Discord está indisponível agora. Tenta de novo mais tarde.'),
+    ).toBeVisible()
   })
 })
 

@@ -12,6 +12,11 @@ export default defineConfig({
   webServer: {
     command: 'pnpm start',
     url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
+    // Esta suite e so do navegador: nenhuma API atras, de proposito. Apontar
+    // para uma porta morta faz o comportamento ser o mesmo aqui e no CI, que
+    // nao tem API, em vez de depender de o dev ter a API no ar. O caminho com
+    // a API respondendo e coberto por 'pnpm smoke'.
+    env: { API_URL: 'http://127.0.0.1:9' },
   },
 })
