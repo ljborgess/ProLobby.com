@@ -77,6 +77,28 @@ export class Account {
   @Property({ type: 'blob', nullable: true, hidden: true })
   discordIdEncrypted?: Buffer
 
+  /**
+   * Whether this account's Discord is currently inside the server (RF-060).
+   *
+   * Not part of `state`: `state` gates the whole API, and someone who stepped
+   * out of the Discord server must still be able to sign in and read the notice
+   * telling them how to get back. It only blocks the queue, and the queue reads
+   * this. The link itself is never touched — leaving is not unlinking.
+   *
+   * Defaults to true so an account that links but never triggers an event is not
+   * locked out by a fact nobody reported.
+   */
+  @Property({ default: true })
+  discordPresent: boolean & Opt = true
+
+  /**
+   * The `occurredAt` of the event that set `discordPresent`. Events are applied
+   * only if they are not older than this, so a delayed "left" arriving after a
+   * "joined" cannot lock somebody out for good.
+   */
+  @Property({ nullable: true })
+  discordPresenceAt?: Date
+
   @Enum({ items: () => AccountRole, default: AccountRole.USER })
   role: AccountRole & Opt = AccountRole.USER
 

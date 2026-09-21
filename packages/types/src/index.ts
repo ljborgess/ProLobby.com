@@ -14,6 +14,14 @@ export {
   type SystemQuotaAlertEvent,
 } from './webhook-event'
 export {
+  botEventSchema,
+  discordMemberJoinedEventSchema,
+  discordMemberLeftEventSchema,
+  type BotEvent,
+  type DiscordMemberJoinedEvent,
+  type DiscordMemberLeftEvent,
+} from './bot-event'
+export {
   WEBHOOK_MAX_SKEW_MS,
   WEBHOOK_SIGNATURE_HEADER,
   WEBHOOK_TIMESTAMP_HEADER,

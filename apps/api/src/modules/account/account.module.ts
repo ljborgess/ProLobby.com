@@ -9,6 +9,7 @@ import { AccountController } from './account.controller'
 import { Account } from './account.entity'
 import { AccountService } from './account.service'
 import { CapacityService } from './capacity.service'
+import { DiscordPresenceService } from './discord-presence.service'
 import { DiscordLinkState } from './discord-link-state.entity'
 import { DiscordLinkService } from './discord-link.service'
 import { DiscordOAuth, createDiscordOAuth } from './discord-oauth'
@@ -45,6 +46,7 @@ import { WaitingListService } from './waiting-list.service'
     AccountRecoveryService,
     AccountService,
     CapacityService,
+    DiscordPresenceService,
     DiscordLinkService,
     { provide: DiscordOAuth, useFactory: createDiscordOAuth },
     EmailVerificationService,
@@ -54,6 +56,6 @@ import { WaitingListService } from './waiting-list.service'
     SessionService,
     WaitingListService,
   ],
-  exports: [AccountService, EmailVerificationService],
+  exports: [AccountService, DiscordPresenceService, EmailVerificationService],
 })
 export class AccountModule {}
