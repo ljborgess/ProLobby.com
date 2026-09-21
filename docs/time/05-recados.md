@@ -6,6 +6,89 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 
 ---
 
+## 2026-09-21 · Para todos
+
+### Antes de rodar e2e: o banco é outro, e ele apaga tudo
+
+As suítes e2e apagam **todas** as tabelas (`refreshDatabase`), e o banco padrão era o mesmo do `pnpm dev` — uma rodada apagou contas que estavam sendo testadas à mão. Agora o e2e **se recusa** a rodar em banco cujo nome não termine em `_e2e`.
+
+- **Uma vez, quem já tem volume local do Postgres:**
+
+  ```bash
+  docker compose exec postgres createdb -U prolobby prolobby_e2e
+  ```
+
+- **Daqui pra frente:**
+
+  ```bash
+  DATABASE_URL=postgres://prolobby:prolobby@localhost:5432/prolobby_e2e pnpm turbo e2e
+  ```
+
+  Quem subiu o Postgres na 5442 troca a porta na URL. Volume novo já nasce com o banco (`scripts/postgres-init/`).
+
+- **No CI o banco agora é `prolobby_e2e`.** Se você mexer no workflow, mantenha o nome.
+
+### Dois segredos novos são obrigatórios no boot da API
+
+A API não sobe sem eles, e isso é de propósito: segredo lido na primeira requisição falha em silêncio.
+
+- **`IDENTITY_HMAC_SECRET`** (32 bytes, `openssl rand -base64 32`) — chaveia o hash de Discord ID e gamertag. **Trocar o valor invalida todo hash gravado**, então não é rotação casual.
+- **`EVIDENCE_ENCRYPTION_KEY`** já existia, continua obrigatório.
+- **`DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET` e `DISCORD_REDIRECT_URI`** são obrigatórios **só em produção**. Fora dela, a tela de vínculo responde "indisponível" em vez de derrubar o boot. O `DISCORD_CLIENT_SECRET` é do aplicativo, **não é o token do bot**.
+
+Os exemplos estão em `apps/api/.env.example` e `deploy/production.env.example`.
+
+### Rota `/bff` nova que muda estado chama `rejectCrossSite`
+
+A auditoria de 2026-09-21 achou **CSRF de login** confirmado: um POST `text/plain` de qualquer site virava JSON no proxy e recebia o cookie de sessão. O `SameSite: lax` não cobre login nem cadastro, porque eles não dependem de cookie existente.
+
+- Toda rota `/bff` que muda estado chama `rejectCrossSite` (em `apps/web/src/common/api/same-origin.ts`).
+- A exceção é o callback do Discord, que é navegação vinda de outro site por definição e é protegido pelo `state` de uso único.
+- O item 9b do [checklist de segurança](../requisitos/08-seguranca-checklist.md) foi corrigido: ele dizia que o `SameSite` fechava o CSRF.
+
+### Fase 2.3 andou: o vínculo com o Discord está em `dev`
+
+- **#149 mergeado** (PR #165), testado ponta a ponta com o Discord real: tela em `/account/discord`, recusa de identidade banida e vínculo exclusivo.
+- **#150 fatia 1 mergeada** (PR #166): o canal bot → API (`POST /bot-events`, assinado com o mesmo HMAC invertido) e o estado de presença na conta. **Faltam o bot e o aviso na tela.**
+- **PR #167** fechou os achados da auditoria. O que sobrou virou issue: [#168](https://github.com/ljborgess/ProLobby.com/issues/168) (robustez do boot do bot) e [#169](https://github.com/ljborgess/ProLobby.com/issues/169) (`qs` vulnerável no bot).
+- O README ganhou a seção **Novidades**, com as telas novas. É o lugar mais rápido pra ver o que existe hoje.
+
+---
+
+## 2026-09-21 · Rafael
+
+### 1. O deploy (#121) ganhou três requisitos novos
+
+Nenhum é grande, mas o deploy falha sem eles:
+
+- **`IDENTITY_HMAC_SECRET`** no ambiente de produção (ver o recado acima).
+- **As três variáveis do Discord** (`DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`, `DISCORD_REDIRECT_URI`), com o `redirect_uri` **idêntico** ao cadastrado no portal: `https://prolobby.com.br/bff/discord/callback`.
+- **Volume `api-evidence`** no `docker-compose.prod.yml`, já commitado. Ele existe porque a evidência de recuperação de conta era gravada dentro do container: sem permissão de escrita e sem volume, **toda recuperação respondia "recebido" e não abria caso**. Agora a API não sobe se não conseguir gravar na pasta.
+
+### 2. Suas issues pequenas continuam suas
+
+**#156** (rota legada do Nest 11) e **#157** (codemod `middleware-to-proxy` do Next 16) ainda não têm PR. O aviso do `middleware` aparece em todo build do `apps/web`, e o da rota em todo boot da API.
+
+Depois delas, a sua fila é **#155** (tipo de caso de moderação para troca de identidade vinculada).
+
+### 3. Duas issues novas do bot
+
+[#168](https://github.com/ljborgess/ProLobby.com/issues/168) e [#169](https://github.com/ljborgess/ProLobby.com/issues/169) saíram da auditoria e são da sua área. A #169 é uma linha (`express@^4.22.3`, que já traz o `qs` corrigido); a #168 é o boot do bot validando segredo antes de conectar, com log e healthcheck.
+
+---
+
+## 2026-09-21 · Felipe
+
+### O prazo de sexta (18/09) venceu sem sinal
+
+O recado de 2026-09-16 dizia: **se até sexta, 18/09, a #106 e a #87 não tiverem sinal** (comentário ou draft PR), elas passam pro Luciano. A data passou. As duas issues fecharam na Fase 2.1 pelo caminho do Luciano.
+
+**O que isso significa pra você:** nada foi tirado como punição, e não há trabalho seu em curso registrado. Se você voltar a pegar issue, comente nela antes de começar ([regra de 2026-09-16](#trabalho-em-andamento-precisa-aparecer)) — é o que evita dois devs no mesmo arquivo.
+
+**Antes de pegar qualquer coisa**, leia os recados de 2026-09-21 acima: o e2e agora exige o banco `prolobby_e2e`, e a API exige dois segredos novos no boot.
+
+---
+
 ## 2026-09-18 · Para todos
 
 ### Animação tem gatilho agora, e o gatilho não é hoje
