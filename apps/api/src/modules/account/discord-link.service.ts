@@ -46,6 +46,17 @@ export class DiscordLinkService {
     private readonly discord: DiscordOAuth,
   ) {}
 
+  /**
+   * Whether this account has a Discord linked — the one thing the screen needs.
+   * A boolean on purpose: the hash is deterministic and the ID is RNF-009 data,
+   * so neither is ever part of an answer (item 17 of the security checklist).
+   */
+  async isLinked(accountId: string): Promise<boolean> {
+    const account = await this.em.fork().findOneOrFail(Account, { id: accountId })
+
+    return account.discordIdHash != null
+  }
+
   /** Opens the flow: records a single-use state + PKCE pair and returns where to send the person. */
   async start(accountId: string): Promise<{ authorizationUrl: string }> {
     const em = this.em.fork()

@@ -230,6 +230,16 @@ export class AccountController {
   }
 
   /**
+   * Whether the Discord is linked — what the account screen shows. A GET with
+   * no side effect (item 9b), and a boolean only: never the ID or its hash.
+   */
+  @Get('discord-links/current')
+  @AllowStates(AccountState.ACTIVE, AccountState.UNVERIFIED)
+  async currentDiscordLink(@Req() request: RequestWithAccount): Promise<{ linked: boolean }> {
+    return { linked: await this.discordLinkService.isLinked(request.account!.id) }
+  }
+
+  /**
    * Starts the Discord link — #149. Returns where to send the person; the state
    * and PKCE pair behind that URL are recorded here, single use, for 10 minutes.
    *

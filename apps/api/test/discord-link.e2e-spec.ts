@@ -258,6 +258,18 @@ describe('Discord link (#149)', () => {
     })
   })
 
+  it('tells the screen whether a Discord is linked, and nothing else', async () => {
+    const { cookie } = await account()
+    const current = () =>
+      request(app.getHttpServer()).get('/api/accounts/discord-links/current').set('Cookie', cookie)
+
+    expect((await current()).body).toEqual({ linked: false })
+
+    await complete(cookie, await start(cookie), '121212121212121212')
+
+    expect((await current()).body).toEqual({ linked: true })
+  })
+
   it('needs a session', async () => {
     const res = await request(app.getHttpServer()).post('/api/accounts/discord-links')
 
