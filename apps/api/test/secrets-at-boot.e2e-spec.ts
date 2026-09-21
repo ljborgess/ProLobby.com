@@ -4,6 +4,8 @@ import { Test } from '@nestjs/testing'
 import { AuthModule } from '../src/common/auth/auth.module'
 import { HashService } from '../src/common/auth/hash.service'
 import { AccountRecoveryService } from '../src/modules/account/account-recovery.service'
+import { DiscordLinkService } from '../src/modules/account/discord-link.service'
+import { DiscordOAuth, createDiscordOAuth } from '../src/modules/account/discord-oauth'
 import { ConsoleMailSender } from '../src/common/mail/console-mail.sender'
 import { MailModule } from '../src/common/mail/mail.module'
 import { MailSender } from '../src/common/mail/mail.types'
@@ -121,4 +123,58 @@ describe('the mail sender is chosen at boot', () => {
 
     expect(moduleRef.get(MailSender)).toBeInstanceOf(ConsoleMailSender)
   }, 60_000)
+})
+
+/**
+ * The Discord link (#149) is the first thing that reads IDENTITY_HMAC_SECRET, so
+ * it is the one that must refuse to boot without it: the same failure on first
+ * use would surface as a 500 for whoever happens to click "link Discord" first.
+ */
+describe('the Discord link is validated at boot', () => {
+  const ORIGINAL = process.env
+
+  beforeEach(() => {
+    process.env = { ...ORIGINAL }
+    process.env.EVIDENCE_ENCRYPTION_KEY = Buffer.alloc(32, 1).toString('base64')
+    process.env.IDENTITY_HMAC_SECRET = Buffer.alloc(32, 2).toString('base64')
+  })
+
+  afterAll(() => {
+    process.env = ORIGINAL
+  })
+
+  const bootLink = () =>
+    Test.createTestingModule({
+      providers: [
+        DiscordLinkService,
+        { provide: EntityManager, useValue: {} },
+        { provide: DiscordOAuth, useValue: {} },
+      ],
+    }).compile()
+
+  it('refuses to start without IDENTITY_HMAC_SECRET, because it keys the ban check', async () => {
+    delete process.env.IDENTITY_HMAC_SECRET
+
+    await expect(bootLink()).rejects.toThrow(/IDENTITY_HMAC_SECRET/)
+  })
+
+  it('refuses a secret shorter than 32 bytes', async () => {
+    process.env.IDENTITY_HMAC_SECRET = Buffer.alloc(16).toString('base64')
+
+    await expect(bootLink()).rejects.toThrow(/32 bytes/)
+  })
+
+  it('refuses to start in production without the Discord application', () => {
+    process.env.NODE_ENV = 'production'
+    delete process.env.DISCORD_CLIENT_ID
+
+    expect(() => createDiscordOAuth()).toThrow(/DISCORD_CLIENT_ID/)
+  })
+
+  it('lets a fresh clone boot with no Discord application outside production', () => {
+    process.env.NODE_ENV = 'test'
+    delete process.env.DISCORD_CLIENT_ID
+
+    expect(() => createDiscordOAuth()).not.toThrow()
+  })
 })

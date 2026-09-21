@@ -9,6 +9,9 @@ import { AccountController } from './account.controller'
 import { Account } from './account.entity'
 import { AccountService } from './account.service'
 import { CapacityService } from './capacity.service'
+import { DiscordLinkState } from './discord-link-state.entity'
+import { DiscordLinkService } from './discord-link.service'
+import { DiscordOAuth, createDiscordOAuth } from './discord-oauth'
 import { EmailVerification } from './email-verification.entity'
 import { EmailVerificationService } from './email-verification.service'
 import { FailedSignIn } from './failed-sign-in.entity'
@@ -26,6 +29,7 @@ import { WaitingListService } from './waiting-list.service'
   imports: [
     MikroOrmModule.forFeature([
       Account,
+      DiscordLinkState,
       EmailVerification,
       FailedSignIn,
       PasswordReset,
@@ -41,6 +45,8 @@ import { WaitingListService } from './waiting-list.service'
     AccountRecoveryService,
     AccountService,
     CapacityService,
+    DiscordLinkService,
+    { provide: DiscordOAuth, useFactory: createDiscordOAuth },
     EmailVerificationService,
     PasswordResetService,
     PunishmentAppealService,
