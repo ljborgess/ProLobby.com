@@ -49,8 +49,10 @@ describe('GET /bff/discord/callback', () => {
     const res = await call('?code=SECRETCODE12&state=SECRETSTATE1')
 
     expect(res.headers.get('location')).not.toMatch(/SECRET/)
-    expect(res.headers.get('referrer-policy')).toBe('no-referrer')
     expect(res.headers.get('cache-control')).toBe('private, no-store')
+    // The referrer policy that protects the `code` is global (next.config.ts),
+    // so it is asserted end to end in e2e/account-flow.spec.ts — a header set
+    // in this handler never reaches the wire.
   })
 
   it.each([
