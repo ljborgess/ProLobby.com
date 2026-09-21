@@ -46,6 +46,8 @@ Não existe token anti-CSRF. O que fecha o vetor é o cookie de sessão com **`S
 
 **Regra prática, que vale pra toda rota nova**: GET nunca tem efeito colateral. Ação que muda estado usa POST, PATCH ou DELETE. É boa prática de HTTP em qualquer lugar, e aqui é também o que sustenta a ausência de token CSRF.
 
+**O que o `SameSite` não cobre: login e cadastro** (auditoria de 2026-09-21). As duas rotas não dependem de cookie existente, então um formulário em qualquer site podia postar nelas: um corpo `text/plain` montado para ser JSON válido passava pelo proxy `/bff` e **logava a vítima na conta do atacante** (e o Discord que ela vinculasse ficava preso lá, porque o vínculo é exclusivo), ou criava conta usando o IP de cada visitante. Foi confirmado contra o app rodando. O fechamento mora no `apps/web`, em `rejectCrossSite`: rota `/bff` que muda estado recusa `Sec-Fetch-Site` diferente de `same-origin`/`none` e corpo que não seja `application/json`. **Regra prática**: toda rota `/bff` nova que muda estado chama `rejectCrossSite`. A exceção é o callback do Discord, que é navegação vinda de outro site por definição e é protegido pelo `state` de uso único.
+
 `SameSite: strict` foi descartado por outro motivo, registrado no ADR-007: derrubaria o cookie de quem chega por link do Discord, que é o caminho normal de entrada neste produto ([RF-060](05-funcionais.md#rf-060--sair-do-servidor-discord-bloqueia-a-fila-até-voltar)).
 
 ## 10 · Hash nas senhas

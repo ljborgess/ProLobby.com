@@ -428,7 +428,7 @@ Motivo: comando de jogador duplicaria a plataforma dentro do Discord, criando do
 ### RF-058 · Evento da plataforma pro bot tem retry e vira caso ao esgotar
 **Origem**: [discord/04-integracao.md](../discord/04-integracao.md)
 
-**Aceite**: sem confirmação em 10 s, a plataforma reenvia — 3 tentativas, em 10 s, 20 s e 40 s. Esgotado, abre caso na fila de moderação e a fila de partidas pausa (ver RNF-008).
+**Aceite**: sem confirmação em 10 s, a plataforma reenvia 3 vezes, em 10 s, 20 s e 40 s (4 tentativas contando o envio original). Esgotado, abre caso na fila de moderação e a fila de partidas pausa (ver RNF-008).
 
 **Idempotência (decidido em 2026-09-09, mecanismo fechado em 2026-09-11)**: cada evento carrega uma chave única (id do evento). Sem isso, reenvio por ACK perdido (não por falha real) duplica ação: cria os 3 canais duas vezes, kicka duas vezes, etc. Mesmo princípio de [RNF-018](07-nao-funcionais.md#rnf-018--envio-com-efeito-é-idempotente).
 
