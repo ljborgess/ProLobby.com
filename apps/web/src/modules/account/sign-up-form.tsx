@@ -71,11 +71,17 @@ export function SignUpForm() {
     } else if (!isOldEnough(birthDate)) {
       next.birthDate = content.ageTooYoung
     }
+    // Same bounds as `SignUpDto` on the API (8 and 2): without them the API
+    // answers 400 and the person sees only the generic failure message.
     if (!securityQuestion) {
       next.securityQuestion = content.fieldRequired
+    } else if (securityQuestion.length < 8) {
+      next.securityQuestion = content.securityQuestionTooShort
     }
     if (!securityAnswer) {
       next.securityAnswer = content.fieldRequired
+    } else if (securityAnswer.length < 2) {
+      next.securityAnswer = content.securityAnswerTooShort
     }
     if (!acceptedTerms) {
       next.acceptedTerms = content.fieldRequired
