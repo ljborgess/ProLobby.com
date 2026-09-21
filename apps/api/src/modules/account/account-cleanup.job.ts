@@ -3,6 +3,7 @@ import { Cron, CronExpression } from '@nestjs/schedule'
 
 import { AccountRecoveryService } from './account-recovery.service'
 import { EmailVerificationService } from './email-verification.service'
+import { ExpiredRowsService } from './expired-rows.service'
 
 /**
  * `@nestjs/schedule` is pinned to `^6.1.3`, not latest: v12 dropped CommonJS
@@ -30,6 +31,7 @@ export class AccountCleanupJob {
   constructor(
     private readonly emailVerificationService: EmailVerificationService,
     private readonly accountRecoveryService: AccountRecoveryService,
+    private readonly expiredRowsService: ExpiredRowsService,
   ) {}
 
   /**
@@ -78,6 +80,26 @@ export class AccountCleanupJob {
     } catch (error) {
       this.logger.error(
         'failed to delete expired evidence screenshots',
+        error instanceof Error ? error.stack : undefined,
+      )
+    }
+  }
+
+  /**
+   * Sign-in attempts, reset links and Discord link states past their use —
+   * audit of 2026-09-21. Same shape as the two above: own schedule, own
+   * try/catch, count always logged.
+   */
+  @Cron(CronExpression.EVERY_DAY_AT_2AM, { timeZone: 'UTC' })
+  async purgeExpiredRows(): Promise<void> {
+    try {
+      const purged = await this.expiredRowsService.purge()
+      this.logger.log(
+        `purged ${purged.failedSignIns} failed sign-in(s), ${purged.passwordResets} reset link(s), ${purged.discordLinkStates} Discord link state(s)`,
+      )
+    } catch (error) {
+      this.logger.error(
+        'failed to purge expired rows',
         error instanceof Error ? error.stack : undefined,
       )
     }
