@@ -21,7 +21,16 @@ import { highestMetThreshold, QUOTA_CAPS, usagePercent } from './quota.threshold
 @Injectable()
 export class QuotaAlertJob {
   private readonly logger = new Logger(QuotaAlertJob.name)
-  /** resource:threshold → UTC date already sent, so 70% does not spam all day. */
+  /**
+   * resource:threshold → UTC date already sent, so 70% does not spam all day.
+   *
+   * ponytail: in-memory, so a redeploy between two of the day's four runs
+   * loses this and can send one duplicate alert to #status-sistema for a
+   * threshold already crossed today. The consequence is a repeated message in
+   * a private ops channel, not a missed alert or a security issue — upgrade
+   * to a row in the database (keyed the same way) if the duplicates ever get
+   * noisy enough to matter.
+   */
   private readonly alerted = new Map<string, string>()
 
   constructor(

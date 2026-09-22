@@ -90,6 +90,26 @@ describe('QuotaAlertJob (#123)', () => {
     expect(enqueue).toHaveBeenCalledTimes(1)
   })
 
+  /**
+   * Code review of 2026-09-22 (#123): documents the known, accepted gap named
+   * in the `ponytail:` comment on `alerted`. A fresh instance is exactly what
+   * a redeploy produces — the in-memory dedup does not survive it. This test
+   * exists so the trade-off stays visible in the suite, not only in a comment
+   * that nobody re-reads once it is merged.
+   */
+  it('re-alerts the same day across a restart — the accepted cost of in-memory dedup', async () => {
+    neonRead.mockResolvedValue({
+      storageBytes: 0.4 * 1_000_000_000,
+      computeSeconds: 0,
+      egressBytes: 0,
+    })
+
+    await job().run()
+    await job().run()
+
+    expect(enqueue).toHaveBeenCalledTimes(2)
+  })
+
   it('does not throw when Neon is unreachable — a quota miss must not take the API down', async () => {
     neonRead.mockRejectedValue(new Error('timeout'))
 
