@@ -21,7 +21,9 @@
         "WEBHOOK_SECRET",
         "BOT_WEBHOOK_URL",
         "EVIDENCE_ENCRYPTION_KEY",
-        "IDENTITY_HMAC_SECRET"
+        "IDENTITY_HMAC_SECRET",
+        "NEON_API_KEY",
+        "NEON_PROJECT_ID"
       ]
     },
     "lint": {},
@@ -35,7 +37,9 @@
         "WEBHOOK_SECRET",
         "BOT_WEBHOOK_URL",
         "EVIDENCE_ENCRYPTION_KEY",
-        "IDENTITY_HMAC_SECRET"
+        "IDENTITY_HMAC_SECRET",
+        "NEON_API_KEY",
+        "NEON_PROJECT_ID"
       ]
     },
     "e2e": {
@@ -59,7 +63,9 @@
         "WEBHOOK_SECRET",
         "BOT_WEBHOOK_URL",
         "EVIDENCE_ENCRYPTION_KEY",
-        "IDENTITY_HMAC_SECRET"
+        "IDENTITY_HMAC_SECRET",
+        "NEON_API_KEY",
+        "NEON_PROJECT_ID"
       ]
     }
   }

@@ -11,9 +11,9 @@ describe('production compose (ADR-009 / #121)', () => {
   const dev = readRepoFile('docker-compose.yml')
   const tunnel = readRepoFile('deploy/cloudflared.yml')
 
-  it('runs web, api, api-migrate, bot and cloudflared — and no Postgres', () => {
+  it('runs web, api, api-migrate, api-backup, bot and cloudflared — and no Postgres', () => {
     expect(composeServiceNames(prod).sort()).toEqual(
-      ['api', 'api-migrate', 'bot', 'cloudflared', 'web'].sort(),
+      ['api', 'api-backup', 'api-migrate', 'bot', 'cloudflared', 'web'].sort(),
     )
   })
 
@@ -80,7 +80,30 @@ describe('production compose (ADR-009 / #121)', () => {
     const migrate = withoutComments(composeServiceBlock(prod, 'api-migrate'))
     const api = withoutComments(composeServiceBlock(prod, 'api'))
     expect(migrate).toContain('DATABASE_DIRECT_URL')
+    expect(migrate).toContain('target: runner')
     expect(api).not.toContain('DATABASE_DIRECT_URL')
+  })
+
+  /**
+   * Issue #123: pg_dump needs the owner URL and postgresql-client. Putting
+   * either on the API process would break ADR-009 (prolobby_app has no DDL)
+   * and would keep a dump binary in the request path. The backup stage is a
+   * one-shot profile, not `up -d`.
+   */
+  it('dumps from a one-shot backup image that is not the API process', () => {
+    const backup = composeServiceBlock(prod, 'api-backup')
+    const api = composeServiceBlock(prod, 'api')
+    const dockerfile = readRepoFile('apps/api/Dockerfile')
+
+    expect(withoutComments(backup)).toContain('DATABASE_DIRECT_URL')
+    expect(backup).toContain('target: backup')
+    expect(backup).toContain('profiles:')
+    expect(backup).toMatch(/restart: ['"]no['"]/)
+    expect(serviceDeclaresPorts(backup)).toBe(false)
+    expect(api).toContain('target: runner')
+    expect(dockerfile).toContain('FROM runner AS backup')
+    expect(dockerfile).toContain('postgresql-client')
+    expect(dockerfile).toContain('dist/common/backup/cli.js')
   })
 
   /**
