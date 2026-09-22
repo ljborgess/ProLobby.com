@@ -70,7 +70,7 @@ describe('Discord link (#149)', () => {
 
   const start = async (cookie: string): Promise<string> => {
     const res = await request(app.getHttpServer())
-      .post('/api/accounts/discord-links')
+      .post('/api/accounts/me/discord-link/attempts')
       .set('Cookie', cookie)
     expect(res.status).toBe(201)
     return new URL(res.body.authorizationUrl).searchParams.get('state') as string
@@ -78,7 +78,7 @@ describe('Discord link (#149)', () => {
 
   const complete = (cookie: string, state: string, code: string) =>
     request(app.getHttpServer())
-      .post('/api/accounts/discord-links/callbacks')
+      .put('/api/accounts/me/discord-link')
       .set('Cookie', cookie)
       .send({ state, code })
 
@@ -131,7 +131,7 @@ describe('Discord link (#149)', () => {
   it('sends the PKCE verifier that matches the challenge in the URL', async () => {
     const { cookie } = await account()
     const res = await request(app.getHttpServer())
-      .post('/api/accounts/discord-links')
+      .post('/api/accounts/me/discord-link/attempts')
       .set('Cookie', cookie)
     const url = new URL(res.body.authorizationUrl)
 
@@ -278,7 +278,7 @@ describe('Discord link (#149)', () => {
   it('tells the screen whether a Discord is linked, and nothing else', async () => {
     const { cookie } = await account()
     const current = () =>
-      request(app.getHttpServer()).get('/api/accounts/discord-links/current').set('Cookie', cookie)
+      request(app.getHttpServer()).get('/api/accounts/me/discord-link').set('Cookie', cookie)
 
     expect((await current()).body).toEqual({ linked: false })
 
@@ -288,7 +288,7 @@ describe('Discord link (#149)', () => {
   })
 
   it('needs a session', async () => {
-    const res = await request(app.getHttpServer()).post('/api/accounts/discord-links')
+    const res = await request(app.getHttpServer()).post('/api/accounts/me/discord-link/attempts')
 
     expect(res.status).toBe(401)
   })

@@ -41,7 +41,12 @@ export class ExpiredRowsService {
     return {
       failedSignIns: await em.nativeDelete(FailedSignIn, { createdAt: { $lt: cutoff } }),
       passwordResets: await em.nativeDelete(PasswordReset, { expiresAt: { $lt: cutoff } }),
-      discordLinkStates: await em.nativeDelete(DiscordLinkState, { expiresAt: { $lt: cutoff } }),
+      // No grace period here, unlike the two above: DiscordLinkState.codeVerifier
+      // is a plaintext secret, and the entity's own contract says it "dies with
+      // the row (10 minutes)" — a day of extra grace would quietly break that
+      // promise. Nothing reads this table by "how long ago" it expired the way
+      // FailedSignIn and PasswordReset do, so there is no accuracy to trade for.
+      discordLinkStates: await em.nativeDelete(DiscordLinkState, { expiresAt: { $lt: now } }),
     }
   }
 }

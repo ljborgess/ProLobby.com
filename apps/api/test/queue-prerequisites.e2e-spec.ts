@@ -55,10 +55,12 @@ describe('queue prerequisites (#171)', () => {
   }
 
   const prerequisites = (cookie: string) =>
-    request(app.getHttpServer()).get('/api/accounts/queue-prerequisites').set('Cookie', cookie)
+    request(app.getHttpServer()).get('/api/accounts/me/queue-prerequisites').set('Cookie', cookie)
 
   const resend = (cookie: string) =>
-    request(app.getHttpServer()).post('/api/accounts/verifications/resends').set('Cookie', cookie)
+    request(app.getHttpServer())
+      .post('/api/accounts/me/verifications/resends')
+      .set('Cookie', cookie)
 
   beforeAll(async () => {
     process.env.THROTTLE_DISABLED = 'true'
@@ -125,7 +127,7 @@ describe('queue prerequisites (#171)', () => {
   describe('refuses without serving a panel', () => {
     it('needs a session', async () => {
       expect(
-        (await request(app.getHttpServer()).get('/api/accounts/queue-prerequisites')).status,
+        (await request(app.getHttpServer()).get('/api/accounts/me/queue-prerequisites')).status,
       ).toBe(401)
     })
 
@@ -189,7 +191,7 @@ describe('queue prerequisites (#171)', () => {
     })
 
     it('needs a session', async () => {
-      const res = await request(app.getHttpServer()).post('/api/accounts/verifications/resends')
+      const res = await request(app.getHttpServer()).post('/api/accounts/me/verifications/resends')
 
       expect(res.status).toBe(401)
     })

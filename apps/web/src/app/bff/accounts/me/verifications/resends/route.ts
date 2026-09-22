@@ -18,7 +18,7 @@ export async function POST(request: Request): Promise<Response> {
   const cookie = request.headers.get('cookie')
 
   return relay(
-    apiFetch('/api/accounts/verifications/resends', {
+    apiFetch('/api/accounts/me/verifications/resends', {
       method: 'POST',
       headers: cookie ? { cookie } : undefined,
       forwardedIp: forwardedIpFrom(request),

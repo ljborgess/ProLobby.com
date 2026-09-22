@@ -85,7 +85,7 @@ describe('Home', () => {
     await Home()
 
     expect(apiFetch).toHaveBeenCalledWith(
-      '/api/accounts/queue-prerequisites',
+      '/api/accounts/me/queue-prerequisites',
       expect.objectContaining({ cache: 'no-store' }),
     )
   })

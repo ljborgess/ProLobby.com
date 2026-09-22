@@ -80,3 +80,32 @@ jobs:
         working-directory: apps/web
 
       - run: pnpm turbo e2e
+
+      # Sobe os dois processos de verdade e roda o roteiro que antes era manual:
+      # login pelo proxy, painel da home, reenvio, início do vínculo, CSRF e as
+      # rotas antigas respondendo 404. É o único ponto do pipeline em que web e
+      # API conversam — cada suíte acima sobe a sua própria aplicação isolada, e
+      # foi assim que uma renomeação de rota passou despercebida em 2026-09-21.
+      #
+      # Sem aplicativo do Discord configurado aqui, o passo do vínculo é pulado
+      # pelo próprio script: a rota responder "indisponível" é o comportamento
+      # correto neste ambiente.
+      - name: Smoke com web e API no ar
+        run: |
+          pnpm --filter @prolobby/api mikro-orm migration:up
+          # A partir de apps/api: o mikro-orm.config resolve `entities` em
+          # ./dist/**, relativo ao diretorio atual — da raiz o boot morre com
+          # "No entities were discovered" (visto no CI em 2026-09-21).
+          # A porta vai em cada processo, nunca no `env:` do passo: um PORT
+          # comum faria o Next subir na porta da API e o wait-on esperar para
+          # sempre — foi o que aconteceu na primeira tentativa.
+          (cd apps/api && PORT=3001 node dist/main.js) > /tmp/api.log 2>&1 &
+          PORT=3000 pnpm --filter @prolobby/web start > /tmp/web.log 2>&1 &
+          npx --yes wait-on -t 90000 http://localhost:3001/api/health http://localhost:3000
+          pnpm smoke --api http://localhost:3001 --web http://localhost:3000
+        env:
+          API_URL: http://localhost:3001
+
+      - name: Logs dos processos quando o smoke falha
+        if: failure()
+        run: tail -n 40 /tmp/api.log /tmp/web.log || true

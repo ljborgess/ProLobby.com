@@ -26,7 +26,7 @@ export function QueuePrerequisitesPanel({ emailVerified, discordLinked }: QueueP
     setResend('sending')
 
     try {
-      const response = await fetch('/bff/verifications/resends', { method: 'POST' })
+      const response = await fetch('/bff/accounts/me/verifications/resends', { method: 'POST' })
       setResend(response.ok ? 'sent' : 'error')
     } catch {
       setResend('error')

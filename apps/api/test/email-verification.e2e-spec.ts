@@ -277,7 +277,7 @@ describe('email verification', () => {
       mail.clear()
 
       const res = await request(app.getHttpServer())
-        .post('/api/accounts/verifications/resend')
+        .post('/api/accounts/verifications/resends')
         .send({ email: 'recovered@test.local' })
       await flushMail()
 
@@ -306,7 +306,7 @@ describe('email verification', () => {
 
       const responses = await Promise.all(
         ['pending@test.local', 'alreadydone@test.local', 'nobody-at-all@test.local'].map((email) =>
-          request(app.getHttpServer()).post('/api/accounts/verifications/resend').send({ email }),
+          request(app.getHttpServer()).post('/api/accounts/verifications/resends').send({ email }),
         ),
       )
 
@@ -326,7 +326,7 @@ describe('email verification', () => {
       mail.clear()
 
       await request(app.getHttpServer())
-        .post('/api/accounts/verifications/resend')
+        .post('/api/accounts/verifications/resends')
         .send({ email: 'nospam@test.local' })
       await flushMail()
 
@@ -340,7 +340,7 @@ describe('email verification', () => {
       const first = tokenFrom()
 
       await request(app.getHttpServer())
-        .post('/api/accounts/verifications/resend')
+        .post('/api/accounts/verifications/resends')
         .send({ email: 'resent@test.local' })
       await flushMail()
       const second = tokenFrom()

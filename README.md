@@ -52,12 +52,12 @@ sequenceDiagram
     participant A as apps/api
     participant D as Discord
     J->>W: Vincular Discord
-    W->>A: POST /accounts/discord-links
+    W->>A: POST /accounts/me/discord-link/attempts
     A-->>W: URL de autorização (state + PKCE)
     W->>D: Redireciona
     J->>D: Autoriza (escopo identify)
     D->>W: /bff/discord/callback?code&state
-    W->>A: POST /accounts/discord-links/callbacks
+    W->>A: PUT /accounts/me/discord-link
     A->>D: Troca o code, lê só o ID
     A->>A: Confere lista de banidos e grava hash + cifra
     A-->>W: 204

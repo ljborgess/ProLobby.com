@@ -12,7 +12,7 @@ describe('sign-up waiting list (RF-078)', () => {
   let orm: MikroORM
 
   const join = (email: string) =>
-    request(app.getHttpServer()).post('/api/accounts/waiting-list').send({ email })
+    request(app.getHttpServer()).post('/api/accounts/waiting-list-entries').send({ email })
 
   const entriesFor = (email: string): Promise<WaitingListEntry[]> =>
     orm.em.fork().find(WaitingListEntry, { email })

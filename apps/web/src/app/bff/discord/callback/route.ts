@@ -14,6 +14,14 @@ import { statusFromApi, type DiscordLinkStatus } from '@/modules/account/discord
  *
  * It answers with a redirect to the screen, carrying only a closed status code —
  * never the `code`, the `state` or anything Discord sent.
+ *
+ * The URL Discord sends here does hold a `code`, and what keeps it from leaking
+ * to third parties is `Referrer-Policy: strict-origin-when-cross-origin`, set on
+ * every response by `next.config.ts`: a cross-origin request then carries the
+ * origin and never the query. Setting `no-referrer` on this response does *not*
+ * work — the config's header wins on the wire, which a unit test of this
+ * function cannot see. The assertion therefore lives in the Playwright suite,
+ * which reads the real response (`e2e/account-flow.spec.ts`).
  */
 export async function GET(request: Request): Promise<Response> {
   const params = new URL(request.url).searchParams
@@ -32,8 +40,10 @@ export async function GET(request: Request): Promise<Response> {
   const cookie = request.headers.get('cookie')
   let apiResponse: Response
   try {
-    apiResponse = await apiFetch('/api/accounts/discord-links/callbacks', {
-      method: 'POST',
+    apiResponse = await apiFetch('/api/accounts/me/discord-link', {
+      // PUT: finishing the link is writing the one link this account can have,
+      // and doing it twice with the same Discord changes nothing.
+      method: 'PUT',
       headers: { 'content-type': 'application/json', ...(cookie ? { cookie } : {}) },
       body: JSON.stringify({ state, code }),
       forwardedIp: forwardedIpFrom(request),
@@ -62,8 +72,6 @@ function redirect(location: string): Response {
     status: 303,
     headers: {
       location,
-      // The URL Discord redirected to held a `code`; do not let it ride along.
-      'referrer-policy': 'no-referrer',
       'cache-control': 'private, no-store',
     },
   })

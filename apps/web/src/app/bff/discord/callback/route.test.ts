@@ -21,14 +21,14 @@ describe('GET /bff/discord/callback', () => {
     apiFetch.mockReset()
   })
 
-  it('forwards code and state to the API as a POST, with the session cookie', async () => {
+  it('forwards code and state to the API as a PUT, with the session cookie', async () => {
     apiFetch.mockResolvedValue(new Response(null, { status: 204 }))
 
     const res = await call('?code=abc1234567&state=stateabcdefghijk', 'session=jwt')
 
     const [path, init] = apiFetch.mock.calls[0]!
-    expect(path).toBe('/api/accounts/discord-links/callbacks')
-    expect(init.method).toBe('POST')
+    expect(path).toBe('/api/accounts/me/discord-link')
+    expect(init.method).toBe('PUT')
     expect(init.headers.cookie).toBe('session=jwt')
     expect(JSON.parse(init.body)).toEqual({ code: 'abc1234567', state: expect.any(String) })
     expect(res.headers.get('location')).toBe('/account/discord?status=linked')
@@ -49,8 +49,10 @@ describe('GET /bff/discord/callback', () => {
     const res = await call('?code=SECRETCODE12&state=SECRETSTATE1')
 
     expect(res.headers.get('location')).not.toMatch(/SECRET/)
-    expect(res.headers.get('referrer-policy')).toBe('no-referrer')
     expect(res.headers.get('cache-control')).toBe('private, no-store')
+    // The referrer policy that protects the `code` is global (next.config.ts),
+    // so it is asserted end to end in e2e/account-flow.spec.ts — a header set
+    // in this handler never reaches the wire.
   })
 
   it.each([
