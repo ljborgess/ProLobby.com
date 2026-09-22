@@ -18,6 +18,12 @@ export type WebhookServerOptions = {
   secret: string
   clock?: Clock
   limiter?: SlidingWindowLimiter
+  /**
+   * Whether the Discord gateway is currently connected — issue #168. Defaults
+   * to always-ready so every existing test and caller keeps working; the real
+   * entrypoint (index.ts) passes `() => client.isReady()`.
+   */
+  isReady?: () => boolean
 }
 
 /**
@@ -31,8 +37,18 @@ export type WebhookServerOptions = {
 export function createWebhookServer(options: WebhookServerOptions): Express {
   const clock: Clock = options.clock ?? { now: () => new Date() }
   const limiter = options.limiter ?? new SlidingWindowLimiter(clock)
+  const isReady = options.isReady ?? (() => true)
 
   const app = express()
+
+  // No auth and no rate limit: Compose's own healthcheck calls this on the
+  // loopback address, and it reports a fact about this process, not business
+  // data. 503 while the gateway is down is what makes `docker compose` (and
+  // RF-060, which needs the bot really connected) able to tell.
+  app.get('/health', (_req: Request, res: Response) => {
+    res.status(isReady() ? 200 : 503).json({ discordReady: isReady() })
+  })
+
   app.use(
     express.json({
       limit: WEBHOOK_BODY_LIMIT,

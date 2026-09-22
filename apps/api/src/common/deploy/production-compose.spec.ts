@@ -82,4 +82,17 @@ describe('production compose (ADR-009 / #121)', () => {
     expect(migrate).toContain('DATABASE_DIRECT_URL')
     expect(api).not.toContain('DATABASE_DIRECT_URL')
   })
+
+  /**
+   * Issue #168: before this, `api` and `web` had a healthcheck and `bot` did
+   * not — a bot that lost its gateway connection stayed "up" as far as Compose
+   * could tell, and RF-060 (#150) needs the bot to be really connected.
+   */
+  it('checks the bot over its own /health route, not just that the process exists', () => {
+    const bot = composeServiceBlock(prod, 'bot')
+
+    expect(bot).toContain('healthcheck')
+    expect(bot).toContain('127.0.0.1:3002/health')
+    expect(serviceDeclaresPorts(bot)).toBe(false)
+  })
 })

@@ -263,3 +263,44 @@ describe('webhook server — global rate limit', () => {
     expect(allowed.status).toBe(202)
   })
 })
+
+/**
+ * Issue #168: without this, the Compose healthcheck could not tell a bot with
+ * a dead gateway connection from one that was fine — both answered nothing at
+ * all, since there was no health endpoint.
+ */
+describe('GET /health', () => {
+  it('answers 200 with no isReady option, so every existing caller keeps working', async () => {
+    const app = createWebhookServer({ secret: SECRET })
+
+    const res = await request(app).get('/health')
+
+    expect(res.status).toBe(200)
+    expect(res.body).toEqual({ discordReady: true })
+  })
+
+  it('answers 200 when the gateway is connected', async () => {
+    const app = createWebhookServer({ secret: SECRET, isReady: () => true })
+
+    const res = await request(app).get('/health')
+
+    expect(res.status).toBe(200)
+  })
+
+  it('answers 503 when the gateway is not connected — this is what Compose must catch', async () => {
+    const app = createWebhookServer({ secret: SECRET, isReady: () => false })
+
+    const res = await request(app).get('/health')
+
+    expect(res.status).toBe(503)
+    expect(res.body).toEqual({ discordReady: false })
+  })
+
+  it('needs no signature — Compose calls it unauthenticated, on the loopback address', async () => {
+    const app = createWebhookServer({ secret: SECRET, isReady: () => true })
+
+    const res = await request(app).get('/health')
+
+    expect(res.status).not.toBe(401)
+  })
+})

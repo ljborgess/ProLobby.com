@@ -103,6 +103,22 @@ services:
       PORT: '3002'
       DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:?DISCORD_BOT_TOKEN is required}
       WEBHOOK_SECRET: ${WEBHOOK_SECRET:?WEBHOOK_SECRET is required}
+    # /health is loopback-only and unauthenticated on purpose (server.ts): it
+    # reports gateway state, not business data, and only Compose calls it.
+    # 503 while the gateway is down is what RF-060 needs — the bot must be
+    # really connected, not just "the process exists" (issue #168).
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3002/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 20s
 
   cloudflared:
     image: cloudflare/cloudflared:2025.8.1
