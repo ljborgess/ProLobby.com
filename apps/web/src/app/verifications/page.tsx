@@ -9,6 +9,7 @@ import {
   QueuePrerequisitesPanel,
   type QueuePrerequisites,
 } from '@/modules/account/queue-prerequisites-panel'
+import { SignOutButton } from '@/modules/account/sign-out-button'
 
 export const metadata: Metadata = {
   title: 'Sua conta — ProLobby',
@@ -63,8 +64,11 @@ export default async function VerificationsPage() {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-16 sm:px-6">
+    <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-6 px-4 py-16 sm:px-6">
       <QueuePrerequisitesPanel {...prerequisites} />
+      <div className="flex justify-center">
+        <SignOutButton />
+      </div>
     </main>
   )
 }

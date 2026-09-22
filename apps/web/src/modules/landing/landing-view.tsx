@@ -14,163 +14,398 @@ const FEATURE_ICONS = [
 ]
 
 /**
- * The public landing's visual body — issue #171 redesign of 2026-09-22,
- * extended the same day with a top bar, a facts strip, a position grid and a
- * solo-queue spotlight (docs/produto/01-visao/01-visao.md, "A landing
- * pública sai do gatilho acima"). Structure across both passes is informed
- * by gamersclub.com.br at the user's request; colors and type stay the
- * inherited design system — no new palette, and no invented traction number
- * (no queue yet in Fase 2.3 — `facts` below holds only already-decided spec
- * numbers, never a made-up "jogadores online").
+ * Where each position category sits on the pitch drawing, as percentages of
+ * the pitch box. Order matches `content.positions.items`, which is why this is
+ * a plain array and not a map keyed by a Portuguese label: the labels are
+ * translated, the geometry is not.
+ */
+const POSITION_MARKS = [
+  { x: 8, y: 50 }, // goleiro
+  { x: 28, y: 50 }, // zaga
+  { x: 50, y: 50 }, // meio
+  { x: 70, y: 22 }, // ponta
+  { x: 82, y: 50 }, // ataque
+]
+
+/**
+ * The public landing — issue #171, redesigned 2026-09-22
+ * (docs/produto/01-visao/01-visao.md, "A landing pública sai do gatilho
+ * acima"). Structure follows gamersclub.com.br, read at the user's request;
+ * everything else is ours.
  *
- * Client component, like SignUpHeading, so the language switch re-renders
- * this copy without a navigation.
+ * Three constraints shape every visual here, all deliberate:
+ *
+ * - **No photography.** The reference carries its weight with game art we have
+ *   no licence to ship, so depth comes from drawn layers instead: a pitch in
+ *   SVG, a perspective floor, mesh gradients, a woven texture, scrims. The
+ *   image slots are ready for art the user supplies; nothing is borrowed.
+ * - **No invented traction.** Fase 2.3 has no queue, so `facts` carries only
+ *   already-decided spec numbers — never a made-up "jogadores online".
+ * - **No animation library.** Every effect is native CSS (keyframes, registered
+ *   custom properties, scroll-driven `animation-timeline`), per the same doc's
+ *   "nativo primeiro" rule. All of it is no-op'd under
+ *   `prefers-reduced-motion` in globals.css — RNF-015.
+ *
+ * Client component, like SignUpHeading, so the language switch re-renders this
+ * copy without a navigation.
  */
 export function LandingView() {
   const content = useLandingContent()
 
   return (
     <>
-      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-white/5 bg-background/80 px-4 py-4 backdrop-blur sm:px-6">
-        <span className="font-display text-lg font-semibold text-foreground">ProLobby</span>
-        <nav className="flex items-center gap-3">
-          <Link href="/login" className="text-sm font-medium text-foreground-soft">
-            {content.topBar.signIn}
-          </Link>
-          <Link
-            href="/sign-up"
-            className="rounded-sm bg-accent px-4 py-2 text-sm font-medium text-background transition-transform duration-200 hover:scale-105 active:scale-95"
-          >
-            {content.topBar.cta}
-          </Link>
-        </nav>
-      </header>
-
-      <section className="relative flex flex-1 flex-col items-center justify-center overflow-hidden px-4 py-24 text-center sm:px-6">
+      <header className="sticky top-0 z-20 border-b border-white/5 bg-background/70 backdrop-blur-md">
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
+          <span className="font-display text-lg font-semibold tracking-tight text-foreground">
+            Pro<span className="text-accent">Lobby</span>
+          </span>
+          <nav className="flex items-center gap-2 sm:gap-4">
+            <Link
+              href="/login"
+              className="landing-focus px-2 py-1 text-sm font-medium text-foreground-soft transition-colors hover:text-foreground"
+            >
+              {content.topBar.signIn}
+            </Link>
+            <Link
+              href="/sign-up"
+              className="landing-focus landing-sheen rounded-sm bg-accent px-4 py-2 text-sm font-semibold text-background transition-transform duration-200 hover:scale-[1.04] active:scale-95"
+            >
+              {content.topBar.cta}
+            </Link>
+          </nav>
+        </div>
         <div
           aria-hidden
-          className="landing-glow pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--color-accent-strong)_0%,_transparent_60%)]"
+          className="landing-progress-bar h-px w-full bg-gradient-to-r from-accent via-accent to-gold"
         />
-        <h1
-          className="landing-fade-up max-w-3xl font-display text-4xl font-semibold text-foreground sm:text-5xl"
-          style={{ '--landing-delay': '0.05s' } as React.CSSProperties}
-        >
-          {content.hero.titlePrefix}
-          <span className="text-accent">{content.hero.titleAccent}</span>
-          {content.hero.titleSuffix}
-        </h1>
-        <p
-          className="landing-fade-up mt-6 max-w-xl text-lg text-foreground-soft"
-          style={{ '--landing-delay': '0.15s' } as React.CSSProperties}
-        >
-          {content.hero.subtitle}
-        </p>
-        <div
-          className="landing-fade-up mt-8 flex flex-col gap-3 sm:flex-row"
-          style={{ '--landing-delay': '0.25s' } as React.CSSProperties}
-        >
-          <Link
-            href="/sign-up"
-            className="rounded-sm bg-accent px-6 py-3 text-base font-medium text-background transition-transform duration-200 hover:scale-105 active:scale-95"
+      </header>
+
+      <section className="relative flex min-h-[86vh] flex-1 items-center overflow-hidden px-4 py-24 sm:px-6">
+        <HeroBackdrop />
+
+        <div className="mx-auto grid w-full max-w-6xl items-center gap-14 lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="text-center lg:text-left">
+            <span
+              className="landing-fade-up inline-flex items-center gap-2 rounded-sm border border-accent/25 bg-accent/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-accent"
+              style={{ '--landing-delay': '0s' } as React.CSSProperties}
+            >
+              <span className="landing-glow size-1.5 rounded-full bg-accent" />
+              EA FC Pro Clubs
+            </span>
+
+            <h1
+              className="landing-fade-up landing-display mt-7 font-display font-semibold text-foreground"
+              style={{ '--landing-delay': '0.06s' } as React.CSSProperties}
+            >
+              {content.hero.titlePrefix}
+              <span className="landing-gradient-text">{content.hero.titleAccent}</span>
+              {content.hero.titleSuffix}
+            </h1>
+
+            {/* No call to action here: the top bar carries the only "Criar
+                conta" and "Entrar" on the page, and it is sticky, so it stays
+                in reach from every section. */}
+            <p
+              className="landing-fade-up mx-auto mt-7 max-w-xl text-lg leading-relaxed text-foreground-soft lg:mx-0"
+              style={{ '--landing-delay': '0.16s' } as React.CSSProperties}
+            >
+              {content.hero.subtitle}
+            </p>
+          </div>
+
+          <div
+            className="landing-fade-up hidden lg:block"
+            style={{ '--landing-delay': '0.26s' } as React.CSSProperties}
           >
-            {content.hero.primaryCta}
-          </Link>
-          <Link
-            href="/login"
-            className="rounded-sm border border-white/10 px-6 py-3 text-base font-medium text-foreground transition-transform duration-200 hover:scale-105 active:scale-95"
-          >
-            {content.hero.secondaryCta}
-          </Link>
+            <LobbyCard positions={content.positions.items} />
+          </div>
         </div>
       </section>
 
-      <section className="border-t border-white/5 px-4 py-16 sm:px-6">
-        <p className="text-center text-sm font-medium uppercase tracking-wide text-accent">
-          {content.facts.eyebrow}
-        </p>
-        <div className="mx-auto mt-8 grid max-w-4xl grid-cols-2 gap-8 sm:grid-cols-4">
+      <Section>
+        <SectionHeading eyebrow={content.facts.eyebrow} align="center" />
+        <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-4">
           {content.facts.items.map((fact) => (
-            <div key={fact.label} className="landing-reveal flex flex-col items-center text-center">
-              <span className="font-display text-3xl font-semibold text-accent sm:text-4xl">
-                {fact.value}
-              </span>
-              <span className="mt-1 text-sm text-foreground-soft">{fact.label}</span>
+            <div
+              key={fact.label}
+              className="landing-reveal landing-card landing-sheen flex flex-col items-center rounded-md border border-white/10 px-4 py-7 text-center"
+            >
+              <span className="font-display text-4xl font-semibold text-accent">{fact.value}</span>
+              <span className="mt-2 text-sm leading-snug text-foreground-soft">{fact.label}</span>
             </div>
           ))}
         </div>
-      </section>
+      </Section>
 
-      <section className="border-t border-white/5 bg-surface px-4 py-16 sm:px-6">
-        <div className="mx-auto flex max-w-4xl flex-col items-center gap-6 text-center sm:flex-row sm:gap-12 sm:text-left">
-          <div className="flex-1">
-            <p className="text-sm font-medium uppercase tracking-wide text-accent">
-              {content.positions.eyebrow}
-            </p>
-            <h2 className="mt-2 font-display text-2xl font-semibold text-foreground">
-              {content.positions.title}
-            </h2>
-            <p className="mt-3 text-sm text-foreground-soft">{content.positions.body}</p>
+      <Section className="landing-weave bg-surface">
+        <div className="flex flex-col items-center gap-12 lg:flex-row lg:gap-16">
+          <div className="landing-reveal flex-1 text-center lg:text-left">
+            <SectionHeading
+              eyebrow={content.positions.eyebrow}
+              title={content.positions.title}
+              body={content.positions.body}
+            />
+            <div className="mt-7 flex flex-wrap justify-center gap-2 lg:justify-start">
+              {content.positions.items.map((position) => (
+                <span
+                  key={position}
+                  className="landing-card rounded-sm border border-white/10 px-3.5 py-1.5 text-sm font-medium text-foreground"
+                >
+                  {position}
+                </span>
+              ))}
+            </div>
           </div>
-          <div className="landing-reveal flex flex-1 flex-wrap justify-center gap-3 sm:justify-end">
-            {content.positions.items.map((position) => (
-              <span
+
+          <div className="landing-parallax-fast relative w-full flex-1">
+            <div className="landing-halo rounded-lg shadow-default">
+              <div className="landing-halo-surface relative overflow-hidden rounded-lg border border-white/10 p-5">
+                <PitchArt className="h-auto w-full" />
+                {POSITION_MARKS.map((mark, index) => (
+                  <span
+                    key={content.positions.items[index]}
+                    aria-hidden
+                    className="absolute size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent shadow-[0_0_0_5px_color-mix(in_srgb,var(--color-accent)_20%,transparent)]"
+                    style={{ left: `${mark.x}%`, top: `${mark.y}%` }}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      <Section className="overflow-hidden">
+        <div
+          aria-hidden
+          className="landing-parallax-slow pointer-events-none absolute inset-x-0 -top-1/4 -z-10 h-[150%] bg-[radial-gradient(ellipse_50%_40%_at_20%_40%,_var(--color-accent-strong)_0%,_transparent_70%)] opacity-[0.10]"
+        />
+        <div className="flex flex-col items-center gap-12 lg:flex-row-reverse lg:gap-16">
+          <div className="landing-reveal flex-1 text-center lg:text-left">
+            <SectionHeading
+              eyebrow={content.soloQueue.eyebrow}
+              title={content.soloQueue.title}
+              body={content.soloQueue.body}
+            />
+          </div>
+
+          {/* The lobby filling up, drawn rather than screenshotted — the real
+              queue screen is Fase 2.5 and does not exist to capture yet. */}
+          <div aria-hidden className="landing-parallax-fast relative h-64 w-full flex-1">
+            {content.positions.items.map((position, index) => (
+              <div
                 key={position}
-                className="rounded-sm border border-white/10 bg-surface-weak px-4 py-2 text-sm font-medium text-foreground"
+                // Stepped down and to the right, never straight down: each card
+                // has to clear the one above it by more than its own label, or
+                // the stack reads as a single card with a shadow.
+                className="landing-card absolute flex w-48 items-center gap-3 rounded-md border border-white/10 px-4 py-3 backdrop-blur"
+                style={{ left: `${index * 11}%`, top: `${index * 34}px`, zIndex: index }}
               >
-                {position}
-              </span>
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-accent/40 bg-accent/10 text-xs font-semibold text-accent">
+                  {index + 1}
+                </span>
+                <span className="truncate text-sm text-foreground">{position}</span>
+                <span className="landing-glow ml-auto size-2 shrink-0 rounded-full bg-accent" />
+              </div>
             ))}
           </div>
         </div>
-      </section>
+      </Section>
 
-      <section className="border-t border-white/5 px-4 py-16 sm:px-6">
-        <div className="landing-reveal mx-auto max-w-2xl text-center">
-          <p className="text-sm font-medium uppercase tracking-wide text-accent">
-            {content.soloQueue.eyebrow}
-          </p>
-          <h2 className="mt-2 font-display text-2xl font-semibold text-foreground">
-            {content.soloQueue.title}
-          </h2>
-          <p className="mt-3 text-sm text-foreground-soft">{content.soloQueue.body}</p>
-        </div>
-      </section>
-
-      <section className="border-t border-white/5 bg-surface px-4 py-16 sm:px-6">
-        <div className="mx-auto max-w-4xl">
-          <p className="text-center text-sm font-medium uppercase tracking-wide text-accent">
-            {content.features.eyebrow}
-          </p>
-          <div className="mt-8 grid gap-8 sm:grid-cols-3">
-            {content.features.items.map((item, index) => (
-              <div
-                key={item.title}
-                className="landing-reveal flex flex-col items-center gap-3 text-center"
-              >
+      <Section className="bg-surface">
+        <SectionHeading eyebrow={content.features.eyebrow} align="center" />
+        <div className="mt-12 grid gap-6 sm:grid-cols-3">
+          {content.features.items.map((item, index) => (
+            <div
+              key={item.title}
+              className="landing-reveal landing-card landing-sheen flex flex-col items-center gap-4 rounded-md border border-white/10 px-6 py-9 text-center"
+            >
+              <span className="flex size-12 items-center justify-center rounded-full border border-accent/25 bg-accent/10">
                 <svg
                   aria-hidden
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth={1.5}
-                  className="size-10 text-accent"
+                  className="size-6 text-accent"
                 >
                   {FEATURE_ICONS[index]}
                 </svg>
-                <h2 className="font-display text-lg font-semibold text-foreground">{item.title}</h2>
-                <p className="text-sm text-foreground-soft">{item.body}</p>
-              </div>
-            ))}
-          </div>
+              </span>
+              <h2 className="font-display text-lg font-semibold text-foreground">{item.title}</h2>
+              <p className="text-sm leading-relaxed text-foreground-soft">{item.body}</p>
+            </div>
+          ))}
         </div>
-      </section>
+      </Section>
 
-      <footer className="border-t border-white/5 px-4 py-8 sm:px-6">
-        <div className="mx-auto flex max-w-4xl flex-col items-center gap-4 text-center sm:flex-row sm:justify-between sm:text-left">
-          <p className="text-sm text-foreground-soft">{content.footer.tagline}</p>
-          <LanguageSwitcher />
+      <footer className="landing-weave px-4 py-12 sm:px-6">
+        <div className="mx-auto max-w-6xl">
+          <div aria-hidden className="landing-rule" />
+          <div className="mt-8 flex flex-col items-center gap-5 text-center sm:flex-row sm:justify-between sm:text-left">
+            <div>
+              <span className="font-display text-base font-semibold text-foreground">
+                Pro<span className="text-accent">Lobby</span>
+              </span>
+              <p className="mt-1 text-sm text-foreground-soft">{content.footer.tagline}</p>
+            </div>
+            <LanguageSwitcher />
+          </div>
         </div>
       </footer>
     </>
+  )
+}
+
+/** Shared section frame: one max width, one vertical rhythm, one hairline. */
+function Section({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+  return (
+    <section className={`relative border-t border-white/5 px-4 py-24 sm:px-6 ${className}`}>
+      <div className="mx-auto w-full max-w-6xl">{children}</div>
+    </section>
+  )
+}
+
+function SectionHeading({
+  eyebrow,
+  title,
+  body,
+  align = 'left',
+}: {
+  eyebrow: string
+  title?: string
+  body?: string
+  align?: 'left' | 'center'
+}) {
+  return (
+    <div className={align === 'center' ? 'text-center' : undefined}>
+      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">{eyebrow}</p>
+      {title ? (
+        <h2 className="landing-section-title mt-4 font-display font-semibold text-foreground">
+          {title}
+        </h2>
+      ) : null}
+      {body ? (
+        <p className="mt-4 max-w-xl text-base leading-relaxed text-foreground-soft">{body}</p>
+      ) : null}
+    </div>
+  )
+}
+
+/** Every layer behind the hero, in one place so the stacking order is readable. */
+function HeroBackdrop() {
+  return (
+    <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+      <div className="landing-parallax-slow absolute inset-x-0 -top-1/4 h-[150%]">
+        <div className="landing-glow absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,_var(--color-accent-strong)_0%,_transparent_70%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_40%_40%_at_85%_30%,_var(--color-gold)_0%,_transparent_70%)] opacity-[0.07]" />
+        <HeroVideo />
+      </div>
+      <div className="landing-floor absolute inset-x-0 bottom-0 h-72 opacity-50" />
+      <div className="landing-weave absolute inset-0" />
+      {/* Three scrims, not one: the clip and the floor have to read as texture
+          behind the headline, never as "a video playing". Vignette, a wash in
+          the page colour, then a hard fade into the next section. */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_40%,_transparent_0%,_var(--color-bg)_100%)]" />
+      <div className="absolute inset-0 bg-background/55" />
+      <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
+    </div>
+  )
+}
+
+/**
+ * The hero's floating lobby card: what the product looks like, before there is
+ * a product to screenshot. Replace with a real capture once Fase 2.5 ships a
+ * queue screen worth showing.
+ */
+function LobbyCard({ positions }: { positions: string[] }) {
+  return (
+    <div className="landing-halo rounded-lg shadow-default">
+      <div className="landing-halo-surface overflow-hidden border border-white/10 p-5">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-semibold uppercase tracking-[0.18em] text-foreground-soft">
+            Lobby
+          </span>
+          <span className="flex items-center gap-2 text-xs text-accent">
+            <span className="landing-glow size-1.5 rounded-full bg-accent" />
+            11v11
+          </span>
+        </div>
+
+        <div aria-hidden className="landing-rule my-4" />
+
+        <ul className="flex flex-col gap-2">
+          {positions.map((position, index) => (
+            <li
+              key={position}
+              className="landing-card flex items-center gap-3 rounded-sm border border-white/10 px-3 py-2"
+            >
+              <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-accent/35 bg-accent/10 text-[11px] font-semibold text-accent">
+                {index + 1}
+              </span>
+              <span className="text-sm text-foreground">{position}</span>
+              <span className="ml-auto size-1.5 rounded-full bg-accent/70" />
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * The hero's background clip.
+ *
+ * **The file is not in the repo, on purpose.** Game footage from EA FC is
+ * theirs, not ours, and shipping it from `public/` would be republishing it.
+ * Drop a clip you hold the rights to at `public/media/hero.mp4` (plus the
+ * `.webm`) and it appears; until then the element resolves to nothing and the
+ * drawn layers stay visible on their own. Nothing breaks either way.
+ *
+ * What the clip has to be, so it reads as texture and not as "a video":
+ *
+ * - **Loop-safe**: last frame should match the first. The seam fade below
+ *   hides an imperfect match, but it cannot rescue a hard cut.
+ * - **Quiet and slow**: no cuts, no HUD, no scoreboard — motion the eye reads
+ *   as ambience behind the headline.
+ * - **Short and small**: a few seconds, a couple of MB. It sits in the critical
+ *   view and RNF-001 budgets the whole page under 1 s.
+ *
+ * `--landing-clip-seconds` must match the clip's real duration: the seam fade
+ * is a CSS animation on that period, not something the element reports back.
+ */
+function HeroVideo() {
+  return (
+    <video
+      // A background texture, never a control surface: muted and inert is what
+      // lets it autoplay at all, and `aria-hidden` on the wrapper keeps it out
+      // of the accessibility tree.
+      autoPlay
+      muted
+      loop
+      playsInline
+      preload="none"
+      tabIndex={-1}
+      className="landing-clip absolute inset-0 size-full object-cover"
+      style={{ '--landing-clip-seconds': '12s' } as React.CSSProperties}
+    >
+      <source src="/media/hero.webm" type="video/webm" />
+      <source src="/media/hero.mp4" type="video/mp4" />
+    </video>
+  )
+}
+
+/** A pitch, drawn — halfway line, centre circle, both boxes. No asset to ship. */
+function PitchArt({ className }: { className?: string }) {
+  return (
+    <svg aria-hidden viewBox="0 0 100 60" preserveAspectRatio="none" className={className}>
+      <rect x="1" y="1" width="98" height="58" rx="1" className="landing-pitch-line" />
+      <line x1="50" y1="1" x2="50" y2="59" className="landing-pitch-line" />
+      <circle cx="50" cy="30" r="9" className="landing-pitch-line" />
+      <rect x="1" y="16" width="14" height="28" className="landing-pitch-line" />
+      <rect x="85" y="16" width="14" height="28" className="landing-pitch-line" />
+      <rect x="1" y="24" width="5" height="12" className="landing-pitch-line" />
+      <rect x="94" y="24" width="5" height="12" className="landing-pitch-line" />
+    </svg>
   )
 }

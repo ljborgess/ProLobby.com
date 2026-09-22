@@ -21,8 +21,6 @@ export interface LandingContent {
     titleAccent: string
     titleSuffix: string
     subtitle: string
-    primaryCta: string
-    secondaryCta: string
   }
   facts: {
     eyebrow: string
@@ -60,8 +58,6 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
       titleSuffix: ' é matchmaking de verdade pro seu Pro Clubs',
       subtitle:
         'Cadastra seu personagem, entra na fila por posição e é pareado com outros jogadores verificados — sem grupo de WhatsApp, sem gente sumida no meio do jogo.',
-      primaryCta: 'Criar conta',
-      secondaryCta: 'Entrar',
     },
     facts: {
       eyebrow: 'O que já está decidido',
@@ -115,8 +111,6 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
       titleSuffix: ' es matchmaking de verdad para tu Pro Clubs',
       subtitle:
         'Registra tu personaje, entra a la cola por posición y te emparejamos con otros jugadores verificados — sin grupo de WhatsApp, sin gente que desaparece a mitad del partido.',
-      primaryCta: 'Crear cuenta',
-      secondaryCta: 'Entrar',
     },
     facts: {
       eyebrow: 'Lo que ya está decidido',

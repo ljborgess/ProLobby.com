@@ -35,10 +35,11 @@ describe('Home', () => {
 
     renderWithLocale(await Home())
 
-    // Both appear twice — top bar and hero (issue #171 top bar addition) —
-    // so this checks presence, not a single instance.
-    expect(screen.getAllByRole('link', { name: 'Criar conta' }).length).toBeGreaterThan(0)
-    expect(screen.getAllByRole('link', { name: 'Entrar' }).length).toBeGreaterThan(0)
+    // Exactly one of each, in the top bar: the hero's duplicate pair was
+    // dropped on 2026-09-22, and `getByRole` throwing on a second match is
+    // what keeps it from creeping back.
+    expect(screen.getByRole('link', { name: 'Criar conta' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Entrar' })).toBeInTheDocument()
     expect(redirect).not.toHaveBeenCalled()
   })
 

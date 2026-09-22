@@ -38,6 +38,9 @@ export function proxy(request: NextRequest): NextResponse {
     // for those, and a stylesheet cannot exfiltrate the way a script can.
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data:",
+    // Self-hosted only: the landing's background clip ships from public/, and
+    // no third-party player is allowed to load media into the page.
+    "media-src 'self'",
     "font-src 'self'",
     "connect-src 'self'",
     "frame-ancestors 'none'",

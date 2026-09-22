@@ -13,7 +13,12 @@ vi.mock('next/headers', () => ({
   cookies: () => Promise.resolve(cookieJar),
   headers: () => Promise.resolve(new Headers()),
 }))
-vi.mock('next/navigation', () => ({ redirect: (path: string) => redirect(path) }))
+// `useRouter` is here for the sign-out button the page renders (added
+// 2026-09-22); the page itself only ever calls `redirect`.
+vi.mock('next/navigation', () => ({
+  redirect: (path: string) => redirect(path),
+  useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
+}))
 vi.mock('@/common/api/client', () => ({ apiFetch: (...args: unknown[]) => apiFetch(...args) }))
 
 import VerificationsPage from './page'
