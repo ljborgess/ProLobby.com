@@ -122,10 +122,13 @@ export function LandingView() {
       <Section seam>
         <SectionHeading eyebrow={content.facts.eyebrow} align="center" />
         <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-4">
-          {content.facts.items.map((fact) => (
+          {content.facts.items.map((fact, index) => (
             <div
               key={fact.label}
-              className="landing-reveal landing-card landing-sheen flex flex-col items-center rounded-md border border-white/10 px-4 py-7 text-center"
+              // One at a time, each finishing further into the scroll: four
+              // cards lighting together read as a block, in sequence they read
+              // as a list being gone through.
+              className={`landing-reveal landing-reveal-${index + 1} landing-card landing-sheen flex flex-col items-center rounded-md border border-white/10 px-4 py-7 text-center`}
             >
               <span className="font-display text-4xl font-light tracking-tight text-accent">
                 {fact.value}
@@ -140,7 +143,10 @@ export function LandingView() {
 
       <Section seam className="landing-weave bg-surface">
         <div className="flex flex-col items-center gap-12 lg:flex-row lg:gap-16">
-          <div className="landing-reveal flex-1 text-center lg:text-left">
+          <div
+            className="landing-slide-x flex-1 text-center lg:text-left"
+            style={{ '--landing-from': '-32px' } as React.CSSProperties}
+          >
             <SectionHeading
               eyebrow={content.positions.eyebrow}
               title={content.positions.title}
@@ -158,7 +164,10 @@ export function LandingView() {
             </div>
           </div>
 
-          <div className="landing-parallax-fast relative w-full flex-1">
+          <div
+            className="landing-slide-x landing-parallax-fast relative w-full flex-1"
+            style={{ '--landing-from': '32px' } as React.CSSProperties}
+          >
             <QueueBoard />
           </div>
         </div>
@@ -211,7 +220,9 @@ export function LandingView() {
           {content.features.items.map((item, index) => (
             <div
               key={item.title}
-              className="landing-reveal landing-card landing-sheen flex flex-col items-center gap-4 rounded-md border border-white/10 px-6 py-9 text-center"
+              // The closing set resolves out of blur rather than sliding, so
+              // the page does not end on the same gesture it opened with.
+              className="landing-blur-in landing-card landing-sheen flex flex-col items-center gap-4 rounded-md border border-white/10 px-6 py-9 text-center"
             >
               <span className="flex size-12 items-center justify-center rounded-full border border-accent/25 bg-accent/10">
                 <svg

@@ -35,7 +35,16 @@ export function AuthLayout({
 
   return (
     <main className="flex h-svh flex-1 overflow-hidden">
-      <div className="flex h-full flex-1 flex-col overflow-y-auto px-4 py-5 sm:px-8 lg:px-14">
+      {/* A grid of `auto 1fr`, not a flex column.
+       *
+       * Three attempts at centring the form failed before this one: `flex-1`
+       * on the child never grew inside a scroll container, `my-auto` had no
+       * free space to split once the header row was in the flow, and `h-full`
+       * measured 449px inside a 721px parent — a percentage height cannot
+       * resolve against a parent whose own height came from `flex-1`, which
+       * the engine treats as indefinite. So the height is stated outright, and
+       * a `1fr` track takes whatever the header leaves. */}
+      <div className="grid h-svh flex-1 grid-rows-[auto_1fr] overflow-y-auto px-4 py-5 sm:px-8 lg:px-14">
         {/* Logo and language share the top row. The switcher used to sit at
             the bottom, where it cost the form the last 40-odd pixels it
             needed to clear a short window without scrolling. */}
@@ -49,11 +58,9 @@ export function AuthLayout({
           <LanguageSwitcher />
         </div>
 
-        {/* `my-auto`, not `flex-1 justify-center`: inside a scroll container a
-            flex child sizes to its content, so `flex-1` never grew and the
-            form sat pinned near the top with the whole lower half empty.
-            Automatic margins centre it whether or not there is overflow. */}
-        <div className="mx-auto my-auto flex w-full max-w-sm flex-col gap-4 py-8">{children}</div>
+        <div className="grid min-h-0 place-items-center py-8">
+          <div className="flex w-full max-w-sm flex-col gap-4">{children}</div>
+        </div>
       </div>
 
       <aside className="relative hidden border-l border-white/5 lg:flex lg:w-[46%] lg:flex-col lg:justify-end">

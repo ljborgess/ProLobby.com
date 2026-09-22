@@ -179,6 +179,79 @@ input:-webkit-autofill:focus {
   .landing-reveal-3 {
     animation-range: entry 8% cover 50%;
   }
+
+  .landing-reveal-4 {
+    animation-range: entry 12% cover 58%;
+  }
+
+  /**
+   * The rest of the entrance vocabulary.
+   *
+   * One behaviour repeated down a long page stops reading as motion and starts
+   * reading as a tic, so each section gets a different way in: text arrives
+   * from the side it sits on, the closing cards resolve out of blur, and the
+   * spotlight line rises from behind its own edge. All of them are the same
+   * scroll timeline underneath — what changes is what the movement says.
+   */
+  .landing-slide-x {
+    opacity: 0;
+    animation: landing-slide-x 0.7s ease-out both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 42%;
+  }
+
+  .landing-blur-in {
+    opacity: 0;
+    animation: landing-blur-in 0.7s ease-out both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 45%;
+  }
+
+  /* The clip is on the parent; the child rises out from under its own top
+     edge, which reads as the line being uncovered rather than moved. */
+  .landing-rise-clip {
+    overflow: hidden;
+  }
+
+  .landing-rise {
+    display: block;
+    animation: landing-rise 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 40%;
+  }
+}
+
+@keyframes landing-slide-x {
+  from {
+    opacity: 0;
+    translate: var(--landing-from, -28px) 0;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes landing-blur-in {
+  from {
+    opacity: 0;
+    filter: blur(10px);
+    scale: 0.98;
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    scale: 1;
+  }
+}
+
+@keyframes landing-rise {
+  from {
+    translate: 0 105%;
+  }
+  to {
+    translate: 0 0;
+  }
 }
 
 /* Scroll-driven parallax and progress — same `animation-timeline` family as
@@ -754,6 +827,18 @@ input:-webkit-autofill:focus {
   .landing-draw {
     animation: none;
     stroke-dashoffset: 0;
+  }
+
+  /* Every entrance resolves to its arrived state. The page still reads in the
+     order it was composed; it just does not perform the arriving. */
+  .landing-slide-x,
+  .landing-blur-in,
+  .landing-rise {
+    animation: none;
+    opacity: 1;
+    translate: 0 0;
+    filter: none;
+    scale: 1;
   }
 
   .landing-bob {
