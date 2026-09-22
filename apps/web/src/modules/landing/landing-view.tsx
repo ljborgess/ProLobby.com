@@ -32,24 +32,35 @@ export function LandingView() {
       <section className="relative flex flex-1 flex-col items-center justify-center overflow-hidden px-4 py-24 text-center sm:px-6">
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--color-accent-strong)_0%,_transparent_60%)] opacity-20"
+          className="landing-glow pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--color-accent-strong)_0%,_transparent_60%)]"
         />
-        <h1 className="max-w-3xl font-display text-4xl font-semibold text-foreground sm:text-5xl">
+        <h1
+          className="landing-fade-up max-w-3xl font-display text-4xl font-semibold text-foreground sm:text-5xl"
+          style={{ '--landing-delay': '0.05s' } as React.CSSProperties}
+        >
           {content.hero.titlePrefix}
           <span className="text-accent">{content.hero.titleAccent}</span>
           {content.hero.titleSuffix}
         </h1>
-        <p className="mt-6 max-w-xl text-lg text-foreground-soft">{content.hero.subtitle}</p>
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+        <p
+          className="landing-fade-up mt-6 max-w-xl text-lg text-foreground-soft"
+          style={{ '--landing-delay': '0.15s' } as React.CSSProperties}
+        >
+          {content.hero.subtitle}
+        </p>
+        <div
+          className="landing-fade-up mt-8 flex flex-col gap-3 sm:flex-row"
+          style={{ '--landing-delay': '0.25s' } as React.CSSProperties}
+        >
           <Link
             href="/sign-up"
-            className="rounded-sm bg-accent px-6 py-3 text-base font-medium text-background"
+            className="rounded-sm bg-accent px-6 py-3 text-base font-medium text-background transition-transform duration-200 hover:scale-105 active:scale-95"
           >
             {content.hero.primaryCta}
           </Link>
           <Link
             href="/login"
-            className="rounded-sm border border-white/10 px-6 py-3 text-base font-medium text-foreground"
+            className="rounded-sm border border-white/10 px-6 py-3 text-base font-medium text-foreground transition-transform duration-200 hover:scale-105 active:scale-95"
           >
             {content.hero.secondaryCta}
           </Link>
@@ -63,7 +74,10 @@ export function LandingView() {
           </p>
           <div className="mt-8 grid gap-8 sm:grid-cols-3">
             {content.features.items.map((item, index) => (
-              <div key={item.title} className="flex flex-col items-center gap-3 text-center">
+              <div
+                key={item.title}
+                className="landing-reveal flex flex-col items-center gap-3 text-center"
+              >
                 <svg
                   aria-hidden
                   viewBox="0 0 24 24"
