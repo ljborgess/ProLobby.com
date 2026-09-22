@@ -36,10 +36,27 @@ export default async function DiscordPage({ searchParams }: PageProps<'/account/
   }
 
   if (!response.ok) {
+    // A real error is still logged, not just swallowed into "unavailable" — the
+    // audit that rewrote this to never crash the page should not also make a
+    // genuine backend bug invisible. 503 is excluded: it is the documented
+    // signal for "Discord not configured in this environment" elsewhere in the
+    // flow (discord-link-panel.tsx), not a bug.
+    if (response.status !== 503) {
+      console.error(`account/discord: API answered ${response.status}`)
+    }
     return <Screen linked={false} status="unavailable" />
   }
 
-  const { linked } = (await response.json()) as { linked: boolean }
+  let linked: boolean
+  try {
+    ;({ linked } = (await response.json()) as { linked: boolean })
+  } catch (error) {
+    // 200 with an empty or malformed body (proxy hiccup, already-consumed
+    // stream) — same fallback as any other unreachable-API case, not a crash.
+    console.error('account/discord: could not parse the API response', error)
+    return <Screen linked={false} status="unavailable" />
+  }
+
   const raw = (await searchParams).status
   const status = typeof raw === 'string' && isDiscordLinkStatus(raw) ? raw : undefined
 
