@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useLandingContent } from '@/hooks/use-landing-content'
 import { LanguageSwitcher } from '@/common/ui/language-switcher'
+import { PairingNetwork } from './pairing-network'
 
 const FEATURE_ICONS = [
   // shield — identidade verificada
@@ -306,6 +307,9 @@ function HeroBackdrop() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_40%_40%_at_85%_30%,_var(--color-gold)_0%,_transparent_70%)] opacity-[0.07]" />
         <HeroVideo />
       </div>
+      {/* The pairing graph, wide and faint, sitting behind the whole row so it
+          reads as the backdrop the copy and the lobby card stand on. */}
+      <PairingNetwork className="absolute inset-x-0 top-[8%] h-[70%] w-full opacity-70" />
       <div className="landing-floor absolute inset-x-0 bottom-0 h-72 opacity-50" />
       <div className="landing-weave absolute inset-0" />
       {/* Scrims, in order: vignette, a wash in the page colour so the clip and

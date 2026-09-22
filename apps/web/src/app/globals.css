@@ -377,6 +377,53 @@ input:-webkit-autofill:focus {
   clip-path: polygon(38% 0, 62% 0, 100% 100%, 0 100%);
 }
 
+/**
+ * The landing hero's scene: a pairing network.
+ *
+ * Deliberately not the auth panel's radar again. What the hero has to say is
+ * that two sides get built out of people who arrived alone, so the drawing is
+ * a graph — nodes that wait, edges that light up when a pair is made. The
+ * pulse is a dash travelling the length of each edge, staggered per edge, so
+ * the whole thing never flashes at once.
+ */
+@keyframes landing-edge-pulse {
+  0% {
+    stroke-dashoffset: 34;
+    opacity: 0;
+  }
+  18%,
+  60% {
+    opacity: 0.9;
+  }
+  100% {
+    stroke-dashoffset: -34;
+    opacity: 0;
+  }
+}
+
+@keyframes landing-node-pulse {
+  0%,
+  100% {
+    r: 2.2;
+    opacity: 0.55;
+  }
+  50% {
+    r: 3.1;
+    opacity: 1;
+  }
+}
+
+.landing-edge {
+  stroke-dasharray: 10 58;
+  animation: landing-edge-pulse 4.6s ease-in-out infinite;
+  animation-delay: var(--landing-delay, 0s);
+}
+
+.landing-node {
+  animation: landing-node-pulse 3.4s ease-in-out infinite;
+  animation-delay: var(--landing-delay, 0s);
+}
+
 /* Hero clip seam fade: the loop restarts at a hard boundary, and unless the
    source's last frame matches its first, that boundary is visible as a jump.
    Dipping the opacity across the seam hides it without JavaScript watching
@@ -555,8 +602,17 @@ input:-webkit-autofill:focus {
   .landing-radar,
   .landing-scanlines,
   .landing-beam,
+  .landing-edge,
+  .landing-node,
   .landing-sheen:hover::after {
     animation: none;
+  }
+
+  /* The edges are drawn as a travelling dash, so switching the animation off
+     would leave a dotted line. Solid is the resting state. */
+  .landing-edge {
+    stroke-dasharray: none;
+    opacity: 0.5;
   }
 
   .landing-beam {
