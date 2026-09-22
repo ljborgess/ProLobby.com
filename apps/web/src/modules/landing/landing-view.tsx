@@ -74,8 +74,15 @@ export function LandingView() {
       <section className="relative flex min-h-[92svh] flex-1 items-center overflow-hidden px-4 py-24 sm:px-6">
         <HeroBackdrop />
 
-        <div className="mx-auto grid w-full max-w-6xl items-center gap-14 lg:grid-cols-[1.05fr_0.95fr]">
-          <div className="text-center lg:text-left">
+        {/* One centred column, not copy beside a card.
+         *
+         * The right-hand side used to hold a "Lobby" card listing the five
+         * categories — a flat list that said nothing the headline did not, and
+         * that repeated the queue board two sections below almost exactly. It
+         * went. The pairing graph behind the text is the hero's picture now,
+         * and it is the one thing on this page no competitor's landing has. */}
+        <div className="mx-auto flex w-full max-w-4xl flex-col items-center">
+          <div className="text-center">
             <span
               className="landing-fade-up inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/10 px-3.5 py-1.5 text-[0.7rem] font-medium uppercase tracking-[0.2em] text-accent"
               style={{ '--landing-delay': '0s' } as React.CSSProperties}
@@ -97,23 +104,26 @@ export function LandingView() {
                 conta" and "Entrar" on the page, and it is sticky, so it stays
                 in reach from every section. */}
             <p
-              className="landing-fade-up mx-auto mt-7 max-w-md text-[0.95rem] leading-relaxed text-foreground-soft/85 lg:mx-0"
+              className="landing-fade-up mx-auto mt-7 max-w-lg text-base leading-relaxed text-foreground-soft/85"
               style={{ '--landing-delay': '0.16s' } as React.CSSProperties}
             >
               {content.hero.subtitle}
             </p>
           </div>
-
-          <div
-            className="landing-fade-up hidden lg:block"
-            style={{ '--landing-delay': '0.26s' } as React.CSSProperties}
-          >
-            <LobbyCard positions={content.positions.items} />
-          </div>
         </div>
       </section>
 
-      <Section>
+      {/* The thread from the hero into what follows. Decorative — it carries
+          no information the headings do not — so it is hidden from the
+          accessibility tree and lives outside the section it points at. */}
+      <div aria-hidden className="relative -mt-12 flex justify-center">
+        <span className="landing-thread h-28 w-px bg-gradient-to-b from-transparent via-accent/50 to-accent" />
+        <span className="landing-thread-node absolute bottom-0 left-1/2 size-2 -translate-x-1/2 translate-y-1/2 rounded-full bg-accent shadow-[0_0_14px_color-mix(in_srgb,var(--color-accent)_60%,transparent)]" />
+      </div>
+
+      {/* `seam`: no top rule on this one. The thread lands here, and a
+          full-width hairline across the same spot would cut it in half. */}
+      <Section seam>
         <SectionHeading eyebrow={content.facts.eyebrow} align="center" />
         <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-4">
           {content.facts.items.map((fact) => (
@@ -241,9 +251,19 @@ export function LandingView() {
 }
 
 /** Shared section frame: one max width, one vertical rhythm, one hairline. */
-function Section({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+function Section({
+  children,
+  className = '',
+  seam = false,
+}: {
+  children: React.ReactNode
+  className?: string
+  seam?: boolean
+}) {
   return (
-    <section className={`relative border-t border-white/5 px-4 py-24 sm:px-6 ${className}`}>
+    <section
+      className={`relative px-4 py-24 sm:px-6 ${seam ? '' : 'border-t border-white/5'} ${className}`}
+    >
       <div className="mx-auto w-full max-w-6xl">{children}</div>
     </section>
   )
@@ -300,7 +320,9 @@ function HeroBackdrop() {
       </div>
       {/* The pairing graph, wide and faint, sitting behind the whole row so it
           reads as the backdrop the copy and the lobby card stand on. */}
-      <PairingNetwork className="absolute inset-x-0 top-[8%] h-[70%] w-full opacity-70" />
+      {/* Bigger and brighter since the hero went single-column: with the lobby
+          card gone this is the only picture up here, so it has to carry. */}
+      <PairingNetwork className="absolute inset-x-0 top-[4%] h-[82%] w-full opacity-90" />
       <div className="landing-floor absolute inset-x-0 bottom-0 h-72 opacity-50" />
       <div className="landing-weave absolute inset-0" />
       {/* Scrims, in order: vignette, a wash in the page colour so the clip and
@@ -312,46 +334,6 @@ function HeroBackdrop() {
       <div className="absolute inset-0 bg-background/45" />
       <div className="landing-scrim-edge absolute inset-0" />
       <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
-    </div>
-  )
-}
-
-/**
- * The hero's floating lobby card: what the product looks like, before there is
- * a product to screenshot. Replace with a real capture once Fase 2.5 ships a
- * queue screen worth showing.
- */
-function LobbyCard({ positions }: { positions: string[] }) {
-  return (
-    <div className="landing-halo rounded-lg shadow-default">
-      <div className="landing-halo-surface overflow-hidden border border-white/10 p-5">
-        <div className="flex items-center justify-between">
-          <span className="text-[0.7rem] font-medium uppercase tracking-[0.2em] text-foreground-soft">
-            Lobby
-          </span>
-          <span className="flex items-center gap-2 text-xs text-accent">
-            <span className="landing-glow size-1.5 rounded-full bg-accent" />
-            11v11
-          </span>
-        </div>
-
-        <div aria-hidden className="landing-rule my-4" />
-
-        <ul className="flex flex-col gap-2">
-          {positions.map((position, index) => (
-            <li
-              key={position}
-              className="landing-card flex items-center gap-3 rounded-sm border border-white/10 px-3 py-2"
-            >
-              <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-accent/35 bg-accent/10 text-[11px] font-semibold text-accent">
-                {index + 1}
-              </span>
-              <span className="text-sm text-foreground">{position}</span>
-              <span className="ml-auto size-1.5 rounded-full bg-accent/70" />
-            </li>
-          ))}
-        </ul>
-      </div>
     </div>
   )
 }

@@ -424,6 +424,74 @@ input:-webkit-autofill:focus {
   animation-delay: var(--landing-delay, 0s);
 }
 
+/**
+ * The seam between the hero and the section under it.
+ *
+ * A hairline that draws itself downward as the seam scrolls through the
+ * viewport, ending in a lit node on the next section's heading. It exists to
+ * say that the two sections are one argument — what ProLobby is, then what is
+ * already settled about it — rather than two slides that happen to be stacked.
+ *
+ * Scroll-driven, so the line's progress is the reader's progress: it is drawn
+ * by scrolling, not by a timer that runs whether anyone is looking.
+ */
+@keyframes landing-thread-draw {
+  from {
+    scale: 1 0;
+  }
+  to {
+    scale: 1 1;
+  }
+}
+
+@keyframes landing-thread-node {
+  0%,
+  55% {
+    opacity: 0;
+    scale: 0.4;
+  }
+  100% {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+.landing-thread {
+  transform-origin: 50% 0;
+  scale: 1 0;
+}
+
+.landing-thread-node {
+  opacity: 0;
+}
+
+@supports (animation-timeline: view()) {
+  .landing-thread {
+    animation: landing-thread-draw linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 55%;
+  }
+
+  .landing-thread-node {
+    animation: landing-thread-node linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 55%;
+  }
+}
+
+/* Without scroll-driven support the thread would sit at zero height forever,
+   so it is simply drawn in full: a static connector still says the two
+   sections belong together. */
+@supports not (animation-timeline: view()) {
+  .landing-thread {
+    scale: 1 1;
+  }
+
+  .landing-thread-node {
+    opacity: 1;
+  }
+}
+
 /* The pitch drawing and the card surfaces: static art, no timeline needed. */
 .landing-pitch-line {
   stroke: var(--color-accent);
@@ -567,6 +635,19 @@ input:-webkit-autofill:focus {
 
   .landing-card:hover {
     translate: 0 0;
+  }
+
+  /* The thread's job is to connect, not to move: reduced motion gets it
+     drawn, whole and still. */
+  .landing-thread {
+    animation: none;
+    scale: 1 1;
+  }
+
+  .landing-thread-node {
+    animation: none;
+    opacity: 1;
+    scale: 1;
   }
 
   .landing-halo::before,
