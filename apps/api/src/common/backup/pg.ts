@@ -47,7 +47,11 @@ function libpqEnv(target: PgTarget): NodeJS.ProcessEnv {
   return env
 }
 
-function run(
+/** Kept on failure only, and only this much — a runaway pg_dump must not OOM the container over its own error text. */
+const STDERR_EXCERPT_BYTES = 4_096
+
+/** Exported for pg.spec.ts: the retry-worthy bug lives in the spawn plumbing, not in `pg_dump`'s own behaviour, so the test drives it with a stand-in command instead of requiring the real binary in every environment that runs `pnpm test`. */
+export function run(
   command: string,
   args: string[],
   env: NodeJS.ProcessEnv,
@@ -56,22 +60,45 @@ function run(
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, { env, stdio: ['pipe', 'pipe', 'pipe'] })
     const stdout: Buffer[] = []
+    const stderr: Buffer[] = []
+    let stderrBytes = 0
     child.stdout.on('data', (chunk: Buffer) => {
       stdout.push(chunk)
     })
-    // stderr is discarded on purpose: libpq prints the host and user on
-    // failure, and those belong in an operator terminal, not in our logs.
-    child.stderr.resume()
+    // Kept, not discarded: a silent backup failure is worse than libpq's own
+    // failure message, which is host/user/database — none of them secret,
+    // and exactly what an operator needs to fix a broken dump without first
+    // reproducing it by hand. The password itself is never echoed by libpq,
+    // but it is still scrubbed below before this leaves the process, in case
+    // a future libpq version or a driver error path ever changes that.
+    child.stderr.on('data', (chunk: Buffer) => {
+      // Trimmed to the remaining budget, not just gated on it: a single write
+      // can carry the whole 200 KB a runaway process produces in one chunk,
+      // and checking the running total *before* pushing would let that whole
+      // chunk through once, before the next check ever sees the new total.
+      const remaining = STDERR_EXCERPT_BYTES - stderrBytes
+      if (remaining > 0) {
+        stderr.push(chunk.subarray(0, remaining))
+        stderrBytes += chunk.length
+      }
+    })
     child.on('error', reject)
     child.on('close', (code) => {
       if (code !== 0) {
-        reject(new Error(`${command} exited ${code}`))
+        const excerpt = redact(Buffer.concat(stderr).toString('utf8').trim(), env)
+        reject(new Error(`${command} exited ${code}${excerpt ? `: ${excerpt}` : ''}`))
         return
       }
       resolve(Buffer.concat(stdout))
     })
     child.stdin.end(input ?? Buffer.alloc(0))
   })
+}
+
+/** Belt and braces: strips the one value in `env` that must never leave this process, if it ever showed up. */
+function redact(text: string, env: NodeJS.ProcessEnv): string {
+  const password = env.PGPASSWORD
+  return password ? text.split(password).join('[redacted]') : text
 }
 
 /** Custom format (`-Fc`): restore is selective and `--clean` is well-defined. */
