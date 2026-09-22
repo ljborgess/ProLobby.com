@@ -1,7 +1,7 @@
 import { StaticOcrEngine } from './engine'
 import { parseGabarito } from './gabarito'
 import { sha256Hex } from './hash'
-import { measurePilot } from './run'
+import { measurePilot, resolvePrintPath } from './run'
 import { SYNTHETIC_ATTRIBUTES_TEXT, encodeSyntheticAttributesPng } from './synthetic-image'
 
 const png = encodeSyntheticAttributesPng()
@@ -150,5 +150,22 @@ describe('measurePilot', () => {
     expect(report.prints[0]?.mismatchedFields).toEqual(
       expect.arrayContaining(['gamertag', 'overall']),
     )
+  })
+
+  it('refuses a gabarito file that climbs out of the prints folder', async () => {
+    expect(resolvePrintPath('/prints', '../.env')).toBeNull()
+    expect(resolvePrintPath('/prints', '/etc/passwd')).toBeNull()
+    expect(resolvePrintPath('/prints', 'synthetic-en-01.png')).toBe('/prints/synthetic-en-01.png')
+    const recognize = jest.fn()
+    const gabarito = parseGabarito({
+      version: 1,
+      entries: [{ ...entry, id: 'escape', file: '../.env' }],
+    })
+    const report = await measurePilot(gabarito, '/prints', {
+      engine: { id: 'spy', recognize, close: async () => undefined },
+      readFile,
+    })
+    expect(recognize).not.toHaveBeenCalled()
+    expect(report.prints[0]?.causes).toEqual(['invalid_format'])
   })
 })

@@ -51,6 +51,27 @@ export async function measurePilotFromJson(
   return measurePilot(parseGabarito(gabaritoJson), printsDir, deps)
 }
 
+/**
+ * Gabarito `file` is a name inside the prints folder, never a path that
+ * climbs out of it. The operator writes the gabarito, but a `../.env`
+ * typo (or a copied-from-somewhere entry) must not become a file read.
+ */
+export function resolvePrintPath(printsDir: string, file: string): string | null {
+  if (file === '' || path.isAbsolute(file)) {
+    return null
+  }
+  const parts = file.split(/[\\/]/)
+  if (parts.some((part) => part === '..')) {
+    return null
+  }
+  const root = path.resolve(printsDir)
+  const resolved = path.resolve(root, file)
+  if (resolved !== root && !resolved.startsWith(`${root}${path.sep}`)) {
+    return null
+  }
+  return resolved
+}
+
 async function measureEntry(
   entry: GabaritoEntry,
   printsDir: string,
@@ -58,7 +79,7 @@ async function measureEntry(
   read: (filePath: string) => Promise<Buffer>,
   seenHashes: Map<string, string>,
 ): Promise<PrintMeasurement> {
-  const filePath = path.resolve(printsDir, entry.file)
+  const filePath = resolvePrintPath(printsDir, entry.file)
   const base: PrintMeasurement = {
     id: entry.id,
     file: entry.file,
@@ -73,6 +94,10 @@ async function measureEntry(
     extracted: null,
     mismatchedFields: [],
     sha256: null,
+  }
+
+  if (!filePath) {
+    return { ...base, causes: ['invalid_format'] }
   }
 
   let bytes: Buffer
