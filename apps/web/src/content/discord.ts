@@ -15,6 +15,11 @@ export interface DiscordContent {
   notLinkedLabel: string
   linkedHint: string
   notLinkedHint: string
+  /** The one-word state beside the label — the accessible truth, not the colour. */
+  linkedState: string
+  notLinkedState: string
+  /** What the authorization actually asks Discord for, said before leaving. */
+  scopeNote: string
   action: string
   acting: string
   statuses: {
@@ -38,6 +43,10 @@ export const DISCORD_CONTENT: Record<Locale, DiscordContent> = {
     notLinkedLabel: 'Discord não vinculado',
     linkedHint: 'Pra trocar de Discord, fale com a moderação.',
     notLinkedHint: 'Você autoriza no Discord e volta pra cá. Só lemos o seu ID.',
+    linkedState: 'Concluído',
+    notLinkedState: 'Pendente',
+    scopeNote:
+      'Pedimos só a permissão de identificação. Não lemos suas mensagens nem seus servidores.',
     action: 'Vincular Discord',
     acting: 'Indo pro Discord…',
     statuses: {
@@ -61,6 +70,10 @@ export const DISCORD_CONTENT: Record<Locale, DiscordContent> = {
     notLinkedLabel: 'Discord no vinculado',
     linkedHint: 'Para cambiar de Discord, habla con la moderación.',
     notLinkedHint: 'Autorizas en Discord y vuelves aquí. Solo leemos tu ID.',
+    linkedState: 'Completado',
+    notLinkedState: 'Pendiente',
+    scopeNote:
+      'Pedimos solo el permiso de identificación. No leemos tus mensajes ni tus servidores.',
     action: 'Vincular Discord',
     acting: 'Yendo a Discord…',
     statuses: {

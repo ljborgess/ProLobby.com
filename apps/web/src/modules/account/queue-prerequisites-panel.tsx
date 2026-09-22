@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import { CheckMark, DiscordMark, MailMark } from '@/common/ui/icons'
 import { useAccountContent } from '@/hooks/use-account-content'
 
 export interface QueuePrerequisites {
@@ -12,11 +13,17 @@ export interface QueuePrerequisites {
 type Resend = 'idle' | 'sending' | 'sent' | 'error'
 
 /**
- * What the person still has to do, on the logged-in home — issue #171.
+ * What the person still has to do before the queue will take them — issue
+ * #171, reskinned 2026-09-22.
  *
  * It informs and never blocks: the dossier's onboarding gives a fresh account
  * full browsing, and only the queue demands these (RF-002), in any arrival
  * order (RF-055). So this is a list with a way forward, not a wizard.
+ *
+ * Every state is carried by a word before it is carried by anything else
+ * (RNF-015): "Concluído" / "Pendente" is the source of truth, the tick and the
+ * accent ring only agree with it. Someone who cannot tell the green from the
+ * grey still reads the same screen.
  */
 export function QueuePrerequisitesPanel({ emailVerified, discordLinked }: QueuePrerequisites) {
   const content = useAccountContent()
@@ -33,25 +40,49 @@ export function QueuePrerequisitesPanel({ emailVerified, discordLinked }: QueueP
     }
   }
 
+  const steps = [emailVerified, discordLinked]
+  const doneCount = steps.filter(Boolean).length
+  const allDone = doneCount === steps.length
+
   return (
-    <section aria-labelledby="next-steps" className="flex w-full flex-col gap-4">
-      <div className="flex flex-col gap-1">
-        <h2 id="next-steps" className="font-display text-2xl font-semibold text-foreground">
-          {content.title}
-        </h2>
-        <p className="text-base text-foreground-soft">
-          {emailVerified && discordLinked ? content.allDone : content.subtitle}
-        </p>
-      </div>
+    <section aria-labelledby="next-steps" className="flex w-full flex-col gap-5">
+      <header className="flex flex-col gap-3">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <h2 id="next-steps" className="landing-section-title font-display text-foreground">
+              {content.title}
+            </h2>
+            <p className="text-sm leading-relaxed text-foreground-soft">
+              {allDone ? content.allDone : content.subtitle}
+            </p>
+          </div>
+          <span className="shrink-0 rounded-full border border-white/10 px-3 py-1 text-xs tabular-nums text-foreground-soft">
+            {doneCount}/{steps.length}
+          </span>
+        </div>
+
+        {/* The same count, as a bar. It repeats the number beside it on
+            purpose — the number is the accessible truth, the bar is the one
+            that reads at a glance. */}
+        <div aria-hidden className="flex gap-1.5">
+          {steps.map((done, index) => (
+            <span
+              key={index}
+              className={`h-0.5 flex-1 rounded-full ${done ? 'bg-accent' : 'bg-white/10'}`}
+            />
+          ))}
+        </div>
+      </header>
 
       <Step
         done={emailVerified}
         doneLabel={content.email.doneLabel}
         label={content.email.pendingLabel}
+        icon={<MailMark className="size-5" />}
       >
-        <p className="text-sm text-foreground-soft">{content.email.pendingHint}</p>
+        <p className="text-sm leading-relaxed text-foreground-soft">{content.email.pendingHint}</p>
         {resend === 'sent' ? (
-          <p role="status" className="text-sm text-foreground">
+          <p role="status" className="text-sm text-accent">
             {content.email.resent}
           </p>
         ) : (
@@ -60,7 +91,7 @@ export function QueuePrerequisitesPanel({ emailVerified, discordLinked }: QueueP
               type="button"
               onClick={resendVerification}
               disabled={resend === 'sending'}
-              className="self-start rounded-sm border border-white/10 px-4 py-2 text-sm font-medium text-foreground disabled:opacity-60"
+              className="landing-focus self-start rounded-full border border-white/15 px-4 py-2 text-sm text-foreground-soft transition-colors hover:border-white/35 hover:text-foreground disabled:opacity-60"
             >
               {resend === 'sending' ? content.email.resending : content.email.resend}
             </button>
@@ -77,12 +108,17 @@ export function QueuePrerequisitesPanel({ emailVerified, discordLinked }: QueueP
         done={discordLinked}
         doneLabel={content.discord.doneLabel}
         label={content.discord.pendingLabel}
+        icon={<DiscordMark className="size-5" />}
+        brandIcon
       >
-        <p className="text-sm text-foreground-soft">{content.discord.pendingHint}</p>
+        <p className="text-sm leading-relaxed text-foreground-soft">
+          {content.discord.pendingHint}
+        </p>
         <Link
           href="/account/discord"
-          className="self-start rounded-sm bg-accent px-4 py-2 text-sm font-medium text-background"
+          className="landing-focus landing-sheen inline-flex items-center gap-2 self-start rounded-full bg-accent px-4 py-2 text-sm font-medium text-background transition-transform duration-200 hover:scale-[1.03] active:scale-95"
         >
+          <DiscordMark className="size-4" />
           {content.discord.action}
         </Link>
       </Step>
@@ -91,32 +127,50 @@ export function QueuePrerequisitesPanel({ emailVerified, discordLinked }: QueueP
 }
 
 /**
- * One prerequisite. The state is carried by the word "Concluído"/"Pendente",
- * never by colour alone (RNF-015), and the action only exists while it is
- * pending — there is nothing to do about a step already done.
+ * One prerequisite, as a card.
+ *
+ * `brandIcon` keeps Discord's mark in Discord's own blurple while it is still
+ * pending, because that is the thing being recognised. Once the step is done
+ * the mark drops back to the accent with the rest of the card: at that point
+ * what the row reports is our state, not their service.
  */
 function Step({
   done,
   label,
   doneLabel,
+  icon,
+  brandIcon = false,
   children,
 }: {
   done: boolean
   label: string
   doneLabel: string
+  icon: React.ReactNode
+  brandIcon?: boolean
   children: React.ReactNode
 }) {
   const content = useAccountContent()
 
   return (
-    <div className="flex flex-col gap-2 rounded-sm border border-white/10 bg-surface px-4 py-3">
-      <div className="flex items-baseline justify-between gap-3">
-        <p className="text-base font-medium text-foreground">{done ? doneLabel : label}</p>
-        <span className={`text-sm ${done ? 'text-foreground-soft' : 'text-accent'}`}>
-          {done ? content.done : content.pending}
-        </span>
+    <div className="landing-card flex gap-4 rounded-md border border-white/10 px-4 py-4">
+      <span
+        className={`flex size-10 shrink-0 items-center justify-center rounded-full border ${
+          done ? 'border-accent/35 bg-accent/10 text-accent' : 'border-white/10 bg-white/5'
+        }`}
+        style={!done && brandIcon ? { color: '#5865F2' } : undefined}
+      >
+        {done ? <CheckMark className="size-5" /> : icon}
+      </span>
+
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
+        <div className="flex items-baseline justify-between gap-3">
+          <p className="text-sm font-medium text-foreground">{done ? doneLabel : label}</p>
+          <span className={`shrink-0 text-xs ${done ? 'text-foreground-weak' : 'text-accent'}`}>
+            {done ? content.done : content.pending}
+          </span>
+        </div>
+        {!done && children}
       </div>
-      {!done && children}
     </div>
   )
 }

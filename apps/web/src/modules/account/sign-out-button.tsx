@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { SignOutMark } from '@/common/ui/icons'
 import { useAuthContent } from '@/hooks/use-auth-content'
 
 /**
@@ -33,14 +34,21 @@ export function SignOutButton() {
     router.refresh()
   }
 
+  // Icon only, so the label has to live somewhere a screen reader reaches:
+  // `aria-label` carries it, `title` shows it on hover for everyone else. The
+  // button keeps a 40px box, which is the smallest comfortable pointer target.
+  const label = signingOut ? content.submitting : content.submit
+
   return (
     <button
       type="button"
       onClick={handleClick}
       disabled={signingOut}
-      className="text-sm text-foreground-soft underline disabled:opacity-60"
+      aria-label={label}
+      title={label}
+      className="landing-focus flex size-10 items-center justify-center rounded-full border border-white/15 text-foreground-soft transition-colors hover:border-white/35 hover:text-foreground disabled:opacity-60"
     >
-      {signingOut ? content.submitting : content.submit}
+      <SignOutMark className="size-[18px]" />
     </button>
   )
 }

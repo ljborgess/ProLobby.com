@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { apiFetch } from '@/common/api/client'
 import { forwardedIpFrom } from '@/common/api/forwarded-ip'
 import { SESSION_COOKIE_NAME } from '@/common/auth/session-cookie'
+import { AccountBackdrop } from '@/modules/account/account-backdrop'
 import { LoadErrorMessage } from '@/modules/account/load-error-message'
 import {
   QueuePrerequisitesPanel,
@@ -64,10 +65,18 @@ export default async function VerificationsPage() {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-6 px-4 py-16 sm:px-6">
-      <QueuePrerequisitesPanel {...prerequisites} />
-      <div className="flex justify-center">
+    <main className="relative flex min-h-svh flex-1 flex-col overflow-hidden px-4 py-8 sm:px-6">
+      <AccountBackdrop />
+
+      <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4">
+        <span className="font-display text-base font-semibold tracking-tight text-foreground">
+          Pro<span className="text-accent">Lobby</span>
+        </span>
         <SignOutButton />
+      </div>
+
+      <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-10">
+        <QueuePrerequisitesPanel {...prerequisites} />
       </div>
     </main>
   )

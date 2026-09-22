@@ -49,9 +49,11 @@ export function AuthLayout({
           <LanguageSwitcher />
         </div>
 
-        <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center gap-4 py-4">
-          {children}
-        </div>
+        {/* `my-auto`, not `flex-1 justify-center`: inside a scroll container a
+            flex child sizes to its content, so `flex-1` never grew and the
+            form sat pinned near the top with the whole lower half empty.
+            Automatic margins centre it whether or not there is overflow. */}
+        <div className="mx-auto my-auto flex w-full max-w-sm flex-col gap-4 py-8">{children}</div>
       </div>
 
       <aside className="relative hidden border-l border-white/5 lg:flex lg:w-[46%] lg:flex-col lg:justify-end">

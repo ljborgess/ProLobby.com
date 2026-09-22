@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { AccountBackdrop } from '@/modules/account/account-backdrop'
 import { apiFetch } from '@/common/api/client'
 import { forwardedIpFrom } from '@/common/api/forwarded-ip'
 import { LanguageSwitcher } from '@/common/ui/language-switcher'
@@ -65,9 +67,22 @@ export default async function DiscordPage({ searchParams }: PageProps<'/account/
 
 function Screen({ linked, status }: { linked: boolean; status?: DiscordLinkStatus }) {
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-6 px-4 py-12 sm:px-6">
-      <DiscordLinkPanel linked={linked} status={status} />
-      <LanguageSwitcher />
+    <main className="relative flex min-h-svh flex-1 flex-col overflow-hidden px-4 py-8 sm:px-6">
+      <AccountBackdrop />
+
+      <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4">
+        <Link
+          href="/verifications"
+          className="landing-focus rounded-full border border-white/15 px-4 py-1.5 text-sm text-foreground-soft transition-colors hover:border-white/35 hover:text-foreground"
+        >
+          ← ProLobby
+        </Link>
+        <LanguageSwitcher />
+      </div>
+
+      <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-10">
+        <DiscordLinkPanel linked={linked} status={status} />
+      </div>
     </main>
   )
 }
