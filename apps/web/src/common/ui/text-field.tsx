@@ -35,7 +35,7 @@ export function TextField({ label, hint, error, id, className, ...inputProps }: 
         {...inputProps}
       />
       {hint && !error && (
-        <p id={hintId} className="text-xs leading-snug text-foreground-weak">
+        <p id={hintId} className="text-xs leading-snug text-foreground-soft">
           {hint}
         </p>
       )}

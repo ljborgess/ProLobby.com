@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { apiFetch } from '@/common/api/client'
 import { forwardedIpFrom } from '@/common/api/forwarded-ip'
 import { SESSION_COOKIE_NAME } from '@/common/auth/session-cookie'
+import { LanguageSwitcher } from '@/common/ui/language-switcher'
 import { AccountBackdrop } from '@/modules/account/account-backdrop'
 import { LoadErrorMessage } from '@/modules/account/load-error-message'
 import {
@@ -72,7 +73,13 @@ export default async function VerificationsPage() {
         <span className="font-display text-base font-semibold tracking-tight text-foreground">
           Pro<span className="text-accent">Lobby</span>
         </span>
-        <SignOutButton />
+        {/* The switcher belongs here too: this was the one screen without it,
+            and it is where someone lands after login — so a person who picked
+            Spanish had no way back on the very page they spend time on. */}
+        <div className="flex items-center gap-4">
+          <LanguageSwitcher />
+          <SignOutButton />
+        </div>
       </div>
 
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-10">

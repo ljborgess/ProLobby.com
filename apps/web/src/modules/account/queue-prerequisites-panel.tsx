@@ -196,11 +196,11 @@ function Step({
           <span
             className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[0.7rem] ${
               done
-                ? 'border-white/10 text-foreground-weak'
+                ? 'border-white/10 text-foreground-soft'
                 : 'border-accent/30 bg-accent/10 text-accent'
             }`}
           >
-            {!done && <span aria-hidden className="landing-glow size-1.5 rounded-full bg-accent" />}
+            {!done && <span aria-hidden className="landing-dot size-1.5 rounded-full bg-accent" />}
             {done ? content.done : content.pending}
           </span>
         </div>

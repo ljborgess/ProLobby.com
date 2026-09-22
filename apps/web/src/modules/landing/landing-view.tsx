@@ -88,7 +88,7 @@ export function LandingView() {
               className="landing-fade-up inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/10 px-3.5 py-1.5 text-[0.7rem] font-medium uppercase tracking-[0.2em] text-accent"
               style={{ '--landing-delay': '0s' } as React.CSSProperties}
             >
-              <span className="landing-glow size-1.5 rounded-full bg-accent" />
+              <span className="landing-dot size-1.5 rounded-full bg-accent" />
               EA FC Pro Clubs
             </span>
 
@@ -197,7 +197,7 @@ export function LandingView() {
                   {index + 1}
                 </span>
                 <span className="truncate text-sm text-foreground">{position}</span>
-                <span className="landing-glow ml-auto size-2 shrink-0 rounded-full bg-accent" />
+                <span className="landing-dot ml-auto size-2 shrink-0 rounded-full bg-accent" />
               </div>
             ))}
           </div>

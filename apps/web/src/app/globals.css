@@ -123,8 +123,35 @@ input:-webkit-autofill:focus {
   animation-delay: var(--landing-delay, 0s);
 }
 
+/** A wide wash of light behind a section. Lives between 14% and 26% opacity. */
 .landing-glow {
   animation: landing-glow-pulse 8s ease-in-out infinite;
+}
+
+/**
+ * A live indicator dot.
+ *
+ * It used to borrow `.landing-glow`, which was wrong twice over: the dot was
+ * pinned between 14% and 26% opacity — a background wash's range, all but
+ * invisible on a 6px circle — and under `prefers-reduced-motion` it snapped to
+ * full opacity, so the same dot looked different depending on a setting that
+ * should only govern movement. Its own keyframe stays in a visible range and
+ * rests fully lit.
+ */
+@keyframes landing-dot-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    scale: 1;
+  }
+  50% {
+    opacity: 1;
+    scale: 1.25;
+  }
+}
+
+.landing-dot {
+  animation: landing-dot-pulse 2.4s ease-in-out infinite;
 }
 
 /* Scroll-driven reveal, Chromium-only today — cards render fully visible
@@ -721,6 +748,38 @@ input:-webkit-autofill:focus {
   .landing-pitch-scan {
     animation: none;
     opacity: 0;
+  }
+
+  /* The dot means "live". It rests lit, not faded — the animation was the
+     decoration, the light is the information. */
+  .landing-dot {
+    animation: none;
+    opacity: 1;
+    scale: 1;
+  }
+
+  /**
+   * The press and hover transforms.
+   *
+   * These were the RNF-015 hole: every keyframe had a no-op here but the
+   * Tailwind `transition-transform hover:scale-… active:scale-…` on the
+   * buttons did not, so a visitor who asked for less motion still got things
+   * jumping under the pointer. Killing the transition leaves the states to
+   * colour and border, which is where they should have been carried anyway.
+   */
+  .landing-focus,
+  .landing-sheen,
+  .landing-card,
+  a,
+  button {
+    transition-property: color, background-color, border-color, opacity;
+  }
+
+  a:hover,
+  a:active,
+  button:hover,
+  button:active {
+    scale: 1;
   }
 
   /* The waiting slot still has to read as waiting, so it keeps its faded

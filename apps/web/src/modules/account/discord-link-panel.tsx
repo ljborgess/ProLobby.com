@@ -105,12 +105,12 @@ export function DiscordLinkPanel({
           <span
             className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[0.7rem] ${
               linked
-                ? 'border-white/10 text-foreground-weak'
+                ? 'border-white/10 text-foreground-soft'
                 : 'border-accent/30 bg-accent/10 text-accent'
             }`}
           >
             {!linked && (
-              <span aria-hidden className="landing-glow size-1.5 rounded-full bg-accent" />
+              <span aria-hidden className="landing-dot size-1.5 rounded-full bg-accent" />
             )}
             {linked ? content.linkedState : content.notLinkedState}
           </span>
@@ -149,7 +149,7 @@ export function DiscordLinkPanel({
           and nothing else, and the person deserves to read that before they
           leave for Discord rather than after. */}
       {!linked && (
-        <p className="text-center text-xs leading-relaxed text-foreground-weak">
+        <p className="text-center text-xs leading-relaxed text-foreground-soft">
           {content.scopeNote}
         </p>
       )}
