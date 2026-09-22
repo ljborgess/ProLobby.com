@@ -23,13 +23,22 @@ const API = args.get('api') ?? 'http://localhost:3011'
 const PASSWORD = 'a-long-enough-password'
 const email = `smoke-${Date.now()}@test.local`
 
+const PULADO = 'pulado'
 const results = []
-const skipped = []
 let session = ''
 
+/**
+ * Uma verificação. Devolver a string `pulado` marca o passo como não
+ * exercitado neste ambiente — diferente de passar, e o placar não o conta
+ * como tal.
+ */
 const check = async (name, run) => {
   try {
-    await run()
+    if ((await run()) === PULADO) {
+      results.push({ name, skipped: true })
+      console.log(`  --   ${name} (pulado neste ambiente)`)
+      return
+    }
     results.push({ name, ok: true })
     console.log(`  ok   ${name}`)
   } catch (error) {
@@ -137,8 +146,7 @@ await check('início do vínculo devolve a URL do Discord com PKCE e escopo iden
   if (res.status === 503) {
     // Ambiente sem aplicativo do Discord (o CI é assim): a rota responde
     // 'indisponível' de propósito, e isso é o comportamento certo, não falha.
-    skipped.push('início do vínculo: Discord não configurado neste ambiente')
-    return
+    return PULADO
   }
   expect(res.status, 201, 'status')
   const url = new URL((await res.json()).authorizationUrl)
@@ -188,11 +196,12 @@ await check('rotas antigas responderam 404 depois da renomeação', async () => 
   }
 })
 
-const failed = results.filter((r) => !r.ok)
-for (const note of skipped) {
-  console.log(`\n  pulado: ${note}`)
-}
-console.log(`\n${results.length - failed.length}/${results.length} passaram`)
+const failed = results.filter((r) => r.ok === false)
+const puladas = results.filter((r) => r.skipped).length
+console.log(
+  `\n${results.length - failed.length - puladas}/${results.length - puladas} passaram` +
+    (puladas > 0 ? `, ${puladas} pulado(s)` : ''),
+)
 if (failed.length > 0) {
   console.log('falhas:')
   for (const f of failed) console.log(`  - ${f.name}: ${f.error}`)
