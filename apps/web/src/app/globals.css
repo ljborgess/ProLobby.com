@@ -310,6 +310,73 @@ input:-webkit-autofill:focus {
   );
 }
 
+/**
+ * The auth screens' art panel — a HUD, drawn.
+ *
+ * There is no photography here and there will not be: match footage and menu
+ * captures from EA FC belong to EA. So the panel is built the way a readout
+ * is built — a swept radar, a grid that recedes, scanlines, corner brackets —
+ * which is both ours to ship and a better fit for a matchmaking product than
+ * a borrowed screenshot would be.
+ */
+@keyframes landing-radar-sweep {
+  to {
+    --landing-spin: 360deg;
+  }
+}
+
+@keyframes landing-scanlines-drift {
+  to {
+    background-position: 0 14px;
+  }
+}
+
+@keyframes landing-beam-breathe {
+  0%,
+  100% {
+    opacity: 0.18;
+    scale: 1 1;
+  }
+  50% {
+    opacity: 0.4;
+    scale: 1.12 1;
+  }
+}
+
+/** The sweep: a wedge of light going round, clipped to its own circle. */
+.landing-radar {
+  border-radius: 50%;
+  animation: landing-radar-sweep 7s linear infinite;
+  background: conic-gradient(
+    from var(--landing-spin),
+    color-mix(in srgb, var(--color-accent) 42%, transparent) 0deg,
+    transparent 44deg,
+    transparent 360deg
+  );
+  mask-image: radial-gradient(circle, black 58%, transparent 72%);
+}
+
+/** Interlace lines, drifting slowly, so the panel reads as a live readout. */
+.landing-scanlines {
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgb(255 255 255 / 3.5%) 0 1px,
+    transparent 1px 7px
+  );
+  animation: landing-scanlines-drift 3.5s linear infinite;
+}
+
+/** Floodlights from above the pitch. */
+.landing-beam {
+  animation: landing-beam-breathe 9s ease-in-out infinite;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--color-accent) 30%, transparent),
+    transparent 75%
+  );
+  clip-path: polygon(38% 0, 62% 0, 100% 100%, 0 100%);
+}
+
 /* Hero clip seam fade: the loop restarts at a hard boundary, and unless the
    source's last frame matches its first, that boundary is visible as a jump.
    Dipping the opacity across the seam hides it without JavaScript watching
@@ -485,8 +552,15 @@ input:-webkit-autofill:focus {
   }
 
   .landing-halo::before,
+  .landing-radar,
+  .landing-scanlines,
+  .landing-beam,
   .landing-sheen:hover::after {
     animation: none;
+  }
+
+  .landing-beam {
+    opacity: 0.28;
   }
 
   .landing-sheen:hover::after {
