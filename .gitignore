@@ -31,7 +31,13 @@ apps/web/CLAUDE.md
 *.db
 
 # dado real de gente (piloto de OCR, docs/requisitos/06-piloto-ocr.md) —
-# prints de estranhos nunca são commitados, medidos e apagados no fim
+# prints de estranhos nunca são commitados, medidos e apagados no fim.
+# O padrão antigo (`apps/*/piloto-ocr/`) não cobre `apps/ocr-pilot/prints/`.
+apps/ocr-pilot/prints/**
+!apps/ocr-pilot/prints/.gitkeep
+apps/ocr-pilot/*.csv
+apps/ocr-pilot/report.json
+apps/ocr-pilot/.tessdata/
 apps/*/piloto-ocr/prints/
 apps/*/piloto-ocr/*.csv
 **/*.local.png

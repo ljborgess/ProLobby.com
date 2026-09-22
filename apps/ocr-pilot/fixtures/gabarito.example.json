@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "id": "synthetic-en-01",
+      "file": "synthetic-en-01.png",
+      "edition": "fc27",
+      "screen": "attributes",
+      "language": "en",
+      "origin": "synthetic",
+      "capture": "screenshot",
+      "expected": {
+        "overall": null,
+        "gamertag": null,
+        "position": null,
+        "attributes": {
+          "acceleration": 85,
+          "sprintSpeed": 88,
+          "finishing": 76,
+          "shotPower": 80,
+          "shortPassing": 82,
+          "longPassing": 79,
+          "ballControl": 84,
+          "dribbling": 87,
+          "interceptions": 71,
+          "headingAccuracy": 68,
+          "standingTackle": 64,
+          "jumping": 74,
+          "stamina": 81
+        }
+      }
+    }
+  ]
+}
