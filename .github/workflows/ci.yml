@@ -93,12 +93,17 @@ jobs:
       - name: Smoke com web e API no ar
         run: |
           pnpm --filter @prolobby/api mikro-orm migration:up
-          node apps/api/dist/main.js > /tmp/api.log 2>&1 &
-          pnpm --filter @prolobby/web start > /tmp/web.log 2>&1 &
+          # A partir de apps/api: o mikro-orm.config resolve `entities` em
+          # ./dist/**, relativo ao diretorio atual — da raiz o boot morre com
+          # "No entities were discovered" (visto no CI em 2026-09-21).
+          # A porta vai em cada processo, nunca no `env:` do passo: um PORT
+          # comum faria o Next subir na porta da API e o wait-on esperar para
+          # sempre — foi o que aconteceu na primeira tentativa.
+          (cd apps/api && PORT=3001 node dist/main.js) > /tmp/api.log 2>&1 &
+          PORT=3000 pnpm --filter @prolobby/web start > /tmp/web.log 2>&1 &
           npx --yes wait-on -t 90000 http://localhost:3001/api/health http://localhost:3000
           pnpm smoke --api http://localhost:3001 --web http://localhost:3000
         env:
-          PORT: '3001'
           API_URL: http://localhost:3001
 
       - name: Logs dos processos quando o smoke falha
