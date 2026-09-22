@@ -61,6 +61,29 @@ body {
 }
 
 /**
+ * Autofilled fields, kept dark.
+ *
+ * Chrome paints its own near-white background over an autofilled input and
+ * ignores `background-color` while it does — on a dark form that lands as two
+ * bright slabs where the e-mail and password are. The inset shadow is the one
+ * property the override does not clobber, so the fill is drawn with that
+ * instead, and `-webkit-text-fill-color` carries the text colour that
+ * `color` no longer can.
+ *
+ * The long delay is the usual trick for the transition: nothing animates, the
+ * property simply never gets around to changing.
+ */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--color-text);
+  -webkit-box-shadow: 0 0 0 1000px var(--color-surface) inset;
+  box-shadow: 0 0 0 1000px var(--color-surface) inset;
+  caret-color: var(--color-text);
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+/**
  * Landing motion — issue #171, 2026-09-22.
  *
  * All native CSS (docs/produto/01-visao/01-visao.md, "nativo primeiro"):

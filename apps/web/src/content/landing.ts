@@ -44,6 +44,11 @@ export interface LandingContent {
   footer: {
     tagline: string
   }
+  /** The art panel beside the sign-in and sign-up forms (`AuthLayout`). */
+  authAside: {
+    signIn: { title: string; body: string }
+    signUp: { title: string; body: string }
+  }
 }
 
 export const LANDING_CONTENT: Record<Locale, LandingContent> = {
@@ -99,6 +104,16 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
     footer: {
       tagline: 'Matchmaking competitivo e identidade verificada para EA FC Pro Clubs.',
     },
+    authAside: {
+      signIn: {
+        title: 'A fila lembra de você',
+        body: 'Sua posição, seu elo e seu vínculo do Discord continuam onde estavam.',
+      },
+      signUp: {
+        title: 'Uma conta, cinco personagens',
+        body: 'Um por categoria de posição, cada um com elo próprio. Verificação antes da primeira fila.',
+      },
+    },
   },
   es: {
     topBar: {
@@ -151,6 +166,16 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
     },
     footer: {
       tagline: 'Matchmaking competitivo e identidad verificada para EA FC Pro Clubs.',
+    },
+    authAside: {
+      signIn: {
+        title: 'La cola se acuerda de ti',
+        body: 'Tu posición, tu elo y tu vínculo de Discord siguen donde estaban.',
+      },
+      signUp: {
+        title: 'Una cuenta, cinco personajes',
+        body: 'Uno por categoría de posición, cada uno con su propio elo. Verificación antes de la primera cola.',
+      },
     },
   },
 }

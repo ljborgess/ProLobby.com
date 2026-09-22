@@ -36,6 +36,8 @@ O gatilho de 2026-09-18 continua valendo pras telas de fluxo (cadastro, login, f
 
 Escopo desta exceção: hero, seção de destaques, rodapé — tudo dentro de `(public)/page.tsx` e dos componentes que só ela usa. Continua sem número inventado (jogadores online, campeonatos, etc. da referência): a plataforma está na Fase 2.3, sem fila e sem tração real ainda, e forjar prova social seria enganoso. A paleta e as fontes seguem o design system herdado acima — a referência informa estrutura (hero cheio, faixa de métricas, grade de destaques com ícone, rodapé com status), não cor.
 
+**Estendido no mesmo dia para cadastro e login.** As duas telas ficam coladas na landing no funil — quem clica em "Criar conta" sai de uma página desenhada e cai na próxima no mesmo segundo, e o degrau entre as duas era visível. Elas ganham o mesmo enquadramento (formulário de um lado, painel de arte do outro, feito das mesmas camadas desenhadas), sem tocar em campo, validação ou mensagem de erro: o que muda é a moldura, não o formulário. O gatilho de 2026-09-18 **continua valendo para fila e lobby**, que são as telas cujo comportamento ainda não existe e cujo desenho depende dele.
+
 #### Animação: nativo primeiro, biblioteca por necessidade demonstrada (decidido em 2026-09-18)
 
 Vale a partir do redesenho — antes dele a regra acima (não polir) continua valendo, animação incluída.
