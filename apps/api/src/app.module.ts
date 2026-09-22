@@ -66,6 +66,8 @@ export class AppModule implements NestModule {
         helmet(),
         cookieParser(),
       )
-      .forRoutes('*')
+      // Nest 11 / Express v5: `*` is a legacy wildcard (issue #156). `{*splat}`
+      // is the named form that still matches every path, including `/`.
+      .forRoutes('{*splat}')
   }
 }
