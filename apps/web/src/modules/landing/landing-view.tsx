@@ -5,6 +5,7 @@ import { useLandingContent } from '@/hooks/use-landing-content'
 import { LanguageSwitcher } from '@/common/ui/language-switcher'
 import { PairingNetwork } from './pairing-network'
 import { QueueBoard } from './queue-board'
+import { SectionThread, SectionThreadEnd } from './section-thread'
 
 const FEATURE_ICONS = [
   // shield — identidade verificada
@@ -113,16 +114,12 @@ export function LandingView() {
         </div>
       </section>
 
-      {/* The thread from the hero into what follows. Decorative — it carries
-          no information the headings do not — so it is hidden from the
-          accessibility tree and lives outside the section it points at. */}
-      <div aria-hidden className="relative -mt-12 flex justify-center">
-        <span className="landing-thread h-28 w-px bg-gradient-to-b from-transparent via-accent/50 to-accent" />
-        <span className="landing-thread-node absolute bottom-0 left-1/2 size-2 -translate-x-1/2 translate-y-1/2 rounded-full bg-accent shadow-[0_0_14px_color-mix(in_srgb,var(--color-accent)_60%,transparent)]" />
-      </div>
+      {/* Every seam from here down is threaded, and the threads are numbered:
+          the page reads as one route with landmarks rather than five panels
+          stacked. `seam` drops each section's top rule, because a full-width
+          hairline across the landing point would cut the thread in half. */}
+      <SectionThread step={1} variant="line" />
 
-      {/* `seam`: no top rule on this one. The thread lands here, and a
-          full-width hairline across the same spot would cut it in half. */}
       <Section seam>
         <SectionHeading eyebrow={content.facts.eyebrow} align="center" />
         <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -140,7 +137,9 @@ export function LandingView() {
         </div>
       </Section>
 
-      <Section className="landing-weave bg-surface">
+      <SectionThread step={2} variant="fork" />
+
+      <Section seam className="landing-weave bg-surface">
         <div className="flex flex-col items-center gap-12 lg:flex-row lg:gap-16">
           <div className="landing-reveal flex-1 text-center lg:text-left">
             <SectionHeading
@@ -166,7 +165,9 @@ export function LandingView() {
         </div>
       </Section>
 
-      <Section className="overflow-hidden">
+      <SectionThread step={3} variant="dashes" />
+
+      <Section seam className="overflow-hidden">
         <div
           aria-hidden
           className="landing-parallax-slow pointer-events-none absolute inset-x-0 -top-1/4 -z-10 h-[150%] bg-[radial-gradient(ellipse_50%_40%_at_20%_40%,_var(--color-accent-strong)_0%,_transparent_70%)] opacity-[0.10]"
@@ -203,7 +204,9 @@ export function LandingView() {
         </div>
       </Section>
 
-      <Section className="bg-surface">
+      <SectionThread step={4} variant="jog" />
+
+      <Section seam className="bg-surface">
         <SectionHeading eyebrow={content.features.eyebrow} align="center" />
         <div className="mt-12 grid gap-6 sm:grid-cols-3">
           {content.features.items.map((item, index) => (
@@ -231,6 +234,8 @@ export function LandingView() {
           ))}
         </div>
       </Section>
+
+      <SectionThreadEnd />
 
       <footer className="landing-weave px-4 py-12 sm:px-6">
         <div className="mx-auto max-w-6xl">

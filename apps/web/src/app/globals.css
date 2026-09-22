@@ -153,12 +153,6 @@ input:-webkit-autofill:focus {
   }
 }
 
-@keyframes landing-scrim-fade {
-  to {
-    opacity: 0.12;
-  }
-}
-
 @keyframes landing-progress {
   from {
     scale: 0 1;
@@ -178,13 +172,6 @@ input:-webkit-autofill:focus {
     animation: landing-parallax-fast linear both;
     animation-timeline: view();
     animation-range: cover;
-  }
-
-  .landing-scrim {
-    opacity: 0;
-    animation: landing-scrim-fade linear both;
-    animation-timeline: view();
-    animation-range: entry 0% cover 40%;
   }
 
   .landing-progress-bar {
@@ -456,6 +443,98 @@ input:-webkit-autofill:focus {
   }
 }
 
+/**
+ * Players shifting on the pitch.
+ *
+ * Nobody stands still waiting for a ball. Each token drifts a couple of pixels
+ * on its own clock, and the stagger is what makes eleven of them read as a
+ * team rather than as one animation playing eleven times.
+ */
+@keyframes landing-bob {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -3px;
+  }
+}
+
+/** A line of light sweeping up the pitch — the board reading itself. */
+@keyframes landing-pitch-scan {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  15%,
+  70% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-10%);
+    opacity: 0;
+  }
+}
+
+.landing-pitch-scan {
+  animation: landing-pitch-scan 6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/** A slot nobody has taken yet: the ring breathes instead of drifting. */
+@keyframes landing-slot-wait {
+  0%,
+  100% {
+    opacity: 0.45;
+    scale: 0.94;
+  }
+  50% {
+    opacity: 1;
+    scale: 1.06;
+  }
+}
+
+.landing-bob {
+  animation: landing-bob 4.5s ease-in-out infinite;
+  animation-delay: var(--landing-delay, 0s);
+}
+
+.landing-slot-wait {
+  animation: landing-slot-wait 2.6s ease-in-out infinite;
+  animation-delay: var(--landing-delay, 0s);
+}
+
+/**
+ * A stroke that draws itself on scroll.
+ *
+ * `pathLength="1"` on the path normalises its length, so one dash of `1`
+ * covers any shape — straight, forked, jogged — and the same two rules drive
+ * every connector on the page without measuring anything.
+ */
+@keyframes landing-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.landing-draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+@supports (animation-timeline: view()) {
+  .landing-draw {
+    animation: landing-draw linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 60%;
+  }
+}
+
+@supports not (animation-timeline: view()) {
+  .landing-draw {
+    stroke-dashoffset: 0;
+  }
+}
+
 .landing-thread {
   transform-origin: 50% 0;
   scale: 1 0;
@@ -493,13 +572,6 @@ input:-webkit-autofill:focus {
 }
 
 /* The pitch drawing and the card surfaces: static art, no timeline needed. */
-.landing-pitch-line {
-  stroke: var(--color-accent);
-  stroke-width: 0.6;
-  fill: none;
-  opacity: 0.35;
-}
-
 /* Card surface: a top-edge highlight over a barely-there vertical gradient.
    It is what keeps a dark panel from looking like a flat hole in the page. */
 .landing-card {
@@ -621,14 +693,6 @@ input:-webkit-autofill:focus {
     scale: 1;
   }
 
-  /* The scrim's resting state is faint by design — 1 would wash the section
-     out, so it lands on the keyframe's end value, not on full opacity. */
-  .landing-scrim {
-    animation: none;
-    opacity: 0.12;
-    translate: 0 0;
-  }
-
   .landing-card {
     transition: none;
   }
@@ -642,6 +706,29 @@ input:-webkit-autofill:focus {
   .landing-thread {
     animation: none;
     scale: 1 1;
+  }
+
+  .landing-draw {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+
+  .landing-bob {
+    animation: none;
+    translate: 0 0;
+  }
+
+  .landing-pitch-scan {
+    animation: none;
+    opacity: 0;
+  }
+
+  /* The waiting slot still has to read as waiting, so it keeps its faded
+     resting state — it just stops breathing. */
+  .landing-slot-wait {
+    animation: none;
+    opacity: 0.7;
+    scale: 1;
   }
 
   .landing-thread-node {
