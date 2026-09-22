@@ -64,9 +64,10 @@ export function SignInForm() {
     }
 
     // The session cookie is already set by the relayed `Set-Cookie` — this
-    // is just where the person lands next. There is no private area yet
-    // (phase 2.2+), so home is the closest real destination.
-    router.push('/')
+    // is just where the person lands next. /verifications is the signed-in
+    // area (routing change of 2026-09-22); the public home never renders a
+    // dashboard for someone who is already logged in.
+    router.push('/verifications')
   }
 
   return (

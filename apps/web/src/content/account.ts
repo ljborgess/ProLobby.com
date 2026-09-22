@@ -1,7 +1,7 @@
 import type { Locale } from './locale'
 
 /**
- * Text for the logged-in home — issue #171. One object per locale, so a missing
+ * Text for `/verifications` — issue #171. One object per locale, so a missing
  * key is a TypeScript error, not a silent blank in production.
  *
  * The items are named after what the person still has to do, and the order is
@@ -29,6 +29,7 @@ export interface AccountContent {
     action: string
   }
   allDone: string
+  loadError: string
 }
 
 export const ACCOUNT_CONTENT: Record<Locale, AccountContent> = {
@@ -53,6 +54,7 @@ export const ACCOUNT_CONTENT: Record<Locale, AccountContent> = {
       action: 'Vincular Discord',
     },
     allDone: 'Tudo pronto. A fila abre na próxima fase do projeto.',
+    loadError: 'Não deu pra carregar sua conta agora. Atualiza a página em instantes.',
   },
   es: {
     title: 'Próximos pasos',
@@ -75,5 +77,6 @@ export const ACCOUNT_CONTENT: Record<Locale, AccountContent> = {
       action: 'Vincular Discord',
     },
     allDone: 'Todo listo. La cola abre en la próxima fase del proyecto.',
+    loadError: 'No se pudo cargar tu cuenta ahora. Actualiza la página en un momento.',
   },
 }
