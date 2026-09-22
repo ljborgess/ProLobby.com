@@ -164,11 +164,19 @@ export function LandingView() {
             </div>
           </div>
 
-          <div
-            className="landing-slide-x landing-parallax-fast relative w-full flex-1"
-            style={{ '--landing-from': '32px' } as React.CSSProperties}
-          >
-            <QueueBoard />
+          {/* Two animation classes never go on one element: each sets the
+              `animation` shorthand, so the later rule wins outright and the
+              loser's starting state sticks. Stacking `landing-slide-x` on this
+              parallax wrapper left the board at `opacity: 0` permanently — the
+              pitch simply vanished from the page. Parallax on the outside,
+              slide on the inside. */}
+          <div className="landing-parallax-fast relative w-full flex-1">
+            <div
+              className="landing-slide-x"
+              style={{ '--landing-from': '32px' } as React.CSSProperties}
+            >
+              <QueueBoard />
+            </div>
           </div>
         </div>
       </Section>
