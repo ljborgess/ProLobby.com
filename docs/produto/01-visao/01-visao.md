@@ -30,6 +30,12 @@ Por que a fila e não antes: é a **primeira tela em que movimento faz trabalho*
 
 Por que não mais tarde (antes do beta): acumularia o redesenho inteiro no momento mais tenso do projeto, e as telas de fila e lobby são justamente as que mais ganham em ser desenhadas com o comportamento já pronto ao lado.
 
+#### A landing pública sai do gatilho acima e é redesenhada já (decidido em 2026-09-22)
+
+O gatilho de 2026-09-18 continua valendo pras telas de fluxo (cadastro, login, fila, lobby) — nenhuma delas ganha polimento antes da Fase 2.5. A home (`/`) é diferente: não é fluxo, é a página pública que qualquer visitante vê antes de decidir se cria conta, e referência visual (gamersclub.com.br) foi levantada a pedido do Luciano pra guiar o redesenho dela especificamente.
+
+Escopo desta exceção: hero, seção de destaques, rodapé — tudo dentro de `(public)/page.tsx` e dos componentes que só ela usa. Continua sem número inventado (jogadores online, campeonatos, etc. da referência): a plataforma está na Fase 2.3, sem fila e sem tração real ainda, e forjar prova social seria enganoso. A paleta e as fontes seguem o design system herdado acima — a referência informa estrutura (hero cheio, faixa de métricas, grade de destaques com ícone, rodapé com status), não cor.
+
 #### Animação: nativo primeiro, biblioteca por necessidade demonstrada (decidido em 2026-09-18)
 
 Vale a partir do redesenho — antes dele a regra acima (não polir) continua valendo, animação incluída.
