@@ -159,6 +159,11 @@ export class EmailVerificationService {
       return
     }
 
+    // ponytail: two requests racing past the count above can both send — the
+    // same accepted gap as PASSWORD_RESET_MAX_PER_HOUR. The cap is a courtesy
+    // to a stranger's inbox, not a security boundary, and LOGIN_THROTTLE
+    // (5/min per IP) already bounds how fast one caller can race it. A
+    // per-account lock would close it, if it ever matters.
     await this.sendVerification(account)
   }
 
