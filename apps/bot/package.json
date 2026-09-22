@@ -14,7 +14,7 @@
   "dependencies": {
     "@prolobby/types": "workspace:*",
     "discord.js": "^14.16.3",
-    "express": "^4.21.1"
+    "express": "^4.22.3"
   },
   "devDependencies": {
     "@prolobby/eslint-config": "workspace:*",
