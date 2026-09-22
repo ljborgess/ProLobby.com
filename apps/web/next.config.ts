@@ -8,7 +8,7 @@ import type { NextConfig } from 'next'
  *
  * The CSP itself is **not** in this list: it needs a nonce that changes on
  * every response, and what `headers()` returns is static. It is set in
- * `src/middleware.ts`, which also explains what the static version broke.
+ * `src/proxy.ts`, which also explains what the static version broke.
  * Everything below is the same on every response, so it stays here.
  */
 const SECURITY_HEADERS = [

@@ -15,6 +15,13 @@ export enum ModerationCaseType {
   /** Lost both email and Discord — the two-factor path (RF-025). */
   ACCOUNT_RECOVERY = 'account_recovery',
   GAMERTAG_CHANGE = 'gamertag_change',
+  /**
+   * Discord identity change — RF-082 / #155. Unlinking is not a self-serve
+   * action; the person opens this case. `gamertag_change` is the console
+   * counterpart. Both sit under "troca de identidade vinculada" in
+   * docs/produto/04-governanca/01-moderacao.md.
+   */
+  LINKED_IDENTITY_CHANGE = 'linked_identity_change',
   /** Individual score of 0.0 on the screenshot — possibly a game bug (RF-046). */
   POSSIBLE_GAME_BUG = 'possible_game_bug',
 }

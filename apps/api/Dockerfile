@@ -23,3 +23,13 @@ WORKDIR /app/apps/api
 RUN mkdir -p /app/apps/api/uploads/account-recovery && chown -R node:node /app/apps/api/uploads
 USER node
 CMD ["node", "dist/main.js"]
+
+# pg_dump / pg_restore live here, not in the API process. The API image must
+# not gain DATABASE_DIRECT_URL; this stage is the only consumer (#123).
+FROM runner AS backup
+USER root
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends postgresql-client \
+  && rm -rf /var/lib/apt/lists/*
+USER node
+CMD ["node", "dist/common/backup/cli.js"]

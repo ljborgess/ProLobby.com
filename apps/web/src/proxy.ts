@@ -19,8 +19,11 @@ import { NextResponse, type NextRequest } from 'next/server'
  * naming each one; browsers that honour it ignore the `'self'` fallback, and
  * older ones fall back to it. The chunk URLs change every build, so the
  * alternative is a policy nobody can keep correct.
+ *
+ * File and export are `proxy`, not `middleware` — Next 16 renamed the
+ * convention (issue #157). Behaviour is the same.
  */
-export function middleware(request: NextRequest): NextResponse {
+export function proxy(request: NextRequest): NextResponse {
   const nonce = crypto.randomUUID()
 
   const csp = [
@@ -60,7 +63,7 @@ export const config = {
     /*
      * Every page, and nothing served straight off disk: static chunks, images
      * and the favicon carry no inline script, so a policy on them costs a
-     * middleware invocation and buys nothing.
+     * proxy invocation and buys nothing.
      */
     {
       source: '/((?!_next/static|_next/image|favicon.ico).*)',
