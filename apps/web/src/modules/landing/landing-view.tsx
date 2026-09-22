@@ -14,12 +14,14 @@ const FEATURE_ICONS = [
 ]
 
 /**
- * The public landing's visual body — issue #171 redesign of 2026-09-22
- * (docs/produto/01-visao/01-visao.md, "A landing pública sai do gatilho
- * acima"). Structure (full-bleed hero, feature grid with icons, footer with
- * the sign-up/sign-in pair) is informed by gamersclub.com.br at the user's
- * request; colors and type stay the inherited design system — no new
- * palette, and no invented traction numbers (no queue yet in Fase 2.3).
+ * The public landing's visual body — issue #171 redesign of 2026-09-22,
+ * extended the same day with a top bar, a facts strip, a position grid and a
+ * solo-queue spotlight (docs/produto/01-visao/01-visao.md, "A landing
+ * pública sai do gatilho acima"). Structure across both passes is informed
+ * by gamersclub.com.br at the user's request; colors and type stay the
+ * inherited design system — no new palette, and no invented traction number
+ * (no queue yet in Fase 2.3 — `facts` below holds only already-decided spec
+ * numbers, never a made-up "jogadores online").
  *
  * Client component, like SignUpHeading, so the language switch re-renders
  * this copy without a navigation.
@@ -29,6 +31,21 @@ export function LandingView() {
 
   return (
     <>
+      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-white/5 bg-background/80 px-4 py-4 backdrop-blur sm:px-6">
+        <span className="font-display text-lg font-semibold text-foreground">ProLobby</span>
+        <nav className="flex items-center gap-3">
+          <Link href="/login" className="text-sm font-medium text-foreground-soft">
+            {content.topBar.signIn}
+          </Link>
+          <Link
+            href="/sign-up"
+            className="rounded-sm bg-accent px-4 py-2 text-sm font-medium text-background transition-transform duration-200 hover:scale-105 active:scale-95"
+          >
+            {content.topBar.cta}
+          </Link>
+        </nav>
+      </header>
+
       <section className="relative flex flex-1 flex-col items-center justify-center overflow-hidden px-4 py-24 text-center sm:px-6">
         <div
           aria-hidden
@@ -64,6 +81,58 @@ export function LandingView() {
           >
             {content.hero.secondaryCta}
           </Link>
+        </div>
+      </section>
+
+      <section className="border-t border-white/5 px-4 py-16 sm:px-6">
+        <p className="text-center text-sm font-medium uppercase tracking-wide text-accent">
+          {content.facts.eyebrow}
+        </p>
+        <div className="mx-auto mt-8 grid max-w-4xl grid-cols-2 gap-8 sm:grid-cols-4">
+          {content.facts.items.map((fact) => (
+            <div key={fact.label} className="landing-reveal flex flex-col items-center text-center">
+              <span className="font-display text-3xl font-semibold text-accent sm:text-4xl">
+                {fact.value}
+              </span>
+              <span className="mt-1 text-sm text-foreground-soft">{fact.label}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="border-t border-white/5 bg-surface px-4 py-16 sm:px-6">
+        <div className="mx-auto flex max-w-4xl flex-col items-center gap-6 text-center sm:flex-row sm:gap-12 sm:text-left">
+          <div className="flex-1">
+            <p className="text-sm font-medium uppercase tracking-wide text-accent">
+              {content.positions.eyebrow}
+            </p>
+            <h2 className="mt-2 font-display text-2xl font-semibold text-foreground">
+              {content.positions.title}
+            </h2>
+            <p className="mt-3 text-sm text-foreground-soft">{content.positions.body}</p>
+          </div>
+          <div className="landing-reveal flex flex-1 flex-wrap justify-center gap-3 sm:justify-end">
+            {content.positions.items.map((position) => (
+              <span
+                key={position}
+                className="rounded-sm border border-white/10 bg-surface-weak px-4 py-2 text-sm font-medium text-foreground"
+              >
+                {position}
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t border-white/5 px-4 py-16 sm:px-6">
+        <div className="landing-reveal mx-auto max-w-2xl text-center">
+          <p className="text-sm font-medium uppercase tracking-wide text-accent">
+            {content.soloQueue.eyebrow}
+          </p>
+          <h2 className="mt-2 font-display text-2xl font-semibold text-foreground">
+            {content.soloQueue.title}
+          </h2>
+          <p className="mt-3 text-sm text-foreground-soft">{content.soloQueue.body}</p>
         </div>
       </section>
 

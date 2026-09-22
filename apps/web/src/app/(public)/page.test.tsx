@@ -35,8 +35,10 @@ describe('Home', () => {
 
     renderWithLocale(await Home())
 
-    expect(screen.getByRole('link', { name: 'Criar conta' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Entrar' })).toBeInTheDocument()
+    // Both appear twice — top bar and hero (issue #171 top bar addition) —
+    // so this checks presence, not a single instance.
+    expect(screen.getAllByRole('link', { name: 'Criar conta' }).length).toBeGreaterThan(0)
+    expect(screen.getAllByRole('link', { name: 'Entrar' }).length).toBeGreaterThan(0)
     expect(redirect).not.toHaveBeenCalled()
   })
 

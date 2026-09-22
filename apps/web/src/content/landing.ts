@@ -2,12 +2,20 @@ import type { Locale } from './locale'
 
 /**
  * Text for the public landing (`(public)/page.tsx`) — issue #171 redesign of
- * 2026-09-22. Scoped to this page only: it is the one screen the 2026-09-18
- * "no polish before Fase 2.5" rule (docs/produto/01-visao/01-visao.md)
- * explicitly carves out, since it is the public face, not part of the
- * cadastro/fila flow that rule protects.
+ * 2026-09-22, extended the same day with a top bar, a facts strip, a
+ * position grid and a solo-queue spotlight (structure borrowed from
+ * gamersclub.com.br's top bar / "só no mês passado" / "modos de jogo" /
+ * "partidas GC solo" at the user's request — see docs/produto/01-visao/01-visao.md).
+ *
+ * `facts` deliberately holds no invented traction (no "jogadores online" —
+ * Fase 2.3 has no queue yet): every value is a real, already-decided spec
+ * number (RF-009's 30 s, the 5 position categories, the pt/es locale count).
  */
 export interface LandingContent {
+  topBar: {
+    cta: string
+    signIn: string
+  }
   hero: {
     titlePrefix: string
     titleAccent: string
@@ -15,6 +23,21 @@ export interface LandingContent {
     subtitle: string
     primaryCta: string
     secondaryCta: string
+  }
+  facts: {
+    eyebrow: string
+    items: { value: string; label: string }[]
+  }
+  positions: {
+    eyebrow: string
+    title: string
+    body: string
+    items: string[]
+  }
+  soloQueue: {
+    eyebrow: string
+    title: string
+    body: string
   }
   features: {
     eyebrow: string
@@ -27,6 +50,10 @@ export interface LandingContent {
 
 export const LANDING_CONTENT: Record<Locale, LandingContent> = {
   pt: {
+    topBar: {
+      cta: 'Criar conta',
+      signIn: 'Entrar',
+    },
     hero: {
       titlePrefix: 'A ',
       titleAccent: 'ProLobby',
@@ -35,6 +62,26 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
         'Cadastra seu personagem, entra na fila por posição e é pareado com outros jogadores verificados — sem grupo de WhatsApp, sem gente sumida no meio do jogo.',
       primaryCta: 'Criar conta',
       secondaryCta: 'Entrar',
+    },
+    facts: {
+      eyebrow: 'O que já está decidido',
+      items: [
+        { value: '5', label: 'categorias de posição' },
+        { value: '30s', label: 'pra confirmar a fila' },
+        { value: '11v11', label: 'humano + IA do jogo cobre o resto' },
+        { value: '2', label: 'idiomas — pt e es' },
+      ],
+    },
+    positions: {
+      eyebrow: 'Fila por posição',
+      title: 'Você entra na posição que joga de verdade',
+      body: 'Cada personagem tem categoria fixa e elo próprio — desempenho de goleiro não vira elo de atacante. Até 5 personagens por conta, um por categoria.',
+      items: ['Goleiro', 'Zaga', 'Meio', 'Ponta', 'Ataque'],
+    },
+    soloQueue: {
+      eyebrow: 'Entra sozinho, sai com time',
+      title: 'Sem grupo de amigo pra fechar 11',
+      body: 'A fila pareia sua categoria com quem também entrou sozinho. Faltou gente? A IA do jogo cobre o resto — o jogo continua, ninguém fica esperando um 11º jogador que nunca chega.',
     },
     features: {
       eyebrow: 'Como funciona',
@@ -58,6 +105,10 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
     },
   },
   es: {
+    topBar: {
+      cta: 'Crear cuenta',
+      signIn: 'Entrar',
+    },
     hero: {
       titlePrefix: 'La ',
       titleAccent: 'ProLobby',
@@ -66,6 +117,26 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
         'Registra tu personaje, entra a la cola por posición y te emparejamos con otros jugadores verificados — sin grupo de WhatsApp, sin gente que desaparece a mitad del partido.',
       primaryCta: 'Crear cuenta',
       secondaryCta: 'Entrar',
+    },
+    facts: {
+      eyebrow: 'Lo que ya está decidido',
+      items: [
+        { value: '5', label: 'categorías de posición' },
+        { value: '30s', label: 'para confirmar la cola' },
+        { value: '11v11', label: 'humano + la IA del juego cubre el resto' },
+        { value: '2', label: 'idiomas — pt y es' },
+      ],
+    },
+    positions: {
+      eyebrow: 'Cola por posición',
+      title: 'Entras en la posición que juegas de verdad',
+      body: 'Cada personaje tiene categoría fija y elo propio — el desempeño de arquero no se vuelve elo de delantero. Hasta 5 personajes por cuenta, uno por categoría.',
+      items: ['Arquero', 'Defensa', 'Mediocampo', 'Extremo', 'Delantero'],
+    },
+    soloQueue: {
+      eyebrow: 'Entras solo, sales con equipo',
+      title: 'Sin grupo de amigos para completar 11',
+      body: 'La cola empareja tu categoría con quien también entró solo. ¿Faltó gente? La IA del juego cubre el resto — el partido continúa, nadie espera un 11° jugador que nunca llega.',
     },
     features: {
       eyebrow: 'Cómo funciona',
