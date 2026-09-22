@@ -26,3 +26,23 @@ export async function POST(request: Request): Promise<Response> {
     }),
   )
 }
+
+/**
+ * Thin proxy to `DELETE /sessions` (sign-out) — same shape as `POST` above:
+ * `relay()` copies the API's `Set-Cookie` (the now-expired session cookie)
+ * onto this response untouched.
+ */
+export async function DELETE(request: Request): Promise<Response> {
+  const refused = rejectCrossSite(request, { jsonBody: false })
+  if (refused) {
+    return refused
+  }
+
+  return relay(
+    apiFetch('/api/sessions', {
+      method: 'DELETE',
+      headers: { cookie: request.headers.get('cookie') ?? '' },
+      forwardedIp: forwardedIpFrom(request),
+    }),
+  )
+}

@@ -42,5 +42,11 @@ export async function relay(pending: Promise<Response>): Promise<Response> {
   // the next person through it, `Set-Cookie` and all.
   headers.set('cache-control', 'private, no-store')
 
-  return new Response(body, { status: apiResponse.status, headers })
+  // The Fetch spec forbids a body on these three statuses — even `''`, which
+  // `apiResponse.text()` returns for a bodyless response, is "not null" to
+  // the Response constructor and throws. Found via `DELETE /bff/sessions`,
+  // whose API side answers 204.
+  const nullBodyStatus =
+    apiResponse.status === 204 || apiResponse.status === 205 || apiResponse.status === 304
+  return new Response(nullBodyStatus ? null : body, { status: apiResponse.status, headers })
 }
