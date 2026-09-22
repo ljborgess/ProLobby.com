@@ -21,15 +21,32 @@ export function SignOutButton() {
   const content = useAuthContent().signOut
   const router = useRouter()
   const [signingOut, setSigningOut] = useState(false)
+  const [failed, setFailed] = useState(false)
 
   async function handleClick() {
     setSigningOut(true)
+    setFailed(false)
+
+    // Only the API can end the session: the cookie is `HttpOnly`, so leaving
+    // without its blessing leaves the person signed in while the screen says
+    // otherwise — the worst possible lie to tell on a shared machine. `fetch`
+    // resolves on 5xx, so the status has to be read; `relay()` answers 502
+    // when the API is unreachable, and the cookie survives that.
+    let response: Response
     try {
-      await fetch('/bff/sessions', { method: 'DELETE' })
+      response = await fetch('/bff/sessions', { method: 'DELETE' })
     } catch {
-      // The cookie may well be gone anyway, and a stuck button is worse than
-      // a redirect that lands back on /login: let the navigation decide.
+      setSigningOut(false)
+      setFailed(true)
+      return
     }
+
+    if (!response.ok) {
+      setSigningOut(false)
+      setFailed(true)
+      return
+    }
+
     router.push('/')
     router.refresh()
   }
@@ -40,15 +57,25 @@ export function SignOutButton() {
   const label = signingOut ? content.submitting : content.submit
 
   return (
-    <button
-      type="button"
-      onClick={handleClick}
-      disabled={signingOut}
-      aria-label={label}
-      title={label}
-      className="landing-focus flex size-10 items-center justify-center rounded-full border border-white/15 text-foreground-soft transition-colors hover:border-white/35 hover:text-foreground disabled:opacity-60"
-    >
-      <SignOutMark className="size-[18px]" />
-    </button>
+    <div className="flex items-center gap-3">
+      {/* The failure is announced, not just drawn: someone who believes they
+          signed out and did not needs to be told, and a screen reader user
+          gets nothing from a button that simply stayed put. */}
+      {failed && (
+        <p role="alert" className="text-xs text-danger">
+          {content.failed}
+        </p>
+      )}
+      <button
+        type="button"
+        onClick={handleClick}
+        disabled={signingOut}
+        aria-label={label}
+        title={label}
+        className="landing-focus flex size-10 items-center justify-center rounded-full border border-white/15 text-foreground-soft transition-colors hover:border-white/35 hover:text-foreground disabled:opacity-60"
+      >
+        <SignOutMark className="size-[18px]" />
+      </button>
+    </div>
   )
 }

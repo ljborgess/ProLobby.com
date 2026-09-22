@@ -38,12 +38,33 @@ describe('SignOutButton', () => {
     expect(refresh).toHaveBeenCalled()
   })
 
-  it('still leaves when the API is unreachable — a stuck button is worse', async () => {
+  /**
+   * Security review of 2026-09-22 caught the original behaviour here: it left
+   * for `/` whatever happened. Only the API can end the session — the cookie
+   * is `HttpOnly` — so leaving on a failure told someone they had signed out
+   * while they were still signed in. On a shared machine that is the worst
+   * possible lie, so the button now stays put and says so.
+   */
+  it('stays and warns when the connection drops, instead of pretending it signed out', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')))
     renderWithLocale(<SignOutButton />)
 
     fireEvent.click(screen.getByRole('button', { name: 'Sair da conta' }))
 
-    await waitFor(() => expect(push).toHaveBeenCalledWith('/'))
+    await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument())
+    expect(push).not.toHaveBeenCalled()
+  })
+
+  it('stays and warns on 502 too — fetch resolves on 5xx, so the status must be read', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(Response.json({ message: 'api_unavailable' }, { status: 502 })),
+    )
+    renderWithLocale(<SignOutButton />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Sair da conta' }))
+
+    await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument())
+    expect(push).not.toHaveBeenCalled()
   })
 })

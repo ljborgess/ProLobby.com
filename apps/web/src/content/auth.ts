@@ -43,6 +43,8 @@ export interface AuthContent {
   signOut: {
     submit: string
     submitting: string
+    /** Só a API encerra a sessão; sem resposta dela a pessoa continua logada. */
+    failed: string
   }
   languageSwitcher: {
     label: string
@@ -89,6 +91,7 @@ export const AUTH_CONTENT: Record<Locale, AuthContent> = {
     signOut: {
       submit: 'Sair da conta',
       submitting: 'Saindo…',
+      failed: 'Não deu pra sair agora. Você continua logado — tenta de novo.',
     },
     languageSwitcher: {
       label: 'Idioma',
@@ -133,6 +136,7 @@ export const AUTH_CONTENT: Record<Locale, AuthContent> = {
     signOut: {
       submit: 'Cerrar sesión',
       submitting: 'Saliendo…',
+      failed: 'No se pudo cerrar la sesión. Sigues conectado — intenta de nuevo.',
     },
     languageSwitcher: {
       label: 'Idioma',
