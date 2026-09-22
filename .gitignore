@@ -64,3 +64,13 @@ Thumbs.db
 .agents/
 .claude/skills/
 skills-lock.json
+
+# config de agente com caminho absoluto da maquina de quem instalou —
+# versionar quebraria pra todo mundo menos o autor
+.claude/settings.local.json
+.cursor/
+
+# impeccable: DESIGN.md e .impeccable/design.json sao artefato de design e
+# entram no repo; consentimento local e cache do detector, nao
+.impeccable/config.local.json
+.impeccable/hook.cache.json

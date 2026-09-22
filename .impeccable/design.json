@@ -1,0 +1,325 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-22T00:00:00.000Z",
+  "title": "Design System: ProLobby",
+  "extensions": {
+    "colorMeta": {
+      "accent": {
+        "role": "primary",
+        "displayName": "Verde Gramado Vivo",
+        "canonical": "#22c55e",
+        "tonalRamp": [
+          "#052e16",
+          "#08441f",
+          "#0c5d2a",
+          "#15803d",
+          "#1da750",
+          "#22c55e",
+          "#5ada87",
+          "#a9edc2"
+        ]
+      },
+      "accent-strong": {
+        "role": "primary",
+        "displayName": "Verde Gramado Profundo",
+        "canonical": "#15803d",
+        "tonalRamp": [
+          "#04210f",
+          "#073318",
+          "#0a4a22",
+          "#0f652e",
+          "#15803d",
+          "#1c9c4b",
+          "#3fc06e",
+          "#8fe0ab"
+        ]
+      },
+      "gold": {
+        "role": "secondary",
+        "displayName": "Âmbar de Refletor",
+        "canonical": "#f5b841",
+        "tonalRamp": [
+          "#3a2905",
+          "#573d08",
+          "#78530c",
+          "#9c6c11",
+          "#c08917",
+          "#f5b841",
+          "#f9d183",
+          "#fceac1"
+        ]
+      },
+      "danger": {
+        "role": "tertiary",
+        "displayName": "Vermelho Suave",
+        "canonical": "#f26d6d",
+        "tonalRamp": [
+          "#3d0f0f",
+          "#5a1717",
+          "#7d2222",
+          "#a52e2e",
+          "#cc4444",
+          "#f26d6d",
+          "#f79a9a",
+          "#fbcccc"
+        ]
+      },
+      "bg": {
+        "role": "neutral",
+        "displayName": "Azul Quase-Preto",
+        "canonical": "#070b14",
+        "tonalRamp": [
+          "#04060b",
+          "#070b14",
+          "#0c1322",
+          "#141d31",
+          "#202c45",
+          "#38465f",
+          "#6b7a94",
+          "#e8edf7"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Azul de Painel",
+        "canonical": "#0c1322",
+        "tonalRamp": [
+          "#050810",
+          "#090e1a",
+          "#0c1322",
+          "#131c31",
+          "#1d2947",
+          "#2c3c63",
+          "#5d6d8f",
+          "#c8d2e6"
+        ]
+      },
+      "surface-weak": {
+        "role": "neutral",
+        "displayName": "Véu Fraco",
+        "canonical": "rgb(255 255 255 / 4.5%)"
+      },
+      "surface-strong": {
+        "role": "neutral",
+        "displayName": "Véu Forte",
+        "canonical": "rgb(255 255 255 / 8%)"
+      },
+      "text": {
+        "role": "neutral",
+        "displayName": "Branco Azulado",
+        "canonical": "#e8edf7"
+      },
+      "text-soft": {
+        "role": "neutral",
+        "displayName": "Cinza Azulado Médio",
+        "canonical": "#9aa8bf"
+      },
+      "text-weak": {
+        "role": "neutral",
+        "displayName": "Cinza Azulado Fraco",
+        "canonical": "#6b7a94"
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Só o título do hero. Corte leve (300) com tracking negativo."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Título de seção e do painel de autenticação."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Nome de destaque dentro de card — o único Sora em peso médio."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Parágrafo em Inter, medida curta (28rem no hero, 36rem em seção)."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Sobrancelha de seção, rótulo de painel e badge, em caixa alta com tracking largo."
+      }
+    },
+    "shadows": [
+      {
+        "name": "descolamento-leve",
+        "value": "0 8px 20px rgb(0 0 0 / 25%)",
+        "purpose": "Elemento que subiu um degrau, tipicamente em hover."
+      },
+      {
+        "name": "flutuacao",
+        "value": "0 20px 45px rgb(0 0 0 / 35%)",
+        "purpose": "Card num plano acima do conteúdo, em repouso."
+      },
+      {
+        "name": "realce-topo",
+        "value": "inset 0 1px 0 0 rgb(255 255 255 / 6%)",
+        "purpose": "Luz caindo de cima na borda superior do card — impede que um painel escuro pareça buraco recortado."
+      },
+      {
+        "name": "halo-vaga",
+        "value": "0 0 0 5px color-mix(in srgb, #22c55e 20%, transparent)",
+        "purpose": "Anel difuso em torno de um marcador de posição no campo."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-entrada",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Entrada de elemento (fade + subida de 16px), com atraso escalonado por irmão."
+      },
+      {
+        "name": "duracao-estado",
+        "value": "200ms",
+        "purpose": "Reação de controle: escala de botão, cor de borda, cor de texto."
+      },
+      {
+        "name": "duracao-card",
+        "value": "300ms",
+        "purpose": "Elevação e mudança de borda em card."
+      },
+      {
+        "name": "ciclo-ambiente",
+        "value": "7s a 9s",
+        "purpose": "Movimento de fundo que nunca termina: varredura do radar, respiração do holofote, pulso do glow."
+      },
+      {
+        "name": "scroll-timeline",
+        "value": "animation-timeline: view(); animation-range: entry 0% cover 30%",
+        "purpose": "Revelação por rolagem. Só Chromium hoje; onde não há suporte o elemento nasce visível, o que é degradação aceitável."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "lg", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "O único preenchimento sólido de cor do sistema. Vive na barra superior e é o CTA da página inteira.",
+      "html": "<button class=\"ds-btn-primary\">Criar conta</button>",
+      "css": ".ds-btn-primary { background: var(--color-accent, #22c55e); color: var(--color-bg, #070b14); border: none; border-radius: 999px; padding: 8px 20px; font-family: Inter, system-ui, sans-serif; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: transform 200ms ease; } .ds-btn-primary:hover { transform: scale(1.04); } .ds-btn-primary:active { transform: scale(0.95); } .ds-btn-primary:focus-visible { outline: 2px solid var(--color-accent, #22c55e); outline-offset: 3px; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Ação secundária. A borda reage antes do texto no hover.",
+      "html": "<button class=\"ds-btn-ghost\">Entrar</button>",
+      "css": ".ds-btn-ghost { background: transparent; color: #9aa8bf; border: 1px solid rgb(255 255 255 / 15%); border-radius: 999px; padding: 8px 20px; font-family: Inter, system-ui, sans-serif; font-size: 0.875rem; cursor: pointer; transition: color 200ms ease, border-color 200ms ease; } .ds-btn-ghost:hover { border-color: rgb(255 255 255 / 35%); color: #e8edf7; } .ds-btn-ghost:focus-visible { outline: 2px solid #22c55e; outline-offset: 3px; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Campo de formulário. Rótulo acima em tom de apoio; o valor digitado é que é conteúdo.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">E-mail</span><input class=\"ds-field-input\" type=\"email\" placeholder=\"\" /><span class=\"ds-field-hint\">Mínimo de 12 caracteres.</span></label>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 4px; font-family: Inter, system-ui, sans-serif; } .ds-field-label { font-size: 0.75rem; font-weight: 500; color: #9aa8bf; } .ds-field-input { background: #0c1322; color: #e8edf7; border: 1px solid rgb(255 255 255 / 10%); border-radius: 10px; padding: 10px 14px; font-size: 0.875rem; outline: none; transition: border-color 200ms ease; } .ds-field-input:focus-visible { border-color: color-mix(in srgb, #22c55e 50%, transparent); box-shadow: 0 0 0 2px #22c55e; } .ds-field-hint { font-size: 0.75rem; line-height: 1.35; color: #6b7a94; }"
+    },
+    {
+      "name": "Surface Card",
+      "kind": "card",
+      "refersTo": "card-surface",
+      "description": "Card padrão: tom, borda de fio de cabelo e realce interno no topo. Sombra só no hover.",
+      "html": "<div class=\"ds-card\"><span class=\"ds-card-value\">30s</span><span class=\"ds-card-label\">pra confirmar a fila</span></div>",
+      "css": ".ds-card { display: flex; flex-direction: column; align-items: center; text-align: center; border: 1px solid rgb(255 255 255 / 10%); border-radius: 16px; padding: 28px 16px; background-image: linear-gradient(180deg, rgb(255 255 255 / 4%), rgb(255 255 255 / 1%)); box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 6%); transition: translate 300ms cubic-bezier(0.16, 1, 0.3, 1), border-color 300ms ease, box-shadow 300ms ease; } .ds-card:hover { translate: 0 -5px; border-color: color-mix(in srgb, #22c55e 45%, transparent); box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 10%), 0 20px 45px rgb(0 0 0 / 35%); } .ds-card-value { font-family: Sora, system-ui, sans-serif; font-size: 2.25rem; font-weight: 300; letter-spacing: -0.02em; color: #22c55e; } .ds-card-label { margin-top: 8px; font-family: Inter, system-ui, sans-serif; font-size: 0.875rem; line-height: 1.375; color: #9aa8bf; }"
+    },
+    {
+      "name": "Position Chip",
+      "kind": "chip",
+      "refersTo": "chip-position",
+      "description": "Rótulo de categoria de posição. Pill, sem estado selecionado — é etiqueta, não filtro.",
+      "html": "<span class=\"ds-chip\">Goleiro</span>",
+      "css": ".ds-chip { display: inline-block; border: 1px solid rgb(255 255 255 / 10%); border-radius: 999px; padding: 6px 16px; font-family: Inter, system-ui, sans-serif; font-size: 0.875rem; color: #e8edf7; background-image: linear-gradient(180deg, rgb(255 255 255 / 4%), rgb(255 255 255 / 1%)); box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 6%); }"
+    },
+    {
+      "name": "Top Navigation",
+      "kind": "nav",
+      "refersTo": null,
+      "description": "Barra sticky com wordmark, o par ghost + primário, e o fio de progresso de rolagem correndo do acento ao âmbar.",
+      "html": "<header class=\"ds-nav\"><div class=\"ds-nav-row\"><span class=\"ds-wordmark\">Pro<span class=\"ds-wordmark-accent\">Lobby</span></span><nav class=\"ds-nav-actions\"><button class=\"ds-btn-ghost\">Entrar</button><button class=\"ds-btn-primary\">Criar conta</button></nav></div><div class=\"ds-nav-progress\"></div></header>",
+      "css": ".ds-nav { position: sticky; top: 0; background: rgb(7 11 20 / 70%); backdrop-filter: blur(12px); border-bottom: 1px solid rgb(255 255 255 / 5%); } .ds-nav-row { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; } .ds-wordmark { font-family: Sora, system-ui, sans-serif; font-size: 1.125rem; font-weight: 600; letter-spacing: -0.02em; color: #e8edf7; } .ds-wordmark-accent { color: #22c55e; } .ds-nav-actions { display: flex; align-items: center; gap: 12px; } .ds-nav-progress { height: 1px; width: 100%; background: linear-gradient(90deg, #22c55e, #22c55e, #f5b841); }"
+    },
+    {
+      "name": "Queue Slot",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "Vaga no quadro da fila: disco sólido quando confirmada, contorno tracejado pulsando quando ainda espera alguém.",
+      "html": "<span class=\"ds-slot\"><span class=\"ds-slot-mark\">3</span><span class=\"ds-slot-label\">Meio</span></span><span class=\"ds-slot\"><span class=\"ds-slot-mark ds-slot-mark--waiting\">5</span><span class=\"ds-slot-label\">Zaga</span></span>",
+      "css": ".ds-slot { display: inline-flex; flex-direction: column; align-items: center; gap: 4px; margin-right: 16px; font-family: Inter, system-ui, sans-serif; } .ds-slot-mark { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 999px; border: 1px solid color-mix(in srgb, #22c55e 40%, transparent); background: color-mix(in srgb, #22c55e 15%, transparent); color: #22c55e; font-size: 0.6rem; font-weight: 600; } .ds-slot-mark--waiting { border-style: dashed; border-color: color-mix(in srgb, #22c55e 50%, transparent); background: transparent; color: color-mix(in srgb, #22c55e 70%, transparent); animation: ds-slot-pulse 3.4s ease-in-out infinite; } .ds-slot-label { font-size: 0.55rem; line-height: 1; color: #9aa8bf; } @keyframes ds-slot-pulse { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } } @media (prefers-reduced-motion: reduce) { .ds-slot-mark--waiting { animation: none; opacity: 1; } }"
+    },
+    {
+      "name": "Radar Panel",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "Assinatura da tela de autenticação: varredura cônica sobre anéis concêntricos, com cantos de mira.",
+      "html": "<div class=\"ds-radar\"><div class=\"ds-radar-sweep\"></div><svg class=\"ds-radar-rings\" viewBox=\"0 0 200 200\" aria-hidden=\"true\"><g fill=\"none\" stroke=\"#22c55e\"><circle cx=\"100\" cy=\"100\" r=\"96\" stroke-width=\"0.4\" opacity=\"0.28\"></circle><circle cx=\"100\" cy=\"100\" r=\"70\" stroke-width=\"0.4\" opacity=\"0.22\"></circle><circle cx=\"100\" cy=\"100\" r=\"44\" stroke-width=\"0.4\" opacity=\"0.18\"></circle><circle cx=\"100\" cy=\"100\" r=\"18\" stroke-width=\"0.6\" opacity=\"0.35\"></circle></g></svg></div>",
+      "css": "@property --ds-spin { syntax: '<angle>'; inherits: false; initial-value: 0deg; } .ds-radar { position: relative; width: 220px; height: 220px; background: #070b14; } .ds-radar-sweep { position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from var(--ds-spin), color-mix(in srgb, #22c55e 42%, transparent) 0deg, transparent 44deg, transparent 360deg); mask-image: radial-gradient(circle, black 58%, transparent 72%); animation: ds-radar-spin 7s linear infinite; } .ds-radar-rings { position: absolute; inset: 0; width: 100%; height: 100%; } @keyframes ds-radar-spin { to { --ds-spin: 360deg; } } @media (prefers-reduced-motion: reduce) { .ds-radar-sweep { animation: none; } }"
+    }
+  ],
+  "narrative": {
+    "northStar": "A Cabine de Transmissão",
+    "overview": "O espetáculo acontece no gramado, e a plataforma não está no gramado. Ela é a cabine acima da linha lateral: a mesa de onde se lê a escalação, se acompanha quem entrou na fila e se confirma que o lobby fechou. Isso resolve a tensão central do produto — a partida roda dentro do console, fora daqui — dando à interface um papel que ela pode cumprir com honestidade. Ela não simula o jogo. Ela instrumenta o que cerca o jogo.\n\nO humor é técnico, preciso e silencioso. Uma cabine boa é cheia de instrumento e mesmo assim calma: nada pisca sem motivo, nada grita para ser notado, e a informação é a única coisa que aparece. Por isso o display é grande e de corte leve em vez de pesado, a borda é fio de cabelo em vez de moldura, e a cor entra por parcimônia. Quando algo se move na tela, é porque aquele movimento está dizendo alguma coisa — o pulso correndo pela aresta do grafo de pareamento, a varredura do radar, o lobby enchendo vaga por vaga.\n\nNada aqui é fotografia. Não por gosto, por restrição: arte e footage do EA FC pertencem à EA, e este projeto não publica material que não é seu. A consequência virou a assinatura do sistema — campo, radar, grade em perspectiva, holofote, grafo e escalação são todos desenhados em SVG e CSS, e é isso que dá à plataforma uma aparência que nenhuma captura de tela daria.",
+    "keyCharacteristics": [
+      "Fundo quase-preto de matiz azul, nunca cinza neutro",
+      "Um acento verde só, fazendo todo o trabalho semântico",
+      "Display de corte leve (300) em tamanho grande, com tracking negativo",
+      "Borda de 1px e tom fazendo a separação; sombra só no que flutua de verdade",
+      "Ilustração autoral em SVG/CSS — zero fotografia, zero asset de terceiro",
+      "Movimento nativo (keyframes, animation-timeline), sem biblioteca"
+    ],
+    "rules": [
+      {
+        "name": "A Regra da Voz Única",
+        "body": "Um acento só. Verde é caminho, confirmação e estado positivo; âmbar é atmosfera e nunca significa nada; vermelho é erro e nada mais. Se uma tela precisa de uma quarta cor para se explicar, o problema é a hierarquia dela, não a paleta.",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra do Âmbar Mudo",
+        "body": "O âmbar não pode ser lido. Ele aparece em gradiente, halo e brilho de fundo — nunca em texto, ícone, borda de estado ou preenchimento de botão. No instante em que ele significar algo, vira um segundo acento e a regra acima cai.",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra do Corte Leve",
+        "body": "Acima de 1,6rem, Sora entra em peso 300 com tracking negativo. Bold em tamanho grande lê como grito e derruba o humor silencioso inteiro; o peso volta a subir só quando o texto encolhe.",
+        "section": "typography"
+      },
+      {
+        "name": "A Regra dos Dois Papéis",
+        "body": "Sora nunca desce para texto corrido e Inter nunca sobe para título. A fronteira é o papel, não o tamanho.",
+        "section": "typography"
+      },
+      {
+        "name": "A Regra do Fio de Cabelo",
+        "body": "Toda superfície ganha 1px de borda em branco a 10% antes de considerar sombra. Se a borda já resolve a separação, a sombra não entra.",
+        "section": "elevation"
+      },
+      {
+        "name": "A Regra da Superfície Opaca",
+        "body": "Qualquer card com halo cônico girando precisa de fundo opaco (--color-surface). O halo é desenhado atrás da superfície e aparece só onde sobra pela beirada; baixar a opacidade do fundo faz o gradiente inundar o conteúdo.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do desenhar a ilustração em SVG/CSS. Campo, radar, grade, grafo e escalação são autorais e é isso que dá identidade ao produto.",
+      "Do separar superfície com tom + borda de 1px + realce interno no topo antes de pensar em sombra.",
+      "Do usar peso 300 no display acima de 1,6rem, com tracking negativo.",
+      "Do dar fundo opaco (--color-surface) a qualquer card com halo girando.",
+      "Do escrever todo movimento em CSS nativo (keyframes, animation-timeline), com um bloco prefers-reduced-motion que o desliga para o estado final — não para um quadro intermediário.",
+      "Do manter o par de CTA só na barra superior, que é sticky e por isso está ao alcance de qualquer seção."
+    ],
+    "donts": [
+      "Don't publicar print, arte ou footage do EA FC. É material da EA; o repositório não distribui o que não é dele, e todo slot de imagem espera arte licenciada ou própria.",
+      "Don't inventar número de tração — jogador online, partida jogada, campeonato. A fila é Fase 2.5 e não existe; número forjado numa página pública é mentira com boas maneiras. Mock ilustrativo precisa dizer que é exemplo na própria interface.",
+      "Don't dar significado ao âmbar. Ele é atmosfera; no dia em que virar estado, o sistema passa a ter dois acentos.",
+      "Don't instalar biblioteca de animação sem nomear antes a interação que o CSS não resolve. A CSP usa nonce com strict-dynamic e a RNF-001 já gasta 0,5 a 1s no cold start da Neon antes de qualquer JavaScript.",
+      "Don't usar vh em tela cheia. É svh, ou a cópia começa abaixo da dobra no telefone.",
+      "Don't repetir o mesmo texto acessível em dois links para o mesmo destino na mesma tela — foi o que quebrou o teste da home quando o hero duplicava os botões da barra."
+    ]
+  }
+}
