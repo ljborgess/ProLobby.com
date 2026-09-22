@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
-import { CheckMark, DiscordMark, MailMark } from '@/common/ui/icons'
+import { CheckMark, DISCORD_BLURPLE, DiscordMark, MailMark } from '@/common/ui/icons'
 import { useAccountContent } from '@/hooks/use-account-content'
 
 export interface QueuePrerequisites {
@@ -64,11 +64,15 @@ export function QueuePrerequisitesPanel({ emailVerified, discordLinked }: QueueP
         {/* The same count, as a bar. It repeats the number beside it on
             purpose — the number is the accessible truth, the bar is the one
             that reads at a glance. */}
-        <div aria-hidden className="flex gap-1.5">
+        <div aria-hidden className="flex gap-2">
           {steps.map((done, index) => (
             <span
               key={index}
-              className={`h-0.5 flex-1 rounded-full ${done ? 'bg-accent' : 'bg-white/10'}`}
+              className={`h-1 flex-1 rounded-full transition-colors ${
+                done
+                  ? 'bg-accent shadow-[0_0_12px_color-mix(in_srgb,var(--color-accent)_45%,transparent)]'
+                  : 'bg-white/10'
+              }`}
             />
           ))}
         </div>
@@ -152,20 +156,51 @@ function Step({
   const content = useAccountContent()
 
   return (
-    <div className="landing-card flex gap-4 rounded-md border border-white/10 px-4 py-4">
+    <div
+      className={`landing-card relative flex gap-4 overflow-hidden rounded-md border px-4 py-4 ${
+        done ? 'border-white/8' : 'border-white/12'
+      }`}
+    >
+      {/* Two marks that only the pending card carries: a rail down the left
+          edge and a wash behind the medallion. They are what makes "this one
+          is waiting on you" readable before any word is. */}
+      {!done && (
+        <>
+          <span
+            aria-hidden
+            className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-transparent via-accent/60 to-transparent"
+          />
+          <span
+            aria-hidden
+            className="pointer-events-none absolute -left-10 -top-10 size-32 rounded-full bg-accent/10 blur-2xl"
+          />
+        </>
+      )}
+
       <span
-        className={`flex size-10 shrink-0 items-center justify-center rounded-full border ${
-          done ? 'border-accent/35 bg-accent/10 text-accent' : 'border-white/10 bg-white/5'
+        className={`relative flex size-11 shrink-0 items-center justify-center rounded-full border ${
+          done
+            ? 'border-accent/30 bg-accent/10 text-accent'
+            : 'border-white/12 bg-white/5 shadow-[inset_0_1px_0_0_rgb(255_255_255/8%)]'
         }`}
-        style={!done && brandIcon ? { color: '#5865F2' } : undefined}
+        style={!done && brandIcon ? { color: DISCORD_BLURPLE } : undefined}
       >
         {done ? <CheckMark className="size-5" /> : icon}
       </span>
 
-      <div className="flex min-w-0 flex-1 flex-col gap-2">
-        <div className="flex items-baseline justify-between gap-3">
-          <p className="text-sm font-medium text-foreground">{done ? doneLabel : label}</p>
-          <span className={`shrink-0 text-xs ${done ? 'text-foreground-weak' : 'text-accent'}`}>
+      <div className="relative flex min-w-0 flex-1 flex-col gap-2">
+        <div className="flex items-start justify-between gap-3">
+          <p className={`text-sm font-medium ${done ? 'text-foreground-soft' : 'text-foreground'}`}>
+            {done ? doneLabel : label}
+          </p>
+          <span
+            className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[0.7rem] ${
+              done
+                ? 'border-white/10 text-foreground-weak'
+                : 'border-accent/30 bg-accent/10 text-accent'
+            }`}
+          >
+            {!done && <span aria-hidden className="landing-glow size-1.5 rounded-full bg-accent" />}
             {done ? content.done : content.pending}
           </span>
         </div>

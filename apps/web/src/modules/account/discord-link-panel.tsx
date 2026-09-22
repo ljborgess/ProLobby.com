@@ -87,16 +87,31 @@ export function DiscordLinkPanel({
         </div>
       </header>
 
-      <div className="landing-card flex flex-col gap-1.5 rounded-md border border-white/10 px-4 py-4">
-        <div className="flex items-baseline justify-between gap-3">
+      <div className="landing-card relative flex flex-col gap-2 overflow-hidden rounded-md border border-white/12 px-4 py-4">
+        {!linked && (
+          <span
+            aria-hidden
+            className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-transparent via-accent/60 to-transparent"
+          />
+        )}
+        <div className="relative flex items-start justify-between gap-3">
           <p className="text-sm font-medium text-foreground">
             {linked ? content.linkedLabel : content.notLinkedLabel}
           </p>
-          <span className={`shrink-0 text-xs ${linked ? 'text-accent' : 'text-foreground-weak'}`}>
+          <span
+            className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[0.7rem] ${
+              linked
+                ? 'border-accent/30 bg-accent/10 text-accent'
+                : 'border-white/10 text-foreground-weak'
+            }`}
+          >
+            {!linked && (
+              <span aria-hidden className="landing-glow size-1.5 rounded-full bg-accent" />
+            )}
             {linked ? content.linkedState : content.notLinkedState}
           </span>
         </div>
-        <p className="text-sm leading-relaxed text-foreground-soft">
+        <p className="relative text-sm leading-relaxed text-foreground-soft">
           {linked ? content.linkedHint : content.notLinkedHint}
         </p>
       </div>
