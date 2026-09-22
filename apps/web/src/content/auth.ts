@@ -40,6 +40,12 @@ export interface AuthContent {
     invalidCredentials: string
     networkError: string
   }
+  signOut: {
+    submit: string
+    submitting: string
+    /** Só a API encerra a sessão; sem resposta dela a pessoa continua logada. */
+    failed: string
+  }
   languageSwitcher: {
     label: string
   }
@@ -82,6 +88,11 @@ export const AUTH_CONTENT: Record<Locale, AuthContent> = {
       invalidCredentials: 'E-mail ou senha incorretos.',
       networkError: 'Não deu pra entrar agora. Confere a conexão e tenta de novo.',
     },
+    signOut: {
+      submit: 'Sair da conta',
+      submitting: 'Saindo…',
+      failed: 'Não deu pra sair agora. Você continua logado — tenta de novo.',
+    },
     languageSwitcher: {
       label: 'Idioma',
     },
@@ -121,6 +132,11 @@ export const AUTH_CONTENT: Record<Locale, AuthContent> = {
       switchToSignUp: '¿No tienes cuenta? Crear ahora',
       invalidCredentials: 'Correo o contraseña incorrectos.',
       networkError: 'No se pudo entrar ahora. Revisa la conexión e intenta de nuevo.',
+    },
+    signOut: {
+      submit: 'Cerrar sesión',
+      submitting: 'Saliendo…',
+      failed: 'No se pudo cerrar la sesión. Sigues conectado — intenta de nuevo.',
     },
     languageSwitcher: {
       label: 'Idioma',

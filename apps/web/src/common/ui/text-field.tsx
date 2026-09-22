@@ -23,24 +23,24 @@ export function TextField({ label, hint, error, id, className, ...inputProps }: 
   const errorId = error ? `${fieldId}-error` : undefined
 
   return (
-    <div className="flex flex-col gap-1.5">
-      <label htmlFor={fieldId} className="text-sm font-medium text-foreground">
+    <div className="flex flex-col gap-1">
+      <label htmlFor={fieldId} className="text-xs font-medium text-foreground-soft">
         {label}
       </label>
       <input
         id={fieldId}
         aria-describedby={[hintId, errorId].filter(Boolean).join(' ') || undefined}
         aria-invalid={error ? true : undefined}
-        className={`rounded-sm border border-white/10 bg-surface px-4 py-3 text-base text-foreground outline-none focus-visible:ring-2 focus-visible:ring-accent ${className ?? ''}`}
+        className={`rounded-sm border border-white/10 bg-surface px-3.5 py-2.5 text-sm text-foreground outline-none transition-colors focus-visible:border-accent/50 focus-visible:ring-2 focus-visible:ring-accent ${className ?? ''}`}
         {...inputProps}
       />
       {hint && !error && (
-        <p id={hintId} className="text-sm text-foreground-soft">
+        <p id={hintId} className="text-xs leading-snug text-foreground-soft">
           {hint}
         </p>
       )}
       {error && (
-        <p id={errorId} role="alert" className="text-sm text-danger">
+        <p id={errorId} role="alert" className="text-xs text-danger">
           {error}
         </p>
       )}

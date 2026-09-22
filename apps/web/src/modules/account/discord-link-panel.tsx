@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { DISCORD_BLURPLE, DiscordMark } from '@/common/ui/icons'
 import { useDiscordContent } from '@/hooks/use-discord-content'
 import type { DiscordLinkStatus } from './discord-link-status'
 
@@ -65,17 +66,56 @@ export function DiscordLinkPanel({
   const isSuccess = shown === 'linked'
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-1">
-        <h1 className="font-display text-2xl font-semibold text-foreground">{content.title}</h1>
-        <p className="text-base text-foreground-soft">{content.subtitle}</p>
-      </div>
+    <div className="flex flex-col gap-5">
+      <header className="flex flex-col items-center gap-4 text-center">
+        {/* The mark, big, in Discord's own blurple while the link is still
+            missing — it is the thing being recognised. Once linked it turns
+            accent, because from then on the card reports our state, not
+            theirs. */}
+        <span
+          className={`flex size-16 items-center justify-center rounded-full border ${
+            linked ? 'border-accent/35 bg-accent/10 text-accent' : 'border-white/10 bg-white/5'
+          }`}
+          style={linked ? undefined : { color: DISCORD_BLURPLE }}
+        >
+          <DiscordMark className="size-8" />
+        </span>
 
-      <div className="flex flex-col gap-1 rounded-sm border border-white/10 bg-surface px-4 py-3">
-        <p className="text-base font-medium text-foreground">
-          {linked ? content.linkedLabel : content.notLinkedLabel}
-        </p>
-        <p className="text-sm text-foreground-soft">
+        <div className="flex flex-col gap-1">
+          <h1 className="landing-section-title font-display text-foreground">{content.title}</h1>
+          <p className="text-sm leading-relaxed text-foreground-soft">{content.subtitle}</p>
+        </div>
+      </header>
+
+      <div className="landing-card relative flex flex-col gap-2 overflow-hidden rounded-md border border-white/12 px-4 py-4">
+        {!linked && (
+          <span
+            aria-hidden
+            className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-transparent via-accent/60 to-transparent"
+          />
+        )}
+        <div className="relative flex items-start justify-between gap-3">
+          <p className="text-sm font-medium text-foreground">
+            {linked ? content.linkedLabel : content.notLinkedLabel}
+          </p>
+          {/* Accent means "this is on you", the same as it does in the
+              prerequisites panel — so it is the *pending* pill that lights up,
+              not the linked one. Getting this backwards made the two screens
+              disagree about what green means. */}
+          <span
+            className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[0.7rem] ${
+              linked
+                ? 'border-white/10 text-foreground-soft'
+                : 'border-accent/30 bg-accent/10 text-accent'
+            }`}
+          >
+            {!linked && (
+              <span aria-hidden className="landing-dot size-1.5 rounded-full bg-accent" />
+            )}
+            {linked ? content.linkedState : content.notLinkedState}
+          </span>
+        </div>
+        <p className="relative text-sm leading-relaxed text-foreground-soft">
           {linked ? content.linkedHint : content.notLinkedHint}
         </p>
       </div>
@@ -83,7 +123,11 @@ export function DiscordLinkPanel({
       {shown && (
         <p
           role={isSuccess ? 'status' : 'alert'}
-          className={isSuccess ? 'text-sm text-foreground' : 'text-sm text-danger'}
+          className={`rounded-sm border px-3 py-2 text-sm leading-relaxed ${
+            isSuccess
+              ? 'border-accent/25 bg-accent/10 text-foreground'
+              : 'border-danger/25 bg-danger/10 text-danger'
+          }`}
         >
           {content.statuses[shown]}
         </p>
@@ -94,10 +138,20 @@ export function DiscordLinkPanel({
           type="button"
           onClick={start}
           disabled={working}
-          className="rounded-sm bg-accent px-4 py-3 text-base font-medium text-background disabled:opacity-60"
+          className="landing-focus landing-sheen inline-flex items-center justify-center gap-2 rounded-full bg-accent px-5 py-3 text-sm font-medium text-background transition-transform duration-200 hover:scale-[1.02] active:scale-95 disabled:opacity-60 disabled:hover:scale-100"
         >
+          <DiscordMark className="size-4" />
           {working ? content.acting : content.action}
         </button>
+      )}
+
+      {/* The scope, stated where the decision is made. #149 asks for `identify`
+          and nothing else, and the person deserves to read that before they
+          leave for Discord rather than after. */}
+      {!linked && (
+        <p className="text-center text-xs leading-relaxed text-foreground-soft">
+          {content.scopeNote}
+        </p>
       )}
     </div>
   )

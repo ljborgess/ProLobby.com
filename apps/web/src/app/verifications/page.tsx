@@ -4,11 +4,14 @@ import { redirect } from 'next/navigation'
 import { apiFetch } from '@/common/api/client'
 import { forwardedIpFrom } from '@/common/api/forwarded-ip'
 import { SESSION_COOKIE_NAME } from '@/common/auth/session-cookie'
+import { LanguageSwitcher } from '@/common/ui/language-switcher'
+import { AccountBackdrop } from '@/modules/account/account-backdrop'
 import { LoadErrorMessage } from '@/modules/account/load-error-message'
 import {
   QueuePrerequisitesPanel,
   type QueuePrerequisites,
 } from '@/modules/account/queue-prerequisites-panel'
+import { SignOutButton } from '@/modules/account/sign-out-button'
 
 export const metadata: Metadata = {
   title: 'Sua conta — ProLobby',
@@ -63,8 +66,25 @@ export default async function VerificationsPage() {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-16 sm:px-6">
-      <QueuePrerequisitesPanel {...prerequisites} />
+    <main className="relative flex min-h-svh flex-1 flex-col overflow-hidden px-4 py-8 sm:px-6">
+      <AccountBackdrop />
+
+      <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4">
+        <span className="font-display text-base font-semibold tracking-tight text-foreground">
+          Pro<span className="text-accent">Lobby</span>
+        </span>
+        {/* The switcher belongs here too: this was the one screen without it,
+            and it is where someone lands after login — so a person who picked
+            Spanish had no way back on the very page they spend time on. */}
+        <div className="flex items-center gap-4">
+          <LanguageSwitcher />
+          <SignOutButton />
+        </div>
+      </div>
+
+      <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-10">
+        <QueuePrerequisitesPanel {...prerequisites} />
+      </div>
     </main>
   )
 }

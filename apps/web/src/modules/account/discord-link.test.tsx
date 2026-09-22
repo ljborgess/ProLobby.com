@@ -50,21 +50,21 @@ describe('DiscordLinkPanel', () => {
   it('offers the link when there is none, in Portuguese', () => {
     renderWithLocale(<DiscordLinkPanel linked={false} />)
 
-    expect(screen.getByText('Discord não vinculado')).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'Vincular Discord' })).toBeTruthy()
+    expect(screen.getByText('Ainda não vinculado')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Vincular' })).toBeTruthy()
   })
 
   it('shows the linked state with no button and no way to unlink (RF-082)', () => {
     renderWithLocale(<DiscordLinkPanel linked />)
 
-    expect(screen.getByText('Discord vinculado')).toBeTruthy()
+    expect(screen.getByText('Conta vinculada')).toBeTruthy()
     expect(screen.queryByRole('button')).toBeNull()
   })
 
   it('speaks Spanish when the locale is Spanish', () => {
     renderWithLocale(<DiscordLinkPanel linked={false} />, 'es')
 
-    expect(screen.getByText('Discord no vinculado')).toBeTruthy()
+    expect(screen.getByText('Aún no vinculado')).toBeTruthy()
   })
 
   it('announces the outcome of the last attempt as an alert when it failed', () => {
@@ -93,7 +93,7 @@ describe('DiscordLinkPanel', () => {
     )
     renderWithLocale(<DiscordLinkPanel linked={false} />)
 
-    fireEvent.click(screen.getByRole('button', { name: 'Vincular Discord' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Vincular' }))
 
     await waitFor(() =>
       expect(assign).toHaveBeenCalledWith('https://discord.com/oauth2/authorize?x=1'),
@@ -115,7 +115,7 @@ describe('DiscordLinkPanel', () => {
     vi.mocked(fetch).mockResolvedValue(new Response(body, { status: 201 }))
     renderWithLocale(<DiscordLinkPanel linked={false} />)
 
-    fireEvent.click(screen.getByRole('button', { name: 'Vincular Discord' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Vincular' }))
 
     await waitFor(() =>
       expect(screen.getByRole('alert').textContent).toBe(DISCORD_CONTENT.pt.statuses.error),
@@ -127,21 +127,21 @@ describe('DiscordLinkPanel', () => {
     vi.mocked(fetch).mockRejectedValue(new TypeError('offline'))
     renderWithLocale(<DiscordLinkPanel linked={false} />)
 
-    fireEvent.click(screen.getByRole('button', { name: 'Vincular Discord' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Vincular' }))
 
     await waitFor(() =>
       expect(screen.getByRole('alert').textContent).toBe(DISCORD_CONTENT.pt.statuses.networkError),
     )
-    expect(
-      (screen.getByRole('button', { name: 'Vincular Discord' }) as HTMLButtonElement).disabled,
-    ).toBe(false)
+    expect((screen.getByRole('button', { name: 'Vincular' }) as HTMLButtonElement).disabled).toBe(
+      false,
+    )
   })
 
   it('says the link is unavailable when the API answers 503', async () => {
     vi.mocked(fetch).mockResolvedValue(new Response('{}', { status: 503 }))
     renderWithLocale(<DiscordLinkPanel linked={false} />)
 
-    fireEvent.click(screen.getByRole('button', { name: 'Vincular Discord' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Vincular' }))
 
     await waitFor(() =>
       expect(screen.getByRole('alert').textContent).toBe(DISCORD_CONTENT.pt.statuses.unavailable),

@@ -35,6 +35,9 @@ describe('Home', () => {
 
     renderWithLocale(await Home())
 
+    // Exactly one of each, in the top bar: the hero's duplicate pair was
+    // dropped on 2026-09-22, and `getByRole` throwing on a second match is
+    // what keeps it from creeping back.
     expect(screen.getByRole('link', { name: 'Criar conta' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Entrar' })).toBeInTheDocument()
     expect(redirect).not.toHaveBeenCalled()

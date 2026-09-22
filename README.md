@@ -10,7 +10,7 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
 ![Status](https://img.shields.io/badge/status-em%20desenvolvimento-f5b841)
 
-[Como funciona](#como-funciona) · [Novidades](#novidades) · [Arquitetura](#arquitetura) · [Começando](#começando) ·
+[Como funciona](#como-funciona) · [As telas](#as-telas) · [Novidades](#novidades) · [Arquitetura](#arquitetura) · [Começando](#começando) ·
 [Documentação](#documentação) · [Contribuindo](#contribuindo)
 
 </div>
@@ -37,6 +37,26 @@ A partida acontece dentro do EA FC. A plataforma não executa o jogo: organiza, 
 | **6. Governança** | Disputa, denúncia e apelação passam por moderação com trava de conflito de interesse |
 
 Regras completas, com o motivo de cada decisão, no [dossiê de produto](docs/produto/README.md).
+
+## As telas
+
+Capturas do ambiente de desenvolvimento em 2026-09-22. **Nada aqui é dado real**: a fila é Fase 2.5
+e não existe, não há jogador cadastrado nem partida jogada. Onde aparece um lobby preenchido, é
+exemplo — e está rotulado como tal na própria interface.
+
+Toda a ilustração é desenhada em SVG e CSS. Não publicamos print nem arte do EA FC, que é material
+da EA.
+
+| | |
+|---|---|
+| ![Home](docs/assets/telas/01-landing-hero.jpg) | ![O que já está decidido](docs/assets/telas/02-fatos.jpg) |
+| **`/`** — a entrada. O fundo é o grafo de pareamento: jogadores esperando dos dois lados, aresta acendendo quando o par fecha. | **`/`** — no lugar da prova social que as concorrentes usam, só o que já está fechado no dossiê. |
+| ![Quadro da fila](docs/assets/telas/03-fila.jpg) | ![Criar conta](docs/assets/telas/04-cadastro.jpg) |
+| **`/`** — o quadro de lobby, no formato de escalação herdado do `escalacao-brasileirao`. É a base da tela de fila da Fase 2.5. | **`/sign-up`** — cabe em uma tela. Senha de 12 caracteres, 16 anos mínimo, e a pergunta de segurança que recupera a conta (RF-025). |
+| ![Entrar](docs/assets/telas/05-login.jpg) | ![Próximos passos](docs/assets/telas/06-conta.jpg) |
+| **`/login`** — o painel ao lado é um instrumento desenhado: radar, campo em perspectiva, holofotes. | **`/verifications`** — o que falta pra entrar na fila. Informa, não bloqueia (RF-002, RF-055). |
+| ![Discord](docs/assets/telas/07-discord.jpg) | |
+| **`/account/discord`** — vínculo obrigatório pra fila. Diz o escopo que a autorização pede antes de a pessoa sair daqui: só identificação. | |
 
 ## Novidades
 

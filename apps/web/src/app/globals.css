@@ -59,3 +59,866 @@ body {
   background: var(--color-bg);
   color: var(--color-text);
 }
+
+/**
+ * Autofilled fields, kept dark.
+ *
+ * Chrome paints its own near-white background over an autofilled input and
+ * ignores `background-color` while it does — on a dark form that lands as two
+ * bright slabs where the e-mail and password are. The inset shadow is the one
+ * property the override does not clobber, so the fill is drawn with that
+ * instead, and `-webkit-text-fill-color` carries the text colour that
+ * `color` no longer can.
+ *
+ * The long delay is the usual trick for the transition: nothing animates, the
+ * property simply never gets around to changing.
+ */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--color-text);
+  -webkit-box-shadow: 0 0 0 1000px var(--color-surface) inset;
+  box-shadow: 0 0 0 1000px var(--color-surface) inset;
+  caret-color: var(--color-text);
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+/**
+ * Landing motion — issue #171, 2026-09-22.
+ *
+ * All native CSS (docs/produto/01-visao/01-visao.md, "nativo primeiro"):
+ * keyframes and scroll-driven `animation-timeline`, no library. Landing-only
+ * scope, same as the redesign itself — these classes are not used outside
+ * `landing-view.tsx`.
+ *
+ * RNF-015 is not optional: every rule here is re-declared to a no-op under
+ * `prefers-reduced-motion`, so a visitor who asked for less motion gets the
+ * final state immediately, not a suppressed middle frame.
+ */
+@keyframes landing-fade-up {
+  from {
+    opacity: 0;
+    translate: 0 16px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes landing-glow-pulse {
+  0%,
+  100% {
+    opacity: 0.14;
+    scale: 1;
+  }
+  50% {
+    opacity: 0.26;
+    scale: 1.08;
+  }
+}
+
+.landing-fade-up {
+  animation: landing-fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: var(--landing-delay, 0s);
+}
+
+/** A wide wash of light behind a section. Lives between 14% and 26% opacity. */
+.landing-glow {
+  animation: landing-glow-pulse 8s ease-in-out infinite;
+}
+
+/**
+ * A live indicator dot.
+ *
+ * It used to borrow `.landing-glow`, which was wrong twice over: the dot was
+ * pinned between 14% and 26% opacity — a background wash's range, all but
+ * invisible on a 6px circle — and under `prefers-reduced-motion` it snapped to
+ * full opacity, so the same dot looked different depending on a setting that
+ * should only govern movement. Its own keyframe stays in a visible range and
+ * rests fully lit.
+ */
+@keyframes landing-dot-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    scale: 1;
+  }
+  50% {
+    opacity: 1;
+    scale: 1.25;
+  }
+}
+
+.landing-dot {
+  animation: landing-dot-pulse 2.4s ease-in-out infinite;
+}
+
+/* Scroll-driven reveal, Chromium-only today — cards render fully visible
+   everywhere else, which is a fine fallback, not a broken one. */
+@supports (animation-timeline: view()) {
+  .landing-reveal {
+    opacity: 0;
+    animation: landing-fade-up 0.6s ease-out both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 30%;
+  }
+
+  /**
+   * Staggered reveals.
+   *
+   * `animation-delay` is time, and a scroll timeline has no clock — so a
+   * stagger here is a later *range*, not a later moment. Each step finishes
+   * further into the scroll, which is what makes a heading arrive before its
+   * body instead of the block appearing all at once.
+   */
+  .landing-reveal-2 {
+    animation-range: entry 4% cover 40%;
+  }
+
+  .landing-reveal-3 {
+    animation-range: entry 8% cover 50%;
+  }
+
+  .landing-reveal-4 {
+    animation-range: entry 12% cover 58%;
+  }
+
+  /**
+   * The rest of the entrance vocabulary.
+   *
+   * One behaviour repeated down a long page stops reading as motion and starts
+   * reading as a tic, so each section gets a different way in: text arrives
+   * from the side it sits on, the closing cards resolve out of blur, and the
+   * spotlight line rises from behind its own edge. All of them are the same
+   * scroll timeline underneath — what changes is what the movement says.
+   */
+  .landing-slide-x {
+    opacity: 0;
+    animation: landing-slide-x 0.7s ease-out both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 42%;
+  }
+
+  .landing-blur-in {
+    opacity: 0;
+    animation: landing-blur-in 0.7s ease-out both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 45%;
+  }
+
+  /* The clip is on the parent; the child rises out from under its own top
+     edge, which reads as the line being uncovered rather than moved. */
+  .landing-rise-clip {
+    overflow: hidden;
+  }
+
+  .landing-rise {
+    display: block;
+    animation: landing-rise 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 40%;
+  }
+}
+
+@keyframes landing-slide-x {
+  from {
+    opacity: 0;
+    translate: var(--landing-from, -28px) 0;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes landing-blur-in {
+  from {
+    opacity: 0;
+    filter: blur(10px);
+    scale: 0.98;
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    scale: 1;
+  }
+}
+
+@keyframes landing-rise {
+  from {
+    translate: 0 105%;
+  }
+  to {
+    translate: 0 0;
+  }
+}
+
+/* Scroll-driven parallax and progress — same `animation-timeline` family as
+   the reveal above, so the same @supports guard and the same fallback rule
+   apply: without support the layer simply sits still. */
+@keyframes landing-parallax-slow {
+  to {
+    translate: 0 18%;
+  }
+}
+
+@keyframes landing-parallax-fast {
+  to {
+    translate: 0 -12%;
+  }
+}
+
+@keyframes landing-progress {
+  from {
+    scale: 0 1;
+  }
+  to {
+    scale: 1 1;
+  }
+}
+
+@supports (animation-timeline: scroll()) {
+  .landing-parallax-slow {
+    animation: landing-parallax-slow linear both;
+    animation-timeline: scroll();
+  }
+
+  .landing-parallax-fast {
+    animation: landing-parallax-fast linear both;
+    animation-timeline: view();
+    animation-range: cover;
+  }
+
+  .landing-progress-bar {
+    transform-origin: 0 50%;
+    animation: landing-progress linear both;
+    animation-timeline: scroll();
+  }
+}
+
+/**
+ * Registered custom properties — the only way to animate a colour stop or an
+ * angle in CSS: an unregistered `--var` interpolates as a string, so the
+ * browser jumps between values instead of tweening them.
+ */
+@property --landing-sheen {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: -40%;
+}
+
+@property --landing-spin {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+/* A hairline that fades out at both ends — a flat 1px border across a full
+   section reads as a wireframe, this reads as a seam. */
+.landing-rule {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--color-accent) 35%, transparent),
+    transparent
+  );
+}
+
+/* Sheen sweep across a surface on hover. Runs on a registered property so it
+   can actually tween, and only on devices with a real pointer — on touch
+   every tap would fire it once with nothing to see. */
+@keyframes landing-sheen-sweep {
+  to {
+    --landing-sheen: 140%;
+  }
+}
+
+@media (hover: hover) {
+  .landing-sheen {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .landing-sheen::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    background: linear-gradient(
+      105deg,
+      transparent calc(var(--landing-sheen) - 18%),
+      rgb(255 255 255 / 9%) var(--landing-sheen),
+      transparent calc(var(--landing-sheen) + 18%)
+    );
+  }
+
+  .landing-sheen:hover::after {
+    opacity: 1;
+    animation: landing-sheen-sweep 0.9s ease-out;
+  }
+}
+
+/* Conic border for the hero's floating card: one rotating gradient behind a
+   slightly inset surface, which is cheaper and sharper than four animated
+   borders. */
+@keyframes landing-halo-spin {
+  to {
+    --landing-spin: 360deg;
+  }
+}
+
+/**
+ * A rotating gradient edge.
+ *
+ * The obvious build — a masked pseudo-element with `mask-composite: exclude`
+ * — did not survive this stack's CSS pipeline, and the gradient washed over
+ * the card's contents. This does it the boring way instead: the gradient is a
+ * layer *behind* an opaque surface, showing only where it sticks out past the
+ * edge. Hence `.landing-halo-surface`, which must stay opaque — drop its
+ * alpha and the gradient floods the card again.
+ */
+.landing-halo {
+  position: relative;
+  isolation: isolate;
+}
+
+.landing-halo-surface {
+  position: relative;
+  z-index: 1;
+  border-radius: inherit;
+  background-color: var(--color-surface);
+}
+
+.landing-halo::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  z-index: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  animation: landing-halo-spin 14s linear infinite;
+  background: conic-gradient(
+    from var(--landing-spin),
+    transparent 0deg,
+    color-mix(in srgb, var(--color-accent) 60%, transparent) 60deg,
+    transparent 140deg,
+    color-mix(in srgb, var(--color-gold) 45%, transparent) 250deg,
+    transparent 330deg
+  );
+}
+
+/**
+ * The auth screens' art panel — a HUD, drawn.
+ *
+ * There is no photography here and there will not be: match footage and menu
+ * captures from EA FC belong to EA. So the panel is built the way a readout
+ * is built — a swept radar, a grid that recedes, scanlines, corner brackets —
+ * which is both ours to ship and a better fit for a matchmaking product than
+ * a borrowed screenshot would be.
+ */
+@keyframes landing-radar-sweep {
+  to {
+    --landing-spin: 360deg;
+  }
+}
+
+@keyframes landing-scanlines-drift {
+  to {
+    background-position: 0 14px;
+  }
+}
+
+@keyframes landing-beam-breathe {
+  0%,
+  100% {
+    opacity: 0.18;
+    scale: 1 1;
+  }
+  50% {
+    opacity: 0.4;
+    scale: 1.12 1;
+  }
+}
+
+/** The sweep: a wedge of light going round, clipped to its own circle. */
+.landing-radar {
+  border-radius: 50%;
+  animation: landing-radar-sweep 7s linear infinite;
+  background: conic-gradient(
+    from var(--landing-spin),
+    color-mix(in srgb, var(--color-accent) 42%, transparent) 0deg,
+    transparent 44deg,
+    transparent 360deg
+  );
+  mask-image: radial-gradient(circle, black 58%, transparent 72%);
+}
+
+/** Interlace lines, drifting slowly, so the panel reads as a live readout. */
+.landing-scanlines {
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgb(255 255 255 / 3.5%) 0 1px,
+    transparent 1px 7px
+  );
+  animation: landing-scanlines-drift 3.5s linear infinite;
+}
+
+/** Floodlights from above the pitch. */
+.landing-beam {
+  animation: landing-beam-breathe 9s ease-in-out infinite;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--color-accent) 30%, transparent),
+    transparent 75%
+  );
+  clip-path: polygon(38% 0, 62% 0, 100% 100%, 0 100%);
+}
+
+/**
+ * The landing hero's scene: a pairing network.
+ *
+ * Deliberately not the auth panel's radar again. What the hero has to say is
+ * that two sides get built out of people who arrived alone, so the drawing is
+ * a graph — nodes that wait, edges that light up when a pair is made. The
+ * pulse is a dash travelling the length of each edge, staggered per edge, so
+ * the whole thing never flashes at once.
+ */
+@keyframes landing-edge-pulse {
+  0% {
+    stroke-dashoffset: 34;
+    opacity: 0;
+  }
+  18%,
+  60% {
+    opacity: 0.9;
+  }
+  100% {
+    stroke-dashoffset: -34;
+    opacity: 0;
+  }
+}
+
+@keyframes landing-node-pulse {
+  0%,
+  100% {
+    r: 2.2;
+    opacity: 0.55;
+  }
+  50% {
+    r: 3.1;
+    opacity: 1;
+  }
+}
+
+.landing-edge {
+  stroke-dasharray: 10 58;
+  animation: landing-edge-pulse 4.6s ease-in-out infinite;
+  animation-delay: var(--landing-delay, 0s);
+}
+
+.landing-node {
+  animation: landing-node-pulse 3.4s ease-in-out infinite;
+  animation-delay: var(--landing-delay, 0s);
+}
+
+/**
+ * The seam between the hero and the section under it.
+ *
+ * A hairline that draws itself downward as the seam scrolls through the
+ * viewport, ending in a lit node on the next section's heading. It exists to
+ * say that the two sections are one argument — what ProLobby is, then what is
+ * already settled about it — rather than two slides that happen to be stacked.
+ *
+ * Scroll-driven, so the line's progress is the reader's progress: it is drawn
+ * by scrolling, not by a timer that runs whether anyone is looking.
+ */
+@keyframes landing-thread-draw {
+  from {
+    scale: 1 0;
+  }
+  to {
+    scale: 1 1;
+  }
+}
+
+@keyframes landing-thread-node {
+  0%,
+  55% {
+    opacity: 0;
+    scale: 0.4;
+  }
+  100% {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+/**
+ * Players shifting on the pitch.
+ *
+ * Nobody stands still waiting for a ball. Each token drifts a couple of pixels
+ * on its own clock, and the stagger is what makes eleven of them read as a
+ * team rather than as one animation playing eleven times.
+ */
+@keyframes landing-bob {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -3px;
+  }
+}
+
+/** A line of light sweeping up the pitch — the board reading itself. */
+@keyframes landing-pitch-scan {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  15%,
+  70% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-10%);
+    opacity: 0;
+  }
+}
+
+.landing-pitch-scan {
+  animation: landing-pitch-scan 6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/** A slot nobody has taken yet: the ring breathes instead of drifting. */
+@keyframes landing-slot-wait {
+  0%,
+  100% {
+    opacity: 0.45;
+    scale: 0.94;
+  }
+  50% {
+    opacity: 1;
+    scale: 1.06;
+  }
+}
+
+.landing-bob {
+  animation: landing-bob 4.5s ease-in-out infinite;
+  animation-delay: var(--landing-delay, 0s);
+}
+
+.landing-slot-wait {
+  animation: landing-slot-wait 2.6s ease-in-out infinite;
+  animation-delay: var(--landing-delay, 0s);
+}
+
+/**
+ * A stroke that draws itself on scroll.
+ *
+ * `pathLength="1"` on the path normalises its length, so one dash of `1`
+ * covers any shape — straight, forked, jogged — and the same two rules drive
+ * every connector on the page without measuring anything.
+ */
+@keyframes landing-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.landing-draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+@supports (animation-timeline: view()) {
+  .landing-draw {
+    animation: landing-draw linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 60%;
+  }
+}
+
+@supports not (animation-timeline: view()) {
+  .landing-draw {
+    stroke-dashoffset: 0;
+  }
+}
+
+.landing-thread {
+  transform-origin: 50% 0;
+  scale: 1 0;
+}
+
+.landing-thread-node {
+  opacity: 0;
+}
+
+@supports (animation-timeline: view()) {
+  .landing-thread {
+    animation: landing-thread-draw linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 55%;
+  }
+
+  .landing-thread-node {
+    animation: landing-thread-node linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 55%;
+  }
+}
+
+/* Without scroll-driven support the thread would sit at zero height forever,
+   so it is simply drawn in full: a static connector still says the two
+   sections belong together. */
+@supports not (animation-timeline: view()) {
+  .landing-thread {
+    scale: 1 1;
+  }
+
+  .landing-thread-node {
+    opacity: 1;
+  }
+}
+
+/* The pitch drawing and the card surfaces: static art, no timeline needed. */
+/* Card surface: a top-edge highlight over a barely-there vertical gradient.
+   It is what keeps a dark panel from looking like a flat hole in the page. */
+.landing-card {
+  background-image: linear-gradient(180deg, rgb(255 255 255 / 4%), rgb(255 255 255 / 1%));
+  box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 6%);
+  transition:
+    translate 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.landing-card:hover {
+  translate: 0 -5px;
+  border-color: color-mix(in srgb, var(--color-accent) 45%, transparent);
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 10%),
+    var(--shadow-default);
+}
+
+/* Fluid display sizing — one clamp instead of three breakpoints, so the
+   headline keeps its proportions between the sizes we happen to test at.
+   Light weight with tight tracking, not bold: at this size the thin cut reads
+   as composed and the bold one reads as loud, and the page is dark enough
+   that 300 still holds its edge. */
+.landing-display {
+  font-size: clamp(2.35rem, 1.2rem + 4.4vw, 4.5rem);
+  font-weight: 300;
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+}
+
+.landing-section-title {
+  font-size: clamp(1.65rem, 1.1rem + 1.7vw, 2.4rem);
+  font-weight: 300;
+  line-height: 1.12;
+  letter-spacing: -0.028em;
+}
+
+/* The accent word in the headline: a gradient wash instead of a flat fill.
+   `background-clip: text` needs a transparent fill to show through. */
+.landing-gradient-text {
+  background: linear-gradient(
+    120deg,
+    var(--color-accent),
+    color-mix(in srgb, var(--color-accent) 55%, var(--color-gold))
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+/* Perspective floor under the hero — a grid that recedes, drawn with two
+   repeating gradients and tilted in 3D. Cheaper than an image and it scales
+   to any viewport without a second asset. */
+.landing-floor {
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-accent) 22%, transparent) 0 1px,
+      transparent 1px 64px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      color-mix(in srgb, var(--color-accent) 22%, transparent) 0 1px,
+      transparent 1px 64px
+    );
+  transform: perspective(520px) rotateX(68deg);
+  transform-origin: 50% 100%;
+  mask-image: linear-gradient(to top, black, transparent 72%);
+}
+
+/* A focus ring the whole landing shares, so tabbing through it never lands on
+   a browser default that the dark surfaces swallow (RNF-015). */
+.landing-focus:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: 999px;
+}
+
+/**
+ * Scrim over the copy's edge only.
+ *
+ * A flat overlay across the whole hero would dim the art along with the text,
+ * which is the thing worth looking at. This falls off fast, so the middle of
+ * the frame keeps its contrast: heavy where the words start, gone by the time
+ * it reaches the card.
+ */
+.landing-scrim-edge {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-bg) 82%, transparent) 0%,
+    color-mix(in srgb, var(--color-bg) 45%, transparent) 32%,
+    transparent 62%
+  );
+}
+
+/* Faint diagonal weave over dark sections — the reference leans on
+   photography for this; we have none we may ship, so the texture is drawn. */
+.landing-weave {
+  background-image: repeating-linear-gradient(
+    115deg,
+    rgb(255 255 255 / 2.5%) 0px,
+    rgb(255 255 255 / 2.5%) 1px,
+    transparent 1px,
+    transparent 9px
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-fade-up,
+  .landing-glow,
+  .landing-reveal,
+  .landing-parallax-slow,
+  .landing-parallax-fast,
+  .landing-progress-bar {
+    animation: none;
+    opacity: 1;
+    translate: 0 0;
+    scale: 1;
+  }
+
+  .landing-card {
+    transition: none;
+  }
+
+  .landing-card:hover {
+    translate: 0 0;
+  }
+
+  /* The thread's job is to connect, not to move: reduced motion gets it
+     drawn, whole and still. */
+  .landing-thread {
+    animation: none;
+    scale: 1 1;
+  }
+
+  .landing-draw {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+
+  /* Every entrance resolves to its arrived state. The page still reads in the
+     order it was composed; it just does not perform the arriving. */
+  .landing-slide-x,
+  .landing-blur-in,
+  .landing-rise {
+    animation: none;
+    opacity: 1;
+    translate: 0 0;
+    filter: none;
+    scale: 1;
+  }
+
+  .landing-bob {
+    animation: none;
+    translate: 0 0;
+  }
+
+  .landing-pitch-scan {
+    animation: none;
+    opacity: 0;
+  }
+
+  /* The dot means "live". It rests lit, not faded — the animation was the
+     decoration, the light is the information. */
+  .landing-dot {
+    animation: none;
+    opacity: 1;
+    scale: 1;
+  }
+
+  /**
+   * The press and hover transforms.
+   *
+   * These were the RNF-015 hole: every keyframe had a no-op here but the
+   * Tailwind `transition-transform hover:scale-… active:scale-…` on the
+   * buttons did not, so a visitor who asked for less motion still got things
+   * jumping under the pointer. Killing the transition leaves the states to
+   * colour and border, which is where they should have been carried anyway.
+   */
+  .landing-focus,
+  .landing-sheen,
+  .landing-card,
+  a,
+  button {
+    transition-property: color, background-color, border-color, opacity;
+  }
+
+  a:hover,
+  a:active,
+  button:hover,
+  button:active {
+    scale: 1;
+  }
+
+  /* The waiting slot still has to read as waiting, so it keeps its faded
+     resting state — it just stops breathing. */
+  .landing-slot-wait {
+    animation: none;
+    opacity: 0.7;
+    scale: 1;
+  }
+
+  .landing-thread-node {
+    animation: none;
+    opacity: 1;
+    scale: 1;
+  }
+
+  .landing-halo::before,
+  .landing-radar,
+  .landing-scanlines,
+  .landing-beam,
+  .landing-edge,
+  .landing-node,
+  .landing-sheen:hover::after {
+    animation: none;
+  }
+
+  /* The edges are drawn as a travelling dash, so switching the animation off
+     would leave a dotted line. Solid is the resting state. */
+  .landing-edge {
+    stroke-dasharray: none;
+    opacity: 0.5;
+  }
+
+  .landing-beam {
+    opacity: 0.28;
+  }
+
+  .landing-sheen:hover::after {
+    opacity: 0;
+  }
+}

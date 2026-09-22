@@ -15,6 +15,11 @@ export interface DiscordContent {
   notLinkedLabel: string
   linkedHint: string
   notLinkedHint: string
+  /** The one-word state beside the label — the accessible truth, not the colour. */
+  linkedState: string
+  notLinkedState: string
+  /** What the authorization actually asks Discord for, said before leaving. */
+  scopeNote: string
   action: string
   acting: string
   statuses: {
@@ -33,16 +38,20 @@ export interface DiscordContent {
 export const DISCORD_CONTENT: Record<Locale, DiscordContent> = {
   pt: {
     title: 'Discord',
-    subtitle: 'A fila e os canais da partida funcionam pelo seu Discord.',
-    linkedLabel: 'Discord vinculado',
-    notLinkedLabel: 'Discord não vinculado',
-    linkedHint: 'Pra trocar de Discord, fale com a moderação.',
-    notLinkedHint: 'Você autoriza no Discord e volta pra cá. Só lemos o seu ID.',
-    action: 'Vincular Discord',
+    subtitle: 'A fila e os canais da partida acontecem por lá.',
+    linkedLabel: 'Conta vinculada',
+    notLinkedLabel: 'Ainda não vinculado',
+    linkedHint: 'Pra trocar de conta, fale com a moderação.',
+    notLinkedHint: 'Você autoriza lá e volta pra cá. Só lemos o seu ID.',
+    linkedState: 'Concluído',
+    notLinkedState: 'Pendente',
+    scopeNote:
+      'Pedimos só a permissão de identificação. Não lemos suas mensagens nem seus servidores.',
+    action: 'Vincular',
     acting: 'Indo pro Discord…',
     statuses: {
-      linked: 'Discord vinculado.',
-      denied: 'Você cancelou a autorização no Discord. Nada foi vinculado.',
+      linked: 'Tudo certo, conta vinculada.',
+      denied: 'Você cancelou a autorização. Nada foi vinculado.',
       invalid_state: 'Esse pedido de vínculo venceu ou já foi usado. Tenta de novo.',
       blocked:
         'Não foi possível vincular. Conta bloqueada. Se acha que é um engano, abra uma apelação.',
@@ -56,16 +65,20 @@ export const DISCORD_CONTENT: Record<Locale, DiscordContent> = {
   },
   es: {
     title: 'Discord',
-    subtitle: 'La cola y los canales del partido funcionan con tu Discord.',
-    linkedLabel: 'Discord vinculado',
-    notLinkedLabel: 'Discord no vinculado',
-    linkedHint: 'Para cambiar de Discord, habla con la moderación.',
-    notLinkedHint: 'Autorizas en Discord y vuelves aquí. Solo leemos tu ID.',
-    action: 'Vincular Discord',
+    subtitle: 'La cola y los canales del partido pasan por allí.',
+    linkedLabel: 'Cuenta vinculada',
+    notLinkedLabel: 'Aún no vinculado',
+    linkedHint: 'Para cambiar de cuenta, habla con la moderación.',
+    notLinkedHint: 'Autorizas allí y vuelves aquí. Solo leemos tu ID.',
+    linkedState: 'Completado',
+    notLinkedState: 'Pendiente',
+    scopeNote:
+      'Pedimos solo el permiso de identificación. No leemos tus mensajes ni tus servidores.',
+    action: 'Vincular',
     acting: 'Yendo a Discord…',
     statuses: {
-      linked: 'Discord vinculado.',
-      denied: 'Cancelaste la autorización en Discord. No se vinculó nada.',
+      linked: 'Listo, cuenta vinculada.',
+      denied: 'Cancelaste la autorización. No se vinculó nada.',
       invalid_state: 'Esa solicitud de vínculo venció o ya fue usada. Intenta de nuevo.',
       blocked:
         'No se pudo vincular. Cuenta bloqueada. Si crees que es un error, abre una apelación.',
