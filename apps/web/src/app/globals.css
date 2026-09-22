@@ -424,29 +424,6 @@ input:-webkit-autofill:focus {
   animation-delay: var(--landing-delay, 0s);
 }
 
-/* Hero clip seam fade: the loop restarts at a hard boundary, and unless the
-   source's last frame matches its first, that boundary is visible as a jump.
-   Dipping the opacity across the seam hides it without JavaScript watching
-   `timeupdate`. The period must equal the clip's real duration — set per
-   element via `--landing-clip-seconds`. */
-@keyframes landing-clip-seam {
-  0% {
-    opacity: 0;
-  }
-  8%,
-  92% {
-    opacity: 0.55;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-
-.landing-clip {
-  opacity: 0.55;
-  animation: landing-clip-seam var(--landing-clip-seconds, 12s) linear infinite;
-}
-
 /* The pitch drawing and the card surfaces: static art, no timeline needed. */
 .landing-pitch-line {
   stroke: var(--color-accent);
@@ -590,12 +567,6 @@ input:-webkit-autofill:focus {
 
   .landing-card:hover {
     translate: 0 0;
-  }
-
-  /* A looping clip is motion by definition — there is no "reduced" version of
-     it, so it goes away entirely and the drawn layers carry the hero. */
-  .landing-clip {
-    display: none;
   }
 
   .landing-halo::before,

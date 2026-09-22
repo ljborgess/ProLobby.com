@@ -280,7 +280,23 @@ function HeroBackdrop() {
       <div className="landing-parallax-slow absolute inset-x-0 -top-1/4 h-[150%]">
         <div className="landing-glow absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,_var(--color-accent-strong)_0%,_transparent_70%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_40%_40%_at_85%_30%,_var(--color-gold)_0%,_transparent_70%)] opacity-[0.07]" />
-        <HeroVideo />
+        {/*
+         * The background clip goes here, and there is none yet — on purpose.
+         *
+         * A `<video>` pointing at `public/media/hero.{webm,mp4}` shipped here
+         * briefly and those files do not exist, so every visitor collected two
+         * 404s in the console and the CSP e2e (which fails on any console
+         * error) went red. An element that requests a file we have not got is
+         * not a placeholder, it is a broken request.
+         *
+         * To turn it on: drop a clip you hold the rights to at those two paths
+         * and render a muted, looping, `playsInline` <video> covering this
+         * box. Game footage from EA FC is EA's and cannot be one of them. What
+         * the clip must be: loop-safe (last frame matching the first), quiet
+         * and slow enough to read as texture behind the headline, and a couple
+         * of MB at most — it sits in the critical view and RNF-001 budgets the
+         * page under 1 s. `media-src 'self'` is already in the CSP for it.
+         */}
       </div>
       {/* The pairing graph, wide and faint, sitting behind the whole row so it
           reads as the backdrop the copy and the lobby card stand on. */}
@@ -337,47 +353,5 @@ function LobbyCard({ positions }: { positions: string[] }) {
         </ul>
       </div>
     </div>
-  )
-}
-
-/**
- * The hero's background clip.
- *
- * **The file is not in the repo, on purpose.** Game footage from EA FC is
- * theirs, not ours, and shipping it from `public/` would be republishing it.
- * Drop a clip you hold the rights to at `public/media/hero.mp4` (plus the
- * `.webm`) and it appears; until then the element resolves to nothing and the
- * drawn layers stay visible on their own. Nothing breaks either way.
- *
- * What the clip has to be, so it reads as texture and not as "a video":
- *
- * - **Loop-safe**: last frame should match the first. The seam fade below
- *   hides an imperfect match, but it cannot rescue a hard cut.
- * - **Quiet and slow**: no cuts, no HUD, no scoreboard — motion the eye reads
- *   as ambience behind the headline.
- * - **Short and small**: a few seconds, a couple of MB. It sits in the critical
- *   view and RNF-001 budgets the whole page under 1 s.
- *
- * `--landing-clip-seconds` must match the clip's real duration: the seam fade
- * is a CSS animation on that period, not something the element reports back.
- */
-function HeroVideo() {
-  return (
-    <video
-      // A background texture, never a control surface: muted and inert is what
-      // lets it autoplay at all, and `aria-hidden` on the wrapper keeps it out
-      // of the accessibility tree.
-      autoPlay
-      muted
-      loop
-      playsInline
-      preload="none"
-      tabIndex={-1}
-      className="landing-clip absolute inset-0 size-full object-cover"
-      style={{ '--landing-clip-seconds': '12s' } as React.CSSProperties}
-    >
-      <source src="/media/hero.webm" type="video/webm" />
-      <source src="/media/hero.mp4" type="video/mp4" />
-    </video>
   )
 }
