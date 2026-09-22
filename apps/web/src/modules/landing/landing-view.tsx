@@ -92,13 +92,12 @@ export function LandingView() {
               EA FC Pro Clubs
             </span>
 
-            <h1
-              className="landing-fade-up landing-display mt-8 font-display text-foreground"
-              style={{ '--landing-delay': '0.06s' } as React.CSSProperties}
-            >
-              {content.hero.titlePrefix}
-              <span className="landing-gradient-text">{content.hero.titleAccent}</span>
-              {content.hero.titleSuffix}
+            <h1 className="landing-display mt-8 font-display text-foreground">
+              <HeroWords
+                prefix={content.hero.titlePrefix}
+                accent={content.hero.titleAccent}
+                suffix={content.hero.titleSuffix}
+              />
             </h1>
 
             {/* No call to action here: the top bar carries the only "Criar
@@ -285,16 +284,67 @@ function SectionHeading({
   body?: string
   align?: 'left' | 'center'
 }) {
+  // Eyebrow, then title, then body — each finishing further into the scroll,
+  // so the heading reads as arriving rather than as a block switching on.
   return (
     <div className={align === 'center' ? 'text-center' : undefined}>
-      <p className="text-[0.7rem] font-medium uppercase tracking-[0.22em] text-accent">{eyebrow}</p>
+      <p className="landing-reveal text-[0.7rem] font-medium uppercase tracking-[0.22em] text-accent">
+        {eyebrow}
+      </p>
       {title ? (
-        <h2 className="landing-section-title mt-4 font-display text-foreground">{title}</h2>
+        <h2 className="landing-reveal landing-reveal-2 landing-section-title mt-4 font-display text-foreground">
+          {title}
+        </h2>
       ) : null}
       {body ? (
-        <p className="mt-4 max-w-xl text-base leading-relaxed text-foreground-soft">{body}</p>
+        <p className="landing-reveal landing-reveal-3 mt-4 max-w-xl text-base leading-relaxed text-foreground-soft">
+          {body}
+        </p>
       ) : null}
     </div>
+  )
+}
+
+/**
+ * The headline, one word at a time.
+ *
+ * A single fade on the whole block reads as a slide switching; words arriving
+ * in sequence reads as a sentence being said. The stagger is small on purpose
+ * — 45ms a word — so the line still lands as one thought rather than a ticker.
+ *
+ * Each word is `inline-block` because a transform does not apply to an inline
+ * box, and the spaces stay outside the spans so the line still wraps where the
+ * browser would have wrapped it. The accent word keeps its gradient by being
+ * one span among the rest, not a separate treatment.
+ */
+function HeroWords({ prefix, accent, suffix }: { prefix: string; accent: string; suffix: string }) {
+  const words = [
+    ...prefix
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((text) => ({ text, accent: false })),
+    { text: accent, accent: true },
+    ...suffix
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((text) => ({ text, accent: false })),
+  ]
+
+  return (
+    <>
+      {words.map((word, index) => (
+        <span key={`${word.text}-${index}`}>
+          <span
+            className={`landing-fade-up inline-block ${word.accent ? 'landing-gradient-text' : ''}`}
+            style={{ '--landing-delay': `${0.06 + index * 0.045}s` } as React.CSSProperties}
+          >
+            {word.text}
+          </span>{' '}
+        </span>
+      ))}
+    </>
   )
 }
 
