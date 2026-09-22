@@ -40,7 +40,7 @@ Vale a partir do redesenho — antes dele a regra acima (não polir) continua va
 
 **Restrições que qualquer escolha vai ter que caber**, registradas pra a decisão não travar depois:
 
-- **CSP com nonce e `strict-dynamic`** (`apps/web/src/middleware.ts`): biblioteca que injeta `style` inline passa, porque `style-src` já permite; qualquer coisa que dependa de `eval` não passa, e a política não vai ser afrouxada por animação.
+- **CSP com nonce e `strict-dynamic`** (`apps/web/src/proxy.ts`): biblioteca que injeta `style` inline passa, porque `style-src` já permite; qualquer coisa que dependa de `eval` não passa, e a política não vai ser afrouxada por animação.
 - **Orçamento de bundle contra a [RNF-001](../../requisitos/07-nao-funcionais.md#rnf-001--ação-comum-responde-em-menos-de-1-s)** (p95 abaixo de 1 s): o cold start da Neon já consome 0,5 a 1 s antes de qualquer JavaScript do cliente ([ADR-009](../../adr/009-neon-cloudflare-vm.md)), então o que sobra é pouco e precisa ser medido, não estimado.
 - **Compatível com RSC do Next 16**: animação vive em componente de cliente, e a fronteira precisa ser explícita — não é motivo pra transformar árvore inteira em cliente.
 - **Respeitar `prefers-reduced-motion` é pré-requisito, não recurso** — [RNF-015](../../requisitos/07-nao-funcionais.md#rnf-015--piso-de-acessibilidade). Biblioteca que não oferece caminho pra isso está fora por acessibilidade, antes de qualquer critério técnico.

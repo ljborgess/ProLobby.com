@@ -22,7 +22,7 @@ import {
  * Reading the cookie makes this page dynamic, and Next answers it with
  * `no-cache, must-revalidate` — which is what keeps a signed-in render out of
  * the shared cache in front of it (ADR-009 section 8). Setting the header in
- * middleware does not work: the render overrides it.
+ * the Next proxy does not work: the render overrides it.
  */
 export default async function Home() {
   const prerequisites = await readPrerequisites()
