@@ -39,7 +39,7 @@ describe('ExpiredRowsService', () => {
     await app.close()
   })
 
-  it('deletes rows past their use plus the grace day, and keeps everything else', async () => {
+  it('deletes FailedSignIn and PasswordReset only past their use plus the grace day', async () => {
     const now = new Date()
     const old = new Date(now.getTime() - EXPIRED_ROW_GRACE_MS - 60_000)
     const recent = new Date(now.getTime() - 60_000)
@@ -56,26 +56,56 @@ describe('ExpiredRowsService', () => {
     em.create(FailedSignIn, { account, createdAt: recent })
     em.create(PasswordReset, { account, tokenHash: 'a'.repeat(64), expiresAt: old })
     em.create(PasswordReset, { account, tokenHash: 'b'.repeat(64), expiresAt: recent })
+    await em.flush()
+
+    const purged = await service.purge(now)
+
+    expect(purged.failedSignIns).toBe(1)
+    expect(purged.passwordResets).toBe(1)
+    const check = orm.em.fork()
+    expect(await check.count(FailedSignIn, { account: account.id })).toBe(1)
+    expect(await check.count(PasswordReset, { account: account.id })).toBe(1)
+  })
+
+  /**
+   * Code-review finding of 2026-09-22: DiscordLinkState.codeVerifier is a
+   * plaintext secret the entity promises "dies with the row (10 minutes)". It
+   * must not share the day-long grace the other two tables get for accuracy —
+   * nothing reads this table by how long ago it expired, so there is no
+   * accuracy to trade for the extra exposure window.
+   */
+  it('deletes an expired DiscordLinkState immediately, with no grace period', async () => {
+    const now = new Date()
+    const justExpired = new Date(now.getTime() - 60_000)
+    const notYetExpired = new Date(now.getTime() + 60_000)
+
+    const em = orm.em.fork()
+    const account = em.create(Account, {
+      email: 'expired-rows-discord@test.local',
+      passwordHash: 'hash',
+      birthDate: new Date('1990-01-01'),
+      securityQuestion: 'question?',
+      securityAnswerHash: 'hash',
+    })
     em.create(DiscordLinkState, {
       account,
       stateHash: 'c'.repeat(64),
       codeVerifier: 'v',
-      expiresAt: old,
+      expiresAt: justExpired,
     })
     em.create(DiscordLinkState, {
       account,
       stateHash: 'd'.repeat(64),
       codeVerifier: 'v',
-      expiresAt: recent,
+      expiresAt: notYetExpired,
     })
     await em.flush()
 
     const purged = await service.purge(now)
 
-    expect(purged).toEqual({ failedSignIns: 1, passwordResets: 1, discordLinkStates: 1 })
-    const check = orm.em.fork()
-    expect(await check.count(FailedSignIn, {})).toBe(1)
-    expect(await check.count(PasswordReset, {})).toBe(1)
-    expect(await check.count(DiscordLinkState, {})).toBe(1)
+    expect(purged.discordLinkStates).toBe(1)
+    const remaining = await orm.em.fork().find(DiscordLinkState, { account: account.id })
+    expect(remaining).toHaveLength(1)
+    expect(remaining[0]?.expiresAt.getTime()).toBe(notYetExpired.getTime())
   })
 })
