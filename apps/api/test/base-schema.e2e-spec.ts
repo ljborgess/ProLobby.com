@@ -90,6 +90,23 @@ describe('base schema', () => {
     await expect(em.flush()).resolves.toBeUndefined()
   })
 
+  it('opens a linked-identity-change case — RF-082 / #155', async () => {
+    const em = orm.em.fork()
+    const account = newAccount(em, 'identity-change@test.local')
+    em.persist(account)
+    const moderationCase = em.create(ModerationCase, {
+      type: ModerationCaseType.LINKED_IDENTITY_CHANGE,
+      origin: ModerationCaseOrigin.USER,
+      targetAccount: account,
+    })
+    em.persist(moderationCase)
+    await expect(em.flush()).resolves.toBeUndefined()
+
+    const stored = await em.findOneOrFail(ModerationCase, { id: moderationCase.id })
+    expect(stored.type).toBe(ModerationCaseType.LINKED_IDENTITY_CHANGE)
+    expect(stored.origin).toBe(ModerationCaseOrigin.USER)
+  })
+
   it('opens a system case with no author', async () => {
     const em = orm.em.fork()
     const moderationCase = em.create(ModerationCase, {
