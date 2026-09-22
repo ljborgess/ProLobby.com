@@ -92,7 +92,7 @@ antes a própria home fazia os dois papéis, e misturava marketing público com 
 O vínculo **não** virou parte do cadastro: o [onboarding](docs/produto/05-produto/01-onboarding.md) mantém a conta existindo antes do Discord, e
 vincular antes de confirmar a conta prenderia o Discord numa conta abandonada ([RF-082](docs/requisitos/05-funcionais.md)).
 
-<img src="docs/assets/home-proximos-passos.png" alt="Home logada com os próximos passos: e-mail não verificado e Discord não vinculado" width="420">
+<img src="docs/assets/home-proximos-passos.png" alt="Tela de /verifications com os próximos passos: e-mail não verificado e Discord não vinculado" width="420">
 
 ### Cadastro avisa o mínimo da pergunta de segurança
 
