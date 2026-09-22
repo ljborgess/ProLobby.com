@@ -59,16 +59,16 @@ export function LandingView() {
           <span className="font-display text-lg font-semibold tracking-tight text-foreground">
             Pro<span className="text-accent">Lobby</span>
           </span>
-          <nav className="flex items-center gap-2 sm:gap-4">
+          <nav className="flex items-center gap-2 sm:gap-3">
             <Link
               href="/login"
-              className="landing-focus px-2 py-1 text-sm font-medium text-foreground-soft transition-colors hover:text-foreground"
+              className="landing-focus rounded-full border border-white/15 px-5 py-2 text-sm text-foreground-soft transition-colors hover:border-white/35 hover:text-foreground"
             >
               {content.topBar.signIn}
             </Link>
             <Link
               href="/sign-up"
-              className="landing-focus landing-sheen rounded-sm bg-accent px-4 py-2 text-sm font-semibold text-background transition-transform duration-200 hover:scale-[1.04] active:scale-95"
+              className="landing-focus landing-sheen rounded-full bg-accent px-5 py-2 text-sm font-medium text-background transition-transform duration-200 hover:scale-[1.04] active:scale-95"
             >
               {content.topBar.cta}
             </Link>
@@ -80,13 +80,16 @@ export function LandingView() {
         />
       </header>
 
-      <section className="relative flex min-h-[86vh] flex-1 items-center overflow-hidden px-4 py-24 sm:px-6">
+      {/* svh, not vh: on a phone `vh` is the viewport with the browser's own
+          chrome pretended away, so a 100vh hero is taller than the screen and
+          the copy starts below the fold. */}
+      <section className="relative flex min-h-[92svh] flex-1 items-center overflow-hidden px-4 py-24 sm:px-6">
         <HeroBackdrop />
 
         <div className="mx-auto grid w-full max-w-6xl items-center gap-14 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="text-center lg:text-left">
             <span
-              className="landing-fade-up inline-flex items-center gap-2 rounded-sm border border-accent/25 bg-accent/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-accent"
+              className="landing-fade-up inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/10 px-3.5 py-1.5 text-[0.7rem] font-medium uppercase tracking-[0.2em] text-accent"
               style={{ '--landing-delay': '0s' } as React.CSSProperties}
             >
               <span className="landing-glow size-1.5 rounded-full bg-accent" />
@@ -94,7 +97,7 @@ export function LandingView() {
             </span>
 
             <h1
-              className="landing-fade-up landing-display mt-7 font-display font-semibold text-foreground"
+              className="landing-fade-up landing-display mt-8 font-display text-foreground"
               style={{ '--landing-delay': '0.06s' } as React.CSSProperties}
             >
               {content.hero.titlePrefix}
@@ -106,7 +109,7 @@ export function LandingView() {
                 conta" and "Entrar" on the page, and it is sticky, so it stays
                 in reach from every section. */}
             <p
-              className="landing-fade-up mx-auto mt-7 max-w-xl text-lg leading-relaxed text-foreground-soft lg:mx-0"
+              className="landing-fade-up mx-auto mt-7 max-w-md text-[0.95rem] leading-relaxed text-foreground-soft/85 lg:mx-0"
               style={{ '--landing-delay': '0.16s' } as React.CSSProperties}
             >
               {content.hero.subtitle}
@@ -130,7 +133,9 @@ export function LandingView() {
               key={fact.label}
               className="landing-reveal landing-card landing-sheen flex flex-col items-center rounded-md border border-white/10 px-4 py-7 text-center"
             >
-              <span className="font-display text-4xl font-semibold text-accent">{fact.value}</span>
+              <span className="font-display text-4xl font-light tracking-tight text-accent">
+                {fact.value}
+              </span>
               <span className="mt-2 text-sm leading-snug text-foreground-soft">{fact.label}</span>
             </div>
           ))}
@@ -149,7 +154,7 @@ export function LandingView() {
               {content.positions.items.map((position) => (
                 <span
                   key={position}
-                  className="landing-card rounded-sm border border-white/10 px-3.5 py-1.5 text-sm font-medium text-foreground"
+                  className="landing-card rounded-full border border-white/10 px-4 py-1.5 text-sm text-foreground"
                 >
                   {position}
                 </span>
@@ -232,7 +237,9 @@ export function LandingView() {
                   {FEATURE_ICONS[index]}
                 </svg>
               </span>
-              <h2 className="font-display text-lg font-semibold text-foreground">{item.title}</h2>
+              <h2 className="font-display text-lg font-medium tracking-tight text-foreground">
+                {item.title}
+              </h2>
               <p className="text-sm leading-relaxed text-foreground-soft">{item.body}</p>
             </div>
           ))}
@@ -279,11 +286,9 @@ function SectionHeading({
 }) {
   return (
     <div className={align === 'center' ? 'text-center' : undefined}>
-      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">{eyebrow}</p>
+      <p className="text-[0.7rem] font-medium uppercase tracking-[0.22em] text-accent">{eyebrow}</p>
       {title ? (
-        <h2 className="landing-section-title mt-4 font-display font-semibold text-foreground">
-          {title}
-        </h2>
+        <h2 className="landing-section-title mt-4 font-display text-foreground">{title}</h2>
       ) : null}
       {body ? (
         <p className="mt-4 max-w-xl text-base leading-relaxed text-foreground-soft">{body}</p>
@@ -303,11 +308,14 @@ function HeroBackdrop() {
       </div>
       <div className="landing-floor absolute inset-x-0 bottom-0 h-72 opacity-50" />
       <div className="landing-weave absolute inset-0" />
-      {/* Three scrims, not one: the clip and the floor have to read as texture
-          behind the headline, never as "a video playing". Vignette, a wash in
-          the page colour, then a hard fade into the next section. */}
+      {/* Scrims, in order: vignette, a wash in the page colour so the clip and
+          the floor read as texture rather than as "a video playing", a
+          directional veil over the reading edge only, and a hard fade into the
+          next section. The directional one is why the copy can be thin and
+          still legible while the art keeps its contrast. */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_40%,_transparent_0%,_var(--color-bg)_100%)]" />
-      <div className="absolute inset-0 bg-background/55" />
+      <div className="absolute inset-0 bg-background/45" />
+      <div className="landing-scrim-edge absolute inset-0" />
       <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
     </div>
   )
@@ -323,7 +331,7 @@ function LobbyCard({ positions }: { positions: string[] }) {
     <div className="landing-halo rounded-lg shadow-default">
       <div className="landing-halo-surface overflow-hidden border border-white/10 p-5">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold uppercase tracking-[0.18em] text-foreground-soft">
+          <span className="text-[0.7rem] font-medium uppercase tracking-[0.2em] text-foreground-soft">
             Lobby
           </span>
           <span className="flex items-center gap-2 text-xs text-accent">

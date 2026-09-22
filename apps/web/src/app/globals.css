@@ -338,17 +338,22 @@ body {
 }
 
 /* Fluid display sizing — one clamp instead of three breakpoints, so the
-   headline keeps its proportions between the sizes we happen to test at. */
+   headline keeps its proportions between the sizes we happen to test at.
+   Light weight with tight tracking, not bold: at this size the thin cut reads
+   as composed and the bold one reads as loud, and the page is dark enough
+   that 300 still holds its edge. */
 .landing-display {
-  font-size: clamp(2.25rem, 1.2rem + 4.2vw, 4.25rem);
-  line-height: 1.04;
-  letter-spacing: -0.03em;
+  font-size: clamp(2.35rem, 1.2rem + 4.4vw, 4.5rem);
+  font-weight: 300;
+  line-height: 1.02;
+  letter-spacing: -0.035em;
 }
 
 .landing-section-title {
-  font-size: clamp(1.6rem, 1.1rem + 1.6vw, 2.25rem);
-  line-height: 1.15;
-  letter-spacing: -0.02em;
+  font-size: clamp(1.65rem, 1.1rem + 1.7vw, 2.4rem);
+  font-weight: 300;
+  line-height: 1.12;
+  letter-spacing: -0.028em;
 }
 
 /* The accent word in the headline: a gradient wash instead of a flat fill.
@@ -389,7 +394,24 @@ body {
 .landing-focus:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 3px;
-  border-radius: var(--radius-sm);
+  border-radius: 999px;
+}
+
+/**
+ * Scrim over the copy's edge only.
+ *
+ * A flat overlay across the whole hero would dim the art along with the text,
+ * which is the thing worth looking at. This falls off fast, so the middle of
+ * the frame keeps its contrast: heavy where the words start, gone by the time
+ * it reaches the card.
+ */
+.landing-scrim-edge {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-bg) 82%, transparent) 0%,
+    color-mix(in srgb, var(--color-bg) 45%, transparent) 32%,
+    transparent 62%
+  );
 }
 
 /* Faint diagonal weave over dark sections — the reference leans on
