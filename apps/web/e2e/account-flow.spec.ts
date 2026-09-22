@@ -35,6 +35,41 @@ test.describe('visitante', () => {
       page.getByText('O vínculo com o Discord está indisponível agora. Tenta de novo mais tarde.'),
     ).toBeVisible()
   })
+
+  /**
+   * Roteamento de 2026-09-22: /verifications é a área logada, e sem cookie
+   * nenhum ela nem tenta chamar a API — vai direto pro login. Provável nesta
+   * suíte porque não depende da API estar de pé.
+   */
+  test('/verifications manda pro login quando não há sessão', async ({ page }) => {
+    await page.goto('/verifications')
+
+    await expect(page).toHaveURL(/\/login$/)
+  })
+})
+
+test.describe('sessão com cookie mas sem API', () => {
+  /**
+   * A home só olha se o cookie existe, nunca se ele é válido — quem decide
+   * isso é a API, em /verifications. Um cookie forjado (ou expirado) ainda
+   * assim é redirecionado pra lá, e cai no aviso de indisponível desta suíte
+   * sem API, não num loop nem numa tela quebrada.
+   */
+  test('a home redireciona quem tem cookie de sessão pra /verifications', async ({
+    page,
+    context,
+  }) => {
+    await context.addCookies([
+      { name: 'prolobby_session', value: 'not-a-real-jwt', url: 'http://localhost:3000' },
+    ])
+
+    await page.goto('/')
+
+    await expect(page).toHaveURL(/\/verifications$/)
+    await expect(
+      page.getByText('Não deu pra carregar sua conta agora. Atualiza a página em instantes.'),
+    ).toBeVisible()
+  })
 })
 
 test.describe('cadastro', () => {

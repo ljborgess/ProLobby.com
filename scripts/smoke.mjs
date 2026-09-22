@@ -106,16 +106,34 @@ await check('login devolve o cookie de sessão HttpOnly', async () => {
   session = cookie.split(';')[0]
 })
 
-console.log('\npré-requisitos da fila')
-await check('a home logada mostra os próximos passos', async () => {
-  const res = await call(WEB, { auth: true })
+console.log('\nroteamento (2026-09-22: /verifications é a área logada, a home é só landing)')
+await check(
+  'a home logada redireciona para /verifications, sem mostrar landing nem painel',
+  async () => {
+    const res = await call(WEB, { auth: true })
+    expect(res.status, 307, 'status')
+    expect(res.headers.get('location'), '/verifications', 'destino')
+  },
+)
+await check('a home anônima mostra a landing, não o painel', async () => {
+  const res = await call(WEB)
   expect(res.status, 200, 'status')
   const html = await res.text()
-  expect(html.includes('Próximos passos'), true, 'painel na home')
-})
-await check('a home anônima não mostra o painel', async () => {
-  const html = await (await call(WEB)).text()
+  expect(html.includes('Criar conta'), true, 'botão de cadastro')
   expect(html.includes('Próximos passos'), false, 'painel ausente')
+})
+await check('/verifications sem sessão manda pro login', async () => {
+  const res = await call(`${WEB}/verifications`)
+  expect(res.status, 307, 'status')
+  expect(res.headers.get('location'), '/login', 'destino')
+})
+
+console.log('\npré-requisitos da fila')
+await check('/verifications mostra os próximos passos', async () => {
+  const res = await call(`${WEB}/verifications`, { auth: true })
+  expect(res.status, 200, 'status')
+  const html = await res.text()
+  expect(html.includes('Próximos passos'), true, 'painel em /verifications')
 })
 await check('queue-prerequisites devolve só os dois booleanos', async () => {
   const res = await call(`${API}/api/accounts/me/queue-prerequisites`, { auth: true })
@@ -182,7 +200,7 @@ await check('bot-events sem assinatura responde 401', async () => {
   expect(res.status, 401, 'status')
 })
 await check('resposta com sessão não é cacheável', async () => {
-  const res = await call(WEB, { auth: true })
+  const res = await call(`${WEB}/verifications`, { auth: true })
   const cache = res.headers.get('cache-control') ?? ''
   expect(/no-store|no-cache/.test(cache), true, `cache-control (${cache})`)
 })
