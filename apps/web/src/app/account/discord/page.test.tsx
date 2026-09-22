@@ -1,7 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { screen } from '@testing-library/react'
 import { renderWithLocale } from '@/test-utils'
-import { ACCOUNT_CONTENT } from '@/content/account'
+// The panel this page renders reads DISCORD_CONTENT, not ACCOUNT_CONTENT. The
+// assertion below used to name the account dictionary and passed only because
+// both happened to carry the same sentence; the copy trim of 2026-09-22 pulled
+// them apart and exposed it.
+import { DISCORD_CONTENT } from '@/content/discord'
 
 const cookieJar = { toString: () => 'prolobby_session=jwt' }
 const apiFetch = vi.fn()
@@ -41,7 +45,7 @@ describe('DiscordPage', () => {
 
     renderWithLocale(await DiscordPage(params()))
 
-    expect(screen.getByText(ACCOUNT_CONTENT.pt.discord.doneLabel)).toBeInTheDocument()
+    expect(screen.getByText(DISCORD_CONTENT.pt.linkedLabel)).toBeInTheDocument()
   })
 
   it('shows "unavailable" instead of crashing on a 200 with a malformed body', async () => {

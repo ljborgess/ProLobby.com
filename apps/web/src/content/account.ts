@@ -50,8 +50,8 @@ export const ACCOUNT_CONTENT: Record<Locale, AccountContent> = {
     discord: {
       doneLabel: 'Discord vinculado',
       pendingLabel: 'Discord não vinculado',
-      pendingHint: 'A fila e os canais da partida funcionam pelo seu Discord.',
-      action: 'Vincular Discord',
+      pendingHint: 'A fila e os canais da partida acontecem por lá.',
+      action: 'Vincular',
     },
     allDone: 'Tudo pronto. A fila abre na próxima fase do projeto.',
     loadError: 'Não deu pra carregar sua conta agora. Atualiza a página em instantes.',
@@ -73,8 +73,8 @@ export const ACCOUNT_CONTENT: Record<Locale, AccountContent> = {
     discord: {
       doneLabel: 'Discord vinculado',
       pendingLabel: 'Discord no vinculado',
-      pendingHint: 'La cola y los canales del partido funcionan con tu Discord.',
-      action: 'Vincular Discord',
+      pendingHint: 'La cola y los canales del partido pasan por allí.',
+      action: 'Vincular',
     },
     allDone: 'Todo listo. La cola abre en la próxima fase del proyecto.',
     loadError: 'No se pudo cargar tu cuenta ahora. Actualiza la página en un momento.',

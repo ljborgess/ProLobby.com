@@ -98,11 +98,15 @@ export function DiscordLinkPanel({
           <p className="text-sm font-medium text-foreground">
             {linked ? content.linkedLabel : content.notLinkedLabel}
           </p>
+          {/* Accent means "this is on you", the same as it does in the
+              prerequisites panel — so it is the *pending* pill that lights up,
+              not the linked one. Getting this backwards made the two screens
+              disagree about what green means. */}
           <span
             className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[0.7rem] ${
               linked
-                ? 'border-accent/30 bg-accent/10 text-accent'
-                : 'border-white/10 text-foreground-weak'
+                ? 'border-white/10 text-foreground-weak'
+                : 'border-accent/30 bg-accent/10 text-accent'
             }`}
           >
             {!linked && (
