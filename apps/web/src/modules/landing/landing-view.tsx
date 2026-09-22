@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useLandingContent } from '@/hooks/use-landing-content'
 import { LanguageSwitcher } from '@/common/ui/language-switcher'
 import { PairingNetwork } from './pairing-network'
+import { QueueBoard } from './queue-board'
 
 const FEATURE_ICONS = [
   // shield — identidade verificada
@@ -12,20 +13,6 @@ const FEATURE_ICONS = [
   <path key="queue" d="M4 6h16M4 12h16M4 18h10" />,
   // link — vínculo com Discord
   <path key="link" d="M9 15l6-6M9 9h6v6" />,
-]
-
-/**
- * Where each position category sits on the pitch drawing, as percentages of
- * the pitch box. Order matches `content.positions.items`, which is why this is
- * a plain array and not a map keyed by a Portuguese label: the labels are
- * translated, the geometry is not.
- */
-const POSITION_MARKS = [
-  { x: 8, y: 50 }, // goleiro
-  { x: 28, y: 50 }, // zaga
-  { x: 50, y: 50 }, // meio
-  { x: 70, y: 22 }, // ponta
-  { x: 82, y: 50 }, // ataque
 ]
 
 /**
@@ -164,19 +151,7 @@ export function LandingView() {
           </div>
 
           <div className="landing-parallax-fast relative w-full flex-1">
-            <div className="landing-halo rounded-lg shadow-default">
-              <div className="landing-halo-surface relative overflow-hidden rounded-lg border border-white/10 p-5">
-                <PitchArt className="h-auto w-full" />
-                {POSITION_MARKS.map((mark, index) => (
-                  <span
-                    key={content.positions.items[index]}
-                    aria-hidden
-                    className="absolute size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent shadow-[0_0_0_5px_color-mix(in_srgb,var(--color-accent)_20%,transparent)]"
-                    style={{ left: `${mark.x}%`, top: `${mark.y}%` }}
-                  />
-                ))}
-              </div>
-            </div>
+            <QueueBoard />
           </div>
         </div>
       </Section>
@@ -404,20 +379,5 @@ function HeroVideo() {
       <source src="/media/hero.webm" type="video/webm" />
       <source src="/media/hero.mp4" type="video/mp4" />
     </video>
-  )
-}
-
-/** A pitch, drawn — halfway line, centre circle, both boxes. No asset to ship. */
-function PitchArt({ className }: { className?: string }) {
-  return (
-    <svg aria-hidden viewBox="0 0 100 60" preserveAspectRatio="none" className={className}>
-      <rect x="1" y="1" width="98" height="58" rx="1" className="landing-pitch-line" />
-      <line x1="50" y1="1" x2="50" y2="59" className="landing-pitch-line" />
-      <circle cx="50" cy="30" r="9" className="landing-pitch-line" />
-      <rect x="1" y="16" width="14" height="28" className="landing-pitch-line" />
-      <rect x="85" y="16" width="14" height="28" className="landing-pitch-line" />
-      <rect x="1" y="24" width="5" height="12" className="landing-pitch-line" />
-      <rect x="94" y="24" width="5" height="12" className="landing-pitch-line" />
-    </svg>
   )
 }

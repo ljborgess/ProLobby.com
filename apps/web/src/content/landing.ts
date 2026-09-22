@@ -44,6 +44,18 @@ export interface LandingContent {
   footer: {
     tagline: string
   }
+  /**
+   * The queue board — the lineup view a lobby fills into. Labelled as an
+   * example on purpose: it is a drawn representation, not live data, and the
+   * queue itself is Fase 2.5.
+   */
+  queueBoard: {
+    title: string
+    formation: string
+    example: string
+    filled: string
+    waiting: string
+  }
   /** The art panel beside the sign-in and sign-up forms (`AuthLayout`). */
   authAside: {
     signIn: { title: string; body: string }
@@ -103,6 +115,13 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
     },
     footer: {
       tagline: 'Matchmaking competitivo e identidade verificada para EA FC Pro Clubs.',
+    },
+    queueBoard: {
+      title: 'Lobby',
+      formation: '4-3-3',
+      example: 'Exemplo de como o lobby fecha',
+      filled: 'confirmado',
+      waiting: 'na fila',
     },
     authAside: {
       signIn: {
@@ -166,6 +185,13 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
     },
     footer: {
       tagline: 'Matchmaking competitivo e identidad verificada para EA FC Pro Clubs.',
+    },
+    queueBoard: {
+      title: 'Lobby',
+      formation: '4-3-3',
+      example: 'Ejemplo de cómo se cierra el lobby',
+      filled: 'confirmado',
+      waiting: 'en la cola',
     },
     authAside: {
       signIn: {
