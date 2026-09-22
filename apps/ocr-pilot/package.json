@@ -1,0 +1,27 @@
+{
+  "name": "@prolobby/ocr-pilot",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Isolated OCR measurement script for Virtual Pro screenshots (#120). Not a product surface.",
+  "main": "dist/cli.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/cli.js",
+    "lint": "eslint .",
+    "type-check": "tsc --noEmit -p tsconfig.json",
+    "test": "jest --config ./jest.config.ts"
+  },
+  "dependencies": {
+    "tesseract.js": "^5.1.1"
+  },
+  "devDependencies": {
+    "@prolobby/eslint-config": "workspace:*",
+    "@prolobby/tsconfig": "workspace:*",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.10.0",
+    "eslint": "^9",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.6.3"
+  }
+}
