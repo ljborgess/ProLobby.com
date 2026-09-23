@@ -62,6 +62,12 @@ services:
       DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID:?DISCORD_CLIENT_ID is required}
       DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET:?DISCORD_CLIENT_SECRET is required}
       DISCORD_REDIRECT_URI: ${DISCORD_REDIRECT_URI:?DISCORD_REDIRECT_URI is required}
+      # Resend (ADR-008). Missing here, the API refused to boot in production
+      # anyway (mail.module.ts) — but nothing surfaced that until the process
+      # actually tried (2026-09-23 review). Required at the compose level so
+      # the failure is "container never starts", not "starts, then dies".
+      RESEND_API_KEY: ${RESEND_API_KEY:?RESEND_API_KEY is required}
+      MAIL_FROM: ${MAIL_FROM:?MAIL_FROM is required}
       # Management API only — does not wake the compute (ADR-009 / #123).
       NEON_API_KEY: ${NEON_API_KEY:-}
       NEON_PROJECT_ID: ${NEON_PROJECT_ID:-}
@@ -132,6 +138,12 @@ services:
       context: .
       dockerfile: apps/bot/Dockerfile
     restart: unless-stopped
+    # PID 1 with no init ignores SIGTERM by kernel default (2026-09-23
+    # review): `docker compose down`/restart was a hard SIGKILL after the 10s
+    # grace period, every time, dropping in-flight work. `init: true` runs
+    # tini as PID 1, which forwards the signal to Node's own handler
+    # (index.ts) instead of eating it.
+    init: true
     environment:
       NODE_ENV: production
       PORT: '3002'
@@ -142,9 +154,10 @@ services:
       # is the bot's own loopback, which reaches nothing from inside a
       # container.
       API_BOT_EVENTS_URL: http://api:3001/api/bot-events
-      # Optional. Set it to the real server id and a bot invited to a test
-      # guild can no longer block live accounts.
-      DISCORD_GUILD_ID: ${DISCORD_GUILD_ID:-}
+      # Required (2026-09-23 review — was optional). A bot invited to a second
+      # guild, even by mistake, would otherwise let that guild's joins/leaves
+      # block or free real accounts on this one.
+      DISCORD_GUILD_ID: ${DISCORD_GUILD_ID:?DISCORD_GUILD_ID is required}
     # /health is loopback-only and unauthenticated on purpose (server.ts): it
     # reports gateway state, not business data, and only Compose calls it.
     # 503 while the gateway is down is what RF-060 needs — the bot must be

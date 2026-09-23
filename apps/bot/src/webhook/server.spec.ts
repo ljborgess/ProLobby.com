@@ -200,6 +200,28 @@ describe('webhook server', () => {
   })
 })
 
+describe('webhook server — gateway down (2026-09-23 review)', () => {
+  const clock = { now: () => new Date('2026-09-14T12:00:00.000Z') }
+  const now = () => clock.now().toISOString()
+  const app = createWebhookServer({ secret: SECRET, clock, isReady: () => false })
+
+  it('answers 503 to an otherwise valid event instead of a false 202', async () => {
+    const res = await send(app, sampleLobbyClosedEvent({ occurredAt: now() }), { signedAt: now() })
+
+    expect(res.status).toBe(503)
+    expect(res.body).toEqual({ error: 'discord_not_ready' })
+  })
+
+  it('still rejects a bad signature first, so readiness is not learned without auth', async () => {
+    const res = await send(app, sampleLobbyClosedEvent({ occurredAt: now() }), {
+      secret: OTHER_SECRET,
+      signedAt: now(),
+    })
+
+    expect(res.status).toBe(401)
+  })
+})
+
 describe('webhook server — global rate limit', () => {
   const clock = { now: () => new Date('2026-09-14T12:00:00.000Z') }
   const now = () => clock.now().toISOString()
