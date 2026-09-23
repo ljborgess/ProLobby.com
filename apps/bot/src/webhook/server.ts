@@ -46,7 +46,8 @@ export function createWebhookServer(options: WebhookServerOptions): Express {
   // data. 503 while the gateway is down is what makes `docker compose` (and
   // RF-060, which needs the bot really connected) able to tell.
   app.get('/health', (_req: Request, res: Response) => {
-    res.status(isReady() ? 200 : 503).json({ discordReady: isReady() })
+    const discordReady = isReady()
+    res.status(discordReady ? 200 : 503).json({ discordReady })
   })
 
   app.use(
@@ -75,6 +76,16 @@ export function createWebhookServer(options: WebhookServerOptions): Express {
     // cannot be moved forward without the secret.
     if (!isWebhookTimestampFresh(signedAt ?? '', clock.now(), WEBHOOK_MAX_SKEW_MS)) {
       res.status(401).json({ error: 'expired_timestamp' })
+      return
+    }
+
+    // After auth, not before: an unauthenticated caller must not learn the
+    // gateway's state. A 202 with the gateway down is how the API's own retry
+    // (RF-058) got fooled into marking a kick/ban/etc "delivered" while
+    // nothing could execute it (2026-09-23 review) — 503 puts it back in the
+    // API's retry loop instead of silently dropping the event.
+    if (!isReady()) {
+      res.status(503).json({ error: 'discord_not_ready' })
       return
     }
 

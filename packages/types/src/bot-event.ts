@@ -31,11 +31,30 @@ export const discordMemberJoinedEventSchema = z.object({
   payload: z.object({ discordId: snowflake }).strict(),
 })
 
+/**
+ * The full membership as the bot sees it right now — added in the 2026-09-23
+ * review to close two gaps `discord.member_left`/`_joined` cannot: an account
+ * linked while already outside the server (no "left" ever fires for it), and
+ * a leave/join that happens while the bot process is down (no listener is
+ * running to see it). Sent on every reconnect and on a timer
+ * (`reportPresenceSnapshot`); the API treats it as the whole truth for the
+ * moment it arrives, not a delta, so a dropped or duplicate delivery only
+ * costs staleness until the next one.
+ */
+export const discordPresenceSnapshotEventSchema = z.object({
+  id: uuid,
+  occurredAt,
+  type: z.literal('discord.presence_snapshot'),
+  payload: z.object({ discordIds: z.array(snowflake) }).strict(),
+})
+
 export const botEventSchema = z.discriminatedUnion('type', [
   discordMemberLeftEventSchema,
   discordMemberJoinedEventSchema,
+  discordPresenceSnapshotEventSchema,
 ])
 
 export type DiscordMemberLeftEvent = z.infer<typeof discordMemberLeftEventSchema>
 export type DiscordMemberJoinedEvent = z.infer<typeof discordMemberJoinedEventSchema>
+export type DiscordPresenceSnapshotEvent = z.infer<typeof discordPresenceSnapshotEventSchema>
 export type BotEvent = z.infer<typeof botEventSchema>

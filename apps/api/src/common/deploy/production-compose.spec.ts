@@ -118,4 +118,40 @@ describe('production compose (ADR-009 / #121)', () => {
     expect(bot).toContain('127.0.0.1:3002/health')
     expect(serviceDeclaresPorts(bot)).toBe(false)
   })
+
+  /**
+   * 2026-09-23 review: `mail.module.ts` refuses to boot in production without
+   * both, but neither was declared here — the compose file promised a
+   * container that the API itself would then refuse to start. Required (`:?`)
+   * like every other secret, so the failure is visible before deploy, not a
+   * crash loop after.
+   */
+  it('requires the Resend credentials the API needs to boot in production', () => {
+    const api = composeServiceBlock(prod, 'api')
+
+    expect(api).toMatch(/RESEND_API_KEY:\s*\$\{RESEND_API_KEY:\?/)
+    expect(api).toMatch(/MAIL_FROM:\s*\$\{MAIL_FROM:\?/)
+  })
+
+  /**
+   * 2026-09-23 review: optional here meant a bot invited to a second guild —
+   * a test server, or one it joined by mistake — could block or free real
+   * accounts based on that guild's own membership (RF-060).
+   */
+  it('requires DISCORD_GUILD_ID for the bot, so a second guild cannot affect real accounts', () => {
+    const bot = composeServiceBlock(prod, 'bot')
+
+    expect(bot).toMatch(/DISCORD_GUILD_ID:\s*\$\{DISCORD_GUILD_ID:\?/)
+  })
+
+  /**
+   * 2026-09-23 review: as PID 1 with no init, the bot ignored SIGTERM outright
+   * (kernel default for PID 1) — every stop/restart was a hard SIGKILL after
+   * the grace period, dropping in-flight presence reports.
+   */
+  it('runs the bot under init, so SIGTERM reaches its own shutdown handler', () => {
+    const bot = composeServiceBlock(prod, 'bot')
+
+    expect(bot).toMatch(/init:\s*true/)
+  })
 })

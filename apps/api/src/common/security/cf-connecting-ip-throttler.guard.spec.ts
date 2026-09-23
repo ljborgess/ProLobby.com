@@ -8,7 +8,11 @@ import { CfConnectingIpThrottlerGuard } from './cf-connecting-ip-throttler.guard
  * a cast, so the signature stays checked.
  */
 class TestableGuard extends CfConnectingIpThrottlerGuard {
-  track(req: { ip?: string; headers: Record<string, string | string[] | undefined> }) {
+  track(req: {
+    ip?: string
+    path?: string
+    headers: Record<string, string | string[] | undefined>
+  }) {
     return this.getTracker(req)
   }
 }
@@ -25,8 +29,10 @@ const guard = () =>
 const request = (
   headers: Record<string, string | string[] | undefined> = {},
   ip = '203.0.113.7',
+  path = '/api/accounts/me',
 ) => ({
   ip,
+  path,
   headers,
 })
 
@@ -103,6 +109,22 @@ describe('CfConnectingIpThrottlerGuard', () => {
       // Built inline, not through `request()`: passing `undefined` there would
       // hit the default parameter and silently restore an address.
       await expect(guard().track({ headers: {} })).resolves.toBe('unknown')
+    })
+
+    /**
+     * /bot-events never crosses the tunnel (the bot calls it over the
+     * internal Docker network, docker-compose.prod.yml), so it never carries
+     * CF-Connecting-IP by design — warning about it every request would be a
+     * permanent false alarm, not a signal of a broken tunnel.
+     */
+    it('tracks bot-events by the socket address without warning about the missing header', async () => {
+      const error = jest.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined)
+
+      await expect(guard().track(request({}, '172.18.0.4', '/api/bot-events'))).resolves.toBe(
+        '172.18.0.4',
+      )
+
+      expect(error).not.toHaveBeenCalled()
     })
   })
 })

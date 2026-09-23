@@ -32,6 +32,11 @@ export class DiscordPresenceService {
   constructor(private readonly em: EntityManager) {}
 
   async apply(event: BotEvent): Promise<void> {
+    if (event.type === 'discord.presence_snapshot') {
+      await this.applySnapshot(event.payload.discordIds, new Date(event.occurredAt))
+      return
+    }
+
     const at = new Date(event.occurredAt)
 
     await this.em.fork().nativeUpdate(
@@ -42,5 +47,50 @@ export class DiscordPresenceService {
       },
       { discordPresent: event.type === 'discord.member_joined', discordPresenceAt: at },
     )
+  }
+
+  /**
+   * The whole membership, treated as ground truth for this instant — not a
+   * delta like `apply()` above. Closes two gaps `left`/`joined` cannot
+   * (2026-09-23 review):
+   *
+   * - **linked while already outside the server** — no "left" ever fires for
+   *   someone who was never seen joining by this bot process, so `apply()`
+   *   alone leaves `discordPresent` at its default forever;
+   * - **left or rejoined while the bot was down** — no listener was running
+   *   to see it.
+   *
+   * No `discordPresenceAt` ordering guard here on purpose: a snapshot is not
+   * a delayed delivery of a past fact, it is "this is who is in the server
+   * right now", so it always wins over whatever an older delta left behind.
+   * Sent on every reconnect and on a timer, so a dropped or duplicate
+   * snapshot only costs staleness until the next one — never a permanent
+   * wrong answer.
+   */
+  async applySnapshot(discordIds: string[], at: Date): Promise<void> {
+    const hashes = discordIds.map((id) => hashIdentity(this.hmacSecret, id))
+    const em = this.em.fork()
+
+    await em.transactional(async (trx) => {
+      await trx.nativeUpdate(
+        Account,
+        { discordIdHash: { $in: hashes } },
+        { discordPresent: true, discordPresenceAt: at },
+      )
+      await trx.nativeUpdate(
+        Account,
+        {
+          // `$ne: null` explicitly, not left to `$nin` alone: knex special-cases
+          // an empty array as "no exclusion" and turns `NOT IN ()` into a bare
+          // `true` — which an empty guild snapshot produces on day one — so
+          // without this every never-linked account (`discordIdHash` null,
+          // `discordPresent` true by default) would flip to blocked too. Found
+          // by CI (2026-09-23): the local run had no Postgres to catch it.
+          discordIdHash: { $ne: null, $nin: hashes },
+          discordPresent: true,
+        },
+        { discordPresent: false, discordPresenceAt: at },
+      )
+    })
   }
 }

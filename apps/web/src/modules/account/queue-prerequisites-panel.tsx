@@ -2,12 +2,14 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import { DISCORD_INVITE_URL } from '@/common/discord/invite'
 import { CheckMark, DISCORD_BLURPLE, DiscordMark, MailMark } from '@/common/ui/icons'
 import { useAccountContent } from '@/hooks/use-account-content'
 
 export interface QueuePrerequisites {
   emailVerified: boolean
   discordLinked: boolean
+  discordPresent: boolean
 }
 
 type Resend = 'idle' | 'sending' | 'sent' | 'error'
@@ -25,7 +27,11 @@ type Resend = 'idle' | 'sending' | 'sent' | 'error'
  * accent ring only agree with it. Someone who cannot tell the green from the
  * grey still reads the same screen.
  */
-export function QueuePrerequisitesPanel({ emailVerified, discordLinked }: QueuePrerequisites) {
+export function QueuePrerequisitesPanel({
+  emailVerified,
+  discordLinked,
+  discordPresent,
+}: QueuePrerequisites) {
   const content = useAccountContent()
   const [resend, setResend] = useState<Resend>('idle')
 
@@ -40,7 +46,12 @@ export function QueuePrerequisitesPanel({ emailVerified, discordLinked }: QueueP
     }
   }
 
-  const steps = [emailVerified, discordLinked]
+  // RF-060 (#150): leaving the Discord server blocks the queue without
+  // touching the link itself. It shows as the Discord step going back to
+  // pending, with its own copy — this is not "link Discord again", the OAuth
+  // link is untouched and there is nothing to click here.
+  const discordDone = discordLinked && discordPresent
+  const steps = [emailVerified, discordDone]
   const doneCount = steps.filter(Boolean).length
   const allDone = doneCount === steps.length
 
@@ -109,22 +120,45 @@ export function QueuePrerequisitesPanel({ emailVerified, discordLinked }: QueueP
       </Step>
 
       <Step
-        done={discordLinked}
+        done={discordDone}
         doneLabel={content.discord.doneLabel}
-        label={content.discord.pendingLabel}
+        label={discordLinked ? content.discord.absentLabel : content.discord.pendingLabel}
         icon={<DiscordMark className="size-5" />}
         brandIcon
       >
-        <p className="text-sm leading-relaxed text-foreground-soft">
-          {content.discord.pendingHint}
-        </p>
-        <Link
-          href="/account/discord"
-          className="landing-focus landing-sheen inline-flex items-center gap-2 self-start rounded-full bg-accent px-4 py-2 text-sm font-medium text-background transition-transform duration-200 hover:scale-[1.03] active:scale-95"
-        >
-          <DiscordMark className="size-4" />
-          {content.discord.action}
-        </Link>
+        {discordLinked ? (
+          // Left the server after linking: the link is untouched (RF-082), so
+          // this offers a way back in rather than an action on the account —
+          // the invite, not a button that repeats OAuth. Clears itself once
+          // the bot sees the person rejoin.
+          <>
+            <p role="status" className="text-sm leading-relaxed text-foreground-soft">
+              {content.discord.absentHint}
+            </p>
+            <a
+              href={DISCORD_INVITE_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="landing-focus landing-sheen inline-flex items-center gap-2 self-start rounded-full bg-accent px-4 py-2 text-sm font-medium text-background transition-transform duration-200 hover:scale-[1.03] active:scale-95"
+            >
+              <DiscordMark className="size-4" />
+              {content.discord.absentAction}
+            </a>
+          </>
+        ) : (
+          <>
+            <p className="text-sm leading-relaxed text-foreground-soft">
+              {content.discord.pendingHint}
+            </p>
+            <Link
+              href="/account/discord"
+              className="landing-focus landing-sheen inline-flex items-center gap-2 self-start rounded-full bg-accent px-4 py-2 text-sm font-medium text-background transition-transform duration-200 hover:scale-[1.03] active:scale-95"
+            >
+              <DiscordMark className="size-4" />
+              {content.discord.action}
+            </Link>
+          </>
+        )}
       </Step>
     </section>
   )

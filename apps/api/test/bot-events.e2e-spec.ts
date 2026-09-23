@@ -27,7 +27,11 @@ describe('bot → platform events (#150, RF-060)', () => {
 
   const iso = (offsetMs = 0) => new Date(Date.now() + offsetMs).toISOString()
 
-  const event = (type: BotEvent['type'], discordId: string, occurredAt = iso()): BotEvent => ({
+  const event = (
+    type: 'discord.member_left' | 'discord.member_joined',
+    discordId: string,
+    occurredAt = iso(),
+  ): BotEvent => ({
     id: randomUUID(),
     occurredAt,
     type,
@@ -54,6 +58,13 @@ describe('bot → platform events (#150, RF-060)', () => {
   }
 
   const send = (e: BotEvent) => post(JSON.stringify(e))
+
+  const snapshot = (discordIds: string[], occurredAt = iso()): BotEvent => ({
+    id: randomUUID(),
+    occurredAt,
+    type: 'discord.presence_snapshot',
+    payload: { discordIds },
+  })
 
   /** An account whose Discord is linked, set directly: the OAuth flow is not what is under test. */
   const linkedAccount = async (discordId = LINKED) => {
@@ -212,5 +223,70 @@ describe('bot → platform events (#150, RF-060)', () => {
     const res = await send(event('discord.member_left', STRANGER))
 
     expect(res.status).toBe(204)
+  })
+
+  /**
+   * 2026-09-23 review: `discord.member_left`/`_joined` are deltas and cannot
+   * fix two cases — linked while already outside the server, and anything
+   * that happened while the bot was down. The snapshot is sent as ground
+   * truth for the instant it was taken, not a delayed fact.
+   */
+  describe('discord.presence_snapshot (2026-09-23 review)', () => {
+    it('marks present a linked account that never sent a member_joined, once it appears in a snapshot', async () => {
+      const discordId = '212121212121212121'
+      const email = await linkedAccount(discordId)
+      expect((await stored(email)).discordPresent).toBe(true) // default, unconfirmed
+
+      const res = await send(snapshot([discordId, '000000000000000001']))
+
+      expect(res.status).toBe(204)
+      expect((await stored(email)).discordPresent).toBe(true)
+    })
+
+    it('marks absent a linked account missing from the snapshot, with no member_left ever sent', async () => {
+      const discordId = '313131313131313131'
+      const email = await linkedAccount(discordId)
+
+      const res = await send(snapshot(['000000000000000002', '000000000000000003']))
+
+      expect(res.status).toBe(204)
+      expect((await stored(email)).discordPresent).toBe(false)
+    })
+
+    it('leaves an unlinked account untouched by an empty snapshot', async () => {
+      const email = `presence-unlinked-${++counter}@test.local`
+      await request(app.getHttpServer()).post('/api/accounts').send({
+        email,
+        password: 'a-long-enough-password',
+        birthDate: '1990-05-20',
+        securityQuestion: 'Qual o nome do seu primeiro time?',
+        securityAnswer: 'São Paulo',
+        acceptedTermsVersion: CURRENT_TERMS_VERSION,
+      })
+
+      // NOT IN never matches a NULL column in SQL — if the update ever
+      // dropped the discordIdHash filter, this is what would catch it
+      // flipping discordPresent on a row that was never linked.
+      await send(snapshot([]))
+
+      expect((await stored(email)).discordPresent).toBe(true)
+    })
+
+    it('rewinds nothing on a later real-time event: a fresh snapshot still overrides an older one', async () => {
+      const discordId = '515151515151515151'
+      const email = await linkedAccount(discordId)
+      await send(snapshot([], iso(-2000)))
+      expect((await stored(email)).discordPresent).toBe(false)
+
+      await send(snapshot([discordId], iso(-1000)))
+
+      expect((await stored(email)).discordPresent).toBe(true)
+    })
+
+    it('refuses an id that is not a snowflake, with 400', async () => {
+      const res = await send(snapshot(['not-a-discord-id']))
+
+      expect(res.status).toBe(400)
+    })
   })
 })

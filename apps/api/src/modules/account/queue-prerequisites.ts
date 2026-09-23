@@ -6,8 +6,14 @@
  *
  * `characterVerified` joins this in phase 2.2, next to the feature that can
  * make it true.
+ *
+ * `discordPresent` is RF-060 (#150): true once linked and stays true until the
+ * bot reports a leave. A never-linked account reads it as the entity default
+ * (`true`) so it never shows as the blocking case — `discordLinked` already
+ * covers "not linked yet".
  */
 export interface QueuePrerequisites {
   emailVerified: boolean
   discordLinked: boolean
+  discordPresent: boolean
 }
