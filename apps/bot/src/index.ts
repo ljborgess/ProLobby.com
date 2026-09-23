@@ -1,4 +1,5 @@
 import { createDiscordClient, logGatewayErrors } from './discord/client'
+import { reportPresence } from './discord/presence'
 import { readDiscordBotToken } from './discord/token'
 import { logger } from './logger'
 import { createWebhookServer, readWebhookSecret } from './webhook/server'
@@ -18,6 +19,10 @@ export async function main(): Promise<void> {
 
   const client = createDiscordClient()
   logGatewayErrors(client, logger)
+  // Attached before login on purpose: a member can leave while the gateway is
+  // still handing over the guild, and a listener added afterwards would miss
+  // exactly the events that arrive during boot.
+  reportPresence(client, logger)
   await client.login(token)
   logger.info('bootstrap', 'Discord gateway connected')
 

@@ -137,6 +137,14 @@ services:
       PORT: '3002'
       DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:?DISCORD_BOT_TOKEN is required}
       WEBHOOK_SECRET: ${WEBHOOK_SECRET:?WEBHOOK_SECRET is required}
+      # The bot → API direction (RF-060, #150), the mirror of BOT_WEBHOOK_URL
+      # above. Over the internal network, never through the tunnel: the default
+      # is the bot's own loopback, which reaches nothing from inside a
+      # container.
+      API_BOT_EVENTS_URL: http://api:3001/api/bot-events
+      # Optional. Set it to the real server id and a bot invited to a test
+      # guild can no longer block live accounts.
+      DISCORD_GUILD_ID: ${DISCORD_GUILD_ID:-}
     # /health is loopback-only and unauthenticated on purpose (server.ts): it
     # reports gateway state, not business data, and only Compose calls it.
     # 503 while the gateway is down is what RF-060 needs — the bot must be
