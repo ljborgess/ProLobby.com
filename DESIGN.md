@@ -44,6 +44,12 @@ typography:
     fontWeight: 500
     lineHeight: 1.2
     letterSpacing: "0.2em"
+  micro:
+    fontFamily: "Inter, system-ui, sans-serif"
+    fontSize: "0.55rem"
+    fontWeight: 600
+    lineHeight: 1
+    letterSpacing: "normal"
 rounded:
   sm: "10px"
   md: "16px"
@@ -198,12 +204,24 @@ texto que precisa ser lido em dois idiomas sem chamar atenção para si.
   `max-w-md` (28rem) no hero, `max-w-xl` (36rem) em seção.
 - **Label** (500, `0.7rem`, tracking `0.2em`, caixa alta): sobrancelha de seção,
   rótulo de painel, badge. É o tipo que mais parece instrumento.
+- **Micro** (600, `0.55rem`, altura 1, sem tracking): numeral dentro de emblema
+  de diâmetro fixo — a camisa do jogador no Quadro da Fila (`size-6`, 24px). O
+  único papel abaixo de Label, e só existe porque o círculo que o contém não
+  cresce: em `0.7rem` o número esbarra na borda tracejada da vaga em espera.
+  Peso mais alto que Label (600 contra 500) compensa a leitura em tamanho tão
+  reduzido.
 
 ### Named Rules
 
 **A Regra do Corte Leve.** Acima de 1,6rem, Sora entra em peso 300 com tracking
 negativo. Bold em tamanho grande lê como grito e derruba o humor silencioso
 inteiro; o peso volta a subir só quando o texto encolhe.
+
+**A Regra do Numeral Contido.** Micro existe só dentro de um emblema de
+diâmetro fixo — nunca em rótulo solto, nunca em texto corrido. Se o conteúdo
+puder crescer (duas linhas, texto localizado mais longo), o papel certo é
+Label, não Micro; Micro quebra assim que o texto não couber no espaço que o
+motivou.
 
 **A Regra dos Dois Papéis.** Sora nunca desce para texto corrido e Inter nunca
 sobe para título. A fronteira é o papel, não o tamanho.

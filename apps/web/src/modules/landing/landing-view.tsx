@@ -6,6 +6,7 @@ import { LanguageSwitcher } from '@/common/ui/language-switcher'
 import { PairingNetwork } from './pairing-network'
 import { QueueBoard } from './queue-board'
 import { SectionThread, SectionThreadEnd } from './section-thread'
+import { TopBarTicker } from './top-bar-ticker'
 
 const FEATURE_ICONS = [
   // shield — identidade verificada
@@ -44,10 +45,13 @@ export function LandingView() {
   return (
     <>
       <header className="sticky top-0 z-20 border-b border-white/5 bg-background/70 backdrop-blur-md">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
-          <span className="font-display text-lg font-semibold tracking-tight text-foreground">
-            Pro<span className="text-accent">Lobby</span>
-          </span>
+        <div className="flex w-full items-center justify-between px-4 py-4 sm:px-6">
+          <div className="flex items-center gap-4">
+            <span className="font-display text-lg font-semibold tracking-tight text-foreground">
+              Pro<span className="text-accent">Lobby</span>
+            </span>
+            <TopBarTicker items={content.topBar.ticker} />
+          </div>
           <nav className="flex items-center gap-2 sm:gap-3">
             <Link
               href="/login"
@@ -230,7 +234,7 @@ export function LandingView() {
               key={item.title}
               // The closing set resolves out of blur rather than sliding, so
               // the page does not end on the same gesture it opened with.
-              className="landing-blur-in landing-card landing-sheen flex flex-col items-center gap-4 rounded-md border border-white/10 px-6 py-9 text-center"
+              className="landing-blur-in landing-card landing-card-float landing-sheen flex flex-col items-center gap-4 rounded-md border border-white/6 px-6 py-9 text-center"
             >
               <span className="flex size-12 items-center justify-center rounded-full border border-accent/25 bg-accent/10">
                 <svg
