@@ -8,9 +8,9 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 
 ## 2026-09-23 · Para todos
 
-### #150 fechado — Fase 2.3 sem mais fatia de código destravada
+### #150 em PR (#183) — ainda não está em `dev`
 
-PR #183 abre a última fatia da Fase 2.3 (RF-060: sair do Discord bloqueia a fila, com aviso in-app pt/es). Com ela, não sobra mais trabalho de código destravado na Fase 2.3 — o que resta (RF-055, cargo Verificado) depende da Fase 2.2, que está travada no piloto de OCR (#50/#120).
+PR #183 traz a última fatia da Fase 2.3 (RF-060: sair do Discord bloqueia a fila, com aviso in-app pt/es), **ainda não mergeado** — a revisão de 2026-09-23 achou falhas que precisam ser corrigidas antes. Depois dele, não sobra trabalho de código destravado na Fase 2.3 — o que resta (RF-055, cargo Verificado) depende da Fase 2.2, que está travada no piloto de OCR (#50/#120).
 
 ### #164 precisa de alguém com o FC27 aberto — minutos de jogo, não código
 
