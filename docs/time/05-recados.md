@@ -6,6 +6,25 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 
 ---
 
+## 2026-09-23 · Para todos
+
+### #150 fechado — Fase 2.3 sem mais fatia de código destravada
+
+PR #183 abre a última fatia da Fase 2.3 (RF-060: sair do Discord bloqueia a fila, com aviso in-app pt/es). Com ela, não sobra mais trabalho de código destravado na Fase 2.3 — o que resta (RF-055, cargo Verificado) depende da Fase 2.2, que está travada no piloto de OCR (#50/#120).
+
+### #164 precisa de alguém com o FC27 aberto — minutos de jogo, não código
+
+**Não é tarefa de IA**: exige console/PC com o jogo rodando e um Virtual Pro salvo. Quem pegar:
+
+1. Career Mode → Virtual Pro → aba **`Home`** (não a `Attributes`, essa já foi conferida e não tem gamertag).
+2. Print e registrar na issue: a aba mostra gamertag? Overall? Arquétipo?
+3. Se mostrar os dois, o conserto é só trocar qual tela o cadastro pede — a Fase 2.2 segue quase intacta.
+4. Se não mostrar em nenhuma tela do Pro, ver as 5 alternativas já listadas na issue antes de decidir do zero.
+
+Dá pra fazer na mesma sessão do checklist do #63 (mesma natureza: minutos de jogo). **Bloqueia a Fase 2.2** de um jeito que o piloto de OCR sozinho não resolve — mesmo quando o piloto tiver as 20 capturas, sem essa decisão o campo lido pode estar errado.
+
+---
+
 ## 2026-09-21 · Para todos
 
 ### Antes de rodar e2e: o banco é outro, e ele apaga tudo
