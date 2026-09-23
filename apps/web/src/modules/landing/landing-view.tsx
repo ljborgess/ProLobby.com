@@ -46,10 +46,12 @@ export function LandingView() {
     <>
       <header className="sticky top-0 z-20 border-b border-white/5 bg-background/70 backdrop-blur-md">
         <div className="flex w-full items-center justify-between px-4 py-4 sm:px-6">
-          <span className="font-display text-lg font-semibold tracking-tight text-foreground">
-            Pro<span className="text-accent">Lobby</span>
-          </span>
-          <TopBarTicker items={content.facts.items} />
+          <div className="flex items-center gap-4">
+            <span className="font-display text-lg font-semibold tracking-tight text-foreground">
+              Pro<span className="text-accent">Lobby</span>
+            </span>
+            <TopBarTicker items={content.topBar.ticker} />
+          </div>
           <nav className="flex items-center gap-2 sm:gap-3">
             <Link
               href="/login"

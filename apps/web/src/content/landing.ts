@@ -15,6 +15,8 @@ export interface LandingContent {
   topBar: {
     cta: string
     signIn: string
+    /** Short labels for the top bar ticker — same real facts as `facts.items`, tightened for a small badge instead of a full strip. */
+    ticker: { value: string; label: string }[]
   }
   hero: {
     titlePrefix: string
@@ -68,6 +70,12 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
     topBar: {
       cta: 'Criar conta',
       signIn: 'Entrar',
+      ticker: [
+        { value: '5', label: 'posições' },
+        { value: '30s', label: 'de fila' },
+        { value: '11v11', label: 'por partida' },
+        { value: 'PT/ES', label: '' },
+      ],
     },
     hero: {
       titlePrefix: 'A ',
@@ -138,6 +146,12 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
     topBar: {
       cta: 'Crear cuenta',
       signIn: 'Entrar',
+      ticker: [
+        { value: '5', label: 'posiciones' },
+        { value: '30s', label: 'de cola' },
+        { value: '11v11', label: 'por partido' },
+        { value: 'PT/ES', label: '' },
+      ],
     },
     hero: {
       titlePrefix: 'La ',
