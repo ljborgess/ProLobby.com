@@ -53,7 +53,8 @@ describe('password reset (RF-024)', () => {
   /** Issues a link for the address and returns the token that was emailed. */
   const issueToken = async (email: string): Promise<string> => {
     await service.issue(email)
-    return mail.sentTo(email, TransactionalEmail.PASSWORD_RESET).at(-1)?.data.token ?? ''
+    const url = mail.sentTo(email, TransactionalEmail.PASSWORD_RESET).at(-1)?.data.url ?? ''
+    return new URL(url, 'http://localhost').searchParams.get('token') ?? ''
   }
 
   /**
@@ -123,7 +124,7 @@ describe('password reset (RF-024)', () => {
       const sent = await mail.waitFor(TransactionalEmail.PASSWORD_RESET, 'ask-mail@test.local')
 
       expect(sent.to).toBe('ask-mail@test.local')
-      expect(sent.data.token).toBeTruthy()
+      expect(sent.data.url).toContain('/reset-password?token=')
     })
 
     it('answers before the email provider does', async () => {
