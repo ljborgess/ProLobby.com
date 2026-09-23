@@ -25,6 +25,25 @@ capitão, canais de voz no Discord, validação do resultado e ranking.
 
 A partida acontece dentro do EA FC. A plataforma não executa o jogo: organiza, verifica e mede.
 
+## O objetivo, como negócio
+
+Pro Clubs (EA FC) hoje só tem três jeitos de jogar 11v11: liga entre clubes já formados, Drop-In da
+própria EA (pareamento aleatório, sem identidade verificada) ou amistoso marcado manualmente entre
+clubes que já se conhecem. Não existe "pegar 22 estranhos, equilibrar por elo de verdade, e jogar
+uma partida séria" — é esse buraco que o ProLobby preenche pra comunidade BR de Pro Clubs, que já é
+ativa (servidores Discord, criadores de conteúdo) mas desorganizada.
+
+Diferencial contra a concorrência pesquisada (Pro Clubs Hub/Finder, bots de elo, Disporty): fila
+individual → matchmaking automático por elo/categoria → identidade verificada por print + OCR (não
+auto-declarada) → reputação com consequência real. Nenhum concorrente combina os quatro.
+
+**Onde está hoje**: em desenvolvimento, sem CNPJ e sem cobrança — o plano é sair em **beta fechado
+gratuito**, produto completo (nada cortado pro lançamento), público limitado a um grupo convidado
+antes da abertura pública. Custo operacional estimado do MVP: **R$ 50-90/mês**, ~R$ 3/mês em free
+tier. Critério de sucesso definido antes de existir usuário: partidas completadas por semana,
+resultado confirmado sem disputa, retenção na segunda partida — com critério de desistir escrito
+antes de haver apego ao que foi construído. Detalhe completo em [Negócio](docs/negocio/README.md).
+
 ## Como funciona
 
 | Etapa | O que acontece |
@@ -38,25 +57,70 @@ A partida acontece dentro do EA FC. A plataforma não executa o jogo: organiza, 
 
 Regras completas, com o motivo de cada decisão, no [dossiê de produto](docs/produto/README.md).
 
+### Fluxo desenhado — o que já está no ar e o que falta construir
+
+```mermaid
+flowchart TD
+    A[Conta criada e verificada] --> B[Discord vinculado]
+    B --> C{Personagem verificado?}
+    C -->|não| C1[Envia print do Virtual Pro<br/>OCR extrai overall/posição/gamertag]
+    C1 --> C
+    C -->|sim| D[Entra na fila por categoria]
+    D --> E{8 a 12 na fila,<br/>simetria por categoria?}
+    E -->|não| D
+    E -->|sim| F[Matchmaking monta 2 lados por elo<br/>IA do jogo completa vagas vazias]
+    F --> G[Capitão por lado, por reputação<br/>bot cria canais de voz]
+    G --> H[Partida acontece dentro do EA FC]
+    H --> I[Print do resultado confirma placar e elenco]
+    I --> J{Disputa ou denúncia?}
+    J -->|sim| K[Moderação, com trava de<br/>conflito de interesse]
+    J -->|não| L[Elo e reputação atualizam por categoria]
+    K --> L
+
+    classDef feito fill:#1f7a3f,color:#fff,stroke:none
+    classDef fazer fill:#5b5b5b,color:#fff,stroke:none
+    class A,B,C,C1 feito
+    class D,E,F,G,H,I,J,K,L fazer
+```
+
+Verde é o que já está em `dev` (conta, autenticação, vínculo Discord). Cinza é a lógica ainda a
+desenvolver — fila, matchmaking, lobby, resultado e governança —, hoje bloqueada pelo piloto de OCR
+([#50](https://github.com/ljborgess/ProLobby.com/issues/50)) e pela confirmação da aba Home do FC 27
+([#164](https://github.com/ljborgess/ProLobby.com/issues/164)). Roadmap completo, fase a fase, no
+[PRD Mestre](https://github.com/ljborgess/ProLobby.com/issues/64).
+
 ## As telas
 
 Capturas do ambiente de desenvolvimento em 2026-09-22. **Nada aqui é dado real**: a fila é Fase 2.5
-e não existe, não há jogador cadastrado nem partida jogada. Onde aparece um lobby preenchido, é
-exemplo — e está rotulado como tal na própria interface.
+e não existe, não há jogador cadastrado nem partida jogada.
 
 Toda a ilustração é desenhada em SVG e CSS. Não publicamos print nem arte do EA FC, que é material
 da EA.
 
-| | |
-|---|---|
-| ![Home](docs/assets/telas/01-landing-hero.jpg) | ![O que já está decidido](docs/assets/telas/02-fatos.jpg) |
-| **`/`** — a entrada. O fundo é o grafo de pareamento: jogadores esperando dos dois lados, aresta acendendo quando o par fecha. | **`/`** — no lugar da prova social que as concorrentes usam, só o que já está fechado no dossiê. |
-| ![Quadro da fila](docs/assets/telas/03-fila.jpg) | ![Criar conta](docs/assets/telas/04-cadastro.jpg) |
-| **`/`** — o quadro de lobby, no formato de escalação herdado do `escalacao-brasileirao`. É a base da tela de fila da Fase 2.5. | **`/sign-up`** — cabe em uma tela. Senha de 12 caracteres, 16 anos mínimo, e a pergunta de segurança que recupera a conta (RF-025). |
-| ![Entrar](docs/assets/telas/05-login.jpg) | ![Próximos passos](docs/assets/telas/06-conta.jpg) |
-| **`/login`** — o painel ao lado é um instrumento desenhado: radar, campo em perspectiva, holofotes. | **`/verifications`** — o que falta pra entrar na fila. Informa, não bloqueia (RF-002, RF-055). |
-| ![Discord](docs/assets/telas/07-discord.jpg) | |
-| **`/account/discord`** — vínculo obrigatório pra fila. Diz o escopo que a autorização pede antes de a pessoa sair daqui: só identificação. | |
+![Home](docs/assets/telas/01-landing-hero.jpg)
+
+**`/`** — a entrada. O fundo é o grafo de pareamento: jogadores esperando dos dois lados, aresta
+acendendo quando o par fecha.
+
+---
+
+![Criar conta](docs/assets/telas/04-cadastro.jpg)
+
+**`/sign-up`** — cabe em uma tela. Senha de 12 caracteres, 16 anos mínimo, e a pergunta de
+segurança que recupera a conta (RF-025).
+
+---
+
+![Entrar](docs/assets/telas/05-login.jpg)
+
+**`/login`** — o painel ao lado é um instrumento desenhado: radar, campo em perspectiva, holofotes.
+
+---
+
+![Discord](docs/assets/telas/07-discord.jpg)
+
+**`/account/discord`** — vínculo obrigatório pra fila. Diz o escopo que a autorização pede antes de
+a pessoa sair daqui: só identificação.
 
 ## Novidades
 
