@@ -167,7 +167,7 @@ function Token({
       <span
         className={
           waiting
-            ? 'landing-slot-wait flex size-6 items-center justify-center rounded-full border border-dashed border-accent/60 text-[0.55rem] text-accent'
+            ? 'landing-slot-wait flex size-6 items-center justify-center rounded-full border border-dashed border-accent/60 text-[0.55rem] font-semibold text-accent'
             : 'flex size-6 items-center justify-center rounded-full border border-accent/60 bg-accent/25 text-[0.55rem] font-semibold text-accent shadow-[0_0_12px_color-mix(in_srgb,var(--color-accent)_35%,transparent)]'
         }
         style={{ '--landing-delay': `${delay}s` } as React.CSSProperties}
