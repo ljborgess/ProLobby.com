@@ -125,8 +125,11 @@ describe('queue prerequisites (#171)', () => {
 
   it('reports discordPresent false once the bot has seen the person leave (RF-060, #150)', async () => {
     const { email, cookie } = await account()
+    // A different snowflake than the test above: `discordIdHash` is unique,
+    // and reusing '111111111111111111' here collided with it in CI, which
+    // has a real Postgres to enforce the constraint (2026-09-23).
     await patch(email, {
-      discordIdHash: hashIdentity(readIdentityHmacSecret(), '111111111111111111'),
+      discordIdHash: hashIdentity(readIdentityHmacSecret(), '222222222222222222'),
       discordPresent: false,
     })
 

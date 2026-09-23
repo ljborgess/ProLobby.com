@@ -79,7 +79,16 @@ export class DiscordPresenceService {
       )
       await trx.nativeUpdate(
         Account,
-        { discordIdHash: { $nin: hashes }, discordPresent: true },
+        {
+          // `$ne: null` explicitly, not left to `$nin` alone: knex special-cases
+          // an empty array as "no exclusion" and turns `NOT IN ()` into a bare
+          // `true` — which an empty guild snapshot produces on day one — so
+          // without this every never-linked account (`discordIdHash` null,
+          // `discordPresent` true by default) would flip to blocked too. Found
+          // by CI (2026-09-23): the local run had no Postgres to catch it.
+          discordIdHash: { $ne: null, $nin: hashes },
+          discordPresent: true,
+        },
         { discordPresent: false, discordPresenceAt: at },
       )
     })
