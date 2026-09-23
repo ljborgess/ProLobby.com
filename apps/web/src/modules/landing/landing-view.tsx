@@ -234,7 +234,7 @@ export function LandingView() {
               key={item.title}
               // The closing set resolves out of blur rather than sliding, so
               // the page does not end on the same gesture it opened with.
-              className="landing-blur-in landing-card landing-sheen flex flex-col items-center gap-4 rounded-md border border-white/10 px-6 py-9 text-center"
+              className="landing-blur-in landing-card landing-card-float landing-sheen flex flex-col items-center gap-4 rounded-md border border-white/6 px-6 py-9 text-center"
             >
               <span className="flex size-12 items-center justify-center rounded-full border border-accent/25 bg-accent/10">
                 <svg
