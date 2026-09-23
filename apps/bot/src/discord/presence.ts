@@ -33,13 +33,120 @@ export function reportPresence(
 }
 
 /**
- * The one guild that counts, when it is configured.
- *
- * Unset means every guild counts, which is the single-server reality the
- * product describes. Setting it closes a real footgun: a bot invited to a test
- * server alongside the live one would otherwise block real accounts the moment
- * someone left the test server.
+ * The whole membership, right now — closes what left/joined cannot (see the
+ * schema comment in `bot-event.ts`). Call once on `ClientReady` and on a
+ * timer (`schedulePresenceSnapshots`): a reconnect after downtime and a
+ * periodic tick are the two moments something could have drifted with no
+ * event to say so.
  */
+export async function reportPresenceSnapshot(
+  client: Client,
+  log: Logger,
+  post: (event: BotEvent) => Promise<{ status: number }> = postBotEvent,
+): Promise<void> {
+  const configured = process.env.DISCORD_GUILD_ID
+  const guilds = configured
+    ? client.guilds.cache.filter((guild) => guild.id === configured)
+    : client.guilds.cache
+
+  if (guilds.size === 0) {
+    // Not yet in any guild the bot recognises (e.g. between invite and the
+    // first GUILD_CREATE), or DISCORD_GUILD_ID misconfigured. Either way, an
+    // empty snapshot here would tell the API "nobody is present" and flip
+    // every linked account to blocked — worse than skipping this round.
+    log.error('presence', 'no guild to snapshot — skipping instead of reporting empty presence')
+    return
+  }
+
+  const discordIds: string[] = []
+  let failedGuilds = 0
+
+  for (const guild of guilds.values()) {
+    try {
+      const members = await guild.members.fetch()
+      for (const member of members.values()) {
+        if (!member.user.bot) {
+          discordIds.push(member.user.id)
+        }
+      }
+    } catch (error) {
+      // One unreachable guild must not cancel the snapshot for the others —
+      // skip it, log it, keep going. But if EVERY guild fails, falling
+      // through would report an empty membership as ground truth and flip
+      // every linked account to blocked; guarded below instead.
+      failedGuilds += 1
+      log.error('presence', 'could not fetch guild members for the snapshot', {
+        guildId: guild.id,
+        message: error instanceof Error ? error.message : String(error),
+      })
+    }
+  }
+
+  if (failedGuilds === guilds.size) {
+    log.error(
+      'presence',
+      'every guild failed to fetch — skipping instead of reporting empty presence',
+    )
+    return
+  }
+
+  const event = {
+    id: randomUUID(),
+    occurredAt: new Date().toISOString(),
+    type: 'discord.presence_snapshot',
+    payload: { discordIds },
+  } as BotEvent
+
+  try {
+    const { status } = await post(event)
+    if (status >= 400) {
+      log.error('presence', 'platform refused the snapshot', { status })
+      return
+    }
+    log.info('presence', 'reported presence snapshot', { count: discordIds.length })
+  } catch (error) {
+    log.error('presence', 'could not reach the platform for the snapshot', {
+      message: error instanceof Error ? error.message : String(error),
+    })
+  }
+}
+
+/**
+ * Repeats `reportPresenceSnapshot` on a timer — issue #150 follow-up. Returns
+ * the handle so `index.ts` can `clearInterval` it on shutdown; `unref()` so a
+ * pending tick never keeps the process alive on its own.
+ */
+export function schedulePresenceSnapshots(
+  client: Client,
+  log: Logger,
+  intervalMs: number = PRESENCE_SNAPSHOT_INTERVAL_MS,
+  post: (event: BotEvent) => Promise<{ status: number }> = postBotEvent,
+): NodeJS.Timeout {
+  const timer = setInterval(() => void reportPresenceSnapshot(client, log, post), intervalMs)
+  timer.unref()
+  return timer
+}
+
+export const PRESENCE_SNAPSHOT_INTERVAL_MS = 15 * 60 * 1000
+
+/**
+ * The one guild that counts.
+ *
+ * Required in production (2026-09-23 review): left optional, a bot invited to
+ * a second server — a test one, or one it was added to by mistake — blocks or
+ * frees real accounts based on what happens over there. Outside production,
+ * unset still means "every guild counts", so local dev and CI need nothing.
+ */
+export function readDiscordGuildId(): string | undefined {
+  const configured = process.env.DISCORD_GUILD_ID
+  if (!configured && process.env.NODE_ENV === 'production') {
+    throw new Error(
+      'DISCORD_GUILD_ID is required in production — RF-060 must not let a second guild the bot is in affect real accounts',
+    )
+  }
+  return configured
+}
+
 function guildMatters(guildId: string): boolean {
   const configured = process.env.DISCORD_GUILD_ID
   return !configured || configured === guildId
