@@ -46,6 +46,36 @@ export interface AuthContent {
     /** Só a API encerra a sessão; sem resposta dela a pessoa continua logada. */
     failed: string
   }
+  forgotPassword: {
+    linkLabel: string
+    title: string
+    subtitle: string
+    emailLabel: string
+    submit: string
+    submitting: string
+    sent: string
+    backToSignIn: string
+  }
+  resetPassword: {
+    title: string
+    subtitle: string
+    passwordLabel: string
+    passwordHint: string
+    submit: string
+    submitting: string
+    success: string
+    invalidToken: string
+    genericError: string
+    goToSignIn: string
+  }
+  verifyEmail: {
+    title: string
+    verifying: string
+    success: string
+    invalidToken: string
+    genericError: string
+    goToSignIn: string
+  }
   languageSwitcher: {
     label: string
   }
@@ -93,6 +123,36 @@ export const AUTH_CONTENT: Record<Locale, AuthContent> = {
       submitting: 'Saindo…',
       failed: 'Não deu pra sair agora. Você continua logado — tenta de novo.',
     },
+    forgotPassword: {
+      linkLabel: 'Esqueci minha senha',
+      title: 'Redefinir senha',
+      subtitle: 'Manda um link de redefinição para o seu e-mail.',
+      emailLabel: 'E-mail',
+      submit: 'Enviar link',
+      submitting: 'Enviando…',
+      sent: 'Se esse e-mail tiver conta, enviamos um link com as instruções.',
+      backToSignIn: 'Voltar para entrar',
+    },
+    resetPassword: {
+      title: 'Nova senha',
+      subtitle: 'Escolhe uma senha nova para a sua conta.',
+      passwordLabel: 'Nova senha',
+      passwordHint: 'Mínimo de 12 caracteres.',
+      submit: 'Salvar nova senha',
+      submitting: 'Salvando…',
+      success: 'Senha redefinida. Já dá pra entrar com ela.',
+      invalidToken: 'Esse link não é mais válido. Pede um novo link de redefinição.',
+      genericError: 'Não deu pra redefinir agora. Tenta de novo em instantes.',
+      goToSignIn: 'Ir para o login',
+    },
+    verifyEmail: {
+      title: 'Verificação de e-mail',
+      verifying: 'Verificando…',
+      success: 'E-mail verificado. Já dá pra entrar na fila.',
+      invalidToken: 'Esse link não é mais válido. Pede um novo na sua conta.',
+      genericError: 'Não deu pra verificar agora. Tenta de novo em instantes.',
+      goToSignIn: 'Ir para o login',
+    },
     languageSwitcher: {
       label: 'Idioma',
     },
@@ -137,6 +197,36 @@ export const AUTH_CONTENT: Record<Locale, AuthContent> = {
       submit: 'Cerrar sesión',
       submitting: 'Saliendo…',
       failed: 'No se pudo cerrar la sesión. Sigues conectado — intenta de nuevo.',
+    },
+    forgotPassword: {
+      linkLabel: 'Olvidé mi contraseña',
+      title: 'Restablecer contraseña',
+      subtitle: 'Enviamos un enlace de restablecimiento a tu correo.',
+      emailLabel: 'Correo electrónico',
+      submit: 'Enviar enlace',
+      submitting: 'Enviando…',
+      sent: 'Si ese correo tiene cuenta, enviamos un enlace con las instrucciones.',
+      backToSignIn: 'Volver a entrar',
+    },
+    resetPassword: {
+      title: 'Nueva contraseña',
+      subtitle: 'Elige una contraseña nueva para tu cuenta.',
+      passwordLabel: 'Nueva contraseña',
+      passwordHint: 'Mínimo 12 caracteres.',
+      submit: 'Guardar nueva contraseña',
+      submitting: 'Guardando…',
+      success: 'Contraseña restablecida. Ya puedes entrar con ella.',
+      invalidToken: 'Ese enlace ya no es válido. Pide un nuevo enlace de restablecimiento.',
+      genericError: 'No se pudo restablecer ahora. Intenta de nuevo en un momento.',
+      goToSignIn: 'Ir al login',
+    },
+    verifyEmail: {
+      title: 'Verificación de correo',
+      verifying: 'Verificando…',
+      success: 'Correo verificado. Ya puedes entrar en la cola.',
+      invalidToken: 'Ese enlace ya no es válido. Pide uno nuevo desde tu cuenta.',
+      genericError: 'No se pudo verificar ahora. Intenta de nuevo en un momento.',
+      goToSignIn: 'Ir al login',
     },
     languageSwitcher: {
       label: 'Idioma',
