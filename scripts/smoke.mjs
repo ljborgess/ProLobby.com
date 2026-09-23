@@ -135,11 +135,14 @@ await check('/verifications mostra os próximos passos', async () => {
   const html = await res.text()
   expect(html.includes('Próximos passos'), true, 'painel em /verifications')
 })
-await check('queue-prerequisites devolve só os dois booleanos', async () => {
+await check('queue-prerequisites devolve só os três booleanos', async () => {
   const res = await call(`${API}/api/accounts/me/queue-prerequisites`, { auth: true })
   expect(res.status, 200, 'status')
   const body = await res.json()
-  expect(Object.keys(body).sort().join(','), 'discordLinked,emailVerified', 'campos')
+  // discordPresent entrou com o RF-060 (#150, 2026-09-23): conta nova nunca
+  // vinculada lê o default da entidade (true) — discordLinked já cobre "não
+  // vinculado ainda".
+  expect(Object.keys(body).sort().join(','), 'discordLinked,discordPresent,emailVerified', 'campos')
   expect(body.emailVerified, false, 'emailVerified de conta nova')
 })
 await check('reenvio de verificação responde 202 sem corpo', async () => {
