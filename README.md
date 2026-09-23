@@ -121,11 +121,20 @@ o mínimo e o erro aparece no campo, antes de enviar.
 
 <img src="docs/assets/cadastro-pergunta-8-caracteres.png" alt="Cadastro com o erro "A pergunta precisa de pelo menos 8 caracteres" no campo" width="320">
 
-### Saída do servidor bloqueia a fila — [#150](https://github.com/ljborgess/ProLobby.com/issues/150), em andamento
+### Saída do servidor bloqueia a fila — [#150](https://github.com/ljborgess/ProLobby.com/issues/150)
 
 O bot avisa a API quando alguém sai ou volta ao servidor, por um canal assinado com HMAC. Quem sai
-fica impedido de entrar na fila até voltar, sem moderador e sem desfazer o vínculo. A API já está no
-[PR #166](https://github.com/ljborgess/ProLobby.com/pull/166); faltam o bot e o aviso na tela.
+fica impedido de entrar na fila até voltar, sem moderador e sem desfazer o vínculo. A fatia entrou
+em `dev` pelo [PR #183](https://github.com/ljborgess/ProLobby.com/pull/183): o bot reporta
+`guildMemberRemove` / retorno, e `/verifications` mostra o aviso in-app (pt/es) quando
+`discordPresent` é falso.
+
+### Script do piloto de OCR — [#120](https://github.com/ljborgess/ProLobby.com/issues/120)
+
+O bloqueador nº 2 ganhou o script isolado em `apps/ocr-pilot` ([PR #181](https://github.com/ljborgess/ProLobby.com/pull/181)):
+Tesseract atrás de uma interface, gabarito versionado, prints reais fora do git. A **medição** nos
+20 prints de FC 27 continua na [#50](https://github.com/ljborgess/ProLobby.com/issues/50) — sem ela a
+Fase 2.2 não abre.
 
 ### Correções da auditoria de 2026-09-21
 
@@ -173,7 +182,8 @@ As decisões e seus trade-offs estão nos [ADRs](docs/adr/README.md).
 apps/
 ├── web/        # Next.js — interface
 ├── api/        # NestJS — regra de negócio, autenticação, banco
-└── bot/        # discord.js — cargos, canais e notificações
+├── bot/        # discord.js — cargos, canais e notificações
+└── ocr-pilot/  # script isolado do piloto de OCR (#120) — sem conta, sem banco, sem tela
 packages/
 ├── types/      # contratos compartilhados (eventos, assinatura de webhook)
 ├── eslint-config/
@@ -288,9 +298,10 @@ O fluxo completo está no [`CONTRIBUTING.md`](CONTRIBUTING.md). Quem entra no ti
 
 ## Status
 
-Em desenvolvimento. Conta e autenticação (Fase 2.1) estão concluídas, o vínculo com o Discord
-(Fase 2.3) está no ar e a saída do servidor está em andamento. O roadmap completo, fase a fase,
-está no [PRD Mestre](https://github.com/ljborgess/ProLobby.com/issues/64).
+Em desenvolvimento. Conta e autenticação (Fase 2.1) e o vínculo Discord com RF-060 (Fase 2.3) estão
+em `dev`. A Fase 2.2 espera o piloto de OCR ([#50](https://github.com/ljborgess/ProLobby.com/issues/50))
+e a confirmação da aba Home no FC 27 ([#164](https://github.com/ljborgess/ProLobby.com/issues/164)).
+O roadmap completo, fase a fase, está no [PRD Mestre](https://github.com/ljborgess/ProLobby.com/issues/64).
 
 ## Licença
 
