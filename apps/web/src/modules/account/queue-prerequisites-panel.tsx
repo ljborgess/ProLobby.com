@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import { DISCORD_INVITE_URL } from '@/common/discord/invite'
 import { CheckMark, DISCORD_BLURPLE, DiscordMark, MailMark } from '@/common/ui/icons'
 import { useAccountContent } from '@/hooks/use-account-content'
 
@@ -126,12 +127,24 @@ export function QueuePrerequisitesPanel({
         brandIcon
       >
         {discordLinked ? (
-          // Left the server after linking: the link is untouched (RF-082),
-          // so there is no action to offer, only the explanation RF-060 asks
-          // for. It clears itself once the bot sees the person rejoin.
-          <p role="status" className="text-sm leading-relaxed text-foreground-soft">
-            {content.discord.absentHint}
-          </p>
+          // Left the server after linking: the link is untouched (RF-082), so
+          // this offers a way back in rather than an action on the account —
+          // the invite, not a button that repeats OAuth. Clears itself once
+          // the bot sees the person rejoin.
+          <>
+            <p role="status" className="text-sm leading-relaxed text-foreground-soft">
+              {content.discord.absentHint}
+            </p>
+            <a
+              href={DISCORD_INVITE_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="landing-focus landing-sheen inline-flex items-center gap-2 self-start rounded-full bg-accent px-4 py-2 text-sm font-medium text-background transition-transform duration-200 hover:scale-[1.03] active:scale-95"
+            >
+              <DiscordMark className="size-4" />
+              {content.discord.absentAction}
+            </a>
+          </>
         ) : (
           <>
             <p className="text-sm leading-relaxed text-foreground-soft">

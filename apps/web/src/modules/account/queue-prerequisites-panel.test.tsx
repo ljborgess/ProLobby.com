@@ -82,6 +82,10 @@ describe('QueuePrerequisitesPanel', () => {
     expect(screen.getByText(pt.discord.absentLabel)).toBeInTheDocument()
     expect(screen.getByRole('status').textContent).toBe(pt.discord.absentHint)
     expect(screen.queryByRole('link', { name: pt.discord.action })).toBeNull()
+    expect(screen.getByRole('link', { name: pt.discord.absentAction })).toHaveAttribute(
+      'href',
+      expect.stringContaining('discord.gg'),
+    )
     // The link itself is untouched (RF-082) — this is a queue block, not the
     // linking step going backwards, so the overall "both done" copy must not
     // show either.

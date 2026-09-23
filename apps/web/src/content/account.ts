@@ -29,6 +29,7 @@ export interface AccountContent {
     action: string
     absentLabel: string
     absentHint: string
+    absentAction: string
   }
   allDone: string
   loadError: string
@@ -56,7 +57,8 @@ export const ACCOUNT_CONTENT: Record<Locale, AccountContent> = {
       action: 'Vincular',
       absentLabel: 'Você saiu do servidor Discord',
       absentHint:
-        'A fila fica bloqueada enquanto você estiver fora. Volte pelo convite fixo do servidor e o acesso libera sozinho — seu vínculo continua o mesmo.',
+        'A fila fica bloqueada enquanto você estiver fora. Volte pelo convite abaixo e o acesso libera sozinho — seu vínculo continua o mesmo.',
+      absentAction: 'Entrar no servidor',
     },
     allDone: 'Tudo pronto. A fila abre na próxima fase do projeto.',
     loadError: 'Não deu pra carregar sua conta agora. Atualiza a página em instantes.',
@@ -82,7 +84,8 @@ export const ACCOUNT_CONTENT: Record<Locale, AccountContent> = {
       action: 'Vincular',
       absentLabel: 'Saliste del servidor de Discord',
       absentHint:
-        'La cola queda bloqueada mientras estés fuera. Vuelve por el invite fijo del servidor y el acceso se libera solo — tu vínculo sigue siendo el mismo.',
+        'La cola queda bloqueada mientras estés fuera. Vuelve por la invitación de abajo y el acceso se libera solo — tu vínculo sigue siendo el mismo.',
+      absentAction: 'Entrar al servidor',
     },
     allDone: 'Todo listo. La cola abre en la próxima fase del proyecto.',
     loadError: 'No se pudo cargar tu cuenta ahora. Actualiza la página en un momento.',
