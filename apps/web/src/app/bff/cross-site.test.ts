@@ -6,6 +6,10 @@ vi.mock('@/common/api/client', () => ({ apiFetch: (...args: unknown[]) => apiFet
 
 import { POST as signUp } from './accounts/route'
 import { POST as startDiscordLink } from './accounts/me/discord-link/attempts/route'
+import { POST as resendVerification } from './accounts/me/verifications/resends/route'
+import { POST as confirmPasswordReset } from './accounts/password-resets/confirmations/route'
+import { POST as requestPasswordReset } from './accounts/password-resets/route'
+import { POST as verifyEmail } from './accounts/verifications/route'
 import { DELETE as signOut, POST as signIn } from './sessions/route'
 
 const BODY = '{"email":"atk@example.com","password":"a=long-enough-password"}'
@@ -30,6 +34,9 @@ describe('the /bff proxies refuse requests from other sites', () => {
   it.each([
     ['sign-in', signIn],
     ['sign-up', signUp],
+    ['verify email', verifyEmail],
+    ['request password reset', requestPasswordReset],
+    ['confirm password reset', confirmPasswordReset],
   ])('%s refuses the text/plain form that carried the attack', async (_name, handler) => {
     const res = await post(handler, { 'content-type': 'text/plain' })
 
@@ -40,6 +47,9 @@ describe('the /bff proxies refuse requests from other sites', () => {
   it.each([
     ['sign-in', signIn],
     ['sign-up', signUp],
+    ['verify email', verifyEmail],
+    ['request password reset', requestPasswordReset],
+    ['confirm password reset', confirmPasswordReset],
   ])('%s refuses a cross-site fetch even with a JSON body', async (_name, handler) => {
     const res = await post(handler, {
       'content-type': 'application/json',
@@ -66,6 +76,18 @@ describe('the /bff proxies refuse requests from other sites', () => {
     expect(apiFetch).not.toHaveBeenCalled()
   })
 
+  /**
+   * Missing until the 2026-09-23 review: the route already called
+   * `rejectCrossSite`, but nothing broke when a future edit removed it — a
+   * CSRF guard the comment above warns about going missing silently.
+   */
+  it('refuses a cross-site resend of the verification email, which has no body', async () => {
+    const res = await post(resendVerification, { 'sec-fetch-site': 'cross-site' }, undefined)
+
+    expect(res.status).toBe(403)
+    expect(apiFetch).not.toHaveBeenCalled()
+  })
+
   it.each([
     ['same-origin', 'same-origin'],
     ['a typed URL', 'none'],
@@ -78,6 +100,12 @@ describe('the /bff proxies refuse requests from other sites', () => {
 
   it('lets the app’s own Discord button through, with no body', async () => {
     const res = await post(startDiscordLink, { 'sec-fetch-site': 'same-origin' }, undefined)
+
+    expect(res.status).toBe(200)
+  })
+
+  it('lets the app’s own resend of the verification email through, with no body', async () => {
+    const res = await post(resendVerification, { 'sec-fetch-site': 'same-origin' }, undefined)
 
     expect(res.status).toBe(200)
   })

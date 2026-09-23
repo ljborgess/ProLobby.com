@@ -3,6 +3,7 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common'
 
 import { deliverWithoutThrowing } from '../../common/mail/deliver'
 import { MailSender, TransactionalEmail } from '../../common/mail/mail.types'
+import { readWebUrl } from '../../common/mail/web-url'
 import { Account } from './account.entity'
 import { AccountState } from './account.enums'
 import { generateToken, hashToken } from './account.token'
@@ -40,6 +41,9 @@ const ONE_HOUR_MS = 60 * 60 * 1000
 @Injectable()
 export class EmailVerificationService {
   private readonly logger = new Logger(EmailVerificationService.name)
+  // Read at boot, like every other value a template needs to not go out
+  // blank (2026-09-23 review).
+  private readonly webUrl = readWebUrl()
 
   constructor(
     private readonly em: EntityManager,
@@ -55,10 +59,13 @@ export class EmailVerificationService {
   async sendVerification(account: Account): Promise<void> {
     const em = this.em.fork()
 
+    // Invalidated, never `usedAt` — see the entity comment on why the two
+    // must not share a column (2026-09-23 review). This row was superseded,
+    // not the one that verified anything.
     const invalidated = await em.nativeUpdate(
       EmailVerification,
-      { account: account.id, usedAt: null },
-      { usedAt: new Date() },
+      { account: account.id, usedAt: null, invalidatedAt: null },
+      { invalidatedAt: new Date() },
     )
 
     // Worth seeing: a steady stream of re-issues means links are not arriving,
@@ -95,7 +102,11 @@ export class EmailVerificationService {
     // owning an account they cannot reach.
     void deliverWithoutThrowing(
       this.mailSender,
-      { to: account.email, kind: TransactionalEmail.VERIFY_ADDRESS, data: { token } },
+      {
+        to: account.email,
+        kind: TransactionalEmail.VERIFY_ADDRESS,
+        data: { url: `${this.webUrl}/verify-email?token=${encodeURIComponent(token)}` },
+      },
       this.logger,
     )
   }
@@ -186,10 +197,16 @@ export class EmailVerificationService {
       throw new BadRequestException('invalid_verification_token')
     }
 
-    // A second click on the same link is the normal thing people do. Say it
-    // worked rather than "invalid", which reads like a bug in the product.
+    // A second click on the LINK THAT WORKED is the normal thing people do:
+    // say it worked rather than "invalid", which reads like a bug in the
+    // product. A link a resend superseded is a different thing (2026-09-23
+    // review, was conflated with the above): it never verified anything, so
+    // it must not answer success just because a newer link came after it.
     if (verification.usedAt) {
       return
+    }
+    if (verification.invalidatedAt) {
+      throw new BadRequestException('invalid_verification_token')
     }
 
     if (verification.expiresAt.getTime() < Date.now()) {

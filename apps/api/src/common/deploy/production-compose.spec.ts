@@ -154,4 +154,14 @@ describe('production compose (ADR-009 / #121)', () => {
 
     expect(bot).toMatch(/init:\s*true/)
   })
+
+  /**
+   * 2026-09-23 review: every verification and password-reset email went out
+   * with no link before WEB_URL existed to build one.
+   */
+  it('requires WEB_URL, so verification and reset emails carry a real link', () => {
+    const api = composeServiceBlock(prod, 'api')
+
+    expect(api).toMatch(/WEB_URL:\s*\$\{WEB_URL:\?/)
+  })
 })

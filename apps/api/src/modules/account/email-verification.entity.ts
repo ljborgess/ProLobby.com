@@ -33,12 +33,25 @@ export class EmailVerification {
   expiresAt!: Date
 
   /**
-   * Set when used. The row is kept rather than deleted so a second click on
-   * the same link can answer "already verified" instead of "invalid link" —
-   * which is what people actually do, and what would otherwise look like a bug.
+   * Set when the link this row belongs to is the one that actually verified
+   * the address. The row is kept rather than deleted so a second click on the
+   * same link can answer "already verified" instead of "invalid link" — which
+   * is what people actually do, and what would otherwise look like a bug.
    */
   @Property({ nullable: true })
   usedAt?: Date
+
+  /**
+   * Set when a resend supersedes this row — distinct from `usedAt` since
+   * 2026-09-23. Before the split, a resend set `usedAt` on the old row, and
+   * `verify()` treated any `usedAt` as "already verified, say success" — so
+   * clicking the OLD link after asking for a new one silently answered
+   * success with the account still unverified. Only `usedAt` means "this is
+   * the link that worked"; `invalidatedAt` means "a newer link replaced this
+   * one before it was ever used".
+   */
+  @Property({ nullable: true })
+  invalidatedAt?: Date
 
   @Property()
   createdAt: Date & Opt = new Date()

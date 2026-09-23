@@ -89,7 +89,7 @@ describe('email verification', () => {
 
   const tokenFrom = (): string => {
     const email = mail.lastOf(TransactionalEmail.VERIFY_ADDRESS)
-    return email?.data.token ?? ''
+    return new URL(email?.data.url ?? '', 'http://localhost').searchParams.get('token') ?? ''
   }
 
   beforeAll(async () => {
@@ -126,7 +126,7 @@ describe('email verification', () => {
 
       const sent = mail.lastOf(TransactionalEmail.VERIFY_ADDRESS)
       expect(sent?.to).toBe('fresh@test.local')
-      expect(sent?.data.token).toBeTruthy()
+      expect(sent?.data.url).toContain('/verify-email?token=')
     })
 
     it('tells the owner when the address is already taken (RF-020)', async () => {
@@ -228,8 +228,10 @@ describe('email verification', () => {
         .post('/api/accounts/verifications')
         .send({ token: secondToken })
 
-      // An old link sitting in an inbox must not verify an address later.
-      expect(stale.status).toBe(204)
+      // An old link sitting in an inbox must not verify an address later —
+      // and must say so (2026-09-23 review): it used to answer 204 "success"
+      // here too, which is what this test asserted until the finding.
+      expect(stale.status).toBe(400)
       expect(current.status).toBe(204)
       expect(
         (await orm.em.fork().findOneOrFail(Account, { email: 'reissue@test.local' })).emailVerified,
@@ -351,10 +353,10 @@ describe('email verification', () => {
         .post('/api/accounts/verifications')
         .send({ token: first })
 
-      // The old link is spent, not merely superseded: it answers 204 because
-      // a used token is indistinguishable from a second click, but it must
-      // not be what verifies the address.
-      expect(stale.status).toBe(204)
+      // The old link was superseded, not used — 400, not the false 204
+      // "success" this test asserted before the 2026-09-23 fix, which
+      // verified the response code without checking whether it lied.
+      expect(stale.status).toBe(400)
 
       const account = await orm.em.fork().findOneOrFail(Account, { email: 'resent@test.local' })
       expect(account.emailVerified).toBe(false)

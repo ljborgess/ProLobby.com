@@ -4,6 +4,7 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common'
 import { HashService } from '../../common/auth/hash.service'
 import { deliverWithoutThrowing } from '../../common/mail/deliver'
 import { MailSender, TransactionalEmail } from '../../common/mail/mail.types'
+import { readWebUrl } from '../../common/mail/web-url'
 import { Account } from './account.entity'
 import { AccountState } from './account.enums'
 import { generateToken, hashToken } from './account.token'
@@ -26,6 +27,9 @@ const ONE_HOUR_MS = 60 * 60 * 1000
 @Injectable()
 export class PasswordResetService {
   private readonly logger = new Logger(PasswordResetService.name)
+  // Read at boot, like every other value a template needs to not go out
+  // blank (2026-09-23 review).
+  private readonly webUrl = readWebUrl()
 
   constructor(
     private readonly em: EntityManager,
@@ -103,7 +107,11 @@ export class PasswordResetService {
 
     await deliverWithoutThrowing(
       this.mailSender,
-      { to: account.email, kind: TransactionalEmail.PASSWORD_RESET, data: { token } },
+      {
+        to: account.email,
+        kind: TransactionalEmail.PASSWORD_RESET,
+        data: { url: `${this.webUrl}/reset-password?token=${encodeURIComponent(token)}` },
+      },
       this.logger,
     )
   }
