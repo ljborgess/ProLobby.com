@@ -6,6 +6,7 @@ import { LanguageSwitcher } from '@/common/ui/language-switcher'
 import { PairingNetwork } from './pairing-network'
 import { QueueBoard } from './queue-board'
 import { SectionThread, SectionThreadEnd } from './section-thread'
+import { TopBarTicker } from './top-bar-ticker'
 
 const FEATURE_ICONS = [
   // shield — identidade verificada
@@ -48,6 +49,7 @@ export function LandingView() {
           <span className="font-display text-lg font-semibold tracking-tight text-foreground">
             Pro<span className="text-accent">Lobby</span>
           </span>
+          <TopBarTicker items={content.facts.items} />
           <nav className="flex items-center gap-2 sm:gap-3">
             <Link
               href="/login"
