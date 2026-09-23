@@ -44,7 +44,7 @@ export function LandingView() {
   return (
     <>
       <header className="sticky top-0 z-20 border-b border-white/5 bg-background/70 backdrop-blur-md">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
+        <div className="flex w-full items-center justify-between px-4 py-4 sm:px-6">
           <span className="font-display text-lg font-semibold tracking-tight text-foreground">
             Pro<span className="text-accent">Lobby</span>
           </span>
