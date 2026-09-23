@@ -29,6 +29,15 @@ export class CfConnectingIpThrottlerGuard extends ThrottlerGuard {
       return clientIp
     }
 
+    // /bot-events is never routed through the tunnel (docker-compose.prod.yml
+    // comment: "POST /events is not on the tunnel either", same topology on
+    // this side) — the bot calls it straight over the internal Docker network.
+    // Warning about a missing CF-Connecting-IP here is a false alarm on every
+    // single request, not a signal of a misconfigured tunnel.
+    if (req.path?.startsWith('/api/bot-events')) {
+      return clientIp
+    }
+
     const forwarded = req.headers['cf-connecting-ip']
     if (typeof forwarded === 'string' && forwarded.length > 0) {
       return forwarded
@@ -73,5 +82,6 @@ const MISSING_HEADER_LOG_INTERVAL_MS = 60_000
  */
 interface ThrottledRequest {
   ip?: string
+  path?: string
   headers: Record<string, string | string[] | undefined>
 }
