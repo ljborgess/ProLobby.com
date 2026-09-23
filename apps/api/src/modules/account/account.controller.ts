@@ -249,7 +249,11 @@ export class AccountController {
   queuePrerequisites(@Req() request: RequestWithAccount): QueuePrerequisites {
     const account = request.account!
 
-    return { emailVerified: account.emailVerified, discordLinked: account.discordIdHash != null }
+    return {
+      emailVerified: account.emailVerified,
+      discordLinked: account.discordIdHash != null,
+      discordPresent: account.discordPresent,
+    }
   }
 
   /**

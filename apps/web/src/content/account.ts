@@ -27,6 +27,8 @@ export interface AccountContent {
     pendingLabel: string
     pendingHint: string
     action: string
+    absentLabel: string
+    absentHint: string
   }
   allDone: string
   loadError: string
@@ -52,6 +54,9 @@ export const ACCOUNT_CONTENT: Record<Locale, AccountContent> = {
       pendingLabel: 'Discord não vinculado',
       pendingHint: 'A fila e os canais da partida acontecem por lá.',
       action: 'Vincular',
+      absentLabel: 'Você saiu do servidor Discord',
+      absentHint:
+        'A fila fica bloqueada enquanto você estiver fora. Volte pelo convite fixo do servidor e o acesso libera sozinho — seu vínculo continua o mesmo.',
     },
     allDone: 'Tudo pronto. A fila abre na próxima fase do projeto.',
     loadError: 'Não deu pra carregar sua conta agora. Atualiza a página em instantes.',
@@ -75,6 +80,9 @@ export const ACCOUNT_CONTENT: Record<Locale, AccountContent> = {
       pendingLabel: 'Discord no vinculado',
       pendingHint: 'La cola y los canales del partido pasan por allí.',
       action: 'Vincular',
+      absentLabel: 'Saliste del servidor de Discord',
+      absentHint:
+        'La cola queda bloqueada mientras estés fuera. Vuelve por el invite fijo del servidor y el acceso se libera solo — tu vínculo sigue siendo el mismo.',
     },
     allDone: 'Todo listo. La cola abre en la próxima fase del proyecto.',
     loadError: 'No se pudo cargar tu cuenta ahora. Actualiza la página en un momento.',

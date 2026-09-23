@@ -16,7 +16,7 @@ describe('QueuePrerequisitesPanel', () => {
   })
 
   it('offers the action only on what is pending', () => {
-    renderWithLocale(<QueuePrerequisitesPanel emailVerified discordLinked={false} />)
+    renderWithLocale(<QueuePrerequisitesPanel emailVerified discordLinked={false} discordPresent />)
 
     expect(screen.getByText(pt.email.doneLabel)).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: pt.email.resend })).toBeNull()
@@ -24,7 +24,9 @@ describe('QueuePrerequisitesPanel', () => {
   })
 
   it('says both are pending on a fresh account', () => {
-    renderWithLocale(<QueuePrerequisitesPanel emailVerified={false} discordLinked={false} />)
+    renderWithLocale(
+      <QueuePrerequisitesPanel emailVerified={false} discordLinked={false} discordPresent />,
+    )
 
     expect(screen.getByText(pt.email.pendingLabel)).toBeInTheDocument()
     expect(screen.getByText(pt.discord.pendingLabel)).toBeInTheDocument()
@@ -32,14 +34,14 @@ describe('QueuePrerequisitesPanel', () => {
   })
 
   it('carries the state in words, not only in colour (RNF-015)', () => {
-    renderWithLocale(<QueuePrerequisitesPanel emailVerified discordLinked={false} />)
+    renderWithLocale(<QueuePrerequisitesPanel emailVerified discordLinked={false} discordPresent />)
 
     expect(screen.getByText(pt.done)).toBeInTheDocument()
     expect(screen.getByText(pt.pending)).toBeInTheDocument()
   })
 
   it('congratulates and offers nothing once both are done', () => {
-    renderWithLocale(<QueuePrerequisitesPanel emailVerified discordLinked />)
+    renderWithLocale(<QueuePrerequisitesPanel emailVerified discordLinked discordPresent />)
 
     expect(screen.getByText(pt.allDone)).toBeInTheDocument()
     expect(screen.queryByRole('button')).toBeNull()
@@ -48,7 +50,9 @@ describe('QueuePrerequisitesPanel', () => {
 
   it('resends the verification email and then hides the button', async () => {
     vi.mocked(fetch).mockResolvedValue(new Response(null, { status: 202 }))
-    renderWithLocale(<QueuePrerequisitesPanel emailVerified={false} discordLinked={false} />)
+    renderWithLocale(
+      <QueuePrerequisitesPanel emailVerified={false} discordLinked={false} discordPresent />,
+    )
 
     fireEvent.click(screen.getByRole('button', { name: pt.email.resend }))
 
@@ -62,7 +66,9 @@ describe('QueuePrerequisitesPanel', () => {
     ['the connection drops', async () => Promise.reject(new TypeError('offline'))],
   ])('keeps the button and explains when %s', async (_name, respond) => {
     vi.mocked(fetch).mockImplementation(respond as never)
-    renderWithLocale(<QueuePrerequisitesPanel emailVerified={false} discordLinked={false} />)
+    renderWithLocale(
+      <QueuePrerequisitesPanel emailVerified={false} discordLinked={false} discordPresent />,
+    )
 
     fireEvent.click(screen.getByRole('button', { name: pt.email.resend }))
 
@@ -70,8 +76,23 @@ describe('QueuePrerequisitesPanel', () => {
     expect(screen.getByRole('button', { name: pt.email.resend })).toBeEnabled()
   })
 
+  it('shows the absence notice, not the link action, when Discord is linked but the person left the server (RF-060)', () => {
+    renderWithLocale(<QueuePrerequisitesPanel emailVerified discordLinked discordPresent={false} />)
+
+    expect(screen.getByText(pt.discord.absentLabel)).toBeInTheDocument()
+    expect(screen.getByRole('status').textContent).toBe(pt.discord.absentHint)
+    expect(screen.queryByRole('link', { name: pt.discord.action })).toBeNull()
+    // The link itself is untouched (RF-082) — this is a queue block, not the
+    // linking step going backwards, so the overall "both done" copy must not
+    // show either.
+    expect(screen.queryByText(pt.allDone)).toBeNull()
+  })
+
   it('speaks Spanish when the locale is Spanish', () => {
-    renderWithLocale(<QueuePrerequisitesPanel emailVerified={false} discordLinked />, 'es')
+    renderWithLocale(
+      <QueuePrerequisitesPanel emailVerified={false} discordLinked discordPresent />,
+      'es',
+    )
 
     expect(screen.getByText(ACCOUNT_CONTENT.es.email.pendingLabel)).toBeInTheDocument()
     expect(screen.getByText(ACCOUNT_CONTENT.es.discord.doneLabel)).toBeInTheDocument()

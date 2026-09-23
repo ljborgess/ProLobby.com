@@ -92,7 +92,7 @@ describe('queue prerequisites (#171)', () => {
     const res = await prerequisites(cookie)
 
     expect(res.status).toBe(200)
-    expect(res.body).toEqual({ emailVerified: false, discordLinked: false })
+    expect(res.body).toEqual({ emailVerified: false, discordLinked: false, discordPresent: true })
   })
 
   it('reports the email once it is verified', async () => {
@@ -102,6 +102,7 @@ describe('queue prerequisites (#171)', () => {
     expect((await prerequisites(cookie)).body).toEqual({
       emailVerified: true,
       discordLinked: false,
+      discordPresent: true,
     })
   })
 
@@ -113,9 +114,25 @@ describe('queue prerequisites (#171)', () => {
 
     const res = await prerequisites(cookie)
 
-    expect(res.body).toEqual({ emailVerified: false, discordLinked: true })
+    expect(res.body).toEqual({ emailVerified: false, discordLinked: true, discordPresent: true })
     expect(JSON.stringify(res.body)).not.toContain('111111111111111111')
-    expect(Object.keys(res.body).sort()).toEqual(['discordLinked', 'emailVerified'])
+    expect(Object.keys(res.body).sort()).toEqual([
+      'discordLinked',
+      'discordPresent',
+      'emailVerified',
+    ])
+  })
+
+  it('reports discordPresent false once the bot has seen the person leave (RF-060, #150)', async () => {
+    const { email, cookie } = await account()
+    await patch(email, {
+      discordIdHash: hashIdentity(readIdentityHmacSecret(), '111111111111111111'),
+      discordPresent: false,
+    })
+
+    const res = await prerequisites(cookie)
+
+    expect(res.body).toEqual({ emailVerified: false, discordLinked: true, discordPresent: false })
   })
 
   it('leaves the character out until phase 2.2 can turn it true', async () => {
