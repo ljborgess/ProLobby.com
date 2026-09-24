@@ -53,7 +53,7 @@ describe('VerificationsPage', () => {
 
   it('shows the panel when the API answers cleanly', async () => {
     signedIn()
-    answers(200, { emailVerified: false, discordLinked: false })
+    answers(200, { emailVerified: false, characterVerified: false, discordLinked: false })
 
     renderWithLocale(await VerificationsPage())
 
@@ -98,7 +98,7 @@ describe('VerificationsPage', () => {
 
   it('asks the API not to cache, because the answer carries a session', async () => {
     signedIn()
-    answers(200, { emailVerified: false, discordLinked: false })
+    answers(200, { emailVerified: false, characterVerified: false, discordLinked: false })
 
     await VerificationsPage()
 

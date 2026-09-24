@@ -22,6 +22,11 @@ export interface AccountContent {
     resent: string
     resendError: string
   }
+  character: {
+    doneLabel: string
+    pendingLabel: string
+    pendingHint: string
+  }
   discord: {
     doneLabel: string
     pendingLabel: string
@@ -50,6 +55,12 @@ export const ACCOUNT_CONTENT: Record<Locale, AccountContent> = {
       resent: 'Enviamos um e-mail com as instruções.',
       resendError: 'Não deu pra reenviar agora. Tenta de novo em instantes.',
     },
+    character: {
+      doneLabel: 'Personagem verificado',
+      pendingLabel: 'Personagem não verificado',
+      pendingHint:
+        'Você vai cadastrar um personagem e mandar o print da tela de arquétipos do seu Pro. O envio do print chega em breve.',
+    },
     discord: {
       doneLabel: 'Discord vinculado',
       pendingLabel: 'Discord não vinculado',
@@ -76,6 +87,12 @@ export const ACCOUNT_CONTENT: Record<Locale, AccountContent> = {
       resending: 'Enviando…',
       resent: 'Te enviamos un correo con las instrucciones.',
       resendError: 'No se pudo reenviar ahora. Intenta de nuevo en un momento.',
+    },
+    character: {
+      doneLabel: 'Personaje verificado',
+      pendingLabel: 'Personaje no verificado',
+      pendingHint:
+        'Vas a registrar un personaje y enviar la captura de la pantalla de arquetipos de tu Pro. El envío de la captura llega pronto.',
     },
     discord: {
       doneLabel: 'Discord vinculado',

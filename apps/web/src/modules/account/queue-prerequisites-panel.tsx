@@ -3,11 +3,18 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { DISCORD_INVITE_URL } from '@/common/discord/invite'
-import { CheckMark, DISCORD_BLURPLE, DiscordMark, MailMark } from '@/common/ui/icons'
+import {
+  CheckMark,
+  DISCORD_BLURPLE,
+  DiscordMark,
+  MailMark,
+  PlayerCardMark,
+} from '@/common/ui/icons'
 import { useAccountContent } from '@/hooks/use-account-content'
 
 export interface QueuePrerequisites {
   emailVerified: boolean
+  characterVerified: boolean
   discordLinked: boolean
   discordPresent: boolean
 }
@@ -29,6 +36,7 @@ type Resend = 'idle' | 'sending' | 'sent' | 'error'
  */
 export function QueuePrerequisitesPanel({
   emailVerified,
+  characterVerified,
   discordLinked,
   discordPresent,
 }: QueuePrerequisites) {
@@ -51,7 +59,7 @@ export function QueuePrerequisitesPanel({
   // pending, with its own copy — this is not "link Discord again", the OAuth
   // link is untouched and there is nothing to click here.
   const discordDone = discordLinked && discordPresent
-  const steps = [emailVerified, discordDone]
+  const steps = [emailVerified, characterVerified, discordDone]
   const doneCount = steps.filter(Boolean).length
   const allDone = doneCount === steps.length
 
@@ -117,6 +125,18 @@ export function QueuePrerequisitesPanel({
             )}
           </>
         )}
+      </Step>
+
+      {/* No link yet: the screen that sends the print is #196. */}
+      <Step
+        done={characterVerified}
+        doneLabel={content.character.doneLabel}
+        label={content.character.pendingLabel}
+        icon={<PlayerCardMark className="size-5" />}
+      >
+        <p className="text-sm leading-relaxed text-foreground-soft">
+          {content.character.pendingHint}
+        </p>
       </Step>
 
       <Step
