@@ -6,13 +6,12 @@ import request from 'supertest'
 
 import { AppModule } from '../src/app.module'
 import { Platform } from '../src/common/domain/platform.enum'
-import { hashIdentity, readIdentityHmacSecret } from '../src/common/security/identity-hmac'
+import { hashGamertag, readIdentityHmacSecret } from '../src/common/security/identity-hmac'
 import { applySecurity } from '../src/common/security/security.config'
 import { SESSION_COOKIE_NAME } from '../src/common/security/session-cookie'
 import { MailSender } from '../src/common/mail/mail.types'
 import { CURRENT_TERMS_VERSION } from '../src/modules/account/terms.constants'
 import { Character, CharacterState } from '../src/modules/character/character.entity'
-import { normalizeGamertag } from '../src/modules/character/character.service'
 import { PlatformGamertag } from '../src/modules/character/platform-gamertag.entity'
 import { BlockedIdentity } from '../src/modules/moderation/blocked-identity.entity'
 import { CapturingMailSender } from './support/capturing-mail-sender'
@@ -84,7 +83,7 @@ describe('characters (#194)', () => {
   it('creates a pending character and answers only what the screen needs', async () => {
     const cookie = await account()
 
-    const res = await create(cookie, { ...midfielder('Tradeska'), name: 'Meu meia' })
+    const res = await create(cookie, { ...midfielder('Pellavo7'), name: 'Meu meia' })
 
     expect(res.status).toBe(201)
     expect(res.body).toMatchObject({
@@ -106,7 +105,7 @@ describe('characters (#194)', () => {
       'platform',
       'state',
     ])
-    expect(JSON.stringify(res.body)).not.toContain('Tradeska')
+    expect(JSON.stringify(res.body)).not.toContain('Pellavo7')
   })
 
   it.each([
@@ -134,15 +133,15 @@ describe('characters (#194)', () => {
 
   it('keeps the gamertag as hash and ciphertext, never in plain text', async () => {
     const cookie = await account()
-    await create(cookie, midfielder('Le5ki'))
+    await create(cookie, midfielder('Ra5ko'))
 
     const claim = await orm.em.fork().findOneOrFail(PlatformGamertag, {
-      gamertagHash: hashIdentity(readIdentityHmacSecret(), normalizeGamertag('le5ki')),
+      gamertagHash: hashGamertag(readIdentityHmacSecret(), 'ra5ko'),
     })
 
     expect(claim.platform).toBe(Platform.PS5)
     expect(claim.verifiedAt ?? null).toBeNull()
-    expect(claim.gamertagEncrypted.toString()).not.toContain('Le5ki')
+    expect(claim.gamertagEncrypted.toString()).not.toContain('Ra5ko')
   })
 
   it('lets two accounts claim the same unverified tag — exclusivity starts at verification', async () => {
@@ -150,37 +149,64 @@ describe('characters (#194)', () => {
     expect((await create(await account(), midfielder('Shared1'))).status).toBe(201)
   })
 
-  it('refuses a tag another account already verified', async () => {
-    const owner = await account()
-    await create(owner, midfielder('Verified1'))
+  // Typing a tag proves nothing, so creation must not tell anyone whether a
+  // stranger's tag is banned or verified elsewhere. Both are checked when a
+  // print proves ownership (#197, #198).
+  it('does not reveal that a tag is verified by another account', async () => {
+    await create(await account(), midfielder('Verified1'))
     const em = orm.em.fork()
     const claim = await em.findOneOrFail(PlatformGamertag, {
-      gamertagHash: hashIdentity(readIdentityHmacSecret(), normalizeGamertag('Verified1')),
+      gamertagHash: hashGamertag(readIdentityHmacSecret(), 'Verified1'),
     })
     claim.verifiedAt = new Date()
     await em.flush()
 
-    const res = await create(await account(), midfielder('VERIFIED1'))
-
-    expect(res.status).toBe(409)
-    expect(res.body.message).toBe('gamertag_already_verified')
+    expect((await create(await account(), midfielder('VERIFIED1'))).status).toBe(201)
   })
 
-  it('refuses a blocked tag without saying it is a ban', async () => {
+  it('does not reveal that a tag is on the ban list', async () => {
     const em = orm.em.fork()
     em.persist(
       em.create(BlockedIdentity, {
         platform: Platform.PS5,
-        gamertagHash: hashIdentity(readIdentityHmacSecret(), normalizeGamertag('Banned1')),
+        gamertagHash: hashGamertag(readIdentityHmacSecret(), 'Banned1'),
         reason: 'test',
       }),
     )
     await em.flush()
 
-    const res = await create(await account(), midfielder('banned1'))
+    expect((await create(await account(), midfielder('banned1'))).status).toBe(201)
+  })
 
-    expect(res.status).toBe(403)
-    expect(res.body.message).toBe('gamertag_unavailable')
+  it('lets a provisional tag be corrected, and keeps the new spelling', async () => {
+    const cookie = await account()
+    await create(cookie, midfielder('Typoo1'))
+    await create(cookie, { ...midfielder('Typo1'), archetype: 'creator' })
+
+    const claims = await orm.em.fork().find(PlatformGamertag, {
+      gamertagHash: {
+        $in: ['Typoo1', 'Typo1'].map((tag) => hashGamertag(readIdentityHmacSecret(), tag)),
+      },
+    })
+
+    expect(claims).toHaveLength(1)
+    expect(claims[0]?.gamertagHash).toBe(hashGamertag(readIdentityHmacSecret(), 'Typo1'))
+  })
+
+  it('refuses to change a tag once it is verified', async () => {
+    const cookie = await account()
+    await create(cookie, midfielder('Locked7'))
+    const em = orm.em.fork()
+    const claim = await em.findOneOrFail(PlatformGamertag, {
+      gamertagHash: hashGamertag(readIdentityHmacSecret(), 'Locked7'),
+    })
+    claim.verifiedAt = new Date()
+    await em.flush()
+
+    const res = await create(cookie, { ...midfielder('Other7'), archetype: 'creator' })
+
+    expect(res.status).toBe(409)
+    expect(res.body.message).toBe('gamertag_change_requires_moderation')
   })
 
   it('inactivates the previous character of the category instead of deleting it (RF-027)', async () => {
@@ -193,6 +219,44 @@ describe('characters (#194)', () => {
 
     expect(list.body.map((character: { id: string }) => character.id)).toEqual([second.id])
     expect(stored.state).toBe(CharacterState.INACTIVE)
+  })
+
+  it('carries the match count to the replacing character (RF-027)', async () => {
+    const cookie = await account()
+    const first = (await create(cookie, midfielder('Carry1'))).body
+    const em = orm.em.fork()
+    const row = await em.findOneOrFail(Character, { id: first.id })
+    row.matchesInCategory = 3
+    await em.flush()
+
+    const second = (await create(cookie, { ...midfielder('Carry1'), archetype: 'creator' })).body
+
+    expect(second.matchesInCategory).toBe(3)
+    // And so RF-028 still holds: a fresh character is no way around the lock.
+    const res = await request(app.getHttpServer())
+      .patch(`/api/characters/${second.id}`)
+      .set('Cookie', cookie)
+      .send({ category: 'winger' })
+    expect(res.status).toBe(409)
+  })
+
+  it('refuses to move a character into a category its archetype does not allow', async () => {
+    const cookie = await account()
+    const character = (await create(cookie, midfielder('Wrong1'))).body
+
+    const res = await request(app.getHttpServer())
+      .patch(`/api/characters/${character.id}`)
+      .set('Cookie', cookie)
+      .send({ category: 'goalkeeper' })
+
+    expect(res.status).toBe(400)
+    expect(res.body.message).toBe('archetype_category_mismatch')
+  })
+
+  it.each([['   '], ['name\u200b'], ['bad\u0007']])('refuses the name %j', async (name) => {
+    const res = await create(await account(), { ...midfielder('Named1'), name })
+
+    expect(res.status).toBe(400)
   })
 
   it('moves a character with no match to another allowed category', async () => {

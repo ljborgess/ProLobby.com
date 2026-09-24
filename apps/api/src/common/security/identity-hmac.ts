@@ -27,6 +27,19 @@ export function hashIdentity(secret: Buffer, value: string): string {
 }
 
 /**
+ * PSN IDs and Xbox gamertags are case-insensitive, so the identity key is too.
+ * Every gamertag hash goes through `hashGamertag` — the ban list included — or
+ * the same tag would hash two ways and the check would silently miss.
+ */
+export function normalizeGamertag(gamertag: string): string {
+  return gamertag.trim().toLowerCase()
+}
+
+export function hashGamertag(secret: Buffer, gamertag: string): string {
+  return hashIdentity(secret, normalizeGamertag(gamertag))
+}
+
+/**
  * Reads and validates `IDENTITY_HMAC_SECRET` — 32 raw bytes, base64 encoded
  * (`openssl rand -base64 32`).
  *

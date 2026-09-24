@@ -3,7 +3,6 @@ import { EntityManager } from '@mikro-orm/postgresql'
 import {
   BadRequestException,
   ConflictException,
-  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common'
@@ -11,9 +10,8 @@ import {
 import { isUniqueViolation } from '../../common/database/postgres-error'
 import { CURRENT_EDITION } from '../../common/domain/game-edition.enum'
 import { encryptAtRest, readEvidenceEncryptionKey } from '../../common/security/evidence-encryption'
-import { hashIdentity, readIdentityHmacSecret } from '../../common/security/identity-hmac'
+import { hashGamertag, readIdentityHmacSecret } from '../../common/security/identity-hmac'
 import { Account } from '../account/account.entity'
-import { BlockedIdentity } from '../moderation/blocked-identity.entity'
 import { archetypeFitsCategory } from './archetype'
 import { ACTIVE_CHARACTER_STATES, Character, CharacterState } from './character.entity'
 import type { ChangeCategoryDto } from './dto/change-category.dto'
@@ -25,15 +23,6 @@ export type CharacterView = Pick<
   Character,
   'id' | 'category' | 'archetype' | 'platform' | 'edition' | 'name' | 'state' | 'matchesInCategory'
 >
-
-/**
- * PSN IDs and Xbox gamertags are case-insensitive, so the identity key is
- * too. Every hash of a gamertag goes through here — the ban list included —
- * or the same tag would hash two ways and the check would silently miss.
- */
-export function normalizeGamertag(gamertag: string): string {
-  return gamertag.trim().toLowerCase()
-}
 
 @Injectable()
 export class CharacterService {
@@ -68,62 +57,55 @@ export class CharacterService {
     if (!archetypeFitsCategory(dto.archetype, dto.category)) {
       throw new BadRequestException('archetype_category_mismatch')
     }
-    const gamertagHash = hashIdentity(this.hmacSecret, normalizeGamertag(dto.gamertag))
+    const gamertagHash = hashGamertag(this.hmacSecret, dto.gamertag)
 
-    try {
-      return await this.em.fork().transactional(async (em) => {
-        // One account creates one character at a time: the "inactivate the
-        // previous one" step below must not race a second creation.
-        const account = await em.findOneOrFail(
-          Account,
-          { id: accountId },
-          { lockMode: LockMode.PESSIMISTIC_WRITE },
-        )
+    return this.em.fork().transactional(async (em) => {
+      // One account creates one character at a time: the "inactivate the
+      // previous one" step below must not race a second creation.
+      const account = await em.findOneOrFail(
+        Account,
+        { id: accountId },
+        { lockMode: LockMode.PESSIMISTIC_WRITE },
+      )
 
-        if ((await em.count(BlockedIdentity, { platform: dto.platform, gamertagHash })) > 0) {
-          throw new ForbiddenException('gamertag_unavailable')
-        }
-        const takenElsewhere = await em.count(PlatformGamertag, {
-          platform: dto.platform,
-          gamertagHash,
-          verifiedAt: { $ne: null },
-          account: { $ne: accountId },
-        })
-        if (takenElsewhere > 0) {
-          throw new ConflictException('gamertag_already_verified')
-        }
+      // No ban-list or "already verified elsewhere" check here: typing a tag
+      // proves nothing, and answering those questions to anyone who types a
+      // name would tell strangers who is banned or registered. Both are
+      // checked when a print proves ownership (#197, #198).
+      await this.claimGamertag(em, account, dto, gamertagHash)
 
-        await this.claimGamertag(em, account, dto, gamertagHash)
-
-        // RF-027: never deleted — the previous one stays in the history.
-        await em.nativeUpdate(
-          Character,
-          {
-            account: accountId,
-            category: dto.category,
-            edition: CURRENT_EDITION,
-            state: { $in: [...ACTIVE_CHARACTER_STATES] },
-          },
-          { state: CharacterState.INACTIVE },
-        )
-
-        const character = em.create(Character, {
-          account,
-          category: dto.category,
-          archetype: dto.archetype,
-          platform: dto.platform,
-          edition: CURRENT_EDITION,
-          name: dto.name,
-        })
-        await em.flush()
-        return toView(character)
+      // RF-027: the replaced character stays in the history, and its match
+      // count carries over. Starting from zero would hand back the K-factor
+      // of a new player and reopen the category change RF-028 locks.
+      const previous = await em.findOne(Character, {
+        account: accountId,
+        category: dto.category,
+        edition: CURRENT_EDITION,
+        state: { $in: [...ACTIVE_CHARACTER_STATES] },
       })
-    } catch (error) {
-      if (isUniqueViolation(error)) {
-        throw new ConflictException('character_conflict')
-      }
-      throw error
-    }
+      await em.nativeUpdate(
+        Character,
+        {
+          account: accountId,
+          category: dto.category,
+          edition: CURRENT_EDITION,
+          state: { $in: [...ACTIVE_CHARACTER_STATES] },
+        },
+        { state: CharacterState.INACTIVE },
+      )
+
+      const character = em.create(Character, {
+        account,
+        category: dto.category,
+        archetype: dto.archetype,
+        platform: dto.platform,
+        edition: CURRENT_EDITION,
+        name: dto.name,
+        matchesInCategory: previous?.matchesInCategory ?? 0,
+      })
+      await em.flush()
+      return toView(character)
+    })
   }
 
   async changeCategory(
@@ -174,12 +156,13 @@ export class CharacterService {
     gamertagHash: string,
   ): Promise<void> {
     const claim = await em.findOne(PlatformGamertag, { account, platform: dto.platform })
-    if (claim?.gamertagHash === gamertagHash) {
-      return
-    }
     if (claim?.verifiedAt) {
+      if (claim.gamertagHash === gamertagHash) {
+        return
+      }
       throw new ConflictException('gamertag_change_requires_moderation')
     }
+    // Rewritten even when only the case changed: the moderator reads this.
     const gamertagEncrypted = encryptAtRest(this.encryptionKey, Buffer.from(dto.gamertag))
     if (claim) {
       claim.gamertagHash = gamertagHash

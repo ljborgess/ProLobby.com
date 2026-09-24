@@ -20,6 +20,8 @@ export class EloEvent {
   @PrimaryKey({ type: 'uuid' })
   id: string & Opt = randomUUID()
 
+  // Cascade only because an LGPD erasure deletes the account and its
+  // characters; nothing else deletes a character (RF-027).
   @ManyToOne(() => Character, { deleteRule: 'cascade' })
   character!: Character
 

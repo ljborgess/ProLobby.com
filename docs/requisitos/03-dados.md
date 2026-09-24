@@ -55,6 +55,8 @@ Auto-declaração que habilita a pessoa a ser capitão.
 - **`estado`**: pendente de verificação, verificado, inativo (substituído na mesma categoria) ou arquivado (edição passada). Pendente e verificado contam como "o ativo" da categoria.
 - **1 ativo por categoria por edição**, até 5 ativos. Recriação dentro da categoria é livre, então há personagens inativos e arquivados guardados. A regra é um índice único parcial no banco, e não uma checagem no código: duas criações ao mesmo tempo não podem ganhar as duas.
 - `partidas_na_categoria` existe porque **o K-factor e o decaimento do seed dependem da contagem** (32 até a 9ª, 20 da 10ª — ver [Ranking](../produto/02-jogador/02-ranking.md)). Sem esse contador, nenhum dos dois é calculável.
+- **O personagem que substitui outro na mesma categoria herda `partidas_na_categoria`** (RF-027, 2026-09-24). Começar do zero entregaria de novo o K-factor de jogador novo, e reabriria a troca de categoria que a RF-028 trava.
+- **Pendência pra Fase 2.4: o elo é da categoria, e o `EventoElo` aponta pro personagem.** A RF-027 diz que trocar o personagem não zera o elo, então o motor de elo precisa somar os eventos de todos os personagens da conta naquela categoria e edição, e não só os do personagem ativo.
 
 ### EnvioDePrint
 `personagem` ou `lobby` · `hash_arquivo` (único, anti-reuso) · `arquivo` · `confianca_ocr` · `idioma_detectado` · `aceito` · `enviado_em`

@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer'
-import { IsEnum, IsOptional, IsString, Length, Matches, MaxLength } from 'class-validator'
+import { IsEnum, IsOptional, IsString, Length, Matches } from 'class-validator'
 
 import { Platform } from '../../../common/domain/platform.enum'
 import { Archetype, CharacterCategory } from '../archetype'
@@ -28,8 +28,14 @@ export class CreateCharacterDto {
   @Matches(/^[A-Za-z0-9][A-Za-z0-9 _.#-]*$/)
   gamertag!: string
 
+  /**
+   * Letters of any language, digits, space and `. _ -`: no control or
+   * zero-width characters, which would let a name pass for someone else's.
+   */
   @IsOptional()
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
-  @MaxLength(40)
+  @Length(1, 40)
+  @Matches(/^[\p{L}\p{N} ._-]+$/u)
   name?: string
 }

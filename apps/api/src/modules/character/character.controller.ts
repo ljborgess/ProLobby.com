@@ -1,7 +1,10 @@
 import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Req } from '@nestjs/common'
 
+import { Throttle } from '@nestjs/throttler'
+
 import { AllowStates } from '../../common/auth/auth.decorators'
 import type { RequestWithAccount } from '../../common/auth/session.guard'
+import { CHARACTER_CREATE_THROTTLE } from '../../common/security/throttler.config'
 import { AccountState } from '../account/account.enums'
 import { CharacterService, type CharacterView } from './character.service'
 import { ChangeCategoryDto } from './dto/change-category.dto'
@@ -24,6 +27,7 @@ export class CharacterController {
   }
 
   @Post()
+  @Throttle(CHARACTER_CREATE_THROTTLE)
   create(
     @Req() request: RequestWithAccount,
     @Body() dto: CreateCharacterDto,
