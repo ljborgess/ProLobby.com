@@ -1,6 +1,6 @@
 # Piloto de OCR — teste isolado, antes da plataforma
 
-**Status: rodada 1 medida em 2026-09-24 com Tesseract — abaixo de 60%. Próximo passo: repetir com Google Vision** ([resultado](#rodada-1-2026-09-24-tesseract-abaixo-de-60)). Continua sendo o bloqueador nº 2 do projeto, ao lado do [checklist de teste no jogo](../produto/03-partida/05-checklist.md).
+**Status: rodada 1 medida em 2026-09-24 com Tesseract — abaixo de 60%. Próximo passo: melhorar o OCR local, sem data** ([resultado](#rodada-1-2026-09-24-tesseract-abaixo-de-60)). Continua sendo o bloqueador nº 2 do projeto, ao lado do [checklist de teste no jogo](../produto/03-partida/05-checklist.md).
 
 Não é feature nem etapa de produto: é um experimento que responde se o produto de **identidade verificada** é viável, e roda **sem conta, sem banco, sem tela**.
 
@@ -132,8 +132,8 @@ Então o atributo lido é **valor derivado** de arquétipo + corpo + boosts + po
 ### Decisões (Luciano, 2026-09-24)
 
 - **Verificação usa a aba `Attributes`**, não a `Home`. **A prova de posse continua em aberto**: a aba não tem gamertag, e esse é o risco que a [#164](https://github.com/ljborgess/ProLobby.com/issues/164) registra.
-- **Antes de abrir issue de código da Fase 2.2, o piloto roda de novo com Google Vision**, com o mesmo gabarito e os mesmos prints. É o caminho que o [PRD da 2.2](https://github.com/ljborgess/ProLobby.com/issues/52) já previa ("decide motor: Tesseract vs. Google Vision"). **Depende de credencial**: conta no Google Cloud com faturamento, que não existe hoje. É o primeiro gasto com serviço pago, então passa pelos sócios (ver [#130](https://github.com/ljborgess/ProLobby.com/issues/130)).
-- **Se o Vision também ficar abaixo de 60%, a opção seguinte é segmentar as 4 colunas antes do OCR**, recortando cada coluna como imagem própria, não cada rótulo. Isso exige ler o PNG pixel a pixel, e o projeto não tem biblioteca de imagem instalada.
+- **Google Vision fica fora.** O [PRD da 2.2](https://github.com/ljborgess/ProLobby.com/issues/52) previa comparar Tesseract com Vision, mas o Vision exige conta no Google Cloud com faturamento, e seria o primeiro gasto com serviço pago. O motor continua local.
+- **O Luciano melhora o OCR depois, sem data.** A Fase 2.2 segue bloqueada pelo piloto ([#50](https://github.com/ljborgess/ProLobby.com/issues/50)) até alguma rodada passar de 60%. O próximo passo técnico medido como promissor é **segmentar as 4 colunas antes do OCR**, recortando cada coluna como imagem própria, não cada rótulo. Isso exige ler o PNG pixel a pixel, e o projeto não tem biblioteca de imagem instalada. O gabarito da rodada 1 serve de base pra medir qualquer melhoria.
 
 ## De onde vêm os prints (decidido em 2026-09-16)
 
