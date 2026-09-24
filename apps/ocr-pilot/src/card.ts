@@ -1,34 +1,61 @@
 import sharp from 'sharp'
 
-// The archetype card's bottom text band (archetype name, then gamertag) sits
-// at the same screen proportions on every FC 27 print seen so far.
-const BAND = { left: 0.1, top: 0.71, width: 0.11, height: 0.08 }
-const UPSCALE = 4
-// 0 = grey only. The gamertag is light grey on a bronze/silver/gold card, so
-// no single threshold reads every card tier.
-const THRESHOLDS = [0, 120, 150, 180]
+type Region = { left: number; top: number; width: number; height: number }
 
-export async function cardTextCrops(image: Buffer): Promise<Buffer[]> {
+export type CardCrop = { image: Buffer; psm: string }
+
+const UPSCALE = 6
+// The archetype card's bottom text (archetype name, then gamertag) sits at the
+// same screen proportions on every FC 27 print seen so far. The band holds
+// both lines (PSM 6); the line crops hold only the gamertag (PSM 7), which is
+// what reads underscores ("AIR_PEDRI_8_o"). Its exact height drifts ~0.5%.
+const BAND: Region = { left: 0.1, top: 0.71, width: 0.11, height: 0.08 }
+const GAMERTAG_LINES: Region[] = [0.745, 0.75, 0.755].map((top) => ({
+  left: 0.1,
+  top,
+  width: 0.12,
+  height: 0.035,
+}))
+// 0 = grey only. The gamertag is light or dark depending on the card tier
+// (bronze, silver, gold), so no single threshold reads every card.
+const BAND_THRESHOLDS = [0, 120, 150, 180]
+const LINE_THRESHOLDS = [0, 120]
+
+export async function cardTextCrops(image: Buffer): Promise<CardCrop[]> {
   const { width, height } = await sharp(image).metadata()
   if (!width || !height) {
     return []
   }
-  const region = {
-    left: Math.round(width * BAND.left),
-    top: Math.round(height * BAND.top),
-    width: Math.round(width * BAND.width),
-    height: Math.round(height * BAND.height),
-  }
+  const jobs = [
+    ...BAND_THRESHOLDS.map((threshold) => ({ region: BAND, threshold, psm: '6' })),
+    ...GAMERTAG_LINES.flatMap((region) =>
+      LINE_THRESHOLDS.map((threshold) => ({ region, threshold, psm: '7' })),
+    ),
+  ]
   return Promise.all(
-    THRESHOLDS.map((threshold) => {
-      const pipeline = sharp(image)
-        .extract(region)
-        .resize({ width: region.width * UPSCALE, kernel: 'lanczos3' })
-        .grayscale()
-        .normalise()
-      return (threshold > 0 ? pipeline.threshold(threshold) : pipeline).png().toBuffer()
-    }),
+    jobs.map(async ({ region, threshold, psm }) => ({
+      image: await prepare(image, toPixels(region, width, height), threshold),
+      psm,
+    })),
   )
+}
+
+function toPixels(region: Region, width: number, height: number): Region {
+  return {
+    left: Math.round(width * region.left),
+    top: Math.round(height * region.top),
+    width: Math.round(width * region.width),
+    height: Math.round(height * region.height),
+  }
+}
+
+function prepare(image: Buffer, region: Region, threshold: number): Promise<Buffer> {
+  const pipeline = sharp(image)
+    .extract(region)
+    .resize({ width: region.width * UPSCALE, kernel: 'lanczos3' })
+    .grayscale()
+    .normalise()
+  return (threshold > 0 ? pipeline.threshold(threshold) : pipeline).png().toBuffer()
 }
 
 /**

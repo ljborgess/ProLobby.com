@@ -114,8 +114,14 @@ export type PrintMeasurement = {
   sha256: string | null
 }
 
+export type ImpostorCheck = {
+  checks: number
+  falseAccepts: number
+}
+
 export type PilotReport = {
   engine: string
+  impostorCheck: ImpostorCheck
   firstPassAcceptRate: number
   firstPassTarget: number
   meetsTarget: boolean

@@ -13,6 +13,7 @@ import { aggregateReport } from './report'
 import type {
   Gabarito,
   GabaritoEntry,
+  ImpostorCheck,
   PilotReport,
   PrintMeasurement,
   RejectionCause,
@@ -35,13 +36,14 @@ export async function measurePilot(
 ): Promise<PilotReport> {
   const read = deps.readFile ?? ((filePath: string) => readFile(filePath))
   const seenHashes = new Map<string, string>()
+  const cardLines = new Map<string, string[]>()
   const prints: PrintMeasurement[] = []
 
   for (const entry of gabarito.entries) {
-    prints.push(await measureEntry(entry, printsDir, deps.engine, read, seenHashes))
+    prints.push(await measureEntry(entry, printsDir, deps.engine, read, seenHashes, cardLines))
   }
 
-  return aggregateReport(deps.engine.id, prints)
+  return aggregateReport(deps.engine.id, prints, checkImpostors(gabarito, cardLines))
 }
 
 export async function measurePilotFromJson(
@@ -52,28 +54,53 @@ export async function measurePilotFromJson(
   return measurePilot(parseGabarito(gabaritoJson), printsDir, deps)
 }
 
+async function readCardLines(engine: OcrEngine, image: Buffer): Promise<string[]> {
+  const lines: string[] = []
+  for (const crop of await cardTextCrops(image)) {
+    const { text } = await engine.recognize(crop.image, { psm: crop.psm })
+    lines.push(...text.split('\n').filter((line) => line.trim() !== ''))
+  }
+  return lines
+}
+
+/**
+ * Every card is also checked against the *other* players' gamertags in the
+ * gabarito. A hit there is an impostor the tolerance would let through; the
+ * rule since 2026-09-24 is that this count stays at zero.
+ */
+function checkImpostors(gabarito: Gabarito, cardLines: Map<string, string[]>): ImpostorCheck {
+  const tags = [
+    ...new Set(
+      gabarito.entries.flatMap((entry) =>
+        entry.expected.gamertag ? [entry.expected.gamertag] : [],
+      ),
+    ),
+  ]
+  let checks = 0
+  let falseAccepts = 0
+  for (const entry of gabarito.entries) {
+    const lines = cardLines.get(entry.id)
+    if (!lines) {
+      continue
+    }
+    for (const tag of tags) {
+      if (tag.toLowerCase() === entry.expected.gamertag?.toLowerCase()) {
+        continue
+      }
+      checks += 1
+      if (gamertagAppears(tag, lines)) {
+        falseAccepts += 1
+      }
+    }
+  }
+  return { checks, falseAccepts }
+}
+
 /**
  * Gabarito `file` is a name inside the prints folder, never a path that
  * climbs out of it. The operator writes the gabarito, but a `../.env`
  * typo (or a copied-from-somewhere entry) must not become a file read.
  */
-/**
- * The gabarito's gamertag stands in for the one the player typed at sign-up:
- * the product verifies a claim, it doesn't transcribe a stranger's tag.
- */
-async function verifyGamertagOnCard(
-  engine: OcrEngine,
-  image: Buffer,
-  claimed: string,
-): Promise<boolean> {
-  for (const crop of await cardTextCrops(image)) {
-    const { text } = await engine.recognize(crop, { psm: '6' })
-    if (gamertagAppears(claimed, text.split('\n'))) {
-      return true
-    }
-  }
-  return false
-}
 
 export function resolvePrintPath(printsDir: string, file: string): string | null {
   if (file === '' || path.isAbsolute(file)) {
@@ -97,6 +124,7 @@ async function measureEntry(
   engine: OcrEngine,
   read: (filePath: string) => Promise<Buffer>,
   seenHashes: Map<string, string>,
+  cardLines: Map<string, string[]>,
 ): Promise<PrintMeasurement> {
   const filePath = resolvePrintPath(printsDir, entry.file)
   const base: PrintMeasurement = {
@@ -150,8 +178,12 @@ async function measureEntry(
     'fieldConfidence' in parsed && parsed.fieldConfidence !== null
       ? parsed.fieldConfidence
       : ocr.confidence
+  // The gabarito's gamertag stands in for the one the player typed at sign-up:
+  // the product verifies a claim, it doesn't transcribe a stranger's tag.
   if (entry.screen === 'archetypes' && entry.expected.gamertag !== null) {
-    parsed.fields.gamertag = (await verifyGamertagOnCard(engine, bytes, entry.expected.gamertag))
+    const lines = await readCardLines(engine, bytes)
+    cardLines.set(entry.id, lines)
+    parsed.fields.gamertag = gamertagAppears(entry.expected.gamertag, lines)
       ? entry.expected.gamertag
       : null
   }
