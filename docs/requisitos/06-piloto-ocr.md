@@ -1,6 +1,6 @@
 # Piloto de OCR — teste isolado, antes da plataforma
 
-**Status: rodada 1 medida em 2026-09-24 com Tesseract — abaixo de 60%. Rodada 2a com a tela Archetypes: 78% com 9 prints, provisório. Próximo passo: completar 20 prints ([#191](https://github.com/ljborgess/ProLobby.com/issues/191))** ([resultado](#rodada-1-2026-09-24-tesseract-abaixo-de-60), [plano](#rodada-2-tela-archetypes-decidido-em-2026-09-24)). Continua sendo o bloqueador nº 2 do projeto, ao lado do [checklist de teste no jogo](../produto/03-partida/05-checklist.md).
+**Status: rodada 1 medida em 2026-09-24 com Tesseract — abaixo de 60%. Rodada 2a com a tela Archetypes: 56% com 9 prints. Próximo passo: completar 20 prints ([#191](https://github.com/ljborgess/ProLobby.com/issues/191))** ([resultado](#rodada-1-2026-09-24-tesseract-abaixo-de-60), [plano](#rodada-2-tela-archetypes-decidido-em-2026-09-24)). Continua sendo o bloqueador nº 2 do projeto, ao lado do [checklist de teste no jogo](../produto/03-partida/05-checklist.md).
 
 Não é feature nem etapa de produto: é um experimento que responde se o produto de **identidade verificada** é viável, e roda **sem conta, sem banco, sem tela**.
 
@@ -127,13 +127,13 @@ Então o atributo lido é **valor derivado** de arquétipo + corpo + boosts + po
 
 **Nenhuma aba mostrou gamertag nem overall.** Nas 20 capturas (`Attributes`, `Archetypes`, `PlayStyles`), o topo traz nível, AP e moedas. A aba `Home` não apareceu em nenhuma. Isso não fecha a [#164](https://github.com/ljborgess/ProLobby.com/issues/164), mas soma evidência.
 
-**Piso de resolução baixado de 800×600 para 320×240.** O valor anterior só existia no código, sem número no dossiê, e rejeitava todo frame real de VOD antes do OCR tentar. Print de cadastro chega em qualquer resolução, porque quem manda é gente comum, com celular, TV ou vídeo. O piso barra só arquivo corrompido e miniatura.
+**Piso de resolução baixado de 800×600 para 320×240.** O valor anterior vinha da [RF-064](05-funcionais.md#rf-064--pré-checagens-locais-barram-lixo-antes-de-custar-chamada) e dos [parâmetros](../produto/parametros.md), e rejeitava todo frame real de VOD antes do OCR tentar. A RF-064 e o parâmetro são corrigidos na [#195](https://github.com/ljborgess/ProLobby.com/issues/195). Print de cadastro chega em qualquer resolução, porque quem manda é gente comum, com celular, TV ou vídeo. O piso barra só arquivo corrompido e miniatura.
 
 ### Decisões (Luciano, 2026-09-24)
 
 - ~~**Verificação usa a aba `Attributes`**, não a `Home`.~~ **Revisto no mesmo dia**: a verificação passa para a tela `Archetypes` ([rodada 2](#rodada-2-tela-archetypes-decidido-em-2026-09-24)).
 - **Google Vision fica fora.** O [PRD da 2.2](https://github.com/ljborgess/ProLobby.com/issues/52) previa comparar Tesseract com Vision, mas o Vision exige conta no Google Cloud com faturamento, e seria o primeiro gasto com serviço pago. O motor continua local.
-- **A Fase 2.2 segue bloqueada pelo piloto** ([#50](https://github.com/ljborgess/ProLobby.com/issues/50)) até alguma rodada passar de 60%.
+- ~~**A Fase 2.2 segue bloqueada pelo piloto** até alguma rodada passar de 60%.~~ **Revisto no mesmo dia**: a 2.2 abriu com o OCR por último. O que depende do número do piloto é só a [#199](https://github.com/ljborgess/ProLobby.com/issues/199), bloqueada pela [#191](https://github.com/ljborgess/ProLobby.com/issues/191).
 
 ## Rodada 2: tela Archetypes (decidido em 2026-09-24)
 
@@ -172,62 +172,65 @@ O único campo que o lobby tem e a `Archetypes` não tem é o OVR. Sem ele, o cu
 - **Pré-processamento só se a medição pedir.** Cinza, ampliação e contraste, com a biblioteca `sharp`. Nada é instalado antes.
 - **O lobby volta ao páreo só se os prints mostrarem OVR e gamertag claros.** A coleta tira print das duas telas.
 - **Serviço pago fica como reserva registrada, não como plano.** Modelo de visão (Google Vision, ou um LLM que lê imagem) seria o mais preciso para foto torta, mas cobra por chamada. Foi descartado por custo.
-- **[Verificação](../produto/02-jogador/01-verificacao.md) e [Ranking](../produto/02-jogador/02-ranking.md) só mudam quando a rodada 2 passar.** Até lá, o texto deles descreve o plano antigo e esta seção é a fonte.
+- **[Verificação](../produto/02-jogador/01-verificacao.md) e [Ranking](../produto/02-jogador/02-ranking.md) são atualizados na abertura da 2.2**, que não espera o número do piloto: a tela verificada, a tabela de categoria e o seed neutro já estão decididos. O que depende da precisão do OCR é só ligá-lo ([#199](https://github.com/ljborgess/ProLobby.com/issues/199)).
 
 A execução está na [#190](https://github.com/ljborgess/ProLobby.com/issues/190): 20 prints da tela `Archetypes` de VOD público, gabarito com a tela nova, o mesmo critério de 60%. A primeira tarefa é confirmar se o nome no card é o gamertag.
 
-## Rodada 2a (2026-09-24): tela Archetypes, 78% com 9 prints
+## Rodada 2a (2026-09-24): tela Archetypes, 56% com 9 prints
 
-**Amostra**: 9 prints da tela `Archetypes` com o arquétipo ativo aberto, de 6 jogadores, todos com o jogo em inglês. 8 são frames de vídeo em tela cheia (1280×720 a 1365×767) e 1 é thumbnail do YouTube (596×335, com texto por cima). Mais 4 prints ficaram fora do gabarito como casos que o produto tem que rejeitar: 3 com arquétipo não ativo e 1 da tela `Profile`.
+**Amostra**: 9 prints da tela `Archetypes` com o arquétipo ativo aberto, de 6 jogadores, todos com o jogo em inglês. 8 são frames de vídeo em tela cheia (1280×720 a 1365×767) e 1 é thumbnail do YouTube (596×335, com texto por cima). Outros 4 prints ficaram fora do gabarito como casos que o produto tem que rejeitar: 3 com arquétipo não ativo e 1 da tela `Profile`.
 
-**O nome embaixo do arquétipo no card é o gamertag**, precedido do ícone da plataforma. Isso foi confirmado em dois jogadores: na tela `Profile` do AddictzAnt (Xbox), que mostra o mesmo nome em letra grande, e no indicador de voz do Tradeska (PlayStation), que mostra o mesmo nome com o logo do PlayStation. **A prova de posse da [#164](https://github.com/ljborgess/ProLobby.com/issues/164) sai desta tela.**
+**O nome embaixo do arquétipo no card é o gamertag**, precedido do ícone da plataforma. Isso foi confirmado em dois jogadores, com fonte independente: num, a tela `Profile` mostra o mesmo nome em letra grande (Xbox); no outro, o indicador de voz do jogo mostra o mesmo nome com o logo do PlayStation. **A prova de posse da [#164](https://github.com/ljborgess/ProLobby.com/issues/164) sai desta tela.**
+
+**A ordem dos grupos segue a fileira de ícones da tela**: Keeper (2 ícones), Defender (3), Midfielder (4), Forward (4). O arquétipo aberto fica sob o triângulo verde, e o nome dele confere com o grupo em todos os prints. Resumos de terceiros misturam os grupos, então a lista do código segue a tela.
 
 | Métrica | Valor |
 |---|---|
-| Arquétipo lido certo | **9 de 9**, confiança de 86% a 96% |
-| Gamertag verificado | **7 de 8** (5 de 8 antes dos ajustes; o thumbnail ficou sem gamertag no gabarito, ilegível) |
-| Aceite de primeira | **7 de 9 (78%)** (56% antes dos ajustes) |
-| Gamertag errado aceito | **0 em 40 checagens** (cada card conferido contra os gamertags dos outros jogadores, no próprio relatório) |
-
-**78% é provisório.** Os ajustes foram feitos olhando pra esses mesmos 9 prints, o que infla o número. Vale quando os prints novos da [#191](https://github.com/ljborgess/ProLobby.com/issues/191) também passarem de 60%.
+| Arquétipo lido certo | **8 de 9**. No thumbnail, o título nem foi lido |
+| Gamertag verificado | **5 de 8** (o thumbnail ficou sem gamertag no gabarito, ilegível) |
+| Aceite de primeira | **5 de 9 (56%)** |
+| Gamertag errado aceito | **0 em 54 checagens**: os gamertags dos outros jogadores e pedaços de cada gamertag real |
+| Vizinho a 1 edição aceito | 1 em 16: acontece quando o próprio OCR lê o gamertag com a letra trocada |
 
 **Como lê:**
-- **Arquétipo**: no título grande da tela inteira, ajustado pra um dos 13 nomes do jogo. O grupo (Keeper, Defender, Midfielder, Forward) sai do nome.
-- **Gamertag**: o OCR da tela inteira nem enxerga o texto do card, pequeno demais em cima da arte. O script recorta a faixa do card (nome e gamertag) e também só a linha do gamertag, amplia 6× e testa alguns contrastes. A linha isolada, lida como linha única, é o que lê sublinhado. **Ele não transcreve o gamertag, confere o que o jogador digitou no cadastro**: aceita troca de caractere parecido (`5/S`, `0/O`, `1/l/I`, `8/B`), ignora separador (`_ . -`) e tolera 1 erro.
-- **Pré-processamento com `sharp`**: entrou porque a medição pediu. Sem ampliar, o recorte não lia nenhum gamertag. Fica só no `ocr-pilot`.
+- **Arquétipo**: no título grande da tela inteira, ajustado pra um dos 13 nomes do jogo. Só vale o nome no começo de uma linha, onde fica o título, e não uma palavra no meio de uma descrição ou do texto por cima de um thumbnail. O grupo sai do nome.
+- **Gamertag**: o OCR da tela inteira nem enxerga o texto do card, pequeno demais em cima da arte. O script recorta a faixa do card e também só a linha do gamertag, amplia 6× com `sharp` e testa alguns contrastes. **Ele não transcreve o gamertag, confere o que o jogador digitou no cadastro**:
+  - troca os caracteres que o OCR confunde nesta fonte (`5/S`, `0/O`, `1/l/I`, `8/B`), ignora maiúscula e descarta qualquer símbolo;
+  - depois disso, exige **igualdade exata** com uma sequência de palavras lidas;
+  - **nunca aceita pedaço**, e o nome do arquétipo no card nunca conta como gamertag.
 
-**O que foi testado nos 3 gamertags que falharam primeiro:**
+**O que foi testado pra subir o número:**
 
 | Ajuste | Efeito |
 |---|---|
-| Mais 2 contrastes | nenhum |
-| Cortar a faixa preta das bordas | nenhum |
-| Inverter as cores | nenhum |
-| **Ampliar 6× em vez de 4×** | **passou `navid4897`** (texto claro sobre bronze) |
-| **Recortar só a linha do gamertag** | **passou `AIR_PEDRI_8_o`** (sublinhados) |
+| Mais 2 contrastes, cortar as bordas pretas, inverter as cores | nenhum |
+| **Ampliar 6× em vez de 4×** | passou um gamertag de texto claro sobre card bronze |
+| **Recortar só a linha do gamertag** | leu um gamertag com sublinhados |
+| **Tolerar 1 edição** | **tirado**. Com folga, o aceite subia pra 67%, mas 2 impostores passavam: quando o OCR corta uma letra do gamertag real, uma declaração falsa mais curta fica a 1 edição da leitura. Tolerando só troca de caractere, o aceite ficava nos mesmos 56% |
 
-O que sobrou é `Tradeska` num card bronze: marrom-escuro sobre bronze, borrado, difícil até pra quem olha. É print ruim de verdade, e se resolve com as instruções de upload e a segunda chance pela `Profile` (abaixo), não com o motor.
+**Um número de 78% chegou a ser registrado nesta rodada e estava errado.** A conferência aceitava qualquer gamertag contido no gamertag real: quem declarasse um pedaço do nome de outra pessoa passaria. A revisão de código achou o erro, e o teste de impostores não pegava porque só comparava jogadores com nomes muito diferentes. Os dois foram corrigidos.
+
+**O que não passa**: um card bronze com texto marrom-escuro borrado, difícil até pra quem olha, e dois gamertags em que o OCR erra 2 caracteres ou mais. Isso se resolve com as instruções de upload e a segunda chance pela `Profile` (abaixo), não com folga na conferência.
 
 **Lacunas, na [#191](https://github.com/ljborgess/ProLobby.com/issues/191):**
-- **Arquétipo ativo não é detectado.** O ✓ verde é ícone, não texto. Hoje, um print de arquétipo não ativo passaria.
-- **4 grupos do jogo × 5 categorias do dossiê.** Ponta e Ataque caem os dois em Forward. É decisão de produto separar pelo arquétipo.
+- **Arquétipo ativo não é detectado.** O ✓ verde é ícone, não texto. Hoje, um print de arquétipo não ativo passaria, e os 4 casos de rejeição ficaram fora da medição.
 - **Só inglês.** Os rótulos da tela em PT e ES ainda não foram vistos.
 - **9 prints é pouco.** A meta continua 20.
 - **A leitura do gamertag na tela `Profile` não foi medida.** Só há 1 print dela.
 
 ### Decisões pra aumentar a aprovação (Luciano, 2026-09-24)
 
-- **Zero falso aceite é regra fixa.** A aprovação não sobe afrouxando a conferência do gamertag: aceitar 2 erros em vez de 1 passaria nome parecido de outra pessoa. Reprovar um print legítimo custa um reenvio; aprovar um impostor custa a confiança no ranking. O relatório mede isso em toda rodada.
-- **Ampliar 6× e ler a linha isolada do gamertag** entram no script, provisórios até a #191.
+- **Zero falso aceite é regra fixa.** A aprovação não sobe afrouxando a conferência do gamertag. Reprovar um print legítimo custa um reenvio; aprovar um impostor custa a confiança no ranking. O relatório mede isso em toda rodada (`impostorCheck`).
+- **Ampliar 6× e ler a linha isolada do gamertag** ficam no script.
 - **A tela `Profile` é a segunda chance, só quando o card falhar.** Ela mostra o gamertag em letra grande com o ícone da plataforma. O arquétipo já saiu do primeiro print, então a segunda serve só pra posse. Pedir as duas sempre dobraria o trabalho de quem já passou. Depende de medir a leitura da `Profile` na #191.
 - **Instruções de upload: 3 itens curtos e uma imagem de exemplo**, na tela de envio, antes de escolher o arquivo:
   1. abra o arquétipo ativo, o que tem ✓ do lado do nome;
   2. mande screenshot do console (botão de compartilhar ou app PlayStation/Xbox); se for foto da TV, tela inteira, reta e sem reflexo;
   3. não recorte nem edite a imagem.
-- **A mensagem de reprovação diz o que refazer**, ex.: "não achamos seu gamertag no card, manda um print da tela Profile". Entra nas causas de rejeição de [Notificações](04-notificacoes.md) quando a Fase 2.2 abrir.
-- **Trocar de motor não entra agora.** Os erros que sobraram vêm da entrada, não do motor. Motor local melhor ou serviço pago só voltam se os prints novos derrubarem o número.
+- **A mensagem de reprovação diz o que refazer**, ex.: "não achamos seu gamertag no card, manda um print da tela Profile". Entra nas causas de rejeição de [Notificações](04-notificacoes.md) com a [#196](https://github.com/ljborgess/ProLobby.com/issues/196).
+- **Trocar de motor não entra agora.** Motor local melhor ou serviço pago só voltam se os prints novos da #191 confirmarem o número abaixo de 60%.
 
-**Os prints e o gabarito desta rodada ficam fora do git.** Diferente da rodada 1, o gabarito tem gamertag real de terceiros ([como pedir, e o que pode ser feito com o print](#como-pedir-e-o-que-pode-ser-feito-com-o-print)).
+**Os prints e o gabarito desta rodada ficam fora do git.** Diferente da rodada 1, o gabarito tem gamertag real de terceiros ([como pedir, e o que pode ser feito com o print](#como-pedir-e-o-que-pode-ser-feito-com-o-print)). Pelo mesmo motivo, este documento, o código e os testes não citam nenhum gamertag real: os exemplos são inventados.
 
 ## De onde vêm os prints (decidido em 2026-09-16)
 
