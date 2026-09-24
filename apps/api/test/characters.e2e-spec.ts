@@ -384,6 +384,20 @@ describe('characters (#194)', () => {
     expect(res.status).toBe(400)
   })
 
+  it('serves the archetype × category table the screen filters with (#196)', async () => {
+    const res = await request(app.getHttpServer())
+      .get('/api/characters/archetypes')
+      .set('Cookie', await account())
+
+    expect(res.status).toBe(200)
+    expect(res.body).toHaveLength(13)
+    expect(res.body).toContainEqual({
+      archetype: 'spark',
+      group: 'forward',
+      categories: ['winger', 'striker'],
+    })
+  })
+
   it('needs a session', async () => {
     expect((await request(app.getHttpServer()).get('/api/characters')).status).toBe(401)
   })

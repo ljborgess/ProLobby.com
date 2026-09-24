@@ -77,3 +77,18 @@ export function categoriesAllowedFor(archetype: Archetype): CharacterCategory[] 
 export function archetypeFitsCategory(archetype: Archetype, category: CharacterCategory): boolean {
   return categoriesAllowedFor(archetype).includes(category)
 }
+
+export type ArchetypeOption = {
+  archetype: Archetype
+  group: ArchetypeGroup
+  categories: CharacterCategory[]
+}
+
+/** The table the screen needs to offer only archetypes a category allows. */
+export function archetypeOptions(): ArchetypeOption[] {
+  return Object.values(Archetype).map((archetype) => ({
+    archetype,
+    group: GROUP_OF[archetype],
+    categories: categoriesAllowedFor(archetype),
+  }))
+}

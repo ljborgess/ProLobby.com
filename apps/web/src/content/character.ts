@@ -1,0 +1,197 @@
+import type { Locale } from './locale'
+
+export type CharacterCategory = 'goalkeeper' | 'defender' | 'midfielder' | 'winger' | 'striker'
+export type Platform = 'ps5' | 'xbox_series' | 'pc'
+export type PrintRejection = 'invalid_format' | 'image_too_small' | 'print_already_used'
+
+/**
+ * Text for `/account/character` — issue #196. Archetype names stay as the game
+ * shows them (`MAESTRO`, `SPARK`): that is what the player sees on the screen
+ * they will photograph, in any language.
+ */
+export interface CharacterContent {
+  title: string
+  subtitle: string
+  categories: Record<CharacterCategory, string>
+  platforms: Record<Platform, string>
+  form: {
+    categoryLabel: string
+    archetypeLabel: string
+    archetypeHint: string
+    platformLabel: string
+    gamertagLabel: string
+    gamertagHint: string
+    nameLabel: string
+    nameHint: string
+    choose: string
+    submit: string
+    submitting: string
+    fieldRequired: string
+    gamertagInvalid: string
+    mismatch: string
+    categoryTaken: string
+    gamertagLocked: string
+    genericError: string
+  }
+  print: {
+    heading: string
+    instructions: [string, string, string]
+    exampleCaption: string
+    fileLabel: string
+    fileHint: string
+    submit: string
+    submitting: string
+    received: string
+    rejections: Record<PrintRejection, string>
+    uploadLimit: (minutes: number) => string
+    tooLarge: string
+    genericError: string
+  }
+  existing: {
+    heading: string
+    pending: string
+    verified: string
+    sendPrint: string
+    newCharacter: string
+  }
+  back: string
+}
+
+export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
+  pt: {
+    title: 'Seu personagem',
+    subtitle:
+      'Escolha a categoria em que você joga e o arquétipo do seu Pro. Depois, mande o print da tela de arquétipos pra gente conferir.',
+    categories: {
+      goalkeeper: 'Goleiro',
+      defender: 'Zaga/Lateral',
+      midfielder: 'Meio-campo',
+      winger: 'Ponta',
+      striker: 'Ataque',
+    },
+    platforms: { ps5: 'PlayStation 5', xbox_series: 'Xbox Series', pc: 'PC' },
+    form: {
+      categoryLabel: 'Categoria',
+      archetypeLabel: 'Arquétipo',
+      archetypeHint: 'Só aparecem os arquétipos que combinam com a categoria.',
+      platformLabel: 'Plataforma',
+      gamertagLabel: 'Gamertag nessa plataforma',
+      gamertagHint: 'Exatamente como aparece no jogo, embaixo do nome do arquétipo.',
+      nameLabel: 'Nome do personagem (opcional)',
+      nameHint: 'Só pra você identificar. Pode trocar quando quiser.',
+      choose: 'Escolha…',
+      submit: 'Continuar',
+      submitting: 'Salvando…',
+      fieldRequired: 'Preencha este campo.',
+      gamertagInvalid: 'Use de 3 a 20 caracteres: letras, números, espaço e _ . # -',
+      mismatch: 'Esse arquétipo não combina com a categoria escolhida.',
+      categoryTaken: 'Você já tem um personagem ativo nessa categoria.',
+      gamertagLocked:
+        'Seu gamertag nessa plataforma já foi verificado. Pra trocar, abra um chamado com a moderação.',
+      genericError: 'Não deu pra salvar agora. Tenta de novo em instantes.',
+    },
+    print: {
+      heading: 'Mande o print da tela de arquétipos',
+      instructions: [
+        'Abra o arquétipo ativo, o que tem ✓ do lado do nome.',
+        'Mande o screenshot do console (botão de compartilhar ou app PlayStation/Xbox). Se for foto da TV: tela inteira, reta e sem reflexo.',
+        'Não recorte nem edite a imagem.',
+      ],
+      exampleCaption:
+        'Exemplo: arquétipo ativo aberto, com o ✓ do lado do nome e o seu gamertag embaixo do card.',
+      fileLabel: 'Print (JPG, PNG ou WEBP, até 10 MB)',
+      fileHint: 'No celular, dá pra escolher da galeria.',
+      submit: 'Enviar print',
+      submitting: 'Enviando…',
+      received:
+        'Recebemos o print. A moderação confere e o personagem aparece como verificado nos seus próximos passos.',
+      rejections: {
+        invalid_format: 'Esse arquivo não é uma imagem JPG, PNG ou WEBP. Manda o print de novo.',
+        image_too_small:
+          'A imagem está pequena demais pra ler. Manda o screenshot do console ou uma foto mais de perto.',
+        print_already_used:
+          'Esse print já foi enviado antes. Tira um print novo da tela de arquétipos.',
+      },
+      uploadLimit: (minutes) =>
+        `Você chegou no limite de envios desta hora. Tenta de novo em ${minutes} min.`,
+      tooLarge: 'O arquivo passa de 10 MB. Manda um print menor.',
+      genericError: 'Não deu pra enviar agora. Tenta de novo em instantes.',
+    },
+    existing: {
+      heading: 'Seus personagens',
+      pending: 'Aguardando verificação',
+      verified: 'Verificado',
+      sendPrint: 'Enviar print',
+      newCharacter: 'Cadastrar outro personagem',
+    },
+    back: '← Próximos passos',
+  },
+  es: {
+    title: 'Tu personaje',
+    subtitle:
+      'Elige la categoría en la que juegas y el arquetipo de tu Pro. Después, envía la captura de la pantalla de arquetipos para que la revisemos.',
+    categories: {
+      goalkeeper: 'Portero',
+      defender: 'Defensa/Lateral',
+      midfielder: 'Mediocampo',
+      winger: 'Extremo',
+      striker: 'Delantero',
+    },
+    platforms: { ps5: 'PlayStation 5', xbox_series: 'Xbox Series', pc: 'PC' },
+    form: {
+      categoryLabel: 'Categoría',
+      archetypeLabel: 'Arquetipo',
+      archetypeHint: 'Solo aparecen los arquetipos que encajan con la categoría.',
+      platformLabel: 'Plataforma',
+      gamertagLabel: 'Gamertag en esa plataforma',
+      gamertagHint: 'Exactamente como aparece en el juego, debajo del nombre del arquetipo.',
+      nameLabel: 'Nombre del personaje (opcional)',
+      nameHint: 'Solo para que lo identifiques. Puedes cambiarlo cuando quieras.',
+      choose: 'Elige…',
+      submit: 'Continuar',
+      submitting: 'Guardando…',
+      fieldRequired: 'Completa este campo.',
+      gamertagInvalid: 'Usa de 3 a 20 caracteres: letras, números, espacio y _ . # -',
+      mismatch: 'Ese arquetipo no encaja con la categoría elegida.',
+      categoryTaken: 'Ya tienes un personaje activo en esa categoría.',
+      gamertagLocked:
+        'Tu gamertag en esa plataforma ya fue verificado. Para cambiarlo, abre un caso con la moderación.',
+      genericError: 'No se pudo guardar ahora. Intenta de nuevo en un momento.',
+    },
+    print: {
+      heading: 'Envía la captura de la pantalla de arquetipos',
+      instructions: [
+        'Abre el arquetipo activo, el que tiene ✓ junto al nombre.',
+        'Envía la captura de la consola (botón de compartir o app de PlayStation/Xbox). Si es una foto de la TV: pantalla completa, derecha y sin reflejos.',
+        'No recortes ni edites la imagen.',
+      ],
+      exampleCaption:
+        'Ejemplo: arquetipo activo abierto, con el ✓ junto al nombre y tu gamertag debajo de la carta.',
+      fileLabel: 'Captura (JPG, PNG o WEBP, hasta 10 MB)',
+      fileHint: 'En el celular, puedes elegirla de la galería.',
+      submit: 'Enviar captura',
+      submitting: 'Enviando…',
+      received:
+        'Recibimos la captura. La moderación la revisa y el personaje aparece como verificado en tus próximos pasos.',
+      rejections: {
+        invalid_format: 'Ese archivo no es una imagen JPG, PNG o WEBP. Envía la captura de nuevo.',
+        image_too_small:
+          'La imagen es demasiado pequeña para leerla. Envía la captura de la consola o una foto más de cerca.',
+        print_already_used:
+          'Esa captura ya fue enviada antes. Saca una captura nueva de la pantalla de arquetipos.',
+      },
+      uploadLimit: (minutes) =>
+        `Llegaste al límite de envíos de esta hora. Intenta de nuevo en ${minutes} min.`,
+      tooLarge: 'El archivo supera los 10 MB. Envía una captura más liviana.',
+      genericError: 'No se pudo enviar ahora. Intenta de nuevo en un momento.',
+    },
+    existing: {
+      heading: 'Tus personajes',
+      pending: 'Esperando verificación',
+      verified: 'Verificado',
+      sendPrint: 'Enviar captura',
+      newCharacter: 'Registrar otro personaje',
+    },
+    back: '← Próximos pasos',
+  },
+}
