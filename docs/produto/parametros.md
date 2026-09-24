@@ -9,9 +9,7 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 | Parâmetro | Valor | Onde é decidido |
 |---|---|---|
 | Baseline | 1000 | [Ranking](02-jogador/02-ranking.md) |
-| Seed por overall — piso | overall 50 → elo ~600 | [Ranking](02-jogador/02-ranking.md) |
-| Seed por overall — teto | overall 99 → elo ~1400 | [Ranking](02-jogador/02-ranking.md) |
-| Decaimento do seed | 12,5 pontos percentuais por partida (100% → 0% na 9ª) | [Ranking](02-jogador/02-ranking.md) |
+| Elo inicial | neutro, no baseline (1000). Seed por overall removido em 2026-09-24 | [Ranking](02-jogador/02-ranking.md) |
 | K-factor — calibrando | 32 (primeiras 9 partidas na categoria) | [Ranking](02-jogador/02-ranking.md) |
 | K-factor — estabilizado | 20 (a partir da 10ª) | [Ranking](02-jogador/02-ranking.md) |
 | Granularidade | por personagem/categoria (não por conta) | [Ranking](02-jogador/02-ranking.md) |
