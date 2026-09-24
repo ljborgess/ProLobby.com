@@ -2,6 +2,7 @@ import { Entity, Enum, Index, ManyToOne, Opt, PrimaryKey, Property, Unique } fro
 import { randomUUID } from 'node:crypto'
 
 import { Account } from '../account/account.entity'
+import { PrintSubmission } from '../character/print-submission.entity'
 import {
   ModerationCaseOrigin,
   ModerationCaseState,
@@ -113,6 +114,10 @@ export class ModerationCase {
    */
   @ManyToOne(() => ModerationCase, { nullable: true, deleteRule: 'set null' })
   appealsCase?: ModerationCase
+
+  /** The print a `CHARACTER_VERIFICATION` case is about — one case per print. */
+  @ManyToOne(() => PrintSubmission, { nullable: true, deleteRule: 'cascade', unique: true })
+  printSubmission?: PrintSubmission
 
   @Property()
   openedAt: Date & Opt = new Date()

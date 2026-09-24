@@ -20,7 +20,7 @@ import type { RequestWithAccount } from '../../common/auth/session.guard'
 import { CHARACTER_CREATE_THROTTLE, UPLOAD_THROTTLE } from '../../common/security/throttler.config'
 import { AccountState } from '../account/account.enums'
 import { archetypeOptions, type ArchetypeOption } from './archetype'
-import { CharacterService, type CharacterView } from './character.service'
+import { CharacterService, type CharacterListItem, type CharacterView } from './character.service'
 import { ChangeCategoryDto } from './dto/change-category.dto'
 import { CreateCharacterDto } from './dto/create-character.dto'
 import { PrintSubmissionService, type PrintSubmissionView } from './print-submission.service'
@@ -43,7 +43,7 @@ export class CharacterController {
   ) {}
 
   @Get()
-  list(@Req() request: RequestWithAccount): Promise<CharacterView[]> {
+  list(@Req() request: RequestWithAccount): Promise<CharacterListItem[]> {
     return this.characterService.list(request.account!.id)
   }
 

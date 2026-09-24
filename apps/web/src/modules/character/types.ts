@@ -8,6 +8,11 @@ export interface CharacterView {
   platform: Platform
   name?: string | null
   state: 'pending_verification' | 'verified'
+  /** Latest print: the character screen is where a rejection reaches the player. */
+  lastPrint?: {
+    status: 'received' | 'accepted' | 'rejected'
+    rejection: PrintRejection | null
+  } | null
 }
 
 /** `GET /characters/archetypes` item: the one source of the table. */
@@ -17,7 +22,7 @@ export interface ArchetypeOption {
 }
 
 export interface PrintResult {
-  status: 'received' | 'rejected'
+  status: 'received' | 'accepted' | 'rejected'
   rejection: PrintRejection | null
 }
 

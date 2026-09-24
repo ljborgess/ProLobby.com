@@ -2,7 +2,15 @@ import type { Locale } from './locale'
 
 export type CharacterCategory = 'goalkeeper' | 'defender' | 'midfielder' | 'winger' | 'striker'
 export type Platform = 'ps5' | 'xbox_series' | 'pc'
-export type PrintRejection = 'invalid_format' | 'image_too_small' | 'print_already_used'
+export type PrintRejection =
+  | 'invalid_format'
+  | 'image_too_small'
+  | 'print_already_used'
+  | 'gamertag_mismatch'
+  | 'gamertag_unavailable'
+  | 'archetype_mismatch'
+  | 'not_active_archetype'
+  | 'unreadable'
 
 /**
  * Text for `/account/character` — issue #196. Archetype names stay as the game
@@ -57,7 +65,10 @@ export interface CharacterContent {
     heading: string
     pending: string
     verified: string
+    inReview: string
+    rejectedPrefix: string
     sendPrint: string
+    sendAgain: string
     newCharacter: string
   }
   back: string
@@ -120,6 +131,16 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
           'A imagem está pequena demais pra ler. Manda o screenshot do console ou uma foto mais de perto.',
         print_already_used:
           'Esse print já foi enviado antes. Tira um print novo da tela de arquétipos.',
+        gamertag_mismatch:
+          'O gamertag no card não é o que você informou. Confere se o print é da sua conta e se o gamertag está escrito igual.',
+        gamertag_unavailable:
+          'Esse gamertag não pode ser verificado nesta conta. Se ele é seu, abra um chamado com a moderação.',
+        archetype_mismatch:
+          'O arquétipo do print não combina com a categoria escolhida. Cadastre o personagem na categoria certa.',
+        not_active_archetype:
+          'O arquétipo aberto no print não é o ativo. Abra o arquétipo que tem o ✓ do lado do nome e tire outro print.',
+        unreadable:
+          'Não deu pra ler o print. Manda a tela de arquétipos inteira, nítida, sem corte.',
       },
       uploadLimit: (minutes) =>
         `Você chegou no limite de envios desta hora. Tenta de novo em ${minutes} min.`,
@@ -131,9 +152,12 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
     },
     existing: {
       heading: 'Seus personagens',
-      pending: 'Aguardando verificação',
+      pending: 'Aguardando print',
       verified: 'Verificado',
+      inReview: 'Print em análise pela moderação',
+      rejectedPrefix: 'Print recusado:',
       sendPrint: 'Enviar print',
+      sendAgain: 'Enviar de novo',
       newCharacter: 'Cadastrar outro personagem',
     },
     back: '← Próximos passos',
@@ -194,6 +218,16 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
           'La imagen es demasiado pequeña para leerla. Envía la captura de la consola o una foto más de cerca.',
         print_already_used:
           'Esa captura ya fue enviada antes. Saca una captura nueva de la pantalla de arquetipos.',
+        gamertag_mismatch:
+          'El gamertag de la carta no es el que informaste. Revisa que la captura sea de tu cuenta y que el gamertag esté escrito igual.',
+        gamertag_unavailable:
+          'Ese gamertag no puede verificarse en esta cuenta. Si es tuyo, abre un caso con la moderación.',
+        archetype_mismatch:
+          'El arquetipo de la captura no encaja con la categoría elegida. Registra el personaje en la categoría correcta.',
+        not_active_archetype:
+          'El arquetipo abierto en la captura no es el activo. Abre el arquetipo que tiene el ✓ junto al nombre y saca otra captura.',
+        unreadable:
+          'No se pudo leer la captura. Envía la pantalla de arquetipos completa, nítida y sin recortes.',
       },
       uploadLimit: (minutes) =>
         `Llegaste al límite de envíos de esta hora. Intenta de nuevo en ${minutes} min.`,
@@ -205,9 +239,12 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
     },
     existing: {
       heading: 'Tus personajes',
-      pending: 'Esperando verificación',
+      pending: 'Esperando captura',
       verified: 'Verificado',
+      inReview: 'Captura en revisión por la moderación',
+      rejectedPrefix: 'Captura rechazada:',
       sendPrint: 'Enviar captura',
+      sendAgain: 'Enviar de nuevo',
       newCharacter: 'Registrar otro personaje',
     },
     back: '← Próximos pasos',

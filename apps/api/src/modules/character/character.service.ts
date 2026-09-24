@@ -19,6 +19,7 @@ import { ACTIVE_CHARACTER_STATES, Character, CharacterState } from './character.
 import type { ChangeCategoryDto } from './dto/change-category.dto'
 import type { CreateCharacterDto } from './dto/create-character.dto'
 import { PlatformGamertag } from './platform-gamertag.entity'
+import { PrintRejection, PrintSubmission, PrintSubmissionStatus } from './print-submission.entity'
 
 /**
  * Characters one account may create per hour. The per-IP throttle alone lets
@@ -34,6 +35,14 @@ export type CharacterView = Pick<
   'id' | 'category' | 'archetype' | 'platform' | 'edition' | 'name' | 'state' | 'matchesInCategory'
 >
 
+/**
+ * The list also says what happened to the latest print: with no notification
+ * system yet, the character screen is where a rejection reaches the player.
+ */
+export type CharacterListItem = CharacterView & {
+  lastPrint: { status: PrintSubmissionStatus; rejection: PrintRejection | null } | null
+}
+
 @Injectable()
 export class CharacterService {
   private readonly hmacSecret = readIdentityHmacSecret()
@@ -41,8 +50,9 @@ export class CharacterService {
 
   constructor(private readonly em: EntityManager) {}
 
-  async list(accountId: string): Promise<CharacterView[]> {
-    const characters = await this.em.fork().find(
+  async list(accountId: string): Promise<CharacterListItem[]> {
+    const em = this.em.fork()
+    const characters = await em.find(
       Character,
       {
         account: accountId,
@@ -51,7 +61,18 @@ export class CharacterService {
       },
       { orderBy: { createdAt: 'asc' } },
     )
-    return characters.map(toView)
+    const prints = await em.find(
+      PrintSubmission,
+      { character: { $in: characters.map((character) => character.id) } },
+      { orderBy: { createdAt: 'desc' } },
+    )
+    return characters.map((character) => {
+      const last = prints.find((print) => print.character.id === character.id)
+      return {
+        ...toView(character),
+        lastPrint: last ? { status: last.status, rejection: last.rejection ?? null } : null,
+      }
+    })
   }
 
   async hasVerified(accountId: string): Promise<boolean> {
