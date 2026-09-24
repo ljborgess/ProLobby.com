@@ -1,6 +1,6 @@
 # Piloto de OCR — teste isolado, antes da plataforma
 
-**Status: pendente. É o bloqueador nº 2 do projeto**, ao lado do [checklist de teste no jogo](../produto/03-partida/05-checklist.md).
+**Status: rodada 1 medida em 2026-09-24 com Tesseract — abaixo de 60%. Próximo passo: repetir com Google Vision** ([resultado](#rodada-1-2026-09-24-tesseract-abaixo-de-60)). Continua sendo o bloqueador nº 2 do projeto, ao lado do [checklist de teste no jogo](../produto/03-partida/05-checklist.md).
 
 Não é feature nem etapa de produto: é um experimento que responde se o produto de **identidade verificada** é viável, e roda **sem conta, sem banco, sem tela**.
 
@@ -67,6 +67,14 @@ O piloto foi **adiado, não descartado**, por um motivo simples: os prints de es
 - **A semana de lançamento é a melhor janela de coleta**: YouTube e Twitch lotam de conteúdo de Clubs.
 - **Coleta automática não é viável.** Testado em 2026-09-16: Reddit e X bloqueiam acesso automatizado, e busca web devolve site de montar build, não print de jogador. A fonte pública precisa de uma pessoa abrindo o vídeo e tirando o print.
 
+## O jogo lança edição nova todo ano — o piloto não é evento único
+
+**EA FC lança edição nova a cada ano** (FC 26 → FC 27, e vai continuar). Isso não é só o personagem sendo arquivado por edição ([Escopo](../produto/05-produto/02-escopo.md)) — é a **tela do Virtual Pro mudando de layout junto**, como a evidência abaixo já mostrou entre FC 26 e FC 27: cabeçalho de grupo trocou (`Dribbling`/`Shooting` → `Ball Control`/`Scoring`), rótulo de aba varia, e a aba `Attributes` perdeu gamertag e overall que existiam no layout anterior.
+
+- **O OCR é ancorado em layout**, não em conceito. Extração por posição de texto, cabeçalho ou aba quebra sempre que a EA redesenha a tela — e ela redesenha todo ano, sem aviso, sem changelog público confiável (ver [pesquisa de fontes](../research/fontes-de-print-fc27-2026-09-18.md)).
+- **Print de edição anterior não mede nada da edição nova** — mesmo racional de "print de FC 26 serve só pra desenvolver o script" acima, só que permanente: a cada lançamento, essa frase se repete com o nome da edição nova no lugar.
+- **Consequência pro processo**: manter o OCR funcionando não é "construir uma vez e terminar" — é recalibrar campos e taxa de acerto a cada edição nova, com prints frescos daquela edição, antes de liberar reverificação em produção. Vale tratar como checklist recorrente (issue nova a cada lançamento, não uma vez só), do mesmo jeito que o cargo Verificado cai e exige reverificação por edição.
+
 ## Primeira evidência real de FC 27 (2026-09-18)
 
 Quatro capturas da tela do Virtual Pro foram olhadas: **três de FC 27** (aba `Attributes`, dois Pros diferentes, de VOD público) e **uma de layout anterior**, provavelmente FC 26. Não é medição de OCR — é leitura do que a tela contém. Muda o escopo do piloto em dois pontos de premissa.
@@ -95,6 +103,37 @@ Então o atributo lido é **valor derivado** de arquétipo + corpo + boosts + po
 - **Rótulo de aba varia** no próprio FC 27: a segunda aba apareceu como `Customise` num Pro e como `Finisher` (o nome do arquétipo) noutro. Âncora de aba é frágil.
 - **Skill Moves e Weak Foot são estrela**, não número. Contar estrela é extração de forma, não de texto — decidir se entram no escopo.
 - **Ruído real**: as capturas de VOD vêm com facecam cobrindo o canto e compressão de stream. É o caso difícil que o piloto quer medir; não descartar por isso.
+
+## Rodada 1 (2026-09-24): Tesseract, abaixo de 60%
+
+**Amostra**: 20 prints de VOD público de FC 27, a partir da [lista de candidatos](../research/fontes-de-print-fc27-2026-09-18.md#lista-de-candidatos-pra-rodada-1-do-piloto-2026-09-24). 15 são da aba `Attributes` e entraram no gabarito (`apps/ocr-pilot/fixtures/gabarito.json`, valores transcritos à mão). As outras 5 (`Archetypes`, `PlayStyles`) ficaram fora, porque o script só mede `Attributes`. Idioma: 13 EN, 1 PT, 1 ES. Resolução entre 909×478 e 926×521, com compressão de vídeo e facecam em parte delas.
+
+**Resultado com o melhor ajuste medido:**
+
+| Métrica | Valor | Meta |
+|---|---|---|
+| Aceite de primeira (confiança ≥85% e campos corretos) | **0 de 15** | 80% |
+| Atributos lidos corretamente | **89 de 427 (20,8%)** | — |
+| Confiança média do motor por print | 49% a 64% | ≥85% |
+
+**O que foi tentado:**
+
+| Ajuste | Efeito |
+|---|---|
+| PSM 6 (bloco uniforme, config original) | confiança de 39% a 51% |
+| PSM 11 (texto esparso) | confiança maior, mas perde a ordem rótulo→número e zera a detecção de idioma |
+| **PSM 4 (coluna única)** | **melhor medido, e ficou como config** |
+| Recorte por rótulo + segunda leitura | **piorou** (8,7% a 11,7%). A grade tem 4 colunas lado a lado e o motor lê como uma linha só, então o recorte pegava o número da coluna vizinha. Revertido |
+
+**Nenhuma aba mostrou gamertag nem overall.** Nas 20 capturas (`Attributes`, `Archetypes`, `PlayStyles`), o topo traz nível, AP e moedas. A aba `Home` não apareceu em nenhuma. Isso não fecha a [#164](https://github.com/ljborgess/ProLobby.com/issues/164), mas soma evidência.
+
+**Piso de resolução baixado de 800×600 para 320×240.** O valor anterior só existia no código, sem número no dossiê, e rejeitava todo frame real de VOD antes do OCR tentar. Print de cadastro chega em qualquer resolução, porque quem manda é gente comum, com celular, TV ou vídeo. O piso barra só arquivo corrompido e miniatura.
+
+### Decisões (Luciano, 2026-09-24)
+
+- **Verificação usa a aba `Attributes`**, não a `Home`. **A prova de posse continua em aberto**: a aba não tem gamertag, e esse é o risco que a [#164](https://github.com/ljborgess/ProLobby.com/issues/164) registra.
+- **Antes de abrir issue de código da Fase 2.2, o piloto roda de novo com Google Vision**, com o mesmo gabarito e os mesmos prints. É o caminho que o [PRD da 2.2](https://github.com/ljborgess/ProLobby.com/issues/52) já previa ("decide motor: Tesseract vs. Google Vision"). **Depende de credencial**: conta no Google Cloud com faturamento, que não existe hoje. É o primeiro gasto com serviço pago, então passa pelos sócios (ver [#130](https://github.com/ljborgess/ProLobby.com/issues/130)).
+- **Se o Vision também ficar abaixo de 60%, a opção seguinte é segmentar as 4 colunas antes do OCR**, recortando cada coluna como imagem própria, não cada rótulo. Isso exige ler o PNG pixel a pixel, e o projeto não tem biblioteca de imagem instalada.
 
 ## De onde vêm os prints (decidido em 2026-09-16)
 
