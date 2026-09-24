@@ -173,10 +173,12 @@ Por que precisou existir: [Lançamento](../negocio/04-lancamento.md) afirmava qu
 
 **Aceite**: personagem com 0 partidas troca de categoria livremente. Com 1 ou mais, a troca é recusada.
 
-### RF-029 · Print rejeitado diz qual das cinco causas
+### RF-029 · Print rejeitado diz a causa
 **Origem**: [requisitos/04-notificacoes.md](04-notificacoes.md)
 
 **Aceite**: a mensagem distingue confiança abaixo de 85%, idioma não reconhecido, gamertag divergente do cadastrado naquela plataforma, formato ou tamanho inválido, e print já usado (hash repetido). Um "não foi possível processar" genérico não satisfaz este requisito.
+
+**Causas acrescentadas em 2026-09-24** (tela `Archetypes`, [piloto de OCR](06-piloto-ocr.md)): **imagem pequena demais** (separada de formato inválido, porque a correção é outra: mandar o screenshot do console ou uma foto mais de perto); **gamertag não encontrado no card**, que leva à segunda chance pela tela `Profile`; e **arquétipo não ativo**, que depende de detectar o ✓ ([#191](https://github.com/ljborgess/ProLobby.com/issues/191)). Arquétipo incompatível com a categoria é recusado já no cadastro do personagem, antes de qualquer print.
 
 ### RF-030 · Cooldown de 24 h só conta pra atualização aceita
 **Origem**: [produto/02-jogador/01-verificacao.md](../produto/02-jogador/01-verificacao.md)
