@@ -39,4 +39,4 @@ Busca feita via WebSearch e WebFetch, sem acesso ao jogo. Tentativas:
 ## Desdobramento no mesmo dia
 
 - **As 20 capturas da rodada 1 do piloto** (`Attributes`, `Archetypes`, `PlayStyles`) não mostram gamertag nem overall em nenhuma aba. A `Home` não aparece em nenhuma delas.
-- **Decisão do Luciano: a verificação usa a aba `Attributes`**, sem depender da `Home`. A prova de posse segue em aberto na #164. Registro completo em [Piloto de OCR, rodada 1](../requisitos/06-piloto-ocr.md#rodada-1-2026-09-24-tesseract-abaixo-de-60).
+- **A verificação sai do menu do Pro e passa para a tela do lobby do clube.** O overall do Pro só aparece ali ([pesquisa](https://github.com/ljborgess/ProLobby.com/blob/dev/docs/research/overall-pro-clubs-fc27-2026-09-24.md)), e o lobby pode mostrar o gamertag de cada jogador na posição dele. **Se mostrar, a #164 se resolve pela tela do lobby, e a aba `Home` deixa de importar.** Isso se confirma na rodada 2 do piloto (#190). Registro completo em [Piloto de OCR, rodada 2](../requisitos/06-piloto-ocr.md#rodada-2-tela-do-lobby-decidido-em-2026-09-24).
