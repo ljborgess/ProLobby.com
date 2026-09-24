@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 
-import { cardTextCrops, gamertagAppears } from './card'
+import { cardTextCrops, foldGamertag, gamertagAppears, impostorVariants } from './card'
 import { MIN_ACCEPT_CONFIDENCE } from './constants'
 import type { OcrEngine } from './engine'
 import { parseGabarito } from './gabarito'
@@ -76,24 +76,34 @@ function checkImpostors(gabarito: Gabarito, cardLines: Map<string, string[]>): I
       ),
     ),
   ]
-  let checks = 0
-  let falseAccepts = 0
+  const result: ImpostorCheck = {
+    checks: 0,
+    falseAccepts: 0,
+    neighborChecks: 0,
+    neighborAccepts: 0,
+  }
   for (const entry of gabarito.entries) {
     const lines = cardLines.get(entry.id)
-    if (!lines) {
+    const own = entry.expected.gamertag
+    if (!lines || !own) {
       continue
     }
-    for (const tag of tags) {
-      if (tag.toLowerCase() === entry.expected.gamertag?.toLowerCase()) {
-        continue
-      }
-      checks += 1
+    const variants = impostorVariants(own)
+    const far = [...tags.filter((tag) => foldGamertag(tag) !== foldGamertag(own)), ...variants.far]
+    for (const tag of far) {
+      result.checks += 1
       if (gamertagAppears(tag, lines)) {
-        falseAccepts += 1
+        result.falseAccepts += 1
+      }
+    }
+    for (const tag of variants.neighbors) {
+      result.neighborChecks += 1
+      if (gamertagAppears(tag, lines)) {
+        result.neighborAccepts += 1
       }
     }
   }
-  return { checks, falseAccepts }
+  return result
 }
 
 /**
@@ -101,7 +111,6 @@ function checkImpostors(gabarito: Gabarito, cardLines: Map<string, string[]>): I
  * climbs out of it. The operator writes the gabarito, but a `../.env`
  * typo (or a copied-from-somewhere entry) must not become a file read.
  */
-
 export function resolvePrintPath(printsDir: string, file: string): string | null {
   if (file === '' || path.isAbsolute(file)) {
     return null

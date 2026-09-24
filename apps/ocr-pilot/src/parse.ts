@@ -127,20 +127,21 @@ export function parseArchetypeScreen(text: string, words: OcrWord[]): ArchetypeP
     .map((line) => line.trim())
     .filter((line) => line !== '')
 
-  const hits = new Map<string, number[]>()
-  lines.forEach((line, index) => {
-    const name =
-      matchArchetype(line) ??
-      line
-        .split(' ')
-        .map(matchArchetype)
-        .find((m) => m !== null) ??
-      null
-    if (name) {
-      hits.set(name, [...(hits.get(name) ?? []), index])
+  // Only the start of a line counts: the title does ('MARAUDER 9 @ 250
+  // Available', or 'in| CREATOR ...' with an icon read as junk first), a word
+  // in the middle of a description ('targets') or of an overlay does not.
+  const hits = new Map<string, number>()
+  for (const line of lines) {
+    const words = line.split(' ').slice(0, 3)
+    let name: string | null = null
+    for (let i = 0; i < words.length && name === null; i += 1) {
+      name = matchArchetype(words.slice(i, i + 2).join(' ')) ?? matchArchetype(words[i] ?? '')
     }
-  })
-  const archetype = [...hits.entries()].sort((a, b) => b[1].length - a[1].length)[0]?.[0] ?? null
+    if (name) {
+      hits.set(name, (hits.get(name) ?? 0) + 1)
+    }
+  }
+  const archetype = [...hits.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null
 
   const labelHits = ARCHETYPE_SCREEN_LABELS_EN.filter((label) =>
     text.toLowerCase().includes(label),
@@ -158,8 +159,13 @@ function archetypeConfidence(words: OcrWord[], archetype: string | null): number
   if (archetype === null) {
     return null
   }
+  // Fuzzy, like the name itself: a title read as 'MAESTR0' still counts.
   const tokens = new Set(archetype.split(' '))
-  const matched = words.filter((word) => tokens.has(word.text.toLowerCase().replace(/[^a-z]/g, '')))
+  const matched = words.filter(
+    (word) =>
+      matchArchetype(word.text) === archetype ||
+      tokens.has(word.text.toLowerCase().replace(/[^a-z]/g, '')),
+  )
   if (matched.length === 0) {
     return null
   }

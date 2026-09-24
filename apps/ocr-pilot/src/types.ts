@@ -115,8 +115,12 @@ export type PrintMeasurement = {
 }
 
 export type ImpostorCheck = {
+  /** Other players' tags and far variants (2+ edits). Must stay at zero. */
   checks: number
   falseAccepts: number
+  /** One edit from the real tag: only verifies if OCR misread the tag into it. */
+  neighborChecks: number
+  neighborAccepts: number
 }
 
 export type PilotReport = {

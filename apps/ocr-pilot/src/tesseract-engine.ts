@@ -19,6 +19,7 @@ const DEFAULT_PSM = '4'
 export class TesseractEngine implements OcrEngine {
   readonly id = 'tesseract'
   private worker: TesseractWorker | null = null
+  // Tracks the worker's PSM between calls: one caller at a time, never concurrent.
   private psm = DEFAULT_PSM
 
   constructor(private readonly cacheDir = defaultCacheDir()) {}

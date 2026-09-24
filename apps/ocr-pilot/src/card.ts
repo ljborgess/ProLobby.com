@@ -1,5 +1,7 @@
 import sharp from 'sharp'
 
+import { ARCHETYPES } from './archetypes'
+
 type Region = { left: number; top: number; width: number; height: number }
 
 export type CardCrop = { image: Buffer; psm: string }
@@ -8,7 +10,7 @@ const UPSCALE = 6
 // The archetype card's bottom text (archetype name, then gamertag) sits at the
 // same screen proportions on every FC 27 print seen so far. The band holds
 // both lines (PSM 6); the line crops hold only the gamertag (PSM 7), which is
-// what reads underscores ("AIR_PEDRI_8_o"). Its exact height drifts ~0.5%.
+// what reads underscores ("QX_MOREL_8_o"). Its exact height drifts ~0.5%.
 const BAND: Region = { left: 0.1, top: 0.71, width: 0.11, height: 0.08 }
 const GAMERTAG_LINES: Region[] = [0.745, 0.75, 0.755].map((top) => ({
   left: 0.1,
@@ -58,25 +60,36 @@ function prepare(image: Buffer, region: Region, threshold: number): Promise<Buff
   return (threshold > 0 ? pipeline.threshold(threshold) : pipeline).png().toBuffer()
 }
 
+// The archetype name sits right above the tag, in the same crop: a claimed
+// 'Boss' must not verify against a Boss card.
+const ARCHETYPE_WORDS = new Set(
+  Object.keys(ARCHETYPES).flatMap((name) => name.split(' ').map(foldGamertag)),
+)
+
 /**
  * The product checks a gamertag the player already typed; it never has to
- * transcribe one. So a line "matches" when it equals the claim after folding
- * characters OCR confuses on this font (5/S, 0/O, 1/l/I, 8/B) and dropping
- * separators, with one edit of slack.
+ * transcribe one. A run of consecutive words has to *equal* the claim after
+ * folding what OCR confuses on this font (5/S, 0/O, 1/l/I, 8/B) and dropping
+ * every symbol. No edit of slack and never a substring: measured on real
+ * prints, slack gained no accepted print and let impostors through when OCR
+ * dropped a letter ('Morel' must not verify against 'QX_MOREL_8_o').
  */
 export function gamertagAppears(claimed: string, lines: string[]): boolean {
   const target = foldGamertag(claimed)
   if (target.length < 3) {
     return false
   }
-  // Any run of consecutive words: the icon and card art add junk tokens around
-  // the tag, and a tag with spaces ("addictz ant") spans several tokens.
+  // Consecutive words, because a tag with spaces ('dusk wind') spans several.
   return lines.some((line) => {
-    const tokens = line.split(/\s+/).filter((token) => token !== '')
+    const tokens = line
+      .split(/\s+/)
+      .map(foldGamertag)
+      .filter((token) => token !== '' && !ARCHETYPE_WORDS.has(token))
     for (let start = 0; start < tokens.length; start += 1) {
-      for (let end = start + 1; end <= tokens.length; end += 1) {
-        const candidate = foldGamertag(tokens.slice(start, end).join(''))
-        if (candidate.includes(target) || withinOneEdit(candidate, target)) {
+      let candidate = ''
+      for (let end = start; end < tokens.length && candidate.length < target.length; end += 1) {
+        candidate += tokens[end]
+        if (candidate === target) {
           return true
         }
       }
@@ -88,38 +101,34 @@ export function gamertagAppears(claimed: string, lines: string[]): boolean {
 export function foldGamertag(value: string): string {
   return value
     .toLowerCase()
-    .replace(/[\s_.-]/g, '')
     .replace(/5/g, 's')
     .replace(/0/g, 'o')
-    .replace(/[1i|]/g, 'l')
+    .replace(/[1i]/g, 'l')
     .replace(/8/g, 'b')
+    .replace(/[^a-z0-9]/g, '')
 }
 
-function withinOneEdit(a: string, b: string): boolean {
-  if (Math.abs(a.length - b.length) > 1) {
-    return false
+export type ImpostorVariants = {
+  /** Two edits or more from the real tag. */
+  far: string[]
+  /** One edit away: only verifies if OCR itself misread the tag into it. */
+  neighbors: string[]
+}
+
+/**
+ * Claims a cheater could type against a print of the real tag. The gabarito's
+ * other players are too different from each other to test near misses, so
+ * these are derived from each real tag instead.
+ */
+export function impostorVariants(tag: string): ImpostorVariants {
+  const far: string[] = []
+  if (tag.length >= 5) {
+    far.push(tag.slice(2))
   }
-  let i = 0
-  let j = 0
-  let edits = 0
-  while (i < a.length && j < b.length) {
-    if (a[i] === b[j]) {
-      i += 1
-      j += 1
-      continue
-    }
-    edits += 1
-    if (edits > 1) {
-      return false
-    }
-    if (a.length > b.length) {
-      i += 1
-    } else if (b.length > a.length) {
-      j += 1
-    } else {
-      i += 1
-      j += 1
-    }
+  if (tag.length >= 6) {
+    far.push(tag.slice(0, Math.ceil(tag.length / 2)))
   }
-  return edits + (a.length - i) + (b.length - j) <= 1
+  const last = tag.at(-1) ?? ''
+  const swapped = last.toLowerCase() === 'q' ? 'w' : 'q'
+  return { far, neighbors: [tag.slice(0, -1), tag.slice(0, -1) + swapped] }
 }
