@@ -82,7 +82,7 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 | Vagas livres declaradas no clube | 0 a 10 (contagem, não sim/não) | [RF-006](../requisitos/05-funcionais.md) |
 | Anti-reuso de print | hash do arquivo, checado **antes** do OCR | [Resultado](03-partida/04-resultado.md) |
 | Teto de uploads por conta | 10 por hora | [Personagens](02-jogador/01-verificacao.md) |
-| Pré-checagens antes do OCR | hash, dimensão mínima **800×600px**, nível de foco (variância de Laplaciano, threshold a calibrar no piloto) | [RF-064](../requisitos/05-funcionais.md) |
+| Pré-checagens antes do OCR | hash, dimensão mínima **320×240px** (era 800×600 até 2026-09-24), nível de foco (variância de Laplaciano, threshold a calibrar no piloto) | [RF-064](../requisitos/05-funcionais.md) |
 | Validação do roster no print final | gamertags conferidos contra o lobby | [Resultado](03-partida/04-resultado.md) |
 
 ## Resultado de partida

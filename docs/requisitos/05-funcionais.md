@@ -468,7 +468,7 @@ Requisitos vindos de uma revisão adversarial do fluxo inteiro — procurando br
 ### RF-064 · Pré-checagens locais barram lixo antes de custar chamada
 **Origem**: [produto/02-jogador/01-verificacao.md](../produto/02-jogador/01-verificacao.md)
 
-**Aceite**: imagem abaixo de **800×600px**, ou com variância de Laplaciano abaixo do limiar de nitidez (método padrão de detecção de blur; **valor exato calibrado durante o [piloto de OCR](06-piloto-ocr.md)**, não decidido a priori), é rejeitada localmente, sem chamada de OCR, com mensagem dizendo o que corrigir. Decidido em 2026-09-09.
+**Aceite**: imagem abaixo de **320×240px**, ou com variância de Laplaciano abaixo do limiar de nitidez (método padrão de detecção de blur; **valor exato calibrado durante o [piloto de OCR](06-piloto-ocr.md)**, não decidido a priori), é rejeitada localmente, sem chamada de OCR, com mensagem dizendo o que corrigir. Decidido em 2026-09-09; **piso baixado de 800×600 para 320×240 em 2026-09-24**: 800×600 recusava frame real de vídeo (909×478 a 926×521) antes de qualquer leitura, e o print de cadastro chega em qualquer resolução. O piso barra só lixo ([piloto de OCR](06-piloto-ocr.md), rodada 1).
 
 ### RF-065 · Teto de 10 uploads por hora por conta
 **Origem**: [produto/02-jogador/01-verificacao.md](../produto/02-jogador/01-verificacao.md)
