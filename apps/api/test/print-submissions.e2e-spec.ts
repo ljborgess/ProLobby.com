@@ -68,6 +68,7 @@ describe('print submissions (#195)', () => {
     request(app.getHttpServer())
       .post(`/api/characters/${characterId}/prints`)
       .set('Cookie', cookie)
+      .field('activeArchetypeConfirmed', 'true')
       .attach('print', file, name)
 
   beforeAll(async () => {

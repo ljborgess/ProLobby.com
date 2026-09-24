@@ -59,6 +59,10 @@ export interface CharacterContent {
     fileRequired: string
     cancel: string
     backToList: string
+    activeConfirm: string
+    activeConfirmRequired: string
+    cooldown: (hours: number) => string
+    inReview: string
     genericError: string
   }
   existing: {
@@ -148,6 +152,11 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
       fileRequired: 'Escolha o print antes de enviar.',
       cancel: 'Voltar',
       backToList: 'Voltar pros meus personagens',
+      activeConfirm: 'O arquétipo aberto no print é o meu ativo (o que tem o ✓ do lado do nome).',
+      activeConfirmRequired: 'Confirme que o arquétipo aberto no print é o seu ativo.',
+      cooldown: (hours) =>
+        `Este personagem foi verificado há pouco. Dá pra mandar outro print em ${hours} h.`,
+      inReview: 'Já tem um print deste personagem em análise. Espere a moderação decidir.',
       genericError: 'Não deu pra enviar agora. Tenta de novo em instantes.',
     },
     existing: {
@@ -235,6 +244,13 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
       fileRequired: 'Elige la captura antes de enviar.',
       cancel: 'Volver',
       backToList: 'Volver a mis personajes',
+      activeConfirm:
+        'El arquetipo abierto en la captura es mi activo (el que tiene el ✓ junto al nombre).',
+      activeConfirmRequired: 'Confirma que el arquetipo abierto en la captura es tu activo.',
+      cooldown: (hours) =>
+        `Este personaje se verificó hace poco. Podrás enviar otra captura en ${hours} h.`,
+      inReview:
+        'Ya hay una captura de este personaje en revisión. Espera la decisión de la moderación.',
       genericError: 'No se pudo enviar ahora. Intenta de nuevo en un momento.',
     },
     existing: {

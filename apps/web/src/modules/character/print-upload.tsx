@@ -56,8 +56,14 @@ export function PrintUpload({
       setOutcome({ kind: 'message', text: content.tooLarge })
       return
     }
+    const confirm = event.currentTarget.elements.namedItem('activeArchetypeConfirmed')
+    if (!(confirm as HTMLInputElement | null)?.checked) {
+      setOutcome({ kind: 'message', text: content.activeConfirmRequired })
+      return
+    }
 
     const body = new FormData()
+    body.append('activeArchetypeConfirmed', 'true')
     body.append('print', file)
     setOutcome({ kind: 'sending' })
     try {
@@ -66,13 +72,21 @@ export function PrintUpload({
         body,
       })
       if (response.status === 429) {
-        const { retryAfterSeconds = 3600 } = (await response.json().catch(() => ({}))) as {
+        const { message, retryAfterSeconds = 3600 } = (await response.json().catch(() => ({}))) as {
+          message?: string
           retryAfterSeconds?: number
         }
         setOutcome({
           kind: 'message',
-          text: content.uploadLimit(Math.max(1, Math.ceil(retryAfterSeconds / 60))),
+          text:
+            message === 'print_cooldown'
+              ? content.cooldown(Math.max(1, Math.ceil(retryAfterSeconds / 3600)))
+              : content.uploadLimit(Math.max(1, Math.ceil(retryAfterSeconds / 60))),
         })
+        return
+      }
+      if (response.status === 409) {
+        setOutcome({ kind: 'message', text: content.inReview })
         return
       }
       if (response.status === 413) {
@@ -143,6 +157,11 @@ export function PrintUpload({
           {content.fileHint}
         </p>
       </div>
+
+      <label className="flex items-start gap-2 text-sm text-foreground-soft">
+        <input type="checkbox" name="activeArchetypeConfirmed" className="mt-0.5" />
+        <span>{content.activeConfirm}</span>
+      </label>
 
       {outcome.kind === 'message' && (
         <p id={alertId} role="alert" className="text-sm text-danger">

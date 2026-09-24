@@ -86,9 +86,14 @@ export class CharacterController {
     @Req() request: RequestWithAccount,
     @Param('id', ParseUUIDPipe) id: string,
     @UploadedFile() print?: Express.Multer.File,
+    @Body('activeArchetypeConfirmed') activeArchetypeConfirmed?: string,
   ): Promise<PrintSubmissionView> {
     if (!print) {
       throw new BadRequestException('print_required')
+    }
+    // #197: OCR cannot see the ✓ of the active archetype, so the player says it.
+    if (activeArchetypeConfirmed !== 'true') {
+      throw new BadRequestException('active_archetype_confirmation_required')
     }
     return this.printSubmissionService.submit(request.account!.id, id, print.buffer)
   }

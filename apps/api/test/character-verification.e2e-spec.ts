@@ -66,6 +66,7 @@ describe('character verification by moderation (#198)', () => {
     await request(app.getHttpServer())
       .post(`/api/characters/${character.body.id}/prints`)
       .set('Cookie', player.cookie)
+      .field('activeArchetypeConfirmed', 'true')
       .attach('print', makePng(400, 300, ++counter), 'print.png')
     const found = await orm.em.fork().findOneOrFail(ModerationCase, {
       printSubmission: { character: character.body.id },
@@ -232,6 +233,7 @@ describe('character verification by moderation (#198)', () => {
     await request(app.getHttpServer())
       .post(`/api/characters/${own.body.id}/prints`)
       .set('Cookie', moderator)
+      .field('activeArchetypeConfirmed', 'true')
       .attach('print', makePng(400, 300, ++counter), 'print.png')
     const em = orm.em.fork()
     const ownCase = await em.findOneOrFail(ModerationCase, {
@@ -333,5 +335,82 @@ describe('character verification by moderation (#198)', () => {
     const { caseId } = await playerWithPrint(`Bad${counter}xx`)
 
     expect((await decide(caseId, body)).status).toBe(400)
+  })
+
+  describe('confirmation and cooldown (#197)', () => {
+    const resend = (cookie: string, characterId: string, confirmed = true) => {
+      const req = request(app.getHttpServer())
+        .post(`/api/characters/${characterId}/prints`)
+        .set('Cookie', cookie)
+      if (confirmed) {
+        req.field('activeArchetypeConfirmed', 'true')
+      }
+      return req.attach('print', makePng(400, 300, ++counter), 'print.png')
+    }
+
+    /** Moves the approval back in time instead of waiting a day. */
+    const verifiedHoursAgo = async (characterId: string, hours: number) => {
+      const em = orm.em.fork()
+      const character = await em.findOneOrFail(Character, { id: characterId })
+      character.verifiedAt = new Date(Date.now() - hours * 60 * 60 * 1000)
+      await em.flush()
+    }
+
+    it('refuses a print without the active-archetype confirmation, not counting it', async () => {
+      const player = await account()
+      const character = await request(app.getHttpServer())
+        .post('/api/characters')
+        .set('Cookie', player.cookie)
+        .send({
+          category: 'midfielder',
+          archetype: 'maestro',
+          platform: 'ps5',
+          gamertag: 'NoTick1',
+        })
+
+      const res = await resend(player.cookie, character.body.id, false)
+
+      expect(res.status).toBe(400)
+      expect(res.body.message).toBe('active_archetype_confirmation_required')
+      const list = await request(app.getHttpServer())
+        .get('/api/characters')
+        .set('Cookie', player.cookie)
+      expect(list.body[0].lastPrint).toBeNull()
+    })
+
+    it('refuses a second print while the first is in review', async () => {
+      const { player, characterId } = await playerWithPrint('Queue2x')
+
+      const res = await resend(player.cookie, characterId)
+
+      expect(res.status).toBe(409)
+      expect(res.body.message).toBe('print_in_review')
+    })
+
+    it('holds a new print for 24 h after an accepted one, with the time left (RF-030)', async () => {
+      const { player, characterId, caseId } = await playerWithPrint('Cool1xx')
+      await decide(caseId, { approve: true, archetype: 'maestro', gamertag: 'Cool1xx' })
+      await verifiedHoursAgo(characterId, 23)
+
+      const res = await resend(player.cookie, characterId)
+
+      expect(res.status).toBe(429)
+      expect(res.body.message).toBe('print_cooldown')
+      expect(res.body.retryAfterSeconds).toBeGreaterThan(59 * 60)
+      expect(res.body.retryAfterSeconds).toBeLessThanOrEqual(60 * 60)
+
+      await verifiedHoursAgo(characterId, 24.1)
+      const later = await resend(player.cookie, characterId)
+      expect(later.body.status).toBe('received')
+    })
+
+    it('lets a rejected print be sent again right away (RF-030)', async () => {
+      const { player, characterId, caseId } = await playerWithPrint('Retry1x')
+      await decide(caseId, { approve: false, rejection: 'unreadable' })
+
+      const res = await resend(player.cookie, characterId)
+
+      expect(res.body.status).toBe('received')
+    })
   })
 })

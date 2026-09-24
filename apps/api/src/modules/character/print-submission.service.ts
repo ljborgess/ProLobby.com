@@ -1,6 +1,7 @@
 import { LockMode } from '@mikro-orm/core'
 import { EntityManager } from '@mikro-orm/postgresql'
 import {
+  ConflictException,
   HttpException,
   HttpStatus,
   Injectable,
@@ -23,6 +24,9 @@ import { PrintRejection, PrintSubmission, PrintSubmissionStatus } from './print-
 /** RF-065: attempts per account per hour, accepted or not. */
 export const PRINT_UPLOADS_PER_HOUR = 10
 const HOUR_MS = 60 * 60 * 1000
+
+/** RF-030: only an accepted print starts it, counted from the approval. */
+export const PRINT_COOLDOWN_MS = 24 * HOUR_MS
 
 /**
  * RF-064: a garbage gate, not a quality bar. 800×600 rejected every real video
@@ -115,6 +119,22 @@ export class PrintSubmissionService implements OnModuleInit {
     })
     if (!character) {
       throw new NotFoundException('character_not_found')
+    }
+
+    // Neither counts as an attempt: nothing was sent to be judged.
+    const cooldownEnds = (character.verifiedAt?.getTime() ?? 0) + PRINT_COOLDOWN_MS
+    if (cooldownEnds > Date.now()) {
+      throw new HttpException(
+        {
+          message: 'print_cooldown',
+          retryAfterSeconds: Math.ceil((cooldownEnds - Date.now()) / 1000),
+        },
+        HttpStatus.TOO_MANY_REQUESTS,
+      )
+    }
+    // A second print in the queue would dodge the cooldown once both pass.
+    if (await em.count(PrintSubmission, { character, status: PrintSubmissionStatus.RECEIVED })) {
+      throw new ConflictException('print_in_review')
     }
 
     const since = new Date(Date.now() - HOUR_MS)
