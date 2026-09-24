@@ -24,6 +24,25 @@ EA FC Pro Clubs **não tem API pública** — nenhuma integração automática c
 > Consequência que a plataforma não consegue fechar: quem entra na fila como goleiro precisa **estar** configurado como goleiro no console naquele momento, e nada aqui verifica isso — dá pra verificar um build forte e jogar com outro. Está no [checklist](../03-partida/05-checklist.md) como teste 7, com a possível mitigação (usar a posição e a nota que aparecem no print de fim de partida pra conferir que a pessoa jogou na categoria em que entrou).
 - Personagem fica vinculado à edição do jogo (ver [Escopo de plataforma, jogo e região](../05-produto/02-escopo.md)).
 
+### Categoria e arquétipo (decidido em 2026-09-24)
+
+**O jogador escolhe a categoria, e o print confere se o arquétipo é compatível com ela.**
+
+No FC 27, o Pro não tem posição fixa: ele tem um **arquétipo** (13 no total), e o mesmo arquétipo pode jogar em várias posições. A tela `Archetypes` agrupa os arquétipos em 4 grupos, e o produto tem 5 categorias. As 5 continuam, porque a fila depende delas: a forma do time (1 + 4 + 2 + 2 + 2), o pareamento categoria contra categoria e o elo por categoria ([Fila](../03-partida/02-fila.md)).
+
+| Grupo do arquétipo no jogo | Arquétipos | Categorias permitidas |
+|---|---|---|
+| Keeper | Shot Stopper, Sweeper Keeper | Goleiro |
+| Defender | Progressor, Boss, Marauder | Zaga/Lateral |
+| Midfielder | Disruptor, Recycler, Maestro, Creator | Meio ou Ponta |
+| Forward | Spark, Magician, Finisher, Target | Ponta ou Ataque |
+
+- **O que barra**: as trocas grosseiras. Goleiro com arquétipo de atacante e ataque com arquétipo de zagueiro são recusados.
+- **O que aceita**: casos reais em que o arquétipo não diz a posição, como um `Creator` jogando de meia pela direita (RM é Ponta) ou um `Spark` jogando de ponta ou de centroavante.
+- **O que não garante**: dentro de Meio ou Ponta, e de Ponta ou Ataque, a escolha é do jogador. É o mesmo risco aceito na ressalva acima: nada aqui prova a posição jogada. A mitigação continua sendo a do teste 7 do [checklist](../03-partida/05-checklist.md), que confere a posição no print de fim de partida.
+- **Por que não um arquétipo por categoria**: fixar cada arquétipo numa categoria só (Spark = Ponta, Finisher = Ataque) recusaria jogador legítimo e ainda assim não provaria a posição.
+- **Os grupos seguem a ordem dos ícones na tela `Archetypes`** dos prints reais do FC 27, não resumos de terceiros, que misturam os grupos. Evidência no [piloto de OCR](../../requisitos/06-piloto-ocr.md).
+
 ## Identidade da conta
 
 - **A conta guarda um gamertag por plataforma** (PSN ID pro PS5, gamertag pro Xbox, ID pro PC) — não um campo único. Motivo: quem migra de plataforma mantém a conta e a reputação ([Escopo](../05-produto/02-escopo.md)), passando a ter personagens em duas plataformas com nomes diferentes em cada ecossistema. O personagem aponta pra plataforma dele, e o OCR compara contra o gamertag **daquela** plataforma. Detalhe em [Modelo de dados](../../requisitos/03-dados.md).
