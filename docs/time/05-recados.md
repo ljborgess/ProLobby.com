@@ -29,7 +29,7 @@ As três do passo 3 andam em paralelo. **Ao pegar uma, comente nela antes de com
 - **Os campos lidos são arquétipo, categoria e gamertag.** O nome embaixo do arquétipo no card **é o gamertag**, com o ícone da plataforma. Isso resolveu a [#164](https://github.com/ljborgess/ProLobby.com/issues/164) sem precisar abrir o jogo.
 - **Overall e atributos saíram.** Desde o FC 26, o overall só existe por posição, no lobby do clube. O seed do elo fica neutro.
 - **O jogador escolhe a categoria, e o arquétipo tem que ser compatível**: Keeper → Goleiro; Defender → Zaga/Lateral; Midfielder → Meio ou Ponta; Forward → Ponta ou Ataque. A tabela está em `01-verificacao.md` ([PR #193](https://github.com/ljborgess/ProLobby.com/pull/193)).
-- **Piloto, rodada 2a**: 78% de aceite, provisório, com **0 gamertags de outra pessoa aceitos**. Detalhes no `06-piloto-ocr.md` ([PR #192](https://github.com/ljborgess/ProLobby.com/pull/192)).
+- **Piloto, rodada 2a**: 56% de aceite com 9 prints, abaixo dos 60%, com **0 gamertags de outra pessoa aceitos**. Um número de 78% chegou a circular e estava errado: a conferência aceitava pedaço de gamertag. Por isso o OCR entra por último, e a #199 só anda quando a #191 medir de novo. Detalhes no `06-piloto-ocr.md` ([PR #192](https://github.com/ljborgess/ProLobby.com/pull/192)).
 
 ### Duas regras novas
 
