@@ -1,6 +1,6 @@
 # Piloto de OCR — teste isolado, antes da plataforma
 
-**Status: rodada 1 medida em 2026-09-24 com Tesseract — abaixo de 60%. Próximo passo: rodada 2 com a tela Archetypes ([#190](https://github.com/ljborgess/ProLobby.com/issues/190))** ([resultado](#rodada-1-2026-09-24-tesseract-abaixo-de-60), [plano](#rodada-2-tela-archetypes-decidido-em-2026-09-24)). Continua sendo o bloqueador nº 2 do projeto, ao lado do [checklist de teste no jogo](../produto/03-partida/05-checklist.md).
+**Status: rodada 1 medida em 2026-09-24 com Tesseract — abaixo de 60%. Rodada 2a com a tela Archetypes: 56% com 9 prints. Próximo passo: completar 20 prints ([#191](https://github.com/ljborgess/ProLobby.com/issues/191))** ([resultado](#rodada-1-2026-09-24-tesseract-abaixo-de-60), [plano](#rodada-2-tela-archetypes-decidido-em-2026-09-24)). Continua sendo o bloqueador nº 2 do projeto, ao lado do [checklist de teste no jogo](../produto/03-partida/05-checklist.md).
 
 Não é feature nem etapa de produto: é um experimento que responde se o produto de **identidade verificada** é viável, e roda **sem conta, sem banco, sem tela**.
 
@@ -175,6 +175,34 @@ O único campo que o lobby tem e a `Archetypes` não tem é o OVR. Sem ele, o cu
 - **[Verificação](../produto/02-jogador/01-verificacao.md) e [Ranking](../produto/02-jogador/02-ranking.md) só mudam quando a rodada 2 passar.** Até lá, o texto deles descreve o plano antigo e esta seção é a fonte.
 
 A execução está na [#190](https://github.com/ljborgess/ProLobby.com/issues/190): 20 prints da tela `Archetypes` de VOD público, gabarito com a tela nova, o mesmo critério de 60%. A primeira tarefa é confirmar se o nome no card é o gamertag.
+
+## Rodada 2a (2026-09-24): tela Archetypes, 56% com 9 prints
+
+**Amostra**: 9 prints da tela `Archetypes` com o arquétipo ativo aberto, de 6 jogadores, todos com o jogo em inglês. 8 são frames de vídeo em tela cheia (1280×720 a 1365×767) e 1 é thumbnail do YouTube (596×335, com texto por cima). Mais 4 prints ficaram fora do gabarito como casos que o produto tem que rejeitar: 3 com arquétipo não ativo e 1 da tela `Profile`.
+
+**O nome embaixo do arquétipo no card é o gamertag**, precedido do ícone da plataforma. Isso foi confirmado em dois jogadores: na tela `Profile` do AddictzAnt (Xbox), que mostra o mesmo nome em letra grande, e no indicador de voz do Tradeska (PlayStation), que mostra o mesmo nome com o logo do PlayStation. **A prova de posse da [#164](https://github.com/ljborgess/ProLobby.com/issues/164) sai desta tela.**
+
+| Métrica | Valor |
+|---|---|
+| Arquétipo lido certo | **9 de 9**, confiança de 86% a 96% |
+| Gamertag verificado | **5 de 8** (o thumbnail ficou sem gamertag no gabarito, ilegível) |
+| Aceite de primeira | **5 de 9 (56%)** |
+| Gamertag errado aceito | **0 em 40 checagens** (cada print conferido contra os gamertags dos outros jogadores) |
+
+**Como lê:**
+- **Arquétipo**: no título grande da tela inteira, ajustado pra um dos 13 nomes do jogo. O grupo (Keeper, Defender, Midfielder, Forward) sai do nome.
+- **Gamertag**: o OCR da tela inteira nem enxerga o texto do card, pequeno demais em cima da arte. O script recorta a faixa do card, amplia 4× e testa 4 contrastes. **Ele não transcreve o gamertag, confere o que o jogador digitou no cadastro**: aceita troca de caractere parecido (`5/S`, `0/O`, `1/l/I`, `8/B`), ignora separador (`_ . -`) e tolera 1 erro.
+- **Pré-processamento com `sharp`**: entrou porque a medição pediu. Sem ampliar, o recorte não lia nenhum gamertag. Fica só no `ocr-pilot`.
+
+**Os 3 gamertags que falharam**: um card bronze (`Tradeska`, que passou em outro print do mesmo jogador), `navid4897` lido como `navid4B89` (2 erros) e `AIR_PEDRI_8_o` (sublinhados e letra solta). Acrescentar mais 2 contrastes não mudou nada, então não entrou.
+
+**Lacunas, na [#191](https://github.com/ljborgess/ProLobby.com/issues/191):**
+- **Arquétipo ativo não é detectado.** O ✓ verde é ícone, não texto. Hoje, um print de arquétipo não ativo passaria.
+- **4 grupos do jogo × 5 categorias do dossiê.** Ponta e Ataque caem os dois em Forward. É decisão de produto separar pelo arquétipo.
+- **Só inglês.** Os rótulos da tela em PT e ES ainda não foram vistos.
+- **9 prints é pouco.** A meta continua 20, e 56% está a um print de 60%.
+
+**Os prints e o gabarito desta rodada ficam fora do git.** Diferente da rodada 1, o gabarito tem gamertag real de terceiros ([como pedir, e o que pode ser feito com o print](#como-pedir-e-o-que-pode-ser-feito-com-o-print)).
 
 ## De onde vêm os prints (decidido em 2026-09-16)
 
