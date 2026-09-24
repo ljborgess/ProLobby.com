@@ -1,6 +1,6 @@
 # Piloto de OCR — teste isolado, antes da plataforma
 
-**Status: rodada 1 medida em 2026-09-24 com Tesseract — abaixo de 60%. Próximo passo: rodada 2 com a tela do lobby do clube ([#190](https://github.com/ljborgess/ProLobby.com/issues/190))** ([resultado](#rodada-1-2026-09-24-tesseract-abaixo-de-60), [plano](#rodada-2-tela-do-lobby-decidido-em-2026-09-24)). Continua sendo o bloqueador nº 2 do projeto, ao lado do [checklist de teste no jogo](../produto/03-partida/05-checklist.md).
+**Status: rodada 1 medida em 2026-09-24 com Tesseract — abaixo de 60%. Próximo passo: rodada 2 com a tela Archetypes ([#190](https://github.com/ljborgess/ProLobby.com/issues/190))** ([resultado](#rodada-1-2026-09-24-tesseract-abaixo-de-60), [plano](#rodada-2-tela-archetypes-decidido-em-2026-09-24)). Continua sendo o bloqueador nº 2 do projeto, ao lado do [checklist de teste no jogo](../produto/03-partida/05-checklist.md).
 
 Não é feature nem etapa de produto: é um experimento que responde se o produto de **identidade verificada** é viável, e roda **sem conta, sem banco, sem tela**.
 
@@ -131,36 +131,50 @@ Então o atributo lido é **valor derivado** de arquétipo + corpo + boosts + po
 
 ### Decisões (Luciano, 2026-09-24)
 
-- ~~**Verificação usa a aba `Attributes`**, não a `Home`.~~ **Revisto no mesmo dia**: a verificação passa para a tela do lobby ([rodada 2](#rodada-2-tela-do-lobby-decidido-em-2026-09-24)).
+- ~~**Verificação usa a aba `Attributes`**, não a `Home`.~~ **Revisto no mesmo dia**: a verificação passa para a tela `Archetypes` ([rodada 2](#rodada-2-tela-archetypes-decidido-em-2026-09-24)).
 - **Google Vision fica fora.** O [PRD da 2.2](https://github.com/ljborgess/ProLobby.com/issues/52) previa comparar Tesseract com Vision, mas o Vision exige conta no Google Cloud com faturamento, e seria o primeiro gasto com serviço pago. O motor continua local.
 - **A Fase 2.2 segue bloqueada pelo piloto** ([#50](https://github.com/ljborgess/ProLobby.com/issues/50)) até alguma rodada passar de 60%.
 
-## Rodada 2: tela do lobby (decidido em 2026-09-24)
+## Rodada 2: tela Archetypes (decidido em 2026-09-24)
 
 A rodada 1 mostrou um problema anterior à taxa de acerto: **a aba `Attributes` não tem nenhum campo que o produto usa**. O dossiê pede do print três coisas com função real: o **overall** (seed do elo, [Ranking](../produto/02-jogador/02-ranking.md)), a **posição** (categoria do personagem) e o **gamertag** (prova de posse, [Verificação](../produto/02-jogador/01-verificacao.md)). Os 29 atributos só servem pra exibição. Acertar 99% deles não resolveria nada.
 
-**O Pro não tem mais overall único** ([pesquisa](../research/overall-pro-clubs-fc27-2026-09-24.md)). Desde o FC 26, o OVR vale para o **arquétipo numa posição**, e aparece no **lobby do clube** quando se destaca uma posição vaga no campinho da escalação. Isso está confirmado pela EA para o FC 26. Para o FC 27 é indício, vindo de um guia de terceiros; a EA não anunciou mudança. Como o personagem da plataforma já é 1 categoria, o OVR "dessa build nessa posição" é estável o bastante pra ser âncora.
+**O Pro não tem mais overall único** ([pesquisa](../research/overall-pro-clubs-fc27-2026-09-24.md)). Desde o FC 26, o OVR vale para o **arquétipo numa posição** e só aparece no **lobby do clube**, quando se destaca uma posição vaga no campinho da escalação. Isso está confirmado pela EA para o FC 26. Para o FC 27 é indício, vindo de um guia de terceiros.
+
+### Por que `Archetypes` e não o lobby
+
+O lobby foi a primeira escolha, por ter OVR. Foi trocado no mesmo dia pela tela `Archetypes`:
+
+| | `Archetypes` | Lobby do clube |
+|---|---|---|
+| Visto no FC 27 | sim, 3 prints reais da rodada 1 | não, só descrição da EA para o FC 26 |
+| Categoria | escrita na tela: Keeper, Defender, Midfielder, Forward | posição do campinho |
+| OVR | não tem | tem, por posição |
+| Gamertag | talvez: há um nome embaixo do arquétipo no card | talvez, mas com vários jogadores na tela |
+| Pra tirar o print | menu do Pro, a qualquer hora | no lobby com o clube, destacando a posição certa |
+
+O único campo que o lobby tem e a `Archetypes` não tem é o OVR. Sem ele, o custo são 8 partidas de calibragem, porque o seed já decai a zero na 9ª ([Ranking](../produto/02-jogador/02-ranking.md)).
 
 ### Decisões
 
-- **O print de verificação passa a ser a tela do lobby** com a posição do jogador destacada. O menu do Pro sai do fluxo.
+- **O print de verificação passa a ser a tela `Archetypes`, com o arquétipo ativo aberto.** O card aberto nem sempre é o ativo: num dos prints o jogador olhava `MAESTRO` enquanto o ✓ verde, que marca o ativo, estava num arquétipo de Forward. O pedido ao jogador precisa dizer isso.
 - **Campos lidos**:
-  - **posição**, do lobby. Se o lobby não mostrar a posição, a categoria vem do arquétipo ativo, que o jogo agrupa em Keeper, Defender, Midfielder e Forward na tela `Archetypes`;
-  - **OVR naquela posição**, que vira o seed;
-  - **gamertag**, se o lobby mostrar. Nesse caso resolve a prova de posse da [#164](https://github.com/ljborgess/ProLobby.com/issues/164);
+  - **categoria**, do grupo do arquétipo ativo;
+  - **nome do arquétipo**, pra conferir o grupo;
+  - **nome embaixo do arquétipo no card.** Se for o gamertag, resolve a prova de posse da [#164](https://github.com/ljborgess/ProLobby.com/issues/164). Se for só o nome do Pro, a posse continua em aberto;
   - **os atributos saem da verificação.**
+- **Seed neutro, sem overall.** O seed por overall de [Ranking](../produto/02-jogador/02-ranking.md) sai do plano.
 - **A precisão vem de ler pouco e validar muito, não de trocar de motor**:
   - poucos campos, com letra grande;
-  - posição validada contra vocabulário fechado de siglas, ajustando a leitura para a sigla mais próxima;
-  - OVR aceito só entre 40 e 99;
-  - instruções no upload, com imagem de exemplo: preferir screenshot do console; se for foto, tela inteira, reta e sem reflexo;
+  - nome do arquétipo e grupo validados contra a lista fechada de arquétipos do jogo, ajustando a leitura para o nome mais próximo;
+  - instruções no upload, com imagem de exemplo: arquétipo ativo aberto, screenshot do console de preferência; se for foto, tela inteira, reta e sem reflexo;
   - tela de confirmação antes de salvar, que já está em [Verificação](../produto/02-jogador/01-verificacao.md).
 - **Pré-processamento só se a medição pedir.** Cinza, ampliação e contraste, com a biblioteca `sharp`. Nada é instalado antes.
-- **Se o lobby não mostrar OVR, o seed fica neutro, sem overall.** O custo são 8 partidas de calibragem, porque o seed já decai a zero na 9ª ([Ranking](../produto/02-jogador/02-ranking.md)).
+- **O lobby volta ao páreo só se os prints mostrarem OVR e gamertag claros.** A coleta tira print das duas telas.
 - **Serviço pago fica como reserva registrada, não como plano.** Modelo de visão (Google Vision, ou um LLM que lê imagem) seria o mais preciso para foto torta, mas cobra por chamada. Foi descartado por custo.
 - **[Verificação](../produto/02-jogador/01-verificacao.md) e [Ranking](../produto/02-jogador/02-ranking.md) só mudam quando a rodada 2 passar.** Até lá, o texto deles descreve o plano antigo e esta seção é a fonte.
 
-A execução está na [#190](https://github.com/ljborgess/ProLobby.com/issues/190): 20 prints do lobby de VOD público, gabarito com a tela nova, o mesmo critério de 60%.
+A execução está na [#190](https://github.com/ljborgess/ProLobby.com/issues/190): 20 prints da tela `Archetypes` de VOD público, gabarito com a tela nova, o mesmo critério de 60%. A primeira tarefa é confirmar se o nome no card é o gamertag.
 
 ## De onde vêm os prints (decidido em 2026-09-16)
 
