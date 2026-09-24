@@ -43,17 +43,15 @@ export class CharacterService {
   constructor(private readonly em: EntityManager) {}
 
   async list(accountId: string): Promise<CharacterView[]> {
-    const characters = await this.em
-      .fork()
-      .find(
-        Character,
-        {
-          account: accountId,
-          edition: CURRENT_EDITION,
-          state: { $in: [...ACTIVE_CHARACTER_STATES] },
-        },
-        { orderBy: { createdAt: 'asc' } },
-      )
+    const characters = await this.em.fork().find(
+      Character,
+      {
+        account: accountId,
+        edition: CURRENT_EDITION,
+        state: { $in: [...ACTIVE_CHARACTER_STATES] },
+      },
+      { orderBy: { createdAt: 'asc' } },
+    )
     return characters.map(toView)
   }
 
