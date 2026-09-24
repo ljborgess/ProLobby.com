@@ -92,7 +92,12 @@ describe('queue prerequisites (#171)', () => {
     const res = await prerequisites(cookie)
 
     expect(res.status).toBe(200)
-    expect(res.body).toEqual({ emailVerified: false, discordLinked: false, discordPresent: true })
+    expect(res.body).toEqual({
+      emailVerified: false,
+      characterVerified: false,
+      discordLinked: false,
+      discordPresent: true,
+    })
   })
 
   it('reports the email once it is verified', async () => {
@@ -101,6 +106,7 @@ describe('queue prerequisites (#171)', () => {
 
     expect((await prerequisites(cookie)).body).toEqual({
       emailVerified: true,
+      characterVerified: false,
       discordLinked: false,
       discordPresent: true,
     })
@@ -114,9 +120,15 @@ describe('queue prerequisites (#171)', () => {
 
     const res = await prerequisites(cookie)
 
-    expect(res.body).toEqual({ emailVerified: false, discordLinked: true, discordPresent: true })
+    expect(res.body).toEqual({
+      emailVerified: false,
+      characterVerified: false,
+      discordLinked: true,
+      discordPresent: true,
+    })
     expect(JSON.stringify(res.body)).not.toContain('111111111111111111')
     expect(Object.keys(res.body).sort()).toEqual([
+      'characterVerified',
       'discordLinked',
       'discordPresent',
       'emailVerified',
@@ -135,13 +147,18 @@ describe('queue prerequisites (#171)', () => {
 
     const res = await prerequisites(cookie)
 
-    expect(res.body).toEqual({ emailVerified: false, discordLinked: true, discordPresent: false })
+    expect(res.body).toEqual({
+      emailVerified: false,
+      characterVerified: false,
+      discordLinked: true,
+      discordPresent: false,
+    })
   })
 
-  it('leaves the character out until phase 2.2 can turn it true', async () => {
+  it('reports the character as pending until one is verified (#194)', async () => {
     const { cookie } = await account()
 
-    expect((await prerequisites(cookie)).body).not.toHaveProperty('characterVerified')
+    expect((await prerequisites(cookie)).body.characterVerified).toBe(false)
   })
 
   describe('refuses without serving a panel', () => {

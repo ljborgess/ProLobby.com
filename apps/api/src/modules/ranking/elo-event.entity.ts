@@ -1,6 +1,7 @@
-import { Entity, Enum, Index, Opt, PrimaryKey, Property } from '@mikro-orm/core'
+import { Entity, Enum, Index, ManyToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core'
 import { randomUUID } from 'node:crypto'
 
+import { Character } from '../character/character.entity'
 import { EloEventReason } from './ranking-event.enums'
 
 /**
@@ -14,17 +15,13 @@ import { EloEventReason } from './ranking-event.enums'
  * table would force a nullable character on every conduct row.
  */
 @Entity({ tableName: 'elo_event' })
-@Index({ properties: ['characterId', 'createdAt'] })
+@Index({ properties: ['character', 'createdAt'] })
 export class EloEvent {
   @PrimaryKey({ type: 'uuid' })
   id: string & Opt = randomUUID()
 
-  /**
-   * Plain uuid, no foreign key yet: the character table arrives in phase 2.2.
-   * The constraint is added there, while the table is still empty.
-   */
-  @Property({ type: 'uuid' })
-  characterId!: string
+  @ManyToOne(() => Character, { deleteRule: 'cascade' })
+  character!: Character
 
   /** Signed, and never a fraction: K-factor is 32 or 20 (RF-077). */
   @Property({ type: 'smallint' })
