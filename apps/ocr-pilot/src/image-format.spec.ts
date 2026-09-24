@@ -1,3 +1,4 @@
+import { MIN_IMAGE_HEIGHT, MIN_IMAGE_WIDTH } from './constants'
 import { inspectImage, sniffKind } from './image-format'
 import { encodeRgbPng } from './png'
 import { encodeSyntheticAttributesPng } from './synthetic-image'
@@ -34,16 +35,21 @@ function webpVp8x(width: number, height: number): Buffer {
 }
 
 describe('inspectImage', () => {
-  it('accepts the synthetic 800×600 PNG fixture', () => {
+  it('accepts the synthetic PNG fixture at the resolution floor', () => {
     const png = encodeSyntheticAttributesPng()
     const inspection = inspectImage(png)
     expect(inspection).toEqual(
-      expect.objectContaining({ ok: true, kind: 'png', width: 800, height: 600 }),
+      expect.objectContaining({
+        ok: true,
+        kind: 'png',
+        width: MIN_IMAGE_WIDTH,
+        height: MIN_IMAGE_HEIGHT,
+      }),
     )
     expect(sniffKind(png)).toBe('png')
   })
 
-  it('rejects a PNG below 800×600 before any OCR call', () => {
+  it('rejects a PNG below the resolution floor before any OCR call', () => {
     const rgb = Buffer.alloc(10 * 10 * 3)
     const png = encodeRgbPng(10, 10, rgb)
     expect(inspectImage(png)).toEqual({ ok: false, reason: 'too_small' })

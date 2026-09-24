@@ -49,8 +49,9 @@ export class TesseractEngine implements OcrEngine {
       cachePath: this.cacheDir,
       gzip: true,
     })
+    // PSM 4 measured best on real FC 27 prints; 6 and 11 lose label→value order.
     await worker.setParameters({
-      tessedit_pageseg_mode: '6',
+      tessedit_pageseg_mode: '4',
     } as Parameters<TesseractWorker['setParameters']>[0])
     this.worker = worker
     return worker

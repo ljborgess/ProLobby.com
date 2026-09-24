@@ -45,7 +45,7 @@ describe('TesseractEngine', () => {
       1,
       expect.objectContaining({ cachePath: '/tmp/prolobby-ocr-pilot-cache', gzip: true }),
     )
-    expect(setParameters).toHaveBeenCalledWith({ tessedit_pageseg_mode: '6' })
+    expect(setParameters).toHaveBeenCalledWith({ tessedit_pageseg_mode: '4' })
     await engine.close()
     expect(terminate).toHaveBeenCalledTimes(1)
   })

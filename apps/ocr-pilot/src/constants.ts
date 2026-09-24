@@ -5,8 +5,9 @@
  */
 export const MIN_ACCEPT_CONFIDENCE = 0.85
 export const FIRST_PASS_TARGET = 0.8
-export const MIN_IMAGE_WIDTH = 800
-export const MIN_IMAGE_HEIGHT = 600
+// Garbage gate only, not a quality bar: real prints arrive at any resolution.
+export const MIN_IMAGE_WIDTH = 320
+export const MIN_IMAGE_HEIGHT = 240
 export const MAX_IMAGE_BYTES = 10 * 1024 * 1024
 export const MIN_LANGUAGE_HITS = 3
 export const ATTRIBUTE_VALUE_WINDOW = 80
