@@ -1,13 +1,14 @@
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 
+import { cardTextCrops, gamertagAppears } from './card'
 import { MIN_ACCEPT_CONFIDENCE } from './constants'
 import type { OcrEngine } from './engine'
 import { parseGabarito } from './gabarito'
 import { sha256Hex } from './hash'
 import { inspectImage } from './image-format'
 import { firstPassAccepted, matchFields } from './match'
-import { parseOcrText } from './parse'
+import { parseArchetypeScreen, parseOcrText } from './parse'
 import { aggregateReport } from './report'
 import type {
   Gabarito,
@@ -56,6 +57,24 @@ export async function measurePilotFromJson(
  * climbs out of it. The operator writes the gabarito, but a `../.env`
  * typo (or a copied-from-somewhere entry) must not become a file read.
  */
+/**
+ * The gabarito's gamertag stands in for the one the player typed at sign-up:
+ * the product verifies a claim, it doesn't transcribe a stranger's tag.
+ */
+async function verifyGamertagOnCard(
+  engine: OcrEngine,
+  image: Buffer,
+  claimed: string,
+): Promise<boolean> {
+  for (const crop of await cardTextCrops(image)) {
+    const { text } = await engine.recognize(crop, { psm: '6' })
+    if (gamertagAppears(claimed, text.split('\n'))) {
+      return true
+    }
+  }
+  return false
+}
+
 export function resolvePrintPath(printsDir: string, file: string): string | null {
   if (file === '' || path.isAbsolute(file)) {
     return null
@@ -121,13 +140,27 @@ async function measureEntry(
   seenHashes.set(digest, entry.id)
 
   const ocr = await engine.recognize(bytes)
-  const parsed = parseOcrText(ocr.text)
+  const parsed =
+    entry.screen === 'archetypes'
+      ? parseArchetypeScreen(ocr.text, ocr.words)
+      : parseOcrText(ocr.text)
+  // On the Archetypes screen most text is menus and descriptions; only the
+  // words that became fields say whether the read can be trusted.
+  const confidence =
+    'fieldConfidence' in parsed && parsed.fieldConfidence !== null
+      ? parsed.fieldConfidence
+      : ocr.confidence
+  if (entry.screen === 'archetypes' && entry.expected.gamertag !== null) {
+    parsed.fields.gamertag = (await verifyGamertagOnCard(engine, bytes, entry.expected.gamertag))
+      ? entry.expected.gamertag
+      : null
+  }
   const matched = matchFields(entry.expected, parsed.fields)
   const causes: RejectionCause[] = []
   if (parsed.language === null) {
     causes.push('unrecognized_language')
   }
-  if (ocr.confidence < MIN_ACCEPT_CONFIDENCE) {
+  if (confidence < MIN_ACCEPT_CONFIDENCE) {
     causes.push('low_confidence')
   }
   if (matched.gamertagMismatch) {
@@ -140,10 +173,10 @@ async function measureEntry(
     accepted: firstPassAccepted({
       causes,
       mismatchedFields: matched.mismatchedFields,
-      confidence: ocr.confidence,
+      confidence,
       minConfidence: MIN_ACCEPT_CONFIDENCE,
     }),
-    confidence: ocr.confidence,
+    confidence,
     causes,
     extracted: parsed.fields,
     mismatchedFields: matched.mismatchedFields,

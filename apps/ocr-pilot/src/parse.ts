@@ -1,6 +1,7 @@
+import { matchArchetype } from './archetypes'
 import { ATTRIBUTE_VALUE_WINDOW, MIN_LANGUAGE_HITS } from './constants'
 import { attributeStems, foldAccents } from './labels'
-import type { AttributeKey, ExtractedFields, GameLanguage } from './types'
+import type { AttributeKey, ExtractedFields, GameLanguage, OcrWord } from './types'
 
 export type ParseOutcome = {
   fields: ExtractedFields
@@ -90,11 +91,79 @@ export function parseOcrText(text: string): ParseOutcome {
       overall: null,
       gamertag: null,
       position: null,
+      archetype: null,
       attributes,
     },
     language: pickLanguage(languageHits),
     languageHits,
   }
+}
+
+export type ArchetypeParseOutcome = {
+  fields: ExtractedFields
+  language: GameLanguage | null
+  fieldConfidence: number | null
+}
+
+// Only English labels have been seen on real prints; PT/ES are still unknown.
+const ARCHETYPE_SCREEN_LABELS_EN = [
+  'archetypes',
+  'keeper',
+  'defender',
+  'midfielder',
+  'forward',
+  'playstyles',
+  'inspired',
+]
+
+/**
+ * Reads the archetype from the full screen, where its big title is the
+ * clearest text. The gamertag is not here: the card text is too small for a
+ * full-screen pass, so it is checked separately on an upscaled crop (card.ts).
+ */
+export function parseArchetypeScreen(text: string, words: OcrWord[]): ArchetypeParseOutcome {
+  const lines = normalizeOcrText(text)
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line !== '')
+
+  const hits = new Map<string, number[]>()
+  lines.forEach((line, index) => {
+    const name =
+      matchArchetype(line) ??
+      line
+        .split(' ')
+        .map(matchArchetype)
+        .find((m) => m !== null) ??
+      null
+    if (name) {
+      hits.set(name, [...(hits.get(name) ?? []), index])
+    }
+  })
+  const archetype = [...hits.entries()].sort((a, b) => b[1].length - a[1].length)[0]?.[0] ?? null
+
+  const labelHits = ARCHETYPE_SCREEN_LABELS_EN.filter((label) =>
+    text.toLowerCase().includes(label),
+  ).length
+  const language: GameLanguage | null = labelHits >= MIN_LANGUAGE_HITS ? 'en' : null
+
+  return {
+    fields: { overall: null, gamertag: null, position: null, archetype, attributes: {} },
+    language,
+    fieldConfidence: archetypeConfidence(words, archetype),
+  }
+}
+
+function archetypeConfidence(words: OcrWord[], archetype: string | null): number | null {
+  if (archetype === null) {
+    return null
+  }
+  const tokens = new Set(archetype.split(' '))
+  const matched = words.filter((word) => tokens.has(word.text.toLowerCase().replace(/[^a-z]/g, '')))
+  if (matched.length === 0) {
+    return null
+  }
+  return matched.reduce((sum, word) => sum + word.confidence, 0) / matched.length
 }
 
 export function pickLanguage(hits: Record<GameLanguage, number>): GameLanguage | null {
