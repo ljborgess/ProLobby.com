@@ -198,7 +198,13 @@ describe('QueuePrerequisitesPanel', () => {
         discordPresent
       />,
     )
-    expect(screen.getByText('70/100')).toBeInTheDocument()
+    const meter = screen.getByRole('meter', { name: pt.reputation.label })
+    expect(meter).toHaveAttribute('aria-valuenow', '70')
+    expect(meter).toHaveAttribute(
+      'aria-valuetext',
+      pt.reputation.valueText(70, pt.reputation.bands.good),
+    )
+    expect(screen.getByText(pt.reputation.howItMoves)).toBeInTheDocument()
     expect(screen.queryByText(pt.reputation.slowQueue)).toBeNull()
 
     first.unmount()
@@ -213,5 +219,6 @@ describe('QueuePrerequisitesPanel', () => {
       />,
     )
     expect(screen.getByText(pt.reputation.slowQueue)).toBeInTheDocument()
+    expect(screen.getByText(pt.reputation.bands.slow_queue)).toBeInTheDocument()
   })
 })

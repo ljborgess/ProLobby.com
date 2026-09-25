@@ -11,6 +11,7 @@ import {
   PlayerCardMark,
 } from '@/common/ui/icons'
 import { useAccountContent } from '@/hooks/use-account-content'
+import { ReputationGauge, type ReputationBand } from './reputation-gauge'
 
 export interface QueuePrerequisites {
   emailVerified: boolean
@@ -20,7 +21,7 @@ export interface QueuePrerequisites {
   /** 0–100 (#208). */
   reputation: number
   /** The API reads the thresholds; the screen only reacts to the band. */
-  reputationBand: 'good' | 'slow_queue' | 'suspension' | 'ban'
+  reputationBand: ReputationBand
 }
 
 type Resend = 'idle' | 'sending' | 'sent' | 'error'
@@ -80,15 +81,6 @@ export function QueuePrerequisitesPanel({
             <p className="text-sm leading-relaxed text-foreground-soft">
               {allDone ? content.allDone : content.subtitle}
             </p>
-            <p className="text-sm text-foreground-soft">
-              {content.reputation.label}:{' '}
-              <span className="tabular-nums text-foreground">{reputation}/100</span>
-            </p>
-            {reputationBand !== 'good' && (
-              <p className="text-sm leading-relaxed text-foreground-soft">
-                {content.reputation.slowQueue}
-              </p>
-            )}
           </div>
           <span className="shrink-0 rounded-full border border-white/10 px-3 py-1 text-xs tabular-nums text-foreground-soft">
             {doneCount}/{steps.length}
@@ -111,6 +103,8 @@ export function QueuePrerequisitesPanel({
           ))}
         </div>
       </header>
+
+      <ReputationGauge reputation={reputation} band={reputationBand} />
 
       <Step
         done={emailVerified}

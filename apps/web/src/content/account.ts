@@ -41,6 +41,9 @@ export interface AccountContent {
   reputation: {
     label: string
     slowQueue: string
+    howItMoves: string
+    bands: Record<'good' | 'slow_queue' | 'suspension' | 'ban', string>
+    valueText: (value: number, band: string) => string
   }
   loadError: string
 }
@@ -81,6 +84,14 @@ export const ACCOUNT_CONTENT: Record<Locale, AccountContent> = {
       label: 'Reputação',
       slowQueue:
         'Abaixo de 55, a fila demora mais pra achar partida. Partidas limpas sobem 1 ponto cada, até 70.',
+      howItMoves: 'Cada partida limpa soma 1 ponto, até 70. Desconexão tira 8.',
+      bands: {
+        good: 'Boa',
+        slow_queue: 'Fila mais lenta',
+        suspension: 'Faixa de suspensão',
+        ban: 'Faixa de banimento',
+      },
+      valueText: (value, band) => `${value} de 100, ${band}`,
     },
     loadError: 'Não deu pra carregar sua conta agora. Atualiza a página em instantes.',
   },
@@ -120,6 +131,14 @@ export const ACCOUNT_CONTENT: Record<Locale, AccountContent> = {
       label: 'Reputación',
       slowQueue:
         'Por debajo de 55, la cola tarda más en encontrar partida. Cada partida limpia suma 1 punto, hasta 70.',
+      howItMoves: 'Cada partida limpia suma 1 punto, hasta 70. Una desconexión resta 8.',
+      bands: {
+        good: 'Buena',
+        slow_queue: 'Cola más lenta',
+        suspension: 'Franja de suspensión',
+        ban: 'Franja de baneo',
+      },
+      valueText: (value, band) => `${value} de 100, ${band}`,
     },
     loadError: 'No se pudo cargar tu cuenta ahora. Actualiza la página en un momento.',
   },

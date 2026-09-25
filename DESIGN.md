@@ -361,6 +361,23 @@ que aquilo é exemplo. Vaga confirmada é disco sólido do acento; vaga em esper
 contorno tracejado pulsando. É o formato herdado do `escalacao-brasileirao`,
 redesenhado com conteúdo próprio, e é a base da tela de fila da Fase 2.5.
 
+### Signature: o Medidor de Reputação
+
+No painel de próximos passos, a reputação é um **mostrador em meio arco**, de 0
+a 100, com traços finos nas linhas da escada: 25, 40 e 55. O número vem grande,
+em Sora 300, dentro do arco, com "/100" pequeno ao lado. Uma conta marca onde a
+reputação está no arco.
+
+- **Cor:** o arco só leva o acento enquanto a reputação está na faixa boa,
+  porque verde é estado positivo. Abaixo de 55 ele fica em Cinza Azulado
+  Médio, e o texto ao lado diz a faixa e o que ela muda.
+- **Faixa:** quem decide é a API. O desenho só posiciona os traços.
+- **Movimento:** o arco se desenha uma vez, do zero, e a conta pousa junto. É
+  o único movimento do painel. Sob reduced-motion, o medidor já aparece
+  desenhado.
+- **Acessibilidade:** é um `role="meter"` com `aria-valuetext` do tipo
+  "70 de 100, Boa".
+
 ### Signature: o Painel de Instrumento
 
 A arte que acompanha formulário e seção: radar varrendo em gradiente cônico
