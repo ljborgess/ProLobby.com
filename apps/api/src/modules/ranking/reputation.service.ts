@@ -7,6 +7,7 @@ import { ReputationEventReason } from './ranking-event.enums'
 import { ReputationEvent } from './reputation-event.entity'
 
 /** docs/produto/parametros.md, "Reputação". */
+export const REPUTATION_START = 70
 export const CLEAN_MATCH_CAP = 70
 export const SUSPENSION_RESTORE = 45
 const DISCONNECT_DELTA = -8
@@ -37,6 +38,12 @@ export type AutomaticReputationReason =
   | ReputationEventReason.CLEAN_MATCH
   | ReputationEventReason.DISCONNECT
   | ReputationEventReason.SUSPENSION_SERVED
+
+const AUTOMATIC_REASONS: ReadonlySet<ReputationEventReason> = new Set([
+  ReputationEventReason.CLEAN_MATCH,
+  ReputationEventReason.DISCONNECT,
+  ReputationEventReason.SUSPENSION_SERVED,
+])
 
 /**
  * The delta each reason moves, from the current value. The caps live here so
@@ -121,5 +128,29 @@ export class ReputationService {
       band: to,
       crossed: from === to ? null : { from, to },
     }
+  }
+
+  /**
+   * Rebuilds the account's reputation from its log, in order, from 70 — what
+   * a rollback (#210) needs. An event that capped, floored or set the value
+   * depended on the ones before it, so taking one out means recomputing each
+   * automatic event after it; subtracting its delta would hand out points
+   * above the cap. Manual reasons (phase 4.2) keep their stored delta. The
+   * caller holds the account lock and flushes.
+   */
+  async recomputeIn(em: EntityManager, account: Account): Promise<void> {
+    const events = await em.find(
+      ReputationEvent,
+      { account, revertedAt: null },
+      { orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] },
+    )
+    let current = REPUTATION_START
+    for (const event of events) {
+      if (AUTOMATIC_REASONS.has(event.reason)) {
+        event.delta = reputationDelta(event.reason as AutomaticReputationReason, current)
+      }
+      current = Math.min(100, Math.max(0, current + event.delta))
+    }
+    account.reputation = current
   }
 }

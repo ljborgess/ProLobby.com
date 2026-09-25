@@ -34,6 +34,9 @@ export enum EloEventReason {
   MATCH_RESULT = 'match_result',
   SEED = 'seed',
   INACTIVITY_DECAY = 'inactivity_decay',
-  /** Reversal after moderation overturns a disputed result (RF-044). */
+  /**
+   * Unused: an annulled match is undone by marking its events reverted, not
+   * by a new event (RF-044, #210). Kept because the column's check allows it.
+   */
   DISPUTE_ROLLBACK = 'dispute_rollback',
 }
