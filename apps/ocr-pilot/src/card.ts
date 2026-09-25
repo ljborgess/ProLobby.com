@@ -1,6 +1,6 @@
 import sharp from 'sharp'
 
-import { ARCHETYPES } from './archetypes'
+import { matchArchetype } from './archetypes'
 
 type Region = { left: number; top: number; width: number; height: number }
 
@@ -60,42 +60,49 @@ function prepare(image: Buffer, region: Region, threshold: number): Promise<Buff
   return (threshold > 0 ? pipeline.threshold(threshold) : pipeline).png().toBuffer()
 }
 
-// The archetype name sits right above the tag, in the same crop: a claimed
-// 'Boss' must not verify against a Boss card.
-const ARCHETYPE_WORDS = new Set(
-  Object.keys(ARCHETYPES).flatMap((name) => name.split(' ').map(foldGamertag)),
-)
-
 /**
  * The product checks a gamertag the player already typed; it never has to
- * transcribe one. A run of consecutive words has to *equal* the claim after
- * folding what OCR confuses on this font (5/S, 0/O, 1/l/I, 8/B) and dropping
- * every symbol. No edit of slack and never a substring: measured on real
+ * transcribe one. A whole card line has to *equal* the claim after folding
+ * what OCR confuses on this font (5/S, 0/O, 1/l/I, 8/B) and dropping every
+ * symbol. No edit of slack and never a piece of the line: measured on real
  * prints, slack gained no accepted print and let impostors through when OCR
  * dropped a letter ('Morel' must not verify against 'QX_MOREL_8_o').
  */
 export function gamertagAppears(claimed: string, lines: string[]): boolean {
   const target = foldGamertag(claimed)
-  if (target.length < 3) {
-    return false
+  const readings = new Set(lines.map(lineReading))
+  // The icon glued to the tag ('OTag') reads as one character more; when
+  // another line has it split off ('O Tag'), the shorter reading is the tag.
+  return target.length >= 3 && readings.has(target) && !readings.has(target.slice(1))
+}
+
+/**
+ * Each line gives at most one reading, so it verifies at most one claim.
+ * The platform icon comes first and OCR reads it as one character ('O', 'd',
+ * '(2)'), so a one-character first word is always dropped: a real tag that
+ * starts with a one-letter word can't verify from that line. The end of the
+ * line is where OCR leaves junk ('|', '2') and where it misreads the tag's
+ * last character as a symbol ('4B9?'). Junk there and the tag's own tail
+ * ('_8_o' read as '8 o') look the same, so a line that doesn't end in a word
+ * of two characters or more, alphanumeric at the end, gives no reading.
+ */
+function lineReading(line: string): string | null {
+  const raw = line.trim().split(/\s+/)
+  const last = raw.at(-1) ?? ''
+  if (!/[a-z0-9]$/i.test(last) || foldGamertag(last).length < 2) {
+    return null
   }
-  // Consecutive words, because a tag with spaces ('dusk wind') spans several.
-  return lines.some((line) => {
-    const tokens = line
-      .split(/\s+/)
-      .map(foldGamertag)
-      .filter((token) => token !== '' && !ARCHETYPE_WORDS.has(token))
-    for (let start = 0; start < tokens.length; start += 1) {
-      let candidate = ''
-      for (let end = start; end < tokens.length && candidate.length < target.length; end += 1) {
-        candidate += tokens[end]
-        if (candidate === target) {
-          return true
-        }
-      }
-    }
-    return false
-  })
+  const words = raw.filter((word) => foldGamertag(word) !== '')
+  if (words.length > 1 && foldGamertag(words[0] ?? '').length === 1) {
+    words.shift()
+  }
+  // The archetype name sits on its own line right above the tag: a claimed
+  // 'Boss' must not verify against a Boss card. Fuzzy like the title read
+  // ('ARGET'), so a tag one letter from an archetype name ('Sparky') fails.
+  if (words.length === 0 || matchArchetype(words.join(' ')) !== null) {
+    return null
+  }
+  return words.map(foldGamertag).join('')
 }
 
 export function foldGamertag(value: string): string {
@@ -108,27 +115,29 @@ export function foldGamertag(value: string): string {
     .replace(/[^a-z0-9]/g, '')
 }
 
-export type ImpostorVariants = {
-  /** Two edits or more from the real tag. */
-  far: string[]
-  /** One edit away: only verifies if OCR itself misread the tag into it. */
-  neighbors: string[]
-}
-
 /**
  * Claims a cheater could type against a print of the real tag. The gabarito's
  * other players are too different from each other to test near misses, so
- * these are derived from each real tag instead.
+ * these are derived from each real tag instead: one edit off, one character
+ * more (what junk or the icon next to the tag reads as), and pieces of it.
  */
-export function impostorVariants(tag: string): ImpostorVariants {
-  const far: string[] = []
+export function impostorVariants(tag: string): string[] {
+  const variants = [
+    tag.slice(0, -1),
+    tag.slice(0, -1) + (/q$/i.test(tag) ? 'w' : 'q'),
+    `${tag}x`,
+    `${tag}2`,
+    `O${tag}`,
+  ]
   if (tag.length >= 5) {
-    far.push(tag.slice(2))
+    variants.push(tag.slice(2))
   }
   if (tag.length >= 6) {
-    far.push(tag.slice(0, Math.ceil(tag.length / 2)))
+    variants.push(tag.slice(0, Math.ceil(tag.length / 2)))
   }
-  const last = tag.at(-1) ?? ''
-  const swapped = last.toLowerCase() === 'q' ? 'w' : 'q'
-  return { far, neighbors: [tag.slice(0, -1), tag.slice(0, -1) + swapped] }
+  const pieces = tag.split(/[\s_]+/).filter((piece) => piece !== '')
+  if (pieces.length > 1) {
+    variants.push(pieces[0] ?? '', pieces.at(-1) ?? '')
+  }
+  return [...new Set(variants)].filter((variant) => foldGamertag(variant) !== foldGamertag(tag))
 }

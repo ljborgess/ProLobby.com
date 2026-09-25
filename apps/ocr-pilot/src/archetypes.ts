@@ -1,27 +1,20 @@
-export const ARCHETYPE_GROUPS = ['keeper', 'defender', 'midfielder', 'forward'] as const
-export type ArchetypeGroup = (typeof ARCHETYPE_GROUPS)[number]
-
-// FC 27 Clubs, all 13. Group follows the icon row order on the Archetypes
-// screen (real prints), not third-party summaries that mix them up.
-export const ARCHETYPES: Record<string, ArchetypeGroup> = {
-  'shot stopper': 'keeper',
-  'sweeper keeper': 'keeper',
-  progressor: 'defender',
-  boss: 'defender',
-  marauder: 'defender',
-  disruptor: 'midfielder',
-  recycler: 'midfielder',
-  maestro: 'midfielder',
-  creator: 'midfielder',
-  spark: 'forward',
-  magician: 'forward',
-  finisher: 'forward',
-  target: 'forward',
-}
-
-export function archetypeGroup(name: string | null): ArchetypeGroup | null {
-  return name === null ? null : (ARCHETYPES[name] ?? null)
-}
+// FC 27 Clubs, all 13, in the icon row order of the Archetypes screen (real
+// prints): keeper 2, defender 3, midfielder 4, forward 4.
+export const ARCHETYPES: readonly string[] = [
+  'shot stopper',
+  'sweeper keeper',
+  'progressor',
+  'boss',
+  'marauder',
+  'disruptor',
+  'recycler',
+  'maestro',
+  'creator',
+  'spark',
+  'magician',
+  'finisher',
+  'target',
+]
 
 /**
  * Snaps an OCR token to the closest archetype name, tolerating ~1 misread
@@ -38,7 +31,7 @@ export function matchArchetype(token: string): string | null {
   }
   let best: string | null = null
   let bestDistance = Infinity
-  for (const name of Object.keys(ARCHETYPES)) {
+  for (const name of ARCHETYPES) {
     const distance = levenshtein(cleaned, name)
     if (distance < bestDistance) {
       best = name

@@ -76,30 +76,18 @@ function checkImpostors(gabarito: Gabarito, cardLines: Map<string, string[]>): I
       ),
     ),
   ]
-  const result: ImpostorCheck = {
-    checks: 0,
-    falseAccepts: 0,
-    neighborChecks: 0,
-    neighborAccepts: 0,
-  }
+  const result: ImpostorCheck = { checks: 0, falseAccepts: 0 }
   for (const entry of gabarito.entries) {
     const lines = cardLines.get(entry.id)
     const own = entry.expected.gamertag
     if (!lines || !own) {
       continue
     }
-    const variants = impostorVariants(own)
-    const far = [...tags.filter((tag) => foldGamertag(tag) !== foldGamertag(own)), ...variants.far]
-    for (const tag of far) {
+    const others = tags.filter((tag) => foldGamertag(tag) !== foldGamertag(own))
+    for (const tag of [...others, ...impostorVariants(own)]) {
       result.checks += 1
       if (gamertagAppears(tag, lines)) {
         result.falseAccepts += 1
-      }
-    }
-    for (const tag of variants.neighbors) {
-      result.neighborChecks += 1
-      if (gamertagAppears(tag, lines)) {
-        result.neighborAccepts += 1
       }
     }
   }
@@ -219,7 +207,9 @@ async function measureEntry(
     }),
     confidence,
     causes,
-    extracted: parsed.fields,
+    // Never the tag itself: reports stay free of real gamertags, and
+    // mismatchedFields already says whether it verified.
+    extracted: { ...parsed.fields, gamertag: null },
     mismatchedFields: matched.mismatchedFields,
   }
 }

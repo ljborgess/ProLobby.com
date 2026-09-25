@@ -69,7 +69,7 @@ function parseExpected(
   const archetype = optionalStringOrNull(input.archetype, `entries[${index}].expected.archetype`)
 
   if (screen === 'archetypes') {
-    if (archetype === null || !(archetype in ARCHETYPES)) {
+    if (archetype === null || !ARCHETYPES.includes(archetype)) {
       throw new Error(`entries[${index}].expected.archetype must be one of the 13 archetypes`)
     }
     return { overall: null, gamertag, position: null, archetype, attributes: {} }

@@ -5,12 +5,7 @@ import { REJECTION_CAUSES } from './types'
 export function aggregateReport(
   engine: string,
   prints: PrintMeasurement[],
-  impostorCheck: ImpostorCheck = {
-    checks: 0,
-    falseAccepts: 0,
-    neighborChecks: 0,
-    neighborAccepts: 0,
-  },
+  impostorCheck: ImpostorCheck = { checks: 0, falseAccepts: 0 },
 ): PilotReport {
   const accepted = prints.filter((print) => print.accepted).length
   const firstPassAcceptRate = prints.length === 0 ? 0 : accepted / prints.length
