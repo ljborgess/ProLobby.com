@@ -23,6 +23,14 @@ export interface QueuePrerequisites {
   reputationBand: 'good' | 'slow_queue' | 'suspension' | 'ban'
 }
 
+/**
+ * One action shape for every step card, whatever it does: a solid accent
+ * pill with the step's own mark. Each card carries exactly one way forward,
+ * so they all read the same at a glance (feedback of 2026-09-25).
+ */
+const STEP_ACTION =
+  'landing-focus landing-sheen inline-flex items-center gap-2 self-start rounded-full bg-accent px-4 py-2 text-sm font-medium text-background transition-transform duration-200 hover:scale-[1.03] active:scale-95 disabled:opacity-60 disabled:hover:scale-100'
+
 type Resend = 'idle' | 'sending' | 'sent' | 'error'
 
 /**
@@ -118,8 +126,9 @@ export function QueuePrerequisitesPanel({
               type="button"
               onClick={resendVerification}
               disabled={resend === 'sending'}
-              className="landing-focus self-start rounded-full border border-white/15 px-4 py-2 text-sm text-foreground-soft transition-colors hover:border-white/35 hover:text-foreground disabled:opacity-60"
+              className={STEP_ACTION}
             >
+              <MailMark className="size-4" />
               {resend === 'sending' ? content.email.resending : content.email.resend}
             </button>
             {resend === 'error' && (
@@ -140,10 +149,7 @@ export function QueuePrerequisitesPanel({
         <p className="text-sm leading-relaxed text-foreground-soft">
           {content.character.pendingHint}
         </p>
-        <Link
-          href="/account/character"
-          className="landing-focus landing-sheen inline-flex items-center gap-2 self-start rounded-full bg-accent px-4 py-2 text-sm font-medium text-background transition-transform duration-200 hover:scale-[1.03] active:scale-95"
-        >
+        <Link href="/account/character" className={STEP_ACTION}>
           <PlayerCardMark className="size-4" />
           {content.character.action}
         </Link>
@@ -165,12 +171,7 @@ export function QueuePrerequisitesPanel({
             <p role="status" className="text-sm leading-relaxed text-foreground-soft">
               {content.discord.absentHint}
             </p>
-            <a
-              href={DISCORD_INVITE_URL}
-              target="_blank"
-              rel="noreferrer"
-              className="landing-focus landing-sheen inline-flex items-center gap-2 self-start rounded-full bg-accent px-4 py-2 text-sm font-medium text-background transition-transform duration-200 hover:scale-[1.03] active:scale-95"
-            >
+            <a href={DISCORD_INVITE_URL} target="_blank" rel="noreferrer" className={STEP_ACTION}>
               <DiscordMark className="size-4" />
               {content.discord.absentAction}
             </a>
@@ -180,10 +181,7 @@ export function QueuePrerequisitesPanel({
             <p className="text-sm leading-relaxed text-foreground-soft">
               {content.discord.pendingHint}
             </p>
-            <Link
-              href="/account/discord"
-              className="landing-focus landing-sheen inline-flex items-center gap-2 self-start rounded-full bg-accent px-4 py-2 text-sm font-medium text-background transition-transform duration-200 hover:scale-[1.03] active:scale-95"
-            >
+            <Link href="/account/discord" className={STEP_ACTION}>
               <DiscordMark className="size-4" />
               {content.discord.action}
             </Link>
