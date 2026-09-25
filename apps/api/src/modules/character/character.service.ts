@@ -18,6 +18,7 @@ import { archetypeFitsCategory } from './archetype'
 import { ACTIVE_CHARACTER_STATES, Character, CharacterState } from './character.entity'
 import type { ChangeCategoryDto } from './dto/change-category.dto'
 import type { CreateCharacterDto } from './dto/create-character.dto'
+import { CharacterVerificationService } from './character-verification.service'
 import { PlatformGamertag } from './platform-gamertag.entity'
 import { PrintRejection, PrintSubmission, PrintSubmissionStatus } from './print-submission.entity'
 
@@ -48,7 +49,10 @@ export class CharacterService {
   private readonly hmacSecret = readIdentityHmacSecret()
   private readonly encryptionKey = readEvidenceEncryptionKey()
 
-  constructor(private readonly em: EntityManager) {}
+  constructor(
+    private readonly em: EntityManager,
+    private readonly verificationService: CharacterVerificationService,
+  ) {}
 
   async list(accountId: string): Promise<CharacterListItem[]> {
     const em = this.em.fork()
@@ -67,7 +71,7 @@ export class CharacterService {
       { orderBy: { createdAt: 'desc' } },
     )
     return characters.map((character) => {
-      const last = prints.find((print) => print.character.id === character.id)
+      const last = prints.find((print) => print.character?.id === character.id)
       return {
         ...toView(character),
         lastPrint: last ? { status: last.status, rejection: last.rejection ?? null } : null,
@@ -137,6 +141,9 @@ export class CharacterService {
       edition: CURRENT_EDITION,
       state: { $in: [...ACTIVE_CHARACTER_STATES] },
     })
+    if (previous) {
+      await this.verificationService.closeCaseOfReplaced(em, previous.id)
+    }
     await em.nativeUpdate(
       Character,
       {

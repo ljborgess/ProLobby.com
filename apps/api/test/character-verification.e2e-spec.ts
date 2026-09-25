@@ -19,6 +19,8 @@ import { CURRENT_TERMS_VERSION } from '../src/modules/account/terms.constants'
 import { Character, CharacterState } from '../src/modules/character/character.entity'
 import { PlatformGamertag } from '../src/modules/character/platform-gamertag.entity'
 import { BlockedIdentity } from '../src/modules/moderation/blocked-identity.entity'
+import { ModerationCase } from '../src/modules/moderation/moderation-case.entity'
+import { ModerationCaseState } from '../src/modules/moderation/moderation-case.enums'
 import { CapturingMailSender } from './support/capturing-mail-sender'
 import { makePng } from './support/png'
 
@@ -65,13 +67,10 @@ describe('character verification by moderation (#198)', () => {
       .post(`/api/characters/${character.body.id}/prints`)
       .set('Cookie', player.cookie)
       .attach('print', makePng(400, 300, ++counter), 'print.png')
-    const list = await request(app.getHttpServer())
-      .get('/api/moderation/character-verifications')
-      .set('Cookie', moderator)
-    const found = (list.body as { caseId: string; declaredGamertag: string }[]).find(
-      (item) => item.declaredGamertag === gamertag,
-    )
-    return { player, characterId: character.body.id as string, caseId: found!.caseId }
+    const found = await orm.em.fork().findOneOrFail(ModerationCase, {
+      printSubmission: { character: character.body.id },
+    })
+    return { player, characterId: character.body.id as string, caseId: found.id }
   }
 
   const decide = (caseId: string, body: Record<string, unknown>, cookie = moderator) =>
@@ -235,7 +234,6 @@ describe('character verification by moderation (#198)', () => {
       .set('Cookie', moderator)
       .attach('print', makePng(400, 300, ++counter), 'print.png')
     const em = orm.em.fork()
-    const { ModerationCase } = await import('../src/modules/moderation/moderation-case.entity')
     const ownCase = await em.findOneOrFail(ModerationCase, {
       targetAccount: { email: moderatorEmail },
     })
@@ -245,6 +243,63 @@ describe('character verification by moderation (#198)', () => {
       .set('Cookie', moderator)
     expect(list.body.map((item: { caseId: string }) => item.caseId)).not.toContain(ownCase.id)
     expect((await decide(ownCase.id, { approve: false, rejection: 'unreadable' })).status).toBe(403)
+    const print = await request(app.getHttpServer())
+      .get(`/api/moderation/character-verifications/${ownCase.id}/print`)
+      .set('Cookie', moderator)
+    expect(print.status).toBe(403)
+  })
+
+  it('never sends the declared archetype or gamertag to the browser', async () => {
+    const { caseId } = await playerWithPrint('Hidden1')
+
+    const list = await request(app.getHttpServer())
+      .get('/api/moderation/character-verifications')
+      .set('Cookie', moderator)
+
+    const item = list.body.find((entry: { caseId: string }) => entry.caseId === caseId)
+    expect(Object.keys(item).sort()).toEqual(['caseId', 'category', 'openedAt', 'platform'])
+    expect(JSON.stringify(list.body)).not.toContain('Hidden1')
+  })
+
+  it('decides once when two moderators answer at the same moment', async () => {
+    const { caseId } = await playerWithPrint('Twin1xx')
+    const other = await account()
+    const em = orm.em.fork()
+    const row = await em.findOneOrFail(Account, { email: other.email })
+    row.role = AccountRole.MODERATOR
+    row.emailVerified = true
+    row.state = AccountState.ACTIVE
+    await em.flush()
+
+    const results = await Promise.all([
+      decide(caseId, { approve: true, archetype: 'maestro', gamertag: 'Twin1xx' }),
+      decide(caseId, { approve: false, rejection: 'unreadable' }, other.cookie),
+    ])
+
+    expect(results.map((res) => res.status).sort()).toEqual([201, 404])
+  })
+
+  it('closes the open case of a character that gets replaced (RF-027)', async () => {
+    const { player, caseId } = await playerWithPrint('Replace1')
+    await request(app.getHttpServer())
+      .post('/api/characters')
+      .set('Cookie', player.cookie)
+      .send({ category: 'midfielder', archetype: 'creator', platform: 'ps5', gamertag: 'Replace1' })
+
+    const closed = await orm.em.fork().findOneOrFail(ModerationCase, { id: caseId })
+    expect(closed.state).toBe(ModerationCaseState.RESOLVED)
+    expect((await decide(caseId, { approve: false, rejection: 'unreadable' })).status).toBe(404)
+  })
+
+  it('lets only one of two accounts verify the same tag when both are approved at once', async () => {
+    const first = await playerWithPrint('Rival1x')
+    const second = await playerWithPrint('Rival1x')
+    const body = { approve: true, archetype: 'maestro', gamertag: 'Rival1x' }
+
+    const results = await Promise.all([decide(first.caseId, body), decide(second.caseId, body)])
+
+    expect(results.map((res) => res.status)).not.toContain(500)
+    expect(results.filter((res) => res.body.approved === true)).toHaveLength(1)
   })
 
   it('decides a case once', async () => {

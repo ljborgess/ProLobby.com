@@ -12,9 +12,7 @@ const character = CHARACTER_CONTENT.pt
 const CASE: VerificationCase = {
   caseId: '22222222-2222-2222-2222-222222222222',
   category: 'midfielder',
-  declaredArchetype: 'maestro',
   platform: 'ps5',
-  declaredGamertag: 'Torvalen',
 }
 
 const json = (status: number, body: unknown) =>
@@ -35,14 +33,13 @@ describe('VerificationQueue', () => {
     expect(screen.getByText(pt.empty)).toBeInTheDocument()
   })
 
-  it('shows the print and never the declared tag as a hint to copy', () => {
+  it('shows the print', () => {
     renderWithLocale(<VerificationQueue cases={[CASE]} archetypes={['maestro', 'creator']} />)
 
     expect(screen.getByRole('img', { name: pt.printAlt })).toHaveAttribute(
       'src',
       `/bff/moderation/character-verifications/${CASE.caseId}/print`,
     )
-    expect(screen.queryByText(/Torvalen/)).toBeNull()
   })
 
   it('sends what the moderator typed and shows the outcome', async () => {

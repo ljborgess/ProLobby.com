@@ -13,9 +13,7 @@ import { archetypeLabel } from '@/modules/character/types'
 export interface VerificationCase {
   caseId: string
   category: CharacterCategory
-  declaredArchetype: string
   platform: string
-  declaredGamertag: string
 }
 
 const REJECTIONS: ModeratorRejection[] = [
@@ -29,7 +27,8 @@ type Decided = { approved: boolean; rejection: PrintRejection | null }
 /**
  * Character prints waiting for a moderator — #198. Approving means typing
  * what the print shows (RF-073); the server compares it with what the player
- * declared, so the screen never shows the declared tag as a hint to copy.
+ * declared; the API does not even send the declared archetype or tag, so
+ * there is no hint to copy.
  */
 export function VerificationQueue({
   cases,
@@ -122,8 +121,7 @@ function CaseCard({ item, archetypes }: { item: VerificationCase; archetypes: st
         className="w-full rounded-sm border border-white/10"
       />
       <p className="text-sm text-foreground-soft">
-        {content.declared}: {categories[item.category]} · {archetypeLabel(item.declaredArchetype)} ·{' '}
-        {item.platform}
+        {content.declared}: {categories[item.category]} · {item.platform}
       </p>
 
       {decided ? (

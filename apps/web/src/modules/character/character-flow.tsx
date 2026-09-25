@@ -31,13 +31,30 @@ export function CharacterFlow({
       return content.existing.inReview
     }
     if (last?.status === 'rejected' && last.rejection) {
-      return `${content.existing.rejectedPrefix} ${content.print.rejections[last.rejection]}`
+      const cause = content.print.rejections[last.rejection] ?? content.print.genericError
+      return `${content.existing.rejectedPrefix} ${cause}`
     }
     return content.existing.pending
   }
 
   if (sendingFor) {
-    return <PrintUpload characterId={sendingFor} onBack={() => setSendingFor(null)} />
+    return (
+      <PrintUpload
+        characterId={sendingFor}
+        onBack={(received) => {
+          if (received) {
+            setCharacters((current) =>
+              current.map((item) =>
+                item.id === sendingFor
+                  ? { ...item, lastPrint: { status: 'received', rejection: null } }
+                  : item,
+              ),
+            )
+          }
+          setSendingFor(null)
+        }}
+      />
+    )
   }
 
   return (

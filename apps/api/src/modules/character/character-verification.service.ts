@@ -25,20 +25,25 @@ import {
   ModerationCaseType,
 } from '../moderation/moderation-case.enums'
 import { archetypeFitsCategory, type Archetype, type CharacterCategory } from './archetype'
-import { Character, CharacterState } from './character.entity'
+import { ACTIVE_CHARACTER_STATES, Character, CharacterState } from './character.entity'
 import type { VerificationDecisionDto } from './dto/verification-decision.dto'
-import { PlatformGamertag } from './platform-gamertag.entity'
+import { PlatformGamertag, VERIFIED_GAMERTAG_UNIQUE_INDEX } from './platform-gamertag.entity'
 import { PrintRejection, PrintSubmission, PrintSubmissionStatus } from './print-submission.entity'
 
-/** What the moderator needs to judge one print — item 17: nothing more. */
+/**
+ * What the moderator needs to judge one print — item 17: nothing more. No
+ * declared archetype or gamertag: the moderator types what the print shows
+ * (RF-073) and the server compares, so the browser never holds a hint to copy.
+ */
 export type VerificationCaseView = {
   caseId: string
   openedAt: Date
   category: CharacterCategory
-  declaredArchetype: Archetype
   platform: string
-  declaredGamertag: string
 }
+
+/** One screen of the queue, oldest first. */
+const QUEUE_PAGE = 50
 
 export type VerificationOutcome = {
   approved: boolean
@@ -80,27 +85,47 @@ export class CharacterVerificationService {
         // Nobody judges their own print.
         targetAccount: { $ne: moderatorId },
       },
-      { populate: ['printSubmission.character'], orderBy: { openedAt: 'asc' } },
+      {
+        populate: ['printSubmission.character'],
+        orderBy: { openedAt: 'asc' },
+        limit: QUEUE_PAGE,
+      },
     )
-    const views: VerificationCaseView[] = []
+    return cases.flatMap((moderationCase) => {
+      const character = moderationCase.printSubmission?.character
+      return character
+        ? [
+            {
+              caseId: moderationCase.id,
+              openedAt: moderationCase.openedAt,
+              category: character.category,
+              platform: character.platform,
+            },
+          ]
+        : []
+    })
+  }
+
+  /**
+   * A replaced character (RF-027) cannot be verified any more: its open case
+   * closes with it, in the same unit of work that inactivates it.
+   */
+  async closeCaseOfReplaced(em: EntityManager, characterId: string): Promise<void> {
+    const cases = await em.find(
+      ModerationCase,
+      {
+        type: ModerationCaseType.CHARACTER_VERIFICATION,
+        state: ModerationCaseState.OPEN,
+        printSubmission: { character: characterId },
+      },
+      { populate: ['printSubmission'] },
+    )
     for (const moderationCase of cases) {
-      const character = moderationCase.printSubmission!.character
-      const claim = await em.findOne(PlatformGamertag, {
-        account: character.account,
-        platform: character.platform,
-      })
-      views.push({
-        caseId: moderationCase.id,
-        openedAt: moderationCase.openedAt,
-        category: character.category,
-        declaredArchetype: character.archetype,
-        platform: character.platform,
-        declaredGamertag: claim
-          ? decryptAtRest(this.encryptionKey, claim.gamertagEncrypted).toString()
-          : '',
-      })
+      moderationCase.state = ModerationCaseState.RESOLVED
+      moderationCase.resolvedAt = new Date()
+      moderationCase.decision = 'closed: character_replaced'
+      moderationCase.printSubmission!.status = PrintSubmissionStatus.REJECTED
     }
-    return views
   }
 
   async printFor(moderatorId: string, caseId: string): Promise<{ bytes: Buffer; type: string }> {
@@ -124,9 +149,26 @@ export class CharacterVerificationService {
         const moderationCase = await this.openCaseFor(em, moderatorId, caseId, true)
         const submission = moderationCase.printSubmission!
         const character = submission.character
+        if (
+          !character ||
+          !(ACTIVE_CHARACTER_STATES as readonly CharacterState[]).includes(character.state)
+        ) {
+          throw new ConflictException('character_replaced')
+        }
+        // Same lock character creation takes: the claim cannot change tag
+        // between the check below and the approval.
+        await em.findOneOrFail(
+          Account,
+          { id: character.account.id },
+          { lockMode: LockMode.PESSIMISTIC_WRITE },
+        )
+        const claim = await em.findOne(PlatformGamertag, {
+          account: character.account,
+          platform: character.platform,
+        })
 
         const rejection = dto.approve
-          ? await this.ownershipProblem(em, character, dto.archetype!, dto.gamertag!)
+          ? await this.ownershipProblem(em, character, claim, dto.archetype!, dto.gamertag!)
           : dto.rejection!
 
         this.resolve(em, moderationCase, moderatorId, rejection)
@@ -140,19 +182,15 @@ export class CharacterVerificationService {
         character.archetype = dto.archetype!
         character.state = CharacterState.VERIFIED
         character.verifiedAt = new Date()
-        const claim = await em.findOneOrFail(PlatformGamertag, {
-          account: character.account,
-          platform: character.platform,
-        })
         // Exclusivity is born here: the partial unique index decides a race.
-        claim.verifiedAt = new Date()
+        claim!.verifiedAt = new Date()
         // The moderator read the spelling on the card: that is what is shown.
-        claim.gamertagEncrypted = encryptAtRest(this.encryptionKey, Buffer.from(dto.gamertag!))
+        claim!.gamertagEncrypted = encryptAtRest(this.encryptionKey, Buffer.from(dto.gamertag!))
         await em.flush()
         return { approved: true, rejection: null }
       })
     } catch (error) {
-      if (isUniqueViolation(error)) {
+      if (isUniqueViolation(error, VERIFIED_GAMERTAG_UNIQUE_INDEX)) {
         // Another account verified the same tag a moment earlier.
         throw new ConflictException('gamertag_already_verified')
       }
@@ -184,22 +222,24 @@ export class CharacterVerificationService {
       throw new ForbiddenException('own_case')
     }
     await em.populate(moderationCase, ['printSubmission.character'])
+    // The case target and the character owner are the same today; checked
+    // on both so a future caller of openCase cannot open a way around it.
+    if (moderationCase.printSubmission?.character?.account.id === moderatorId) {
+      throw new ForbiddenException('own_case')
+    }
     return moderationCase
   }
 
   private async ownershipProblem(
     em: EntityManager,
     character: Character,
+    claim: PlatformGamertag | null,
     archetype: Archetype,
     gamertag: string,
   ): Promise<PrintRejection | null> {
     if (!archetypeFitsCategory(archetype, character.category)) {
       return PrintRejection.ARCHETYPE_MISMATCH
     }
-    const claim = await em.findOne(PlatformGamertag, {
-      account: character.account,
-      platform: character.platform,
-    })
     const gamertagHash = hashGamertag(this.hmacSecret, gamertag)
     if (!claim || claim.gamertagHash !== gamertagHash) {
       return PrintRejection.GAMERTAG_MISMATCH

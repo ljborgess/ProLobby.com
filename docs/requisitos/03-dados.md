@@ -64,7 +64,7 @@ Auto-declaração que habilita a pessoa a ser capitão.
 - `hash_arquivo` é a trava de reuso de print ([Resultado](../produto/03-partida/04-resultado.md)); `idioma_detectado` existe porque o OCR reconhece PT, ES e EN ([Personagens](../produto/02-jogador/01-verificacao.md)) e o valor ajuda a diagnosticar rejeição.
 - Arquivo apagado aos **90 dias**, ou na rodada seguinte do job se a conta for apagada antes; o registro sobrevive (sem conta nem personagem) pra manter o hash funcionando ([LGPD](../produto/04-governanca/02-lgpd.md)).
 - **`estado` e `causa` no lugar de `aceito` (2026-09-24, #195 e #198)**: toda tentativa vira registro, inclusive a recusada, porque o teto de 10 por hora (RF-065) conta tentativas. O estado é recebido (passou nas checagens e espera verificação), aceito ou recusado; a causa é uma das da [RF-029](05-funcionais.md#rf-029--print-rejeitado-diz-a-causa). Só o print guardado tem hash.
-- **Enquanto o OCR não entra, cada print recebido abre um `CasoModeracao` de verificação de personagem**, ligado ao envio (um caso por print). O moderador digita o arquétipo e o gamertag que vê, e o servidor compara com o declarado. **Ninguém verifica o próprio personagem.**
+- **Enquanto o OCR não entra, cada print recebido abre um `CasoModeracao` de verificação de personagem**, ligado ao envio (um caso por print). O moderador digita o arquétipo e o gamertag que vê, e o servidor compara com o declarado; a fila não manda nem o arquétipo nem o gamertag declarados pro navegador, pra não virar cola. **Ninguém verifica o próprio personagem.** Personagem substituído (RF-027) fecha o caso aberto junto.
 
 ### EntradaFila
 `conta` · `personagem` · `categoria` · `elo_no_momento` · `entrou_em` — uma ativa por conta.
