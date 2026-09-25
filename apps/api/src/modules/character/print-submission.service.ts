@@ -121,8 +121,20 @@ export class PrintSubmissionService implements OnModuleInit {
       throw new NotFoundException('character_not_found')
     }
 
-    // Neither counts as an attempt: nothing was sent to be judged.
-    const cooldownEnds = (character.verifiedAt?.getTime() ?? 0) + PRINT_COOLDOWN_MS
+    // Neither counts as an attempt: nothing was sent to be judged. A
+    // replacement (RF-027) is born without verifiedAt, so the cooldown reads
+    // the latest approval in the category, the replaced character included.
+    const lastVerified = await em.findOne(
+      Character,
+      {
+        account: accountId,
+        category: character.category,
+        edition: character.edition,
+        verifiedAt: { $ne: null },
+      },
+      { orderBy: { verifiedAt: 'desc' }, fields: ['verifiedAt'] },
+    )
+    const cooldownEnds = (lastVerified?.verifiedAt?.getTime() ?? 0) + PRINT_COOLDOWN_MS
     if (cooldownEnds > Date.now()) {
       throw new HttpException(
         {

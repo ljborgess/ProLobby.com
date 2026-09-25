@@ -18,6 +18,7 @@ import { AccountRole, AccountState } from '../src/modules/account/account.enums'
 import { CURRENT_TERMS_VERSION } from '../src/modules/account/terms.constants'
 import { Character, CharacterState } from '../src/modules/character/character.entity'
 import { PlatformGamertag } from '../src/modules/character/platform-gamertag.entity'
+import { PrintSubmission } from '../src/modules/character/print-submission.entity'
 import { BlockedIdentity } from '../src/modules/moderation/blocked-identity.entity'
 import { ModerationCase } from '../src/modules/moderation/moderation-case.entity'
 import { ModerationCaseState } from '../src/modules/moderation/moderation-case.enums'
@@ -402,6 +403,55 @@ describe('character verification by moderation (#198)', () => {
       await verifiedHoursAgo(characterId, 24.1)
       const later = await resend(player.cookie, characterId)
       expect(later.body.status).toBe('received')
+    })
+
+    it('does not let a replacement skip the cooldown (RF-027, RF-030)', async () => {
+      const { player, caseId } = await playerWithPrint('Swap1xx')
+      await decide(caseId, { approve: true, archetype: 'maestro', gamertag: 'Swap1xx' })
+      const replacement = await request(app.getHttpServer())
+        .post('/api/characters')
+        .set('Cookie', player.cookie)
+        .send({
+          category: 'midfielder',
+          archetype: 'creator',
+          platform: 'ps5',
+          gamertag: 'Swap1xx',
+        })
+
+      const res = await resend(player.cookie, replacement.body.id)
+
+      expect(res.status).toBe(429)
+      expect(res.body.message).toBe('print_cooldown')
+    })
+
+    it('keeps one print in review when two arrive at once', async () => {
+      const player = await account()
+      const character = await request(app.getHttpServer())
+        .post('/api/characters')
+        .set('Cookie', player.cookie)
+        .send({
+          category: 'midfielder',
+          archetype: 'maestro',
+          platform: 'ps5',
+          gamertag: 'Pair1xx',
+        })
+
+      const results = await Promise.all([
+        resend(player.cookie, character.body.id),
+        resend(player.cookie, character.body.id),
+      ])
+
+      expect(results.map((res) => res.status).sort()).toEqual([201, 409])
+    })
+
+    it('does not count a refused cooldown or review as an attempt (RF-065)', async () => {
+      const { player, characterId } = await playerWithPrint('Count1x')
+      await resend(player.cookie, characterId)
+      await resend(player.cookie, characterId)
+
+      const count = await orm.em.fork().count(PrintSubmission, { character: characterId })
+
+      expect(count).toBe(1)
     })
 
     it('lets a rejected print be sent again right away (RF-030)', async () => {
