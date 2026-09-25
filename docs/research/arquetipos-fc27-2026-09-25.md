@@ -1,6 +1,6 @@
 # Arquétipos do Virtual Pro no Clubs do FC 27
 
-Pesquisa de 25/09/2026, dia do lançamento do FC 27. Os arquétipos entraram no Clubs no FC 26 (2025).
+Pesquisa de 25/09/2026. Os arquétipos entraram no Clubs no FC 26 (2025).
 
 ## Pergunta
 
@@ -27,7 +27,7 @@ Contexto: o código tem 13 arquétipos (`apps/api/src/modules/character/archetyp
 
 ### 3. Prints reais do FC 27 no piloto de OCR (evidência direta do jogo)
 
-- Arquivos: `apps/ocr-pilot/prints/arq-*.png`, gabarito em `apps/ocr-pilot/fixtures/gabarito-archetypes.json`, contexto em [06-piloto-ocr.md](../requisitos/06-piloto-ocr.md#rodada-2a-2026-09-24-tela-archetypes-56-com-9-prints).
+- Arquivos: `apps/ocr-pilot/prints/arq-*.png`, gabarito em `apps/ocr-pilot/fixtures/gabarito-archetypes.json`. **Os dois ficam fora do git** (têm gamertag de terceiros), então só quem tem a cópia local confere. Contexto em [06-piloto-ocr.md](../requisitos/06-piloto-ocr.md#rodada-2a-2026-09-24-tela-archetypes-56-com-9-prints).
 - A fileira de ícones da tela `Archetypes` tem **13 ícones** e **quatro rótulos de grupo, escritos na tela exatamente assim: `Keeper`, `Defender`, `Midfielder`, `Forward`**, com 2, 3, 4 e 4 ícones. Isso aparece em todos os prints que conferi (arq-01, arq-06, arq-12).
 - O arquétipo aberto fica sob o triângulo verde. O título dele aparece em caixa alta (`MARAUDER`, `DISRUPTOR`, `SPARK`) com "Inspired by <ICON>" logo abaixo:
   - `MARAUDER`: 3º ícone de `Defender`, "Inspired by Cafu".
@@ -56,13 +56,12 @@ Contexto: o código tem 13 arquétipos (`apps/api/src/modules/character/archetyp
 - URL: https://www.dexerto.com/wikis/ea-fc-27/all-archetypes-explained/
 - Data: 22/09/2026
 - Grupos: Goalkeeper (Shot Stopper/Buffon, Sweeper Keeper/Van der Sar), Defenders (Progressor/Hierro, Boss/Vidić, Marauder/Cafu), Midfielders (Disruptor/Roy Keane, Recycler/Makélélé, Maestro/Kroos, Creator/Iniesta), Forwards (Spark/Figo, Magician/Ronaldinho, Finisher/Alex Morgan, Target/Ibrahimović).
-- Diz que o Disruptor substituiu o Engine do FC 26.
 - Os grupos e os ICONs de Marauder, Disruptor e Spark batem com os prints (achado 3).
 
 ### 7. Pro Clubs HQ, "FC 27 Archetypes: All 13 Explained" (site de fã, baixa confiança)
 
 - URL: https://proclubshq.com/blog/fc27-archetypes/
-- Data: 21/09/2026
+- Data: publicado em 16/08/2026, atualizado em 21/09/2026
 - "Twelve return from FC 26 — every one confirmed by EA — and one is new: Disruptor" e "Engine is out, Disruptor is in".
 - Lista os mesmos 13 e os mesmos grupos, mas os ICONs estão errados: diz Finisher/Mbappé, Target/Haaland, Spark/Vinícius Júnior, e esses não são ICONs. O print mostra "Inspired by Luís Figo" no Spark. Serve só como mais um indício de Engine → Disruptor.
 
@@ -88,11 +87,11 @@ Contexto: o código tem 13 arquétipos (`apps/api/src/modules/character/archetyp
 | Defender | Progressor | Hierro (Dexerto) | CB (descrição: zagueiro que sai jogando) | Não, veio do FC 26 | EA FC 27 (1), Dexerto (5, 6) |
 | Defender | Boss | Vidić (Dexerto) | CB, LB/RB | Não, veio do FC 26 | EA FC 27 (1), Dexerto (5, 6), RealSport101 (8) |
 | Defender | Marauder | Cafu (visto no print) | LB/RB | Não, veio do FC 26 | EA FC 27 (1), print (3) |
-| Midfielder | Disruptor | Roy Keane (visto no print) | não confirmado (descrição: pressão e interceptação) | **Sim**. Não existe no FC 26, parece ter entrado no lugar do Engine | EA FC 27 (1), print (3), Dexerto (6), Pro Clubs HQ (7) |
+| Midfielder | Disruptor | Roy Keane (visto no print) | não confirmado (descrição: pressão e interceptação) | Provável (imprensa). Não aparece nos guias do FC 26; não confirmado se é novo ou o Engine renomeado | EA FC 27 (1), print (3), Dexerto (6), Pro Clubs HQ (7) |
 | Midfielder | Recycler | Makélélé (Dexerto) | CDM | Não, veio do FC 26 | EA FC 27 (1), Dexerto (5, 6), RealSport101 (8) |
 | Midfielder | Maestro | Kroos (Dexerto) | CAM, CM, CDM | Não, veio do FC 26 | EA FC 27 (1), print (3), RealSport101 (8) |
 | Midfielder | Creator | Iniesta (Dexerto) | não confirmado | Não, veio do FC 26 | EA FC 27 (1), print (3), Dexerto (5, 6) |
-| Forward | Spark | Luís Figo (visto no print) | ponta (descrição: "getting to the byline") | Não, mas **mudou de grupo**: era Midfielder no FC 26 (Dexerto) | EA FC 27 (1), print (3), Dexerto (5, 6) |
+| Forward | Spark | Luís Figo (visto no print) | ponta (descrição: "getting to the byline") | Não. Provavelmente mudou de grupo, era Midfielder no FC 26 (indício de imprensa, Dexerto) | EA FC 27 (1), print (3), Dexerto (5, 6) |
 | Forward | Magician | Ronaldinho (Dexerto) | ponta, LM/RM | Não, veio do FC 26 | EA FC 27 (1), print (3), RealSport101 (8) |
 | Forward | Finisher | Alex Morgan (Dexerto) | ST | Não, veio do FC 26 | EA FC 27 (1), EA FC 26 (4), print (3) |
 | Forward | Target | Ibrahimović (Dexerto) | ST | Não, veio do FC 26 | EA FC 27 (1), print (3), RealSport101 (8) |
@@ -111,7 +110,7 @@ Contexto: o código tem 13 arquétipos (`apps/api/src/modules/character/archetyp
 - **Lista de 13 nomes e grafia no FC 27: confirmado por fonte EA** (Pitch Notes do FC 27, tabela de Masteries) e pelos prints de 8 dos 13.
 - **Rótulos dos grupos (`Keeper`, `Defender`, `Midfielder`, `Forward`) e contagem 2/3/4/4: confirmado pelo jogo** (prints reais do FC 27). Nenhuma fonte EA do FC 27 escreve esses rótulos em texto.
 - **Grupo de cada arquétipo**: confirmado por print para Marauder, Disruptor e Spark. Para os outros 10, é dedução: a ordem da tabela da EA casa com a fileira e com a contagem 2/3/4/4. Dexerto (FC 27) confirma todos. Confiança alta.
-- **Disruptor novo e Engine removido: indício de imprensa.** A tabela da EA do FC 27 não tem Engine, e os guias do FC 26 têm Engine e não têm Disruptor. Nenhuma fonte EA diz com todas as letras "novo" ou "removido". Não confirmado se é arquétipo novo ou o Engine renomeado (o Dexerto sugere as duas coisas; o Engine era Defender e o Disruptor é Midfielder).
+- **Disruptor novo e Engine removido: indício de imprensa.** A tabela da EA do FC 27 não tem Engine, e os guias do FC 26 têm Engine e não têm Disruptor. Nenhuma fonte EA diz com todas as letras "novo" ou "removido". Não confirmado se é arquétipo novo ou o Engine renomeado (o Engine era Defender e o Disruptor é Midfielder). Quem afirma a troca é o Pro Clubs HQ, de baixa confiança; a página do Dexerto do FC 27 não fala do Engine.
 - **Spark passou de Midfielder para Forward: indício de imprensa.** O grupo do FC 27 está confirmado pelo print. O grupo do FC 26 vem só do Dexerto e de guias de fã.
 - **Posições: não confirmado.** Nenhuma fonte EA lista posições por arquétipo.
 

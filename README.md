@@ -7,11 +7,7 @@
 [![CI](https://github.com/ljborgess/ProLobby.com/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/ljborgess/ProLobby.com/actions/workflows/ci.yml)
 ![Node](https://img.shields.io/badge/node-22-339933?logo=node.js&logoColor=white)
 ![pnpm](https://img.shields.io/badge/pnpm-10-F69220?logo=pnpm&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
 ![Status](https://img.shields.io/badge/status-em%20desenvolvimento-f5b841)
-
-[Como funciona](#como-funciona) · [As telas](#as-telas) · [Novidades](#novidades) · [Arquitetura](#arquitetura) · [Começando](#começando) ·
-[Documentação](#documentação) · [Contribuindo](#contribuindo)
 
 </div>
 
@@ -19,227 +15,47 @@
 
 ## Sobre
 
-O ProLobby transforma a fila individual em partida organizada de Pro Clubs. O jogador entra na
-fila pela posição que joga, o sistema monta dois times equilibrados por elo e coordena o resto:
-capitão, canais de voz no Discord, validação do resultado e ranking.
-
-A partida acontece dentro do EA FC. A plataforma não executa o jogo: organiza, verifica e mede.
-
-## O objetivo, como negócio
-
-Pro Clubs (EA FC) hoje só tem três jeitos de jogar 11v11: liga entre clubes já formados, Drop-In da
-própria EA (pareamento aleatório, sem identidade verificada) ou amistoso marcado manualmente entre
-clubes que já se conhecem. Não existe "pegar 22 estranhos, equilibrar por elo de verdade, e jogar
-uma partida séria" — é esse buraco que o ProLobby preenche pra comunidade BR de Pro Clubs, que já é
-ativa (servidores Discord, criadores de conteúdo) mas desorganizada.
-
-Diferencial contra a concorrência pesquisada (Pro Clubs Hub/Finder, bots de elo, Disporty): fila
-individual → matchmaking automático por elo/categoria → identidade verificada por print + OCR (não
-auto-declarada) → reputação com consequência real. Nenhum concorrente combina os quatro.
-
-**Onde está hoje**: em desenvolvimento, sem CNPJ e sem cobrança — o plano é sair em **beta fechado
-gratuito**, produto completo (nada cortado pro lançamento), público limitado a um grupo convidado
-antes da abertura pública. Custo operacional estimado do MVP: **R$ 50-90/mês**, ~R$ 3/mês em free
-tier. Critério de sucesso definido antes de existir usuário: partidas completadas por semana,
-resultado confirmado sem disputa, retenção na segunda partida — com critério de desistir escrito
-antes de haver apego ao que foi construído. Detalhe completo em [Negócio](docs/negocio/README.md).
+O jogador solo de Pro Clubs cadastra o personagem, prova que ele é dele com um print do jogo, entra
+na fila pela posição que joga e é pareado com outros jogadores verificados. A partida acontece dentro
+do EA FC. A plataforma organiza, verifica e mede.
 
 ## Como funciona
 
 | Etapa | O que acontece |
 |---|---|
-| **1. Identidade** | O jogador escolhe a posição e o arquétipo do Pro e envia o print da tela `Archetypes`: o arquétipo aberto e o gamertag embaixo do card provam de quem é o personagem. Até o OCR entrar, a moderação confere cada print. Sem API pública da EA, toda verificação é evidência |
-| **2. Fila** | Entrada individual por categoria: goleiro, zaga, meio, ponta ou ataque |
-| **3. Matchmaking** | Dois lados equilibrados por elo, categoria contra categoria, com simetria obrigatória. A IA do jogo completa as vagas vazias |
-| **4. Lobby** | Um capitão por lado, escolhido por reputação, empresta o próprio clube. O bot cria os canais de voz |
-| **5. Resultado** | Print da tela final confirma placar e elenco; elo e reputação atualizam por categoria |
-| **6. Governança** | Disputa, denúncia e apelação passam por moderação com trava de conflito de interesse |
+| **1. Personagem** | Até 5 por conta, um por posição. O print da tela `Archetypes` prova a posse: o arquétipo aberto e o gamertag embaixo do card |
+| **2. Fila** | Entrada individual por posição: goleiro, zaga, meio, ponta ou ataque |
+| **3. Matchmaking** | Dois lados equilibrados por elo, posição contra posição. A IA do jogo completa as vagas vazias |
+| **4. Lobby** | Um capitão por lado, pela reputação. O bot cria os canais de voz no Discord |
+| **5. Resultado** | Print da tela final confirma o placar. Elo e reputação atualizam |
 
-Regras completas, com o motivo de cada decisão, no [dossiê de produto](docs/produto/README.md).
-
-### Fluxo desenhado — o que já está no ar e o que falta construir
-
-```mermaid
-flowchart TD
-    A[Conta criada e verificada] --> B[Discord vinculado]
-    B --> C{Personagem verificado?}
-    C -->|não| C1[Envia print da tela Archetypes<br/>moderação confere arquétipo e gamertag]
-    C1 --> C
-    C -->|sim| D[Entra na fila por categoria]
-    D --> E{8 a 12 na fila,<br/>simetria por categoria?}
-    E -->|não| D
-    E -->|sim| F[Matchmaking monta 2 lados por elo<br/>IA do jogo completa vagas vazias]
-    F --> G[Capitão por lado, por reputação<br/>bot cria canais de voz]
-    G --> H[Partida acontece dentro do EA FC]
-    H --> I[Print do resultado confirma placar e elenco]
-    I --> J{Disputa ou denúncia?}
-    J -->|sim| K[Moderação, com trava de<br/>conflito de interesse]
-    J -->|não| L[Elo e reputação atualizam por categoria]
-    K --> L
-
-    classDef feito fill:#1f7a3f,color:#fff,stroke:none
-    classDef fazer fill:#5b5b5b,color:#fff,stroke:none
-    class A,B,C,C1 feito
-    class D,E,F,G,H,I,J,K,L fazer
-```
-
-Verde é o que já está em `dev`: conta, autenticação, vínculo Discord, e o personagem verificado por
-print (Fase 2.2). Cinza é o que falta — fila, matchmaking, lobby, resultado e governança. O motor de
-elo e reputação (Fase 2.4, [#53](https://github.com/ljborgess/ProLobby.com/issues/53)) está sendo
-construído agora, e a fila (Fase 2.5) vem depois dele. O OCR entra no fluxo de verificação por último
-([#199](https://github.com/ljborgess/ProLobby.com/issues/199)); até lá, a moderação confere todo print.
-Roadmap completo, fase a fase, no [PRD Mestre](https://github.com/ljborgess/ProLobby.com/issues/64).
+As regras completas, com o motivo de cada uma, estão no [dossiê de produto](docs/produto/README.md).
 
 ## As telas
 
-Capturas do ambiente de desenvolvimento em 2026-09-22. **Nada aqui é dado real**: a fila é Fase 2.5
-e não existe, não há jogador cadastrado nem partida jogada.
+Capturas do ambiente de desenvolvimento, com contas de teste. Toda a ilustração é desenhada em SVG e
+CSS: nada de print ou arte do EA FC.
 
-Toda a ilustração é desenhada em SVG e CSS. Não publicamos print nem arte do EA FC, que é material
-da EA.
-
-![Home](docs/assets/telas/01-landing-hero.jpg)
-
-**`/`** — a entrada. O fundo é o grafo de pareamento: jogadores esperando dos dois lados, aresta
-acendendo quando o par fecha.
-
----
-
-![Criar conta](docs/assets/telas/04-cadastro.jpg)
-
-**`/sign-up`** — cabe em uma tela. Senha de 12 caracteres, 16 anos mínimo, e a pergunta de
-segurança que recupera a conta (RF-025).
-
----
-
-![Entrar](docs/assets/telas/05-login.jpg)
-
-**`/login`** — o painel ao lado é um instrumento desenhado: radar, campo em perspectiva, holofotes.
-
----
-
-![Discord](docs/assets/telas/07-discord.jpg)
-
-**`/account/discord`** — vínculo obrigatório pra fila. Diz o escopo que a autorização pede antes de
-a pessoa sair daqui: só identificação.
-
-## Novidades
-
-### Personagem verificado por print — Fase 2.2 ([#52](https://github.com/ljborgess/ProLobby.com/issues/52))
-
-Em `dev` pelos PRs [#201](https://github.com/ljborgess/ProLobby.com/pull/201) a
-[#205](https://github.com/ljborgess/ProLobby.com/pull/205):
-
-- **Personagem por posição.** Até 5 por conta, um por categoria (goleiro, zaga, meio, ponta, ataque). O
-  arquétipo do Pro tem que caber na categoria: goleiro só com arquétipo `Keeper`, meio com
-  `Midfielder`, ponta com `Midfielder` ou `Forward`, e assim por diante. São os 13 arquétipos do FC 27
-  ([pesquisa](docs/research/arquetipos-fc27-2026-09-25.md)).
-- **O print da tela `Archetypes` prova a posse.** Embaixo do card do arquétipo aberto fica o gamertag,
-  com o ícone da plataforma. O envio checa formato, tamanho, reuso do mesmo print (por hash) e limite
-  de 10 envios por hora, e guarda o arquivo criptografado por 90 dias.
-- **Moderação confere enquanto o OCR não entra.** Em `/moderation`, o moderador **digita** o arquétipo e
-  o gamertag que vê no print, e o servidor compara com o que o jogador declarou. A tela nunca mostra o
-  gamertag declarado, pra ninguém copiar. Ninguém verifica o próprio personagem.
-- **Uma atualização por dia.** Depois de um print aceito, o personagem espera 24 h pra mandar outro
-  (RF-030). O jogador confirma que o arquétipo aberto é o ativo, porque o `✓` da tela não é lido.
-
-### Reputação e rollback — início da Fase 2.4 ([#53](https://github.com/ljborgess/ProLobby.com/issues/53))
-
-Em `dev` pelos PRs [#213](https://github.com/ljborgess/ProLobby.com/pull/213) e
-[#214](https://github.com/ljborgess/ProLobby.com/pull/214): a reputação muda só por evento, gravado na
-mesma transação (partida limpa +1 até 70, desconexão −8, suspensão cumprida volta a 45). Uma partida
-anulada é desfeita marcando os eventos dela como revertidos, e a reputação é refeita em ordem. O elo
-por eventos e o decaimento por inatividade vêm a seguir ([#207](https://github.com/ljborgess/ProLobby.com/issues/207)
-a [#211](https://github.com/ljborgess/ProLobby.com/issues/211)).
-
-### Vínculo com o Discord — [#149](https://github.com/ljborgess/ProLobby.com/issues/149)
-
-O Discord é onde a partida acontece: o bot cria os canais do lobby e controla quem entra na fila.
-O vínculo liga a conta da plataforma ao usuário do Discord, e é pré-requisito da fila (RF-002).
-
-```mermaid
-sequenceDiagram
-    participant J as Jogador
-    participant W as apps/web
-    participant A as apps/api
-    participant D as Discord
-    J->>W: Vincular Discord
-    W->>A: POST /accounts/me/discord-link/attempts
-    A-->>W: URL de autorização (state + PKCE)
-    W->>D: Redireciona
-    J->>D: Autoriza (escopo identify)
-    D->>W: /bff/discord/callback?code&state
-    W->>A: PUT /accounts/me/discord-link
-    A->>D: Troca o code, lê só o ID
-    A->>A: Confere lista de banidos e grava hash + cifra
-    A-->>W: 204
-    W-->>J: Discord vinculado
-```
-
-| Sem vínculo | Vinculado |
-|:---:|:---:|
-| <img src="docs/assets/vinculo-discord-nao-vinculado.png" alt="Tela do Discord sem vínculo, com o botão Vincular Discord" width="320"> | <img src="docs/assets/vinculo-discord-vinculado.png" alt="Tela do Discord já vinculado, sem botão" width="320"> |
-
-| Discord de outra conta | Identidade banida |
-|:---:|:---:|
-| <img src="docs/assets/vinculo-discord-ja-vinculado.png" alt="Recusa: Discord já vinculado a outra conta" width="320"> | <img src="docs/assets/vinculo-discord-bloqueado.png" alt="Recusa genérica: conta bloqueada, com caminho de apelação" width="320"> |
-
-- **Um Discord, uma conta.** O vínculo é exclusivo e não tem botão de desvincular: trocar é chamado
-  de moderação (RF-082).
-- **Banido não volta.** O ID é cruzado com a lista de bloqueio na mesma transação da gravação. A
-  recusa não diz qual identidade disparou, pra tela não virar oráculo (RF-079).
-- **Nada legível no banco.** O Discord ID vira HMAC (busca e unicidade) e AES-256-GCM (exibição).
-  O token do Discord é usado uma vez e descartado.
-- **Português e espanhol**, como toda tela da plataforma.
-
-<img src="docs/assets/vinculo-discord-es.png" alt="A mesma tela em espanhol" width="320">
-
-### `/verifications` diz o que falta — [#171](https://github.com/ljborgess/ProLobby.com/issues/171)
-
-A tela de vínculo existia sem nada apontar pra ela. Login passa a levar pra `/verifications`, que lista
-os pré-requisitos da fila ([RF-002](docs/requisitos/05-funcionais.md)) com o estado de cada um e o caminho pra resolver.
-A home (`/`) é só a landing — nunca mostra o painel de alguém logado, e quem chega nela com sessão é
-mandado direto pra `/verifications`, sem ver o "Criar conta" de novo (roteamento revisado em 2026-09-22:
-antes a própria home fazia os dois papéis, e misturava marketing público com painel de conta na mesma URL).
-O vínculo **não** virou parte do cadastro: o [onboarding](docs/produto/05-produto/01-onboarding.md) mantém a conta existindo antes do Discord, e
-vincular antes de confirmar a conta prenderia o Discord numa conta abandonada ([RF-082](docs/requisitos/05-funcionais.md)).
-
-<img src="docs/assets/home-proximos-passos.png" alt="Tela de /verifications com os próximos passos: e-mail não verificado e Discord não vinculado" width="420">
-
-### Cadastro avisa o mínimo da pergunta de segurança
-
-A API exige 8 caracteres e o formulário só mostrava "não deu pra criar a conta". Agora a dica mostra
-o mínimo e o erro aparece no campo, antes de enviar.
-
-<img src="docs/assets/cadastro-pergunta-8-caracteres.png" alt="Cadastro com o erro "A pergunta precisa de pelo menos 8 caracteres" no campo" width="320">
-
-### Saída do servidor bloqueia a fila — [#150](https://github.com/ljborgess/ProLobby.com/issues/150)
-
-O bot avisa a API quando alguém sai ou volta ao servidor, por um canal assinado com HMAC. Quem sai
-fica impedido de entrar na fila até voltar, sem moderador e sem desfazer o vínculo. A fatia entrou
-em `dev` pelo [PR #183](https://github.com/ljborgess/ProLobby.com/pull/183): o bot reporta
-`guildMemberRemove` / retorno, e `/verifications` mostra o aviso in-app (pt/es) quando
-`discordPresent` é falso.
-
-### Piloto de OCR — [#50](https://github.com/ljborgess/ProLobby.com/issues/50)
-
-Script isolado em `apps/ocr-pilot`: Tesseract, recorte com `sharp`, gabarito e prints reais fora do
-git (têm gamertag de terceiros). A rodada 2a, na tela `Archetypes`
-([PR #192](https://github.com/ljborgess/ProLobby.com/pull/192)), aceitou **5 de 9 prints (56%) com
-zero falso aceite em 96 checagens**: o gamertag só passa se bater com a linha inteira do card. A
-rodada 2b completa os 20 prints ([#191](https://github.com/ljborgess/ProLobby.com/issues/191)), e só
-depois o OCR entra no fluxo ([#199](https://github.com/ljborgess/ProLobby.com/issues/199)).
-
-### Correções da auditoria de 2026-09-21
-
-| Problema | O que mudou |
+| | |
 |---|---|
-| Em produção, toda recuperação de conta respondia "recebido" e não abria caso (disco sem permissão, sem volume) | Volume próprio, dono `node` na imagem, e o boot falha se não conseguir gravar |
-| Um site de terceiro conseguia logar o visitante na conta do atacante (CSRF de login) | Os proxies `/bff` recusam requisição de outro site e corpo que não seja JSON |
-| Com a API fora, o login dizia "senha incorreta" | Resposta 502 e mensagem de erro de conexão |
-| Tentativas de login, links de reset e states do Discord nunca eram apagados | Limpeza diária no job de manutenção |
-| Caso de falha de entrega ao bot não dizia qual conta foi afetada | O caso grava a conta |
-| O e2e apagava o banco usado no `pnpm dev` | O e2e só roda em banco com nome terminado em `_e2e` |
+| ![Início](docs/assets/telas/01-landing-hero.jpg) | ![Próximos passos](docs/assets/telas/06-conta.jpg) |
+| **Início** | **Próximos passos**: o que falta pra entrar na fila |
+| ![Elenco](docs/assets/telas/08-elenco.jpg) | ![Cadastro do personagem](docs/assets/telas/09-cadastro-personagem.jpg) |
+| **Elenco**: as cinco posições no campo | **Cadastro do personagem**, a partir da vaga |
+| ![Criar conta](docs/assets/telas/04-cadastro.jpg) | ![Discord](docs/assets/telas/07-discord.jpg) |
+| **Criar conta** | **Vínculo com o Discord** |
+
+## Status
+
+| Fase | Estado |
+|---|---|
+| 2.1 Conta e autenticação | Em `dev` |
+| 2.2 Personagem verificado por print | Em `dev`. A moderação confere cada print até o OCR entrar ([#199](https://github.com/ljborgess/ProLobby.com/issues/199)) |
+| 2.3 Vínculo com o Discord | Em `dev` |
+| 2.4 Elo e reputação | Em construção ([#53](https://github.com/ljborgess/ProLobby.com/issues/53)) |
+| 2.5 Fila e matchmaking | A seguir |
+
+Roadmap completo no [PRD Mestre](https://github.com/ljborgess/ProLobby.com/issues/64).
 
 ## Arquitetura
 
@@ -249,165 +65,46 @@ flowchart LR
     CF -->|túnel| WEB[apps/web<br/>Next.js]
     CF -->|túnel| API[apps/api<br/>NestJS]
     WEB --> API
-    API --> DB[(Neon<br/>Postgres)]
+    API --> DB[(Postgres)]
     API -->|webhook assinado| BOT[apps/bot<br/>discord.js]
     BOT --> DC[Discord]
 ```
 
-A API concentra toda a regra de negócio. O front-end não decide autorização, e o bot só executa
-o que a API manda, por webhook assinado com HMAC. Nenhuma porta fica exposta: todo tráfego
-entra pelo túnel da Cloudflare.
-
-| Camada | Tecnologia |
-|---|---|
-| Front-end | Next.js (App Router), React 19, Tailwind CSS |
-| API | NestJS, MikroORM, PostgreSQL |
-| Bot | Node.js, discord.js |
-| Contratos | `packages/types`, schemas zod compartilhados |
-| Monorepo | Turborepo, pnpm workspaces |
-| Testes | Jest, Vitest, Playwright, e2e contra Postgres real |
-| Infraestrutura | Neon (São Paulo), VM Oracle Cloud, Cloudflare Tunnel |
-
-As decisões e seus trade-offs estão nos [ADRs](docs/adr/README.md).
-
-### Estrutura do repositório
-
-```text
-apps/
-├── web/        # Next.js — interface
-├── api/        # NestJS — regra de negócio, autenticação, banco
-├── bot/        # discord.js — cargos, canais e notificações
-└── ocr-pilot/  # script isolado do piloto de OCR (#120) — sem conta, sem banco, sem tela
-packages/
-├── types/      # contratos compartilhados (eventos, assinatura de webhook)
-├── eslint-config/
-└── tsconfig/
-docs/           # dossiê de produto, requisitos, ADRs e guia do time
-```
+A API concentra a regra de negócio. O front-end não decide autorização, e o bot só executa o que a
+API manda. Monorepo com Turborepo e pnpm; decisões em [ADRs](docs/adr/README.md).
 
 ## Começando
 
-### Pré-requisitos
-
-- Node.js 22 (versão fixada em `.nvmrc`)
-- pnpm 10
-- Docker
-
-### Instalação
+Requer Node.js 22, pnpm 10 e Docker.
 
 ```bash
-git clone git@github.com:ljborgess/ProLobby.com.git
-cd ProLobby.com
-git checkout dev
-pnpm install
-```
-
-### Banco de dados
-
-```bash
-docker compose up -d postgres
-```
-
-Se a porta 5432 já estiver em uso, suba em outra sem editar arquivo versionado:
-
-```bash
-POSTGRES_PORT=5442 docker compose up -d postgres
-```
-
-### Variáveis de ambiente
-
-Copie os exemplos e preencha os segredos:
-
-```bash
+git clone git@github.com:ljborgess/ProLobby.com.git && cd ProLobby.com
+git checkout dev && pnpm install
+docker compose up -d postgres            # porta ocupada? POSTGRES_PORT=5442 docker compose up -d postgres
 cp apps/api/.env.example apps/api/.env
-cp apps/bot/.env.example apps/bot/.env
-```
-
-`JWT_SECRET` e `WEBHOOK_SECRET` são obrigatórios, e a API se recusa a subir com valor vazio ou
-de exemplo. Gere cada um com:
-
-```bash
-openssl rand -base64 48
-```
-
-`EVIDENCE_ENCRYPTION_KEY` e `IDENTITY_HMAC_SECRET` também são obrigatórios, com 32 bytes cada
-(`openssl rand -base64 32`). O vínculo com o Discord usa `DISCORD_CLIENT_ID`,
-`DISCORD_CLIENT_SECRET` e `DISCORD_REDIRECT_URI` (o Client Secret do aplicativo, não o token do
-bot); sem eles, fora de produção, a tela de vínculo responde "indisponível".
-
-### Migrações e execução
-
-```bash
+cp apps/bot/.env.example apps/bot/.env   # preencha os segredos (abaixo)
 pnpm --filter @prolobby/api mikro-orm migration:up
-pnpm dev
+pnpm dev                                 # web :3000 · api :3001 · bot :3002
 ```
 
-| Serviço | Endereço |
-|---|---|
-| Web | `http://localhost:3000` |
-| API | `http://localhost:3001` |
-| Bot (webhook) | `http://localhost:3002` |
+Segredos obrigatórios da API: `JWT_SECRET` e `WEBHOOK_SECRET` (`openssl rand -base64 48`),
+`EVIDENCE_ENCRYPTION_KEY` e `IDENTITY_HMAC_SECRET` (`openssl rand -base64 32`). A API não sobe com
+valor vazio ou de exemplo.
 
-### Qualidade
-
-```bash
-pnpm format:check
-pnpm lint
-pnpm type-check
-pnpm test
-pnpm e2e
-```
-
-A suíte e2e roda contra um Postgres real, num banco próprio: ela apaga todas as tabelas e se recusa
-a rodar em banco cujo nome não termine em `_e2e`.
-
-```bash
-docker compose exec postgres createdb -U prolobby prolobby_e2e   # só em volume antigo
-DATABASE_URL=postgres://prolobby:prolobby@localhost:5432/prolobby_e2e pnpm e2e
-```
-
-O CI roda o mesmo pipeline em todo pull request.
+Qualidade: `pnpm format:check`, `pnpm lint`, `pnpm type-check`, `pnpm test` e `pnpm e2e`. O e2e só roda
+em banco cujo nome termina em `_e2e`.
 
 ## Documentação
 
-| Área | Conteúdo |
+| | |
 |---|---|
-| [Guia do time](docs/time/README.md) | Primeiro dia, fluxo de issue, regras que já evitaram bugs, uso de IA |
-| [Produto](docs/produto/README.md) | Decisões de produto por domínio, com o motivo de cada uma |
-| [Parâmetros](docs/produto/parametros.md) | Todos os números do sistema: elo, reputação, prazos e limites |
-| [Requisitos](docs/requisitos/README.md) | Requisitos funcionais e não funcionais, estados, modelo de dados |
-| [Segurança](docs/requisitos/08-seguranca-checklist.md) | Checklist aplicado a toda mudança de back-end, autenticação, banco ou upload |
-| [Decisões de arquitetura](docs/adr/README.md) | ADRs com contexto, alternativas e consequências |
-| [Discord](docs/discord/README.md) | Estrutura do servidor, cargos, canais e bot |
-| [Negócio](docs/negocio/README.md) | Mercado, sustentabilidade, ordem de implementação e lançamento |
+| [Guia do time](docs/time/README.md) | Primeiro dia, fluxo de issue, recados |
+| [Produto](docs/produto/README.md) · [Parâmetros](docs/produto/parametros.md) | Regras e todos os números do sistema |
+| [Requisitos](docs/requisitos/README.md) · [Segurança](docs/requisitos/08-seguranca-checklist.md) | Requisitos, modelo de dados e checklist de segurança |
+| [Negócio](docs/negocio/README.md) | Mercado, ordem de implementação e lançamento |
 
-## Contribuindo
-
-- `main` é produção; `dev` é a branch de desenvolvimento e o alvo de todo pull request
-- Código em inglês; issues, pull requests, commits e documentação em português
-- Todo pull request passa por code review e security review antes do merge
-
-O fluxo completo está no [`CONTRIBUTING.md`](CONTRIBUTING.md). Quem entra no time começa pelo
-[guia do time](docs/time/README.md).
-
-## Status
-
-Em desenvolvimento. Estão em `dev`:
-- conta e autenticação (Fase 2.1);
-- vínculo Discord com RF-060 (Fase 2.3);
-- personagem verificado por print pela moderação (Fase 2.2).
-
-A reputação por evento e o rollback de partida, primeiras fatias da Fase 2.4, também já entraram.
-Agora estão sendo feitos o elo por eventos e o decaimento. Depois vêm a fila (Fase 2.5) e o OCR no
-fluxo de verificação ([#199](https://github.com/ljborgess/ProLobby.com/issues/199)).
-O roadmap completo, fase a fase, está no [PRD Mestre](https://github.com/ljborgess/ProLobby.com/issues/64).
+Pra contribuir, siga o [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## Licença
 
 Projeto privado. Todos os direitos reservados aos sócios.
-
----
-
-<div align="center">
-<sub>Luciano · Rafael · João · Felipe</sub>
-</div>
