@@ -287,10 +287,10 @@ Por que precisou existir: cada candidato tem 30 s, mas nada limitava **quantos**
 
 **Aceite**: não existe campo de busca por gamertag em nenhuma tela nem endpoint. Chega-se ao perfil por histórico de partida compartilhada, lobby ativo ou ranking. O perfil em si continua público pra quem chega por esses caminhos.
 
-### RF-017 · Elo decai após 60 dias de inatividade, com piso no seed
+### RF-017 · Elo decai após 60 dias de inatividade, com piso no baseline
 **Origem**: [produto/02-jogador/02-ranking.md](../produto/02-jogador/02-ranking.md)
 
-**Aceite**: personagem sem partida por 60 dias perde 25 de elo a cada **30 dias corridos adicionais** (mesma janela móvel usada nos outros contadores do sistema, não mês de calendário — decidido em 2026-09-09), primeiro desconto no dia 90 (60 + 30), parando no valor do seed original. Jogar uma partida interrompe o decaimento; o elo perdido não é devolvido.
+**Aceite**: personagem sem partida por 60 dias perde 25 de elo a cada **30 dias corridos adicionais** (mesma janela móvel usada nos outros contadores do sistema, não mês de calendário — decidido em 2026-09-09), primeiro desconto no dia 90 (60 + 30), parando no baseline (1000), que desde 2026-09-24 é o elo inicial de todo personagem. Efeito colateral: elo abaixo de 1000 nunca decai. Jogar uma partida interrompe o decaimento; o elo perdido não é devolvido.
 
 ### RF-018 · Histórico de partida não expira
 **Origem**: [produto/04-governanca/02-lgpd.md](../produto/04-governanca/02-lgpd.md)
@@ -571,4 +571,4 @@ Carência ("desvincula, mas o Discord só entra em outra conta depois de N dias"
 ### RF-073 · Correção manual de OCR pela moderação, campo a campo
 **Origem**: decidido em 2026-09-08 · [produto/02-jogador/01-verificacao.md](../produto/02-jogador/01-verificacao.md)
 
-**Aceite**: no chamado aberto por falha repetida de OCR, o moderador digita os mesmos campos que o OCR extrairia — overall, posição, gamertag e a lista de atributos que o pipeline de OCR extrai (**enumeração exata sai do [piloto de OCR](06-piloto-ocr.md)**, não inventada aqui — não decidir nome de atributo de jogo sem confirmar o que o pipeline real lê). Moderador vê o print diretamente — não é um simples aprovar/rejeitar. A ação fica registrada no `LogAuditoria` como ação de moderador ([RF-040](#rf-040--toda-ação-de-moderador-entra-no-log-de-auditoria)), distinta de extração automática.
+**Aceite**: no chamado aberto por falha repetida de OCR, o moderador digita os mesmos campos que o OCR extrairia — **arquétipo e gamertag** da tela `Archetypes` (desde 2026-09-24; antes eram overall, posição e atributos). A categoria não é digitada: é escolhida pelo jogador e conferida contra o grupo do arquétipo ([Personagens e verificação](../produto/02-jogador/01-verificacao.md)). Enquanto o OCR não entra no fluxo ([#199](https://github.com/ljborgess/ProLobby.com/issues/199)), isso vale pra todo print aprovado nas pré-checagens, não só pra falha repetida. Moderador vê o print diretamente — não é um simples aprovar/rejeitar. A ação fica registrada no `LogAuditoria` como ação de moderador ([RF-040](#rf-040--toda-ação-de-moderador-entra-no-log-de-auditoria)), distinta de extração automática.

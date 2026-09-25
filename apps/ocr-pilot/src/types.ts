@@ -4,7 +4,7 @@ export type GameLanguage = (typeof GAME_LANGUAGES)[number]
 export const EDITIONS = ['fc26', 'fc27'] as const
 export type GameEdition = (typeof EDITIONS)[number]
 
-export const SCREENS = ['attributes'] as const
+export const SCREENS = ['attributes', 'archetypes'] as const
 export type PilotScreen = (typeof SCREENS)[number]
 
 export const ORIGINS = ['publico-video', 'publico-post', 'pedido', 'synthetic'] as const
@@ -65,6 +65,7 @@ export type ExpectedFields = {
   overall: number | null
   gamertag: string | null
   position: string | null
+  archetype: string | null
   attributes: Partial<Record<AttributeKey, number>>
 }
 
@@ -113,8 +114,15 @@ export type PrintMeasurement = {
   sha256: string | null
 }
 
+export type ImpostorCheck = {
+  /** Other players' tags and variants of each real tag. Must stay at zero. */
+  checks: number
+  falseAccepts: number
+}
+
 export type PilotReport = {
   engine: string
+  impostorCheck: ImpostorCheck
   firstPassAcceptRate: number
   firstPassTarget: number
   meetsTarget: boolean
