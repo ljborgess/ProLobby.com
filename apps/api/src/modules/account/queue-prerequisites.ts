@@ -1,3 +1,5 @@
+import type { ReputationBand } from '../ranking/reputation.service'
+
 /**
  * What the queue will demand before it takes someone — RF-002, issue #171.
  *
@@ -20,4 +22,6 @@ export interface QueuePrerequisites {
   discordLinked: boolean
   discordPresent: boolean
   reputation: number
+  /** From the number, so the screen never repeats the thresholds. */
+  reputationBand: ReputationBand
 }

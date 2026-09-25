@@ -17,8 +17,10 @@ export interface QueuePrerequisites {
   characterVerified: boolean
   discordLinked: boolean
   discordPresent: boolean
-  /** 0–100; under 55 the queue is slower (#208). */
+  /** 0–100 (#208). */
   reputation: number
+  /** The API reads the thresholds; the screen only reacts to the band. */
+  reputationBand: 'good' | 'slow_queue' | 'suspension' | 'ban'
 }
 
 type Resend = 'idle' | 'sending' | 'sent' | 'error'
@@ -42,6 +44,7 @@ export function QueuePrerequisitesPanel({
   discordLinked,
   discordPresent,
   reputation,
+  reputationBand,
 }: QueuePrerequisites) {
   const content = useAccountContent()
   const [resend, setResend] = useState<Resend>('idle')
@@ -81,7 +84,7 @@ export function QueuePrerequisitesPanel({
               {content.reputation.label}:{' '}
               <span className="tabular-nums text-foreground">{reputation}/100</span>
             </p>
-            {reputation < 55 && (
+            {reputationBand !== 'good' && (
               <p className="text-sm leading-relaxed text-foreground-soft">
                 {content.reputation.slowQueue}
               </p>

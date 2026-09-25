@@ -7,6 +7,7 @@ import { ReputationEventReason } from './ranking-event.enums'
 import { ReputationEvent } from './reputation-event.entity'
 
 /** docs/produto/parametros.md, "Reputação". */
+export const REPUTATION_START = 70
 export const CLEAN_MATCH_CAP = 70
 export const SUSPENSION_RESTORE = 45
 const DISCONNECT_DELTA = -8
@@ -38,6 +39,12 @@ export type AutomaticReputationReason =
   | ReputationEventReason.DISCONNECT
   | ReputationEventReason.SUSPENSION_SERVED
 
+const AUTOMATIC_REASONS: ReadonlySet<ReputationEventReason> = new Set([
+  ReputationEventReason.CLEAN_MATCH,
+  ReputationEventReason.DISCONNECT,
+  ReputationEventReason.SUSPENSION_SERVED,
+])
+
 /**
  * The delta each reason moves, from the current value. The caps live here so
  * every event stores the change that really happened, and the column always
@@ -59,23 +66,28 @@ export function reputationDelta(reason: AutomaticReputationReason, current: numb
 export type ReputationChange = {
   reputation: number
   band: ReputationBand
-  /** The band just entered, up or down; null when the change stayed inside one. */
-  crossed: ReputationBand | null
+  /**
+   * Set when the change left one band for another, with the direction: phase
+   * 4.2 suspends on the way down, never on someone climbing back out.
+   */
+  crossed: { from: ReputationBand; to: ReputationBand } | null
 }
 
 /**
  * The only writer of `Account.reputation` — #208. Every change is a
  * `ReputationEvent` in the same transaction, under the account lock, so two
- * results for one account at once cannot lose an update, and the rollback
- * (#210) can always rebuild the value from the log.
+ * results for one account at once cannot lose an update.
  *
- * A change of zero (a clean match at 70 or above) writes no event: the log
- * records what moved the number, and a zero never did.
+ * A change of zero (a clean match at 70) is still an event with delta 0:
+ * whether it moved the number depends on what came before, and a rollback
+ * (#210) replays the log to recompute it. A crossing is not stored apart:
+ * the ordered log already says where each event started and ended.
  */
 @Injectable()
 export class ReputationService {
   constructor(private readonly em: EntityManager) {}
 
+  /** Standalone: its own transaction, taking the account lock. */
   apply(
     accountId: string,
     reason: AutomaticReputationReason,
@@ -87,33 +99,58 @@ export class ReputationService {
         { id: accountId },
         { lockMode: LockMode.PESSIMISTIC_WRITE },
       )
-      const before = account.reputation
-      const delta = reputationDelta(reason, before)
-      if (delta !== 0) {
-        em.create(ReputationEvent, { account, delta, reason, lobbyId })
-        account.reputation = before + delta
-      }
+      const change = this.applyIn(em, account, reason, lobbyId)
       await em.flush()
-
-      const band = reputationBand(account.reputation)
-      return {
-        reputation: account.reputation,
-        band,
-        crossed: band === reputationBand(before) ? null : band,
-      }
+      return change
     })
   }
 
   /**
-   * Marks events of an annulled match as reverted and takes their delta back
-   * off the column (RF-044) — no new event, the log keeps the original with
-   * its revertedAt. Runs inside the caller's transaction, which must already
-   * hold the lock of every account involved.
+   * Inside the caller's transaction, for a caller that changes more than
+   * reputation at once (a match result, a moderation decision). The caller
+   * must already hold the account's lock and flushes.
    */
-  revertEvents(events: ReputationEvent[], at: Date): void {
-    for (const event of events) {
-      event.revertedAt = at
-      event.account.reputation = Math.min(100, Math.max(0, event.account.reputation - event.delta))
+  applyIn(
+    em: EntityManager,
+    account: Account,
+    reason: AutomaticReputationReason,
+    lobbyId?: string,
+  ): ReputationChange {
+    const before = account.reputation
+    const delta = reputationDelta(reason, before)
+    em.create(ReputationEvent, { account, delta, reason, lobbyId })
+    account.reputation = before + delta
+
+    const from = reputationBand(before)
+    const to = reputationBand(account.reputation)
+    return {
+      reputation: account.reputation,
+      band: to,
+      crossed: from === to ? null : { from, to },
     }
+  }
+
+  /**
+   * Rebuilds the account's reputation from its log, in order, from 70 — what
+   * a rollback (#210) needs. An event that capped, floored or set the value
+   * depended on the ones before it, so taking one out means recomputing each
+   * automatic event after it; subtracting its delta would hand out points
+   * above the cap. Manual reasons (phase 4.2) keep their stored delta. The
+   * caller holds the account lock and flushes.
+   */
+  async recomputeIn(em: EntityManager, account: Account): Promise<void> {
+    const events = await em.find(
+      ReputationEvent,
+      { account, revertedAt: null },
+      { orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] },
+    )
+    let current = REPUTATION_START
+    for (const event of events) {
+      if (AUTOMATIC_REASONS.has(event.reason)) {
+        event.delta = reputationDelta(event.reason as AutomaticReputationReason, current)
+      }
+      current = Math.min(100, Math.max(0, current + event.delta))
+    }
+    account.reputation = current
   }
 }

@@ -19,6 +19,7 @@ describe('QueuePrerequisitesPanel', () => {
     renderWithLocale(
       <QueuePrerequisitesPanel
         reputation={70}
+        reputationBand="good"
         characterVerified
         emailVerified
         discordLinked={false}
@@ -35,6 +36,7 @@ describe('QueuePrerequisitesPanel', () => {
     renderWithLocale(
       <QueuePrerequisitesPanel
         reputation={70}
+        reputationBand="good"
         emailVerified={false}
         characterVerified={false}
         discordLinked={false}
@@ -52,6 +54,7 @@ describe('QueuePrerequisitesPanel', () => {
     renderWithLocale(
       <QueuePrerequisitesPanel
         reputation={70}
+        reputationBand="good"
         emailVerified
         characterVerified={false}
         discordLinked
@@ -71,6 +74,7 @@ describe('QueuePrerequisitesPanel', () => {
     renderWithLocale(
       <QueuePrerequisitesPanel
         reputation={70}
+        reputationBand="good"
         characterVerified
         emailVerified
         discordLinked={false}
@@ -86,6 +90,7 @@ describe('QueuePrerequisitesPanel', () => {
     renderWithLocale(
       <QueuePrerequisitesPanel
         reputation={70}
+        reputationBand="good"
         characterVerified
         emailVerified
         discordLinked
@@ -103,6 +108,7 @@ describe('QueuePrerequisitesPanel', () => {
     renderWithLocale(
       <QueuePrerequisitesPanel
         reputation={70}
+        reputationBand="good"
         characterVerified
         emailVerified={false}
         discordLinked={false}
@@ -125,6 +131,7 @@ describe('QueuePrerequisitesPanel', () => {
     renderWithLocale(
       <QueuePrerequisitesPanel
         reputation={70}
+        reputationBand="good"
         characterVerified
         emailVerified={false}
         discordLinked={false}
@@ -142,6 +149,7 @@ describe('QueuePrerequisitesPanel', () => {
     renderWithLocale(
       <QueuePrerequisitesPanel
         reputation={70}
+        reputationBand="good"
         characterVerified
         emailVerified
         discordLinked
@@ -166,6 +174,7 @@ describe('QueuePrerequisitesPanel', () => {
     renderWithLocale(
       <QueuePrerequisitesPanel
         reputation={70}
+        reputationBand="good"
         characterVerified
         emailVerified={false}
         discordLinked
@@ -182,6 +191,7 @@ describe('QueuePrerequisitesPanel', () => {
     const first = renderWithLocale(
       <QueuePrerequisitesPanel
         reputation={70}
+        reputationBand="good"
         emailVerified
         characterVerified
         discordLinked
@@ -195,6 +205,7 @@ describe('QueuePrerequisitesPanel', () => {
     renderWithLocale(
       <QueuePrerequisitesPanel
         reputation={50}
+        reputationBand="slow_queue"
         emailVerified
         characterVerified
         discordLinked

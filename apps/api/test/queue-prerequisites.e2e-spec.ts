@@ -98,6 +98,7 @@ describe('queue prerequisites (#171)', () => {
       discordLinked: false,
       discordPresent: true,
       reputation: 70,
+      reputationBand: 'good',
     })
   })
 
@@ -111,6 +112,7 @@ describe('queue prerequisites (#171)', () => {
       discordLinked: false,
       discordPresent: true,
       reputation: 70,
+      reputationBand: 'good',
     })
   })
 
@@ -128,6 +130,7 @@ describe('queue prerequisites (#171)', () => {
       discordLinked: true,
       discordPresent: true,
       reputation: 70,
+      reputationBand: 'good',
     })
     expect(JSON.stringify(res.body)).not.toContain('111111111111111111')
     expect(Object.keys(res.body).sort()).toEqual([
@@ -136,6 +139,7 @@ describe('queue prerequisites (#171)', () => {
       'discordPresent',
       'emailVerified',
       'reputation',
+      'reputationBand',
     ])
   })
 
@@ -147,7 +151,6 @@ describe('queue prerequisites (#171)', () => {
     await patch(email, {
       discordIdHash: hashIdentity(readIdentityHmacSecret(), '222222222222222222'),
       discordPresent: false,
-      reputation: 70,
     })
 
     const res = await prerequisites(cookie)
@@ -158,6 +161,7 @@ describe('queue prerequisites (#171)', () => {
       discordLinked: true,
       discordPresent: false,
       reputation: 70,
+      reputationBand: 'good',
     })
   })
 

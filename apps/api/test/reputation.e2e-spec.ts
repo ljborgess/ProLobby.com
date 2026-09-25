@@ -83,7 +83,7 @@ describe('reputation by events (#208)', () => {
     expect(events.map((event) => [event.reason, event.delta])).toEqual([['disconnect', -8]])
   })
 
-  it('recovers by clean matches up to 70 and writes nothing past it', async () => {
+  it('recovers by clean matches up to 70, and past it records a zero', async () => {
     const id = await account(69)
 
     await reputation.apply(id, ReputationEventReason.CLEAN_MATCH)
@@ -91,7 +91,24 @@ describe('reputation by events (#208)', () => {
 
     expect(atCap.reputation).toBe(70)
     const { events } = await stored(id)
-    expect(events).toHaveLength(1)
+    expect(events.map((event) => event.delta).sort()).toEqual([0, 1])
+  })
+
+  it('never lets a clean match move a reputation a thumbs-up took past 70', async () => {
+    const id = await account(85)
+
+    const change = await reputation.apply(id, ReputationEventReason.CLEAN_MATCH)
+
+    expect(change.reputation).toBe(85)
+  })
+
+  it('brings a served suspension down to 45 too, from above it (RF-074)', async () => {
+    const id = await account(52)
+
+    const change = await reputation.apply(id, ReputationEventReason.SUSPENSION_SERVED)
+
+    expect(change.reputation).toBe(45)
+    expect((await stored(id)).events[0]!.delta).toBe(-7)
   })
 
   it('keeps the column equal to 70 plus the events, whatever the order', async () => {
@@ -128,12 +145,25 @@ describe('reputation by events (#208)', () => {
     const down = await reputation.apply(id, ReputationEventReason.DISCONNECT)
     const up = await reputation.apply(id, ReputationEventReason.SUSPENSION_SERVED)
 
-    expect(down).toEqual({ reputation: 50, band: 'slow_queue', crossed: 'slow_queue' })
+    expect(down).toEqual({
+      reputation: 50,
+      band: 'slow_queue',
+      crossed: { from: 'good', to: 'slow_queue' },
+    })
     expect(up).toEqual({ reputation: 45, band: 'slow_queue', crossed: null })
     const deeper = await account(41)
-    expect((await reputation.apply(deeper, ReputationEventReason.DISCONNECT)).crossed).toBe(
-      'suspension',
-    )
+    expect((await reputation.apply(deeper, ReputationEventReason.DISCONNECT)).crossed).toEqual({
+      from: 'slow_queue',
+      to: 'suspension',
+    })
+  })
+
+  it('tells a climb out of a band from a fall into it', async () => {
+    const id = await account(24)
+
+    const change = await reputation.apply(id, ReputationEventReason.CLEAN_MATCH)
+
+    expect(change.crossed).toEqual({ from: 'ban', to: 'suspension' })
   })
 
   it('loses no update when results for one account arrive at once', async () => {
@@ -145,6 +175,7 @@ describe('reputation by events (#208)', () => {
 
     const { reputation: value, events } = await stored(id)
     expect(value).toBe(70)
-    expect(events).toHaveLength(10)
+    expect(events.filter((event) => event.delta === 1)).toHaveLength(10)
+    expect(events).toHaveLength(12)
   })
 })

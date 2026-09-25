@@ -10,7 +10,8 @@ import { MailSender } from '../src/common/mail/mail.types'
 import { applySecurity } from '../src/common/security/security.config'
 import { Account } from '../src/modules/account/account.entity'
 import { CURRENT_TERMS_VERSION } from '../src/modules/account/terms.constants'
-import { CharacterCategory } from '../src/modules/character/archetype'
+import { Platform } from '../src/common/domain/platform.enum'
+import { Archetype, CharacterCategory } from '../src/modules/character/archetype'
 import { Character, CharacterState } from '../src/modules/character/character.entity'
 import { EloEvent } from '../src/modules/ranking/elo-event.entity'
 import { MatchRollbackService } from '../src/modules/ranking/match-rollback.service'
@@ -21,7 +22,8 @@ import { CapturingMailSender } from './support/capturing-mail-sender'
 /**
  * Phase 2.4, #210. The match result (#209) is not built yet, so these tests
  * write its events the way it will: one `match_result` per character with the
- * lobby id, and `matchesInCategory` up by one.
+ * lobby id, and `matchesInCategory` up by one on the category's active
+ * character.
  */
 describe('match rollback (#210)', () => {
   let app: INestApplication
@@ -45,12 +47,12 @@ describe('match rollback (#210)', () => {
     const character = em.create(Character, {
       account,
       category: CharacterCategory.MIDFIELDER,
-      archetype: 'maestro',
-      platform: 'ps5',
+      archetype: Archetype.MAESTRO,
+      platform: Platform.PS5,
       edition: CURRENT_EDITION,
       state: CharacterState.VERIFIED,
       verifiedAt: new Date(),
-    } as never)
+    })
     await em.flush()
     return { accountId: account.id, characterId: character.id }
   }
@@ -105,7 +107,8 @@ describe('match rollback (#210)', () => {
   it('puts elo, reputation and the match count back as they were', async () => {
     const winner = await player()
     const loser = await player()
-    await orm.em.fork().nativeUpdate(Account, { id: loser.accountId }, { reputation: 60 })
+    // Below 70 through the log, the only way the replay knows about it.
+    await reputation.apply(loser.accountId, ReputationEventReason.DISCONNECT, randomUUID())
     const before = [
       await state(winner.accountId, winner.characterId),
       await state(loser.accountId, loser.characterId),
@@ -185,27 +188,104 @@ describe('match rollback (#210)', () => {
     expect(await state(one.accountId, one.characterId)).toMatchObject({ elo: 991, matches: 1 })
   })
 
-  it('takes the match back from the replacement that inherited it (RF-027)', async () => {
-    const one = await player()
-    const lobbyId = randomUUID()
-    await played(one.characterId, lobbyId, 16)
+  /** Replaces the active character of the category, as creation does (RF-027). */
+  const replace = async (characterId: string): Promise<string> => {
     const em = orm.em.fork()
-    const old = await em.findOneOrFail(Character, { id: one.characterId })
+    const old = await em.findOneOrFail(Character, { id: characterId })
     old.state = CharacterState.INACTIVE
     await em.flush()
     const replacement = em.create(Character, {
       account: old.account,
       category: old.category,
-      archetype: 'creator',
+      archetype: Archetype.CREATOR,
       platform: old.platform,
       edition: old.edition,
       matchesInCategory: old.matchesInCategory,
-    } as never)
+    })
     await em.flush()
+    return replacement.id
+  }
+
+  it('takes the match from the active character, which inherited it (RF-027)', async () => {
+    const one = await player()
+    const lobbyId = randomUUID()
+    await played(one.characterId, lobbyId, 16)
+    const second = await replace(one.characterId)
+    const third = await replace(second)
 
     await rollback.revertLobby(lobbyId)
 
-    expect((await state(one.accountId, replacement.id)).matches).toBe(0)
-    expect((await state(one.accountId, one.characterId)).matches).toBe(0)
+    expect((await state(one.accountId, third)).matches).toBe(0)
+    // The replaced ones are history: they keep the count they had.
+    expect((await state(one.accountId, second)).matches).toBe(1)
+    expect((await state(one.accountId, one.characterId)).matches).toBe(1)
+  })
+
+  it('replays reputation, so an annulled disconnect does not lift it past 70', async () => {
+    const one = await player()
+    const lobbyId = randomUUID()
+    await reputation.apply(one.accountId, ReputationEventReason.DISCONNECT, lobbyId)
+    for (let i = 0; i < 8; i += 1) {
+      await reputation.apply(one.accountId, ReputationEventReason.CLEAN_MATCH, randomUUID())
+    }
+
+    await rollback.revertLobby(lobbyId)
+
+    expect((await state(one.accountId, one.characterId)).reputation).toBe(70)
+  })
+
+  it('replays reputation, so an annulled clean match at 69 is made up by the next one', async () => {
+    const one = await player()
+    await reputation.apply(one.accountId, ReputationEventReason.DISCONNECT, randomUUID())
+    for (let i = 0; i < 7; i += 1) {
+      await reputation.apply(one.accountId, ReputationEventReason.CLEAN_MATCH, randomUUID())
+    }
+    const lobbyId = randomUUID()
+    await reputation.apply(one.accountId, ReputationEventReason.CLEAN_MATCH, lobbyId)
+    await reputation.apply(one.accountId, ReputationEventReason.CLEAN_MATCH, randomUUID())
+
+    await rollback.revertLobby(lobbyId)
+
+    expect((await state(one.accountId, one.characterId)).reputation).toBe(70)
+  })
+
+  it('replays a served suspension as "back to 45", whatever it follows', async () => {
+    const one = await player()
+    for (let i = 0; i < 3; i += 1) {
+      await reputation.apply(one.accountId, ReputationEventReason.DISCONNECT, randomUUID())
+    }
+    const lobbyId = randomUUID()
+    await reputation.apply(one.accountId, ReputationEventReason.DISCONNECT, lobbyId)
+    await reputation.apply(one.accountId, ReputationEventReason.SUSPENSION_SERVED)
+
+    await rollback.revertLobby(lobbyId)
+
+    expect((await state(one.accountId, one.characterId)).reputation).toBe(45)
+  })
+
+  it('reverts two lobbies that share accounts at the same time, without deadlock', async () => {
+    const a = await player()
+    const b = await player()
+    const first = randomUUID()
+    const second = randomUUID()
+    for (const lobby of [first, second]) {
+      await played(a.characterId, lobby, 16)
+      await played(b.characterId, lobby, -16)
+      await reputation.apply(a.accountId, ReputationEventReason.DISCONNECT, lobby)
+      await reputation.apply(b.accountId, ReputationEventReason.DISCONNECT, lobby)
+    }
+
+    await Promise.all([rollback.revertLobby(first), rollback.revertLobby(second)])
+
+    expect(await state(a.accountId, a.characterId)).toEqual({
+      reputation: 70,
+      matches: 0,
+      elo: 1000,
+    })
+    expect(await state(b.accountId, b.characterId)).toEqual({
+      reputation: 70,
+      matches: 0,
+      elo: 1000,
+    })
   })
 })

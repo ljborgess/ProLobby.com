@@ -258,7 +258,7 @@ Por que precisou existir: cada candidato tem 30 s, mas nada limitava **quantos**
 ### RF-044 · Disputa sem evidência decisiva anula a partida
 **Origem**: [produto/03-partida/04-resultado.md](../produto/03-partida/04-resultado.md)
 
-**Aceite**: a moderação marca a partida como anulada; elo é revertido pra todos os participantes via evento de rollback, nenhum evento de reputação é gerado, e as filas são liberadas. A partida continua consultável no histórico com o rótulo de anulada.
+**Aceite**: a moderação marca a partida como anulada; elo e reputação da partida são revertidos pra todos os participantes marcando os eventos dela como revertidos (`revertido_em`), sem evento novo de elo nem de reputação (2026-09-25, #210), e as filas são liberadas. A partida continua consultável no histórico com o rótulo de anulada.
 
 ### RF-045 · Print anterior ao piso de 5 min é recusado
 **Origem**: [produto/03-partida/04-resultado.md](../produto/03-partida/04-resultado.md)
