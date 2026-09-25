@@ -130,10 +130,14 @@ describe('CharacterForm', () => {
 
 describe('PrintUpload', () => {
   const ID = '11111111-1111-1111-1111-111111111111'
-  const pick = () =>
+  const pick = (confirm = true) => {
     fireEvent.change(screen.getByLabelText(pt.print.fileLabel), {
       target: { files: [new File(['x'.repeat(100)], 'print.png', { type: 'image/png' })] },
     })
+    if (confirm) {
+      fireEvent.click(screen.getByLabelText(pt.print.activeConfirm))
+    }
+  }
 
   beforeEach(() => {
     vi.stubGlobal('fetch', vi.fn())
@@ -219,5 +223,49 @@ describe('PrintUpload', () => {
     await waitFor(() => expect(status).toHaveFocus())
     fireEvent.click(screen.getByRole('button', { name: pt.print.backToList }))
     expect(onBack).toHaveBeenCalled()
+  })
+
+  it('does not send without the active-archetype confirmation (#197)', async () => {
+    renderWithLocale(<PrintUpload characterId={ID} onBack={() => {}} />)
+
+    pick(false)
+    fireEvent.click(screen.getByRole('button', { name: pt.print.submit }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(pt.print.activeConfirmRequired)
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('sends the confirmation with the file', async () => {
+    vi.mocked(fetch).mockResolvedValue(json(201, { status: 'received', rejection: null }))
+    renderWithLocale(<PrintUpload characterId={ID} onBack={() => {}} />)
+
+    pick()
+    fireEvent.click(screen.getByRole('button', { name: pt.print.submit }))
+
+    await screen.findByRole('status')
+    const body = (vi.mocked(fetch).mock.calls[0]![1] as RequestInit).body as FormData
+    expect(body.get('activeArchetypeConfirmed')).toBe('true')
+  })
+
+  it('tells how many hours are left in the cooldown (RF-030)', async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      json(429, { message: 'print_cooldown', retryAfterSeconds: 5 * 3600 - 10 }),
+    )
+    renderWithLocale(<PrintUpload characterId={ID} onBack={() => {}} />)
+
+    pick()
+    fireEvent.click(screen.getByRole('button', { name: pt.print.submit }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(pt.print.cooldown(5))
+  })
+
+  it('says a print is already in review', async () => {
+    vi.mocked(fetch).mockResolvedValue(json(409, { message: 'print_in_review' }))
+    renderWithLocale(<PrintUpload characterId={ID} onBack={() => {}} />)
+
+    pick()
+    fireEvent.click(screen.getByRole('button', { name: pt.print.submit }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(pt.print.inReview)
   })
 })

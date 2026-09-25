@@ -18,6 +18,7 @@ import { AccountRole, AccountState } from '../src/modules/account/account.enums'
 import { CURRENT_TERMS_VERSION } from '../src/modules/account/terms.constants'
 import { Character, CharacterState } from '../src/modules/character/character.entity'
 import { PlatformGamertag } from '../src/modules/character/platform-gamertag.entity'
+import { PrintSubmission } from '../src/modules/character/print-submission.entity'
 import { BlockedIdentity } from '../src/modules/moderation/blocked-identity.entity'
 import { ModerationCase } from '../src/modules/moderation/moderation-case.entity'
 import { ModerationCaseState } from '../src/modules/moderation/moderation-case.enums'
@@ -66,6 +67,7 @@ describe('character verification by moderation (#198)', () => {
     await request(app.getHttpServer())
       .post(`/api/characters/${character.body.id}/prints`)
       .set('Cookie', player.cookie)
+      .field('activeArchetypeConfirmed', 'true')
       .attach('print', makePng(400, 300, ++counter), 'print.png')
     const found = await orm.em.fork().findOneOrFail(ModerationCase, {
       printSubmission: { character: character.body.id },
@@ -232,6 +234,7 @@ describe('character verification by moderation (#198)', () => {
     await request(app.getHttpServer())
       .post(`/api/characters/${own.body.id}/prints`)
       .set('Cookie', moderator)
+      .field('activeArchetypeConfirmed', 'true')
       .attach('print', makePng(400, 300, ++counter), 'print.png')
     const em = orm.em.fork()
     const ownCase = await em.findOneOrFail(ModerationCase, {
@@ -333,5 +336,131 @@ describe('character verification by moderation (#198)', () => {
     const { caseId } = await playerWithPrint(`Bad${counter}xx`)
 
     expect((await decide(caseId, body)).status).toBe(400)
+  })
+
+  describe('confirmation and cooldown (#197)', () => {
+    const resend = (cookie: string, characterId: string, confirmed = true) => {
+      const req = request(app.getHttpServer())
+        .post(`/api/characters/${characterId}/prints`)
+        .set('Cookie', cookie)
+      if (confirmed) {
+        req.field('activeArchetypeConfirmed', 'true')
+      }
+      return req.attach('print', makePng(400, 300, ++counter), 'print.png')
+    }
+
+    /** Moves the approval back in time instead of waiting a day. */
+    const verifiedHoursAgo = async (characterId: string, hours: number) => {
+      const em = orm.em.fork()
+      const character = await em.findOneOrFail(Character, { id: characterId })
+      character.verifiedAt = new Date(Date.now() - hours * 60 * 60 * 1000)
+      await em.flush()
+    }
+
+    it('refuses a print without the active-archetype confirmation, not counting it', async () => {
+      const player = await account()
+      const character = await request(app.getHttpServer())
+        .post('/api/characters')
+        .set('Cookie', player.cookie)
+        .send({
+          category: 'midfielder',
+          archetype: 'maestro',
+          platform: 'ps5',
+          gamertag: 'NoTick1',
+        })
+
+      const res = await resend(player.cookie, character.body.id, false)
+
+      expect(res.status).toBe(400)
+      expect(res.body.message).toBe('active_archetype_confirmation_required')
+      const list = await request(app.getHttpServer())
+        .get('/api/characters')
+        .set('Cookie', player.cookie)
+      expect(list.body[0].lastPrint).toBeNull()
+    })
+
+    it('refuses a second print while the first is in review', async () => {
+      const { player, characterId } = await playerWithPrint('Queue2x')
+
+      const res = await resend(player.cookie, characterId)
+
+      expect(res.status).toBe(409)
+      expect(res.body.message).toBe('print_in_review')
+    })
+
+    it('holds a new print for 24 h after an accepted one, with the time left (RF-030)', async () => {
+      const { player, characterId, caseId } = await playerWithPrint('Cool1xx')
+      await decide(caseId, { approve: true, archetype: 'maestro', gamertag: 'Cool1xx' })
+      await verifiedHoursAgo(characterId, 23)
+
+      const res = await resend(player.cookie, characterId)
+
+      expect(res.status).toBe(429)
+      expect(res.body.message).toBe('print_cooldown')
+      expect(res.body.retryAfterSeconds).toBeGreaterThan(59 * 60)
+      expect(res.body.retryAfterSeconds).toBeLessThanOrEqual(60 * 60)
+
+      await verifiedHoursAgo(characterId, 24.1)
+      const later = await resend(player.cookie, characterId)
+      expect(later.body.status).toBe('received')
+    })
+
+    it('does not let a replacement skip the cooldown (RF-027, RF-030)', async () => {
+      const { player, caseId } = await playerWithPrint('Swap1xx')
+      await decide(caseId, { approve: true, archetype: 'maestro', gamertag: 'Swap1xx' })
+      const replacement = await request(app.getHttpServer())
+        .post('/api/characters')
+        .set('Cookie', player.cookie)
+        .send({
+          category: 'midfielder',
+          archetype: 'creator',
+          platform: 'ps5',
+          gamertag: 'Swap1xx',
+        })
+
+      const res = await resend(player.cookie, replacement.body.id)
+
+      expect(res.status).toBe(429)
+      expect(res.body.message).toBe('print_cooldown')
+    })
+
+    it('keeps one print in review when two arrive at once', async () => {
+      const player = await account()
+      const character = await request(app.getHttpServer())
+        .post('/api/characters')
+        .set('Cookie', player.cookie)
+        .send({
+          category: 'midfielder',
+          archetype: 'maestro',
+          platform: 'ps5',
+          gamertag: 'Pair1xx',
+        })
+
+      const results = await Promise.all([
+        resend(player.cookie, character.body.id),
+        resend(player.cookie, character.body.id),
+      ])
+
+      expect(results.map((res) => res.status).sort()).toEqual([201, 409])
+    })
+
+    it('does not count a refused cooldown or review as an attempt (RF-065)', async () => {
+      const { player, characterId } = await playerWithPrint('Count1x')
+      await resend(player.cookie, characterId)
+      await resend(player.cookie, characterId)
+
+      const count = await orm.em.fork().count(PrintSubmission, { character: characterId })
+
+      expect(count).toBe(1)
+    })
+
+    it('lets a rejected print be sent again right away (RF-030)', async () => {
+      const { player, characterId, caseId } = await playerWithPrint('Retry1x')
+      await decide(caseId, { approve: false, rejection: 'unreadable' })
+
+      const res = await resend(player.cookie, characterId)
+
+      expect(res.body.status).toBe('received')
+    })
   })
 })
