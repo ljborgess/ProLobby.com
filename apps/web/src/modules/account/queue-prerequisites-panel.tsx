@@ -17,7 +17,7 @@ export interface QueuePrerequisites {
   characterVerified: boolean
   discordLinked: boolean
   discordPresent: boolean
-  /** 0–100 (#208). */
+  /** 0–100 (#208). Shown on the queue screen, not here (decided 2026-09-25). */
   reputation: number
   /** The API reads the thresholds; the screen only reacts to the band. */
   reputationBand: 'good' | 'slow_queue' | 'suspension' | 'ban'
@@ -43,8 +43,6 @@ export function QueuePrerequisitesPanel({
   characterVerified,
   discordLinked,
   discordPresent,
-  reputation,
-  reputationBand,
 }: QueuePrerequisites) {
   const content = useAccountContent()
   const [resend, setResend] = useState<Resend>('idle')
@@ -80,15 +78,6 @@ export function QueuePrerequisitesPanel({
             <p className="text-sm leading-relaxed text-foreground-soft">
               {allDone ? content.allDone : content.subtitle}
             </p>
-            <p className="text-sm text-foreground-soft">
-              {content.reputation.label}:{' '}
-              <span className="tabular-nums text-foreground">{reputation}/100</span>
-            </p>
-            {reputationBand !== 'good' && (
-              <p className="text-sm leading-relaxed text-foreground-soft">
-                {content.reputation.slowQueue}
-              </p>
-            )}
           </div>
           <span className="shrink-0 rounded-full border border-white/10 px-3 py-1 text-xs tabular-nums text-foreground-soft">
             {doneCount}/{steps.length}
