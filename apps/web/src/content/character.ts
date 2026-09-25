@@ -2,6 +2,7 @@ import type { Locale } from './locale'
 
 export type CharacterCategory = 'goalkeeper' | 'defender' | 'midfielder' | 'winger' | 'striker'
 export type Platform = 'ps5' | 'xbox_series' | 'pc'
+export type WizardStep = 'category' | 'archetype' | 'platform' | 'gamertag' | 'confirm'
 export type PrintRejection =
   | 'invalid_format'
   | 'image_too_small'
@@ -51,6 +52,17 @@ export interface CharacterContent {
     nameInvalid: string
     createLimit: string
     genericError: string
+    /** Step names on the rail; the questions are what each step asks. */
+    steps: Record<WizardStep, string>
+    questions: Record<WizardStep, string>
+    stepOf: (step: number, total: number) => string
+    next: string
+    back: string
+    create: string
+    change: string
+    replaces: string
+    archetypeFor: (category: string) => string
+    previewCaption: string
   }
   print: {
     heading: string
@@ -136,6 +148,29 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
       nameInvalid: 'Use só letras, números, espaço e . _ -',
       createLimit: 'Você cadastrou muitos personagens nesta hora. Tenta de novo mais tarde.',
       genericError: 'Não deu pra salvar agora. Tenta de novo em instantes.',
+      steps: {
+        category: 'Posição',
+        archetype: 'Arquétipo',
+        platform: 'Plataforma',
+        gamertag: 'Gamertag',
+        confirm: 'Confirmar',
+      },
+      questions: {
+        category: 'Em que posição você joga?',
+        archetype: 'Qual é o arquétipo do seu Pro?',
+        platform: 'Em que plataforma você joga?',
+        gamertag: 'Como você aparece no jogo?',
+        confirm: 'Confere e entra no elenco',
+      },
+      stepOf: (step, total) => `Etapa ${step} de ${total}`,
+      next: 'Próximo',
+      back: 'Voltar',
+      create: 'Cadastrar personagem',
+      change: 'Alterar',
+      replaces: 'Substitui o atual',
+      archetypeFor: (category) => `Os arquétipos que combinam com ${category}.`,
+      previewCaption:
+        'É assim que o card aparece na tela de arquétipos. O print precisa mostrar esse nome.',
     },
     print: {
       heading: 'Mande o print da tela de arquétipos',
@@ -243,6 +278,29 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
       nameInvalid: 'Usa solo letras, números, espacio y . _ -',
       createLimit: 'Registraste muchos personajes en esta hora. Intenta de nuevo más tarde.',
       genericError: 'No se pudo guardar ahora. Intenta de nuevo en un momento.',
+      steps: {
+        category: 'Posición',
+        archetype: 'Arquetipo',
+        platform: 'Plataforma',
+        gamertag: 'Gamertag',
+        confirm: 'Confirmar',
+      },
+      questions: {
+        category: '¿En qué posición juegas?',
+        archetype: '¿Cuál es el arquetipo de tu Pro?',
+        platform: '¿En qué plataforma juegas?',
+        gamertag: '¿Cómo apareces en el juego?',
+        confirm: 'Revisa y entra en la plantilla',
+      },
+      stepOf: (step, total) => `Paso ${step} de ${total}`,
+      next: 'Siguiente',
+      back: 'Volver',
+      create: 'Registrar personaje',
+      change: 'Cambiar',
+      replaces: 'Reemplaza al actual',
+      archetypeFor: (category) => `Los arquetipos que encajan con ${category}.`,
+      previewCaption:
+        'Así aparece la tarjeta en la pantalla de arquetipos. La captura tiene que mostrar ese nombre.',
     },
     print: {
       heading: 'Envía la captura de la pantalla de arquetipos',

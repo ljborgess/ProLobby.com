@@ -211,7 +211,7 @@ const ZONE: Record<CharacterCategory, { x: number; y: number }> = {
  * still waits, a faint one for a place nobody has taken. Stroke, never fill,
  * and always quieter than the text beside it.
  */
-function PositionPitch({
+export function PositionPitch({
   category,
   marker,
 }: {

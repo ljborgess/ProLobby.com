@@ -68,7 +68,7 @@ export function CharacterFlow({
       {creating !== null && (
         <section
           aria-labelledby="new-character"
-          className="landing-card flex w-full max-w-xl flex-col gap-4 rounded-md border border-white/10 px-5 py-6 sm:px-6"
+          className="landing-card flex w-full max-w-3xl flex-col gap-4 rounded-md border border-white/10 px-5 py-6 sm:px-6"
         >
           <div className="flex items-center justify-between gap-4">
             <h2 id="new-character" className="font-display text-lg font-medium text-foreground">
@@ -88,6 +88,7 @@ export function CharacterFlow({
             key={creating}
             archetypes={archetypes}
             initialCategory={creating}
+            taken={characters.map((item) => item.category)}
             onCreated={(character) => {
               setCharacters((current) => [
                 ...current.filter((item) => item.category !== character.category),

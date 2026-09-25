@@ -27,30 +27,79 @@ describe('CharacterForm', () => {
     vi.unstubAllGlobals()
   })
 
+  const next = () => fireEvent.click(screen.getByRole('button', { name: pt.form.next }))
+  const pick = (label: string) => fireEvent.click(screen.getByRole('radio', { name: label }))
+
+  /** Walks to the confirm step with a valid winger. */
+  const complete = (name = '') => {
+    pick(pt.categories.winger)
+    next()
+    pick('SPARK')
+    next()
+    pick(pt.platforms.ps5)
+    next()
+    fireEvent.change(screen.getByLabelText(pt.form.gamertagLabel), {
+      target: { value: 'Torvalen' },
+    })
+    if (name) {
+      fireEvent.change(screen.getByLabelText(pt.form.nameLabel), { target: { value: name } })
+    }
+    next()
+  }
+
+  it('asks one thing per step, in order, with the rail showing where you are', () => {
+    renderWithLocale(<CharacterForm archetypes={ARCHETYPES} onCreated={vi.fn()} />)
+
+    expect(screen.getByRole('heading', { name: pt.form.questions.category })).toBeInTheDocument()
+    expect(screen.getByText(pt.form.steps.category).closest('li')).toHaveAttribute(
+      'aria-current',
+      'step',
+    )
+    pick(pt.categories.winger)
+    next()
+    expect(screen.getByRole('heading', { name: pt.form.questions.archetype })).toBeInTheDocument()
+  })
+
   it('offers only the archetypes the chosen category allows', () => {
     renderWithLocale(<CharacterForm archetypes={ARCHETYPES} onCreated={vi.fn()} />)
 
-    fireEvent.change(screen.getByLabelText(pt.form.categoryLabel), {
-      target: { value: 'winger' },
-    })
+    pick(pt.categories.winger)
+    next()
 
-    const archetype = screen.getByLabelText(pt.form.archetypeLabel)
-    const offered = Array.from(archetype.querySelectorAll('option'))
-      .map((option) => option.textContent)
-      .slice(1)
-    expect(offered).toEqual(['MAESTRO', 'SPARK'])
+    const offered = screen.getAllByRole('radio').map((radio) => radio.getAttribute('value'))
+    expect(offered).toEqual(['maestro', 'spark'])
   })
 
-  it('asks for the required fields before calling the API', () => {
+  it('does not move on without an answer, and never calls the API early', () => {
     renderWithLocale(<CharacterForm archetypes={ARCHETYPES} onCreated={vi.fn()} />)
 
-    fireEvent.click(screen.getByRole('button', { name: pt.form.submit }))
+    next()
 
-    expect(screen.getAllByText(pt.form.fieldRequired).length).toBeGreaterThanOrEqual(4)
+    expect(screen.getByRole('alert')).toHaveTextContent(pt.form.fieldRequired)
+    expect(screen.getByRole('heading', { name: pt.form.questions.category })).toBeInTheDocument()
     expect(fetch).not.toHaveBeenCalled()
   })
 
-  it('creates the character and hands it on', async () => {
+  it('starts on the archetype when the slot already said the position', () => {
+    renderWithLocale(
+      <CharacterForm archetypes={ARCHETYPES} onCreated={vi.fn()} initialCategory="goalkeeper" />,
+    )
+
+    expect(screen.getByRole('heading', { name: pt.form.questions.archetype })).toBeInTheDocument()
+    expect(screen.getAllByRole('radio').map((radio) => radio.getAttribute('value'))).toEqual([
+      'shot_stopper',
+    ])
+  })
+
+  it('warns that a taken position replaces the character in it (RF-027)', () => {
+    renderWithLocale(
+      <CharacterForm archetypes={ARCHETYPES} onCreated={vi.fn()} taken={['midfielder']} />,
+    )
+
+    expect(screen.getAllByText(pt.form.replaces)).toHaveLength(1)
+  })
+
+  it('shows everything before creating, then creates and hands it on', async () => {
     const created = {
       id: '11111111-1111-1111-1111-111111111111',
       category: 'winger',
@@ -62,59 +111,39 @@ describe('CharacterForm', () => {
     const onCreated = vi.fn()
     renderWithLocale(<CharacterForm archetypes={ARCHETYPES} onCreated={onCreated} />)
 
-    fireEvent.change(screen.getByLabelText(pt.form.categoryLabel), {
-      target: { value: 'winger' },
-    })
-    fireEvent.change(screen.getByLabelText(pt.form.archetypeLabel), { target: { value: 'spark' } })
-    fireEvent.change(screen.getByLabelText(pt.form.platformLabel), { target: { value: 'ps5' } })
-    fireEvent.change(screen.getByLabelText(pt.form.gamertagLabel), {
-      target: { value: 'Torvalen' },
-    })
-    fireEvent.click(screen.getByRole('button', { name: pt.form.submit }))
+    complete()
+    expect(screen.getByRole('heading', { name: pt.form.questions.confirm })).toBeInTheDocument()
+    expect(screen.getByText('Torvalen')).toBeInTheDocument()
+    expect(fetch).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: pt.form.create }))
 
     await waitFor(() => expect(onCreated).toHaveBeenCalledWith(created))
-    expect(fetch).toHaveBeenCalledWith(
-      '/bff/characters',
-      expect.objectContaining({ method: 'POST' }),
-    )
+    const [, init] = vi.mocked(fetch).mock.calls[0]!
+    expect(JSON.parse(String((init as RequestInit).body))).toEqual({
+      category: 'winger',
+      archetype: 'spark',
+      platform: 'ps5',
+      gamertag: 'Torvalen',
+    })
   })
 
-  it('explains a category that already has an active character', async () => {
+  it('sends the player back to the position when it is already taken', async () => {
     vi.mocked(fetch).mockResolvedValue(json(409, { message: 'category_taken' }))
     renderWithLocale(<CharacterForm archetypes={ARCHETYPES} onCreated={vi.fn()} />)
 
-    fireEvent.change(screen.getByLabelText(pt.form.categoryLabel), {
-      target: { value: 'goalkeeper' },
-    })
-    fireEvent.change(screen.getByLabelText(pt.form.archetypeLabel), {
-      target: { value: 'shot_stopper' },
-    })
-    fireEvent.change(screen.getByLabelText(pt.form.platformLabel), { target: { value: 'pc' } })
-    fireEvent.change(screen.getByLabelText(pt.form.gamertagLabel), {
-      target: { value: 'Torvalen' },
-    })
-    fireEvent.click(screen.getByRole('button', { name: pt.form.submit }))
+    complete()
+    fireEvent.click(screen.getByRole('button', { name: pt.form.create }))
 
     expect(await screen.findByText(pt.form.categoryTaken)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: pt.form.questions.category })).toBeInTheDocument()
   })
-
-  const fillValid = () => {
-    fireEvent.change(screen.getByLabelText(pt.form.categoryLabel), { target: { value: 'winger' } })
-    fireEvent.change(screen.getByLabelText(pt.form.archetypeLabel), { target: { value: 'spark' } })
-    fireEvent.change(screen.getByLabelText(pt.form.platformLabel), { target: { value: 'ps5' } })
-    fireEvent.change(screen.getByLabelText(pt.form.gamertagLabel), {
-      target: { value: 'Torvalen' },
-    })
-  }
 
   it('says what is wrong with the name instead of asking to try again', () => {
     renderWithLocale(<CharacterForm archetypes={ARCHETYPES} onCreated={vi.fn()} />)
 
-    fillValid()
-    fireEvent.change(screen.getByLabelText(pt.form.nameLabel), { target: { value: 'Pro<script>' } })
-    fireEvent.click(screen.getByRole('button', { name: pt.form.submit }))
+    complete('Pro<script>')
 
-    expect(screen.getByText(pt.form.nameInvalid)).toBeInTheDocument()
+    expect(screen.getByRole('alert')).toHaveTextContent(pt.form.nameInvalid)
     expect(fetch).not.toHaveBeenCalled()
   })
 
@@ -122,8 +151,8 @@ describe('CharacterForm', () => {
     vi.mocked(fetch).mockResolvedValue(json(429, { message: 'character_create_limit' }))
     renderWithLocale(<CharacterForm archetypes={ARCHETYPES} onCreated={vi.fn()} />)
 
-    fillValid()
-    fireEvent.click(screen.getByRole('button', { name: pt.form.submit }))
+    complete()
+    fireEvent.click(screen.getByRole('button', { name: pt.form.create }))
 
     expect(await screen.findByText(pt.form.createLimit)).toBeInTheDocument()
   })
@@ -302,6 +331,6 @@ describe('Roster (squad sheet)', () => {
       }),
     )
 
-    expect(screen.getByLabelText(pt.form.categoryLabel)).toHaveValue('winger')
+    expect(screen.getByText(pt.form.archetypeFor(pt.categories.winger))).toBeInTheDocument()
   })
 })

@@ -379,6 +379,18 @@ Cada vaga carrega um **mini-campo em traço** com a posição marcada:
 No telefone as vagas empilham e o mini-campo encolhe pra 56px, alinhado à
 esquerda.
 
+Cadastrar um personagem é o **pré-jogo em etapas**, uma decisão por vez, na
+ordem em que o jogo pergunta: Posição, Arquétipo, Plataforma, Gamertag,
+Confirmar. No topo fica uma trilha de cinco estações, e o trecho já percorrido
+acende no acento. Estação feita é disco sólido com check e vira botão de
+volta; a atual pulsa; as de frente são tracejadas e numeradas. Cada escolha é
+uma peça desenhada com o rádio nativo por dentro: a posição com o mini-campo, o
+arquétipo em caixa alta, a plataforma com o traço de controle ou monitor. A
+etapa do gamertag mostra ao lado uma prévia desenhada do card da tela de
+arquétipos, com o nome digitado embaixo, que é o que o print vai ter que
+mostrar. A confirmação resume tudo com Alterar em cada linha. Recusa da API
+leva de volta à etapa que resolve o problema.
+
 ### Signature: o Painel de Instrumento
 
 A arte que acompanha formulário e seção: radar varrendo em gradiente cônico
