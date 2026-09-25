@@ -20,7 +20,6 @@ export type PrintRejection =
  */
 export interface CharacterContent {
   title: string
-  subtitle: string
   categories: Record<CharacterCategory, string>
   /** The three-letter code a squad sheet prints above each slot. */
   categoryCodes: Record<CharacterCategory, string>
@@ -32,27 +31,19 @@ export interface CharacterContent {
     formHeading: string
     cancel: string
     free: string
-    freeHint: string
     legendReview: string
     legendPending: string
     replace: string
   }
   form: {
-    categoryLabel: string
-    archetypeLabel: string
-    archetypeHint: string
-    platformLabel: string
     gamertagLabel: string
     gamertagHint: string
     nameLabel: string
     nameHint: string
-    choose: string
-    submit: string
     submitting: string
     fieldRequired: string
     gamertagInvalid: string
     mismatch: string
-    categoryTaken: string
     gamertagLocked: string
     nameInvalid: string
     createLimit: string
@@ -68,6 +59,8 @@ export interface CharacterContent {
     replaces: string
     archetypeFor: (category: string) => string
     previewCaption: string
+    replacing: (archetype: string, verified: boolean) => string
+    replacingNow: (archetype: string) => string
   }
   print: {
     heading: string
@@ -92,15 +85,12 @@ export interface CharacterContent {
     genericError: string
   }
   existing: {
-    heading: string
     pending: string
     rejectedShort: string
     verified: string
     inReview: string
-    rejectedPrefix: string
     sendPrint: string
     sendAgain: string
-    newCharacter: string
   }
   back: string
 }
@@ -108,8 +98,6 @@ export interface CharacterContent {
 export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
   pt: {
     title: 'Seu personagem',
-    subtitle:
-      'Escolha a categoria em que você joga e o arquétipo do seu Pro. Depois, mande o print da tela de arquétipos pra gente conferir.',
     categories: {
       goalkeeper: 'Goleiro',
       defender: 'Zaga/Lateral',
@@ -132,28 +120,19 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
       formHeading: 'Novo personagem',
       cancel: 'Cancelar',
       free: 'Vaga livre',
-      freeHint:
-        'Ninguém nessa posição ainda. Cadastre um personagem e mande o print pra ele entrar em campo.',
       legendReview: 'Print em análise',
       legendPending: 'Esperando print',
       replace: 'Trocar personagem',
     },
     form: {
-      categoryLabel: 'Categoria',
-      archetypeLabel: 'Arquétipo',
-      archetypeHint: 'Só aparecem os arquétipos que combinam com a categoria.',
-      platformLabel: 'Plataforma',
       gamertagLabel: 'Gamertag nessa plataforma',
       gamertagHint: 'Exatamente como aparece no jogo, embaixo do nome do arquétipo.',
       nameLabel: 'Nome do personagem (opcional)',
       nameHint: 'Só pra você identificar. Pode trocar quando quiser.',
-      choose: 'Escolha…',
-      submit: 'Continuar',
       submitting: 'Salvando…',
       fieldRequired: 'Preencha este campo.',
       gamertagInvalid: 'Use de 3 a 20 caracteres: letras, números, espaço e _ . # -',
       mismatch: 'Esse arquétipo não combina com a categoria escolhida.',
-      categoryTaken: 'Você já tem um personagem ativo nessa categoria.',
       gamertagLocked:
         'Seu gamertag nessa plataforma já foi verificado. Pra trocar, abra um chamado com a moderação.',
       nameInvalid: 'Use só letras, números, espaço e . _ -',
@@ -182,6 +161,11 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
       archetypeFor: (category) => `Os arquétipos que combinam com ${category}.`,
       previewCaption:
         'É assim que o card aparece na tela de arquétipos. O print precisa mostrar esse nome.',
+      replacing: (archetype, verified) =>
+        verified
+          ? `Substitui ${archetype}, que está verificado. Ele sai do elenco e perde a verificação; o novo precisa de print.`
+          : `Substitui ${archetype}. Ele sai do elenco; o novo precisa de print.`,
+      replacingNow: (archetype) => `Esta posição já tem ${archetype}: o novo personagem substitui.`,
     },
     print: {
       heading: 'Mande o print da tela de arquétipos',
@@ -230,22 +214,17 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
       genericError: 'Não deu pra enviar agora. Tenta de novo em instantes.',
     },
     existing: {
-      heading: 'Seus personagens',
       pending: 'Aguardando print',
       rejectedShort: 'Print recusado',
       verified: 'Verificado',
       inReview: 'Print em análise pela moderação',
-      rejectedPrefix: 'Print recusado:',
       sendPrint: 'Enviar print',
       sendAgain: 'Enviar de novo',
-      newCharacter: 'Cadastrar outro personagem',
     },
     back: 'Próximos passos',
   },
   es: {
     title: 'Tu personaje',
-    subtitle:
-      'Elige la categoría en la que juegas y el arquetipo de tu Pro. Después, envía la captura de la pantalla de arquetipos para que la revisemos.',
     categories: {
       goalkeeper: 'Portero',
       defender: 'Defensa/Lateral',
@@ -268,28 +247,19 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
       formHeading: 'Nuevo personaje',
       cancel: 'Cancelar',
       free: 'Plaza libre',
-      freeHint:
-        'Nadie en esta posición todavía. Registra un personaje y envía la captura para que entre en el campo.',
       legendReview: 'Captura en revisión',
       legendPending: 'Esperando captura',
       replace: 'Cambiar personaje',
     },
     form: {
-      categoryLabel: 'Categoría',
-      archetypeLabel: 'Arquetipo',
-      archetypeHint: 'Solo aparecen los arquetipos que encajan con la categoría.',
-      platformLabel: 'Plataforma',
       gamertagLabel: 'Gamertag en esa plataforma',
       gamertagHint: 'Exactamente como aparece en el juego, debajo del nombre del arquetipo.',
       nameLabel: 'Nombre del personaje (opcional)',
       nameHint: 'Solo para que lo identifiques. Puedes cambiarlo cuando quieras.',
-      choose: 'Elige…',
-      submit: 'Continuar',
       submitting: 'Guardando…',
       fieldRequired: 'Completa este campo.',
       gamertagInvalid: 'Usa de 3 a 20 caracteres: letras, números, espacio y _ . # -',
       mismatch: 'Ese arquetipo no encaja con la categoría elegida.',
-      categoryTaken: 'Ya tienes un personaje activo en esa categoría.',
       gamertagLocked:
         'Tu gamertag en esa plataforma ya fue verificado. Para cambiarlo, abre un caso con la moderación.',
       nameInvalid: 'Usa solo letras, números, espacio y . _ -',
@@ -318,6 +288,12 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
       archetypeFor: (category) => `Los arquetipos que encajan con ${category}.`,
       previewCaption:
         'Así aparece la tarjeta en la pantalla de arquetipos. La captura tiene que mostrar ese nombre.',
+      replacing: (archetype, verified) =>
+        verified
+          ? `Reemplaza a ${archetype}, que está verificado. Sale de la plantilla y pierde la verificación; el nuevo necesita captura.`
+          : `Reemplaza a ${archetype}. Sale de la plantilla; el nuevo necesita captura.`,
+      replacingNow: (archetype) =>
+        `Esta posición ya tiene a ${archetype}: el nuevo personaje lo reemplaza.`,
     },
     print: {
       heading: 'Envía la captura de la pantalla de arquetipos',
@@ -368,15 +344,12 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
       genericError: 'No se pudo enviar ahora. Intenta de nuevo en un momento.',
     },
     existing: {
-      heading: 'Tus personajes',
       pending: 'Esperando captura',
       rejectedShort: 'Captura rechazada',
       verified: 'Verificado',
       inReview: 'Captura en revisión por la moderación',
-      rejectedPrefix: 'Captura rechazada:',
       sendPrint: 'Enviar captura',
       sendAgain: 'Enviar de nuevo',
-      newCharacter: 'Registrar otro personaje',
     },
     back: 'Próximos pasos',
   },

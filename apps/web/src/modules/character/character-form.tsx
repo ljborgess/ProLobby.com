@@ -4,9 +4,10 @@ import { BackAction } from '@/common/ui/back-action'
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { CheckMark } from '@/common/ui/icons'
 import { TextField } from '@/common/ui/text-field'
-import type { CharacterCategory, Platform } from '@/content/character'
+import type { CharacterCategory, Platform, WizardStep } from '@/content/character'
 import { useCharacterContent } from '@/hooks/use-character-content'
-import { CATEGORY_ORDER, PositionPitch } from './roster'
+import { Brackets, PositionPitch } from './pitch-art'
+import { CATEGORY_ORDER } from './roster'
 import { archetypeLabel, type ArchetypeOption, type CharacterView } from './types'
 
 const PLATFORMS: Platform[] = ['ps5', 'xbox_series', 'pc']
@@ -14,8 +15,9 @@ const PLATFORMS: Platform[] = ['ps5', 'xbox_series', 'pc']
 const GAMERTAG = /^[A-Za-z0-9][A-Za-z0-9 _.#-]{2,19}$/
 const NAME = /^[\p{L}\p{N} ._-]+$/u
 
-const STEPS = ['category', 'archetype', 'platform', 'gamertag', 'confirm'] as const
-type Step = (typeof STEPS)[number]
+const STEPS: readonly WizardStep[] = ['category', 'archetype', 'platform', 'gamertag', 'confirm']
+type Step = WizardStep
+type Field = 'gamertag' | 'name'
 
 type Values = {
   category: CharacterCategory | ''
@@ -25,14 +27,22 @@ type Values = {
   name: string
 }
 
-/** Where an API refusal sends the player back to: the step that can fix it. */
+/**
+ * Where an API refusal sends the player back to: the step, and the field,
+ * that can fix it. `category_taken` is not here: creating in a taken place
+ * replaces (RF-027), so the API only sends it on a race, and a retry is the
+ * honest answer.
+ */
 const API_ERRORS: Record<
   string,
-  { key: 'mismatch' | 'categoryTaken' | 'gamertagLocked'; step: Step }
+  { key: 'mismatch' | 'gamertagLocked'; step: Step; field?: Field }
 > = {
   archetype_category_mismatch: { key: 'mismatch', step: 'archetype' },
-  category_taken: { key: 'categoryTaken', step: 'category' },
-  gamertag_change_requires_moderation: { key: 'gamertagLocked', step: 'gamertag' },
+  gamertag_change_requires_moderation: {
+    key: 'gamertagLocked',
+    step: 'gamertag',
+    field: 'gamertag',
+  },
 }
 
 /**
@@ -47,14 +57,14 @@ export function CharacterForm({
   archetypes,
   onCreated,
   initialCategory = '',
-  taken = [],
+  squad = [],
 }: {
   archetypes: ArchetypeOption[]
   onCreated: (character: CharacterView) => void
   /** The slot the player clicked on the squad sheet: that step is done. */
   initialCategory?: CharacterCategory | ''
-  /** Categories with an active character: picking one replaces it (RF-027). */
-  taken?: CharacterCategory[]
+  /** The account's active characters: one in the chosen place gets replaced (RF-027). */
+  squad?: CharacterView[]
 }) {
   const content = useCharacterContent()
   const form = content.form
@@ -66,10 +76,10 @@ export function CharacterForm({
     name: '',
   })
   const [step, setStep] = useState<Step>(initialCategory ? 'archetype' : 'category')
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<{ message: string; field?: Field } | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const headingRef = useRef<HTMLHeadingElement>(null)
-  const moved = useRef(false)
+  const replaced = squad.find((character) => character.category === values.category)
 
   const index = STEPS.indexOf(step)
   const allowed = values.category
@@ -78,13 +88,10 @@ export function CharacterForm({
       )
     : []
 
-  // Each new step takes focus on its question, so keyboard and screen reader
-  // users land where the sighted player's eye does. Not on first render.
+  // Each step, the first included, takes focus on its question: the widget
+  // only mounts on the player's own click, and the button clicked is gone.
   useEffect(() => {
-    if (moved.current) {
-      headingRef.current?.focus()
-    }
-    moved.current = true
+    headingRef.current?.focus()
   }, [step])
 
   function set<K extends keyof Values>(key: K, value: Values[K]) {
@@ -103,24 +110,24 @@ export function CharacterForm({
   }
 
   /** The step's own check; null when it can move on. */
-  function problem(at: Step): string | null {
+  function problem(at: Step): { message: string; field?: Field } | null {
     switch (at) {
       case 'category':
-        return values.category ? null : form.fieldRequired
+        return values.category ? null : { message: form.fieldRequired }
       case 'archetype':
-        return values.archetype ? null : form.fieldRequired
+        return values.archetype ? null : { message: form.fieldRequired }
       case 'platform':
-        return values.platform ? null : form.fieldRequired
+        return values.platform ? null : { message: form.fieldRequired }
       case 'gamertag': {
         const gamertag = values.gamertag.trim()
         const name = values.name.trim()
         if (!gamertag) {
-          return form.fieldRequired
+          return { message: form.fieldRequired, field: 'gamertag' }
         }
         if (!GAMERTAG.test(gamertag)) {
-          return form.gamertagInvalid
+          return { message: form.gamertagInvalid, field: 'gamertag' }
         }
-        return name && !NAME.test(name) ? form.nameInvalid : null
+        return name && !NAME.test(name) ? { message: form.nameInvalid, field: 'name' } : null
       }
       case 'confirm':
         return null
@@ -159,19 +166,19 @@ export function CharacterForm({
         return
       }
       if (response.status === 429) {
-        setError(form.createLimit)
+        setError({ message: form.createLimit })
         return
       }
       const body = (await response.json().catch(() => ({}))) as { message?: string }
       const known = body.message ? API_ERRORS[body.message] : undefined
       if (known) {
         setStep(known.step)
-        setError(form[known.key])
+        setError({ message: form[known.key], field: known.field })
         return
       }
-      setError(form.genericError)
+      setError({ message: form.genericError })
     } catch {
-      setError(form.genericError)
+      setError({ message: form.genericError })
     } finally {
       setSubmitting(false)
     }
@@ -179,17 +186,17 @@ export function CharacterForm({
 
   return (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-6">
-      <StepRail current={index} onJump={(to) => go(STEPS[to]!)} />
+      <StepRail current={index} disabled={submitting} onJump={(to) => go(STEPS[to]!)} />
 
       {/* The one authored moment: each step rises in as the rail advances. */}
       <div key={step} className="landing-fade-up flex flex-col gap-4">
-        <h3
+        <h4
           ref={headingRef}
           tabIndex={-1}
           className="font-display text-xl font-light tracking-tight text-foreground outline-none"
         >
           {form.questions[step]}
-        </h3>
+        </h4>
 
         {step === 'category' && (
           <TileGroup legend={form.questions.category} columns="grid-cols-2 sm:grid-cols-3">
@@ -214,7 +221,7 @@ export function CharacterForm({
                 <span className="text-sm leading-snug text-foreground">
                   {content.categories[category]}
                 </span>
-                {taken.includes(category) && (
+                {squad.some((character) => character.category === category) && (
                   <span className="text-xs text-foreground-soft">{form.replaces}</span>
                 )}
               </Tile>
@@ -227,6 +234,11 @@ export function CharacterForm({
             <p className="text-sm text-foreground-soft">
               {form.archetypeFor(content.categories[values.category as CharacterCategory])}
             </p>
+            {replaced && (
+              <p className="text-sm text-foreground-soft">
+                {form.replacingNow(archetypeLabel(replaced.archetype))}
+              </p>
+            )}
             <TileGroup legend={form.questions.archetype} columns="grid-cols-2">
               {allowed.map((option) => (
                 <Tile
@@ -279,6 +291,7 @@ export function CharacterForm({
                 maxLength={20}
                 label={form.gamertagLabel}
                 hint={form.gamertagHint}
+                error={error?.field === 'gamertag' ? error.message : undefined}
                 value={values.gamertag}
                 onChange={(event) => set('gamertag', event.target.value)}
               />
@@ -289,6 +302,7 @@ export function CharacterForm({
                 maxLength={40}
                 label={form.nameLabel}
                 hint={form.nameHint}
+                error={error?.field === 'name' ? error.message : undefined}
                 value={values.name}
                 onChange={(event) => set('name', event.target.value)}
               />
@@ -301,8 +315,17 @@ export function CharacterForm({
           </div>
         )}
 
+        {step === 'confirm' && replaced && (
+          <p
+            role="note"
+            className="rounded-md border border-danger/40 bg-danger/[0.06] px-4 py-3 text-sm leading-relaxed text-foreground"
+          >
+            {form.replacing(archetypeLabel(replaced.archetype), replaced.state === 'verified')}
+          </p>
+        )}
+
         {step === 'confirm' && (
-          <div className="landing-card relative grid gap-5 overflow-hidden rounded-md border border-accent/30 bg-surface p-5 sm:grid-cols-[9rem_1fr]">
+          <div className="relative grid gap-5 overflow-hidden rounded-md border border-accent/30 bg-surface p-5 shadow-[inset_0_1px_0_0_rgb(255_255_255/6%)]">
             <Brackets />
             <div className="flex flex-col gap-3">
               <span className="text-[0.7rem] font-medium uppercase tracking-[0.2em] text-foreground-soft">
@@ -316,24 +339,28 @@ export function CharacterForm({
                 value={content.categories[values.category as CharacterCategory]}
                 onChange={() => go('category')}
                 changeLabel={form.change}
+                disabled={submitting}
               />
               <SummaryRow
                 label={form.steps.archetype}
                 value={archetypeLabel(values.archetype)}
                 onChange={() => go('archetype')}
                 changeLabel={form.change}
+                disabled={submitting}
               />
               <SummaryRow
                 label={form.steps.platform}
                 value={content.platforms[values.platform as Platform]}
                 onChange={() => go('platform')}
                 changeLabel={form.change}
+                disabled={submitting}
               />
               <SummaryRow
                 label={form.gamertagLabel}
                 value={values.gamertag.trim()}
                 onChange={() => go('gamertag')}
                 changeLabel={form.change}
+                disabled={submitting}
               />
               {values.name.trim() && (
                 <SummaryRow
@@ -341,6 +368,7 @@ export function CharacterForm({
                   value={values.name.trim()}
                   onChange={() => go('gamertag')}
                   changeLabel={form.change}
+                  disabled={submitting}
                 />
               )}
             </dl>
@@ -348,9 +376,9 @@ export function CharacterForm({
         )}
       </div>
 
-      {error && (
+      {error && !error.field && (
         <p role="alert" className="text-sm text-danger">
-          {error}
+          {error.message}
         </p>
       )}
 
@@ -377,7 +405,15 @@ export function CharacterForm({
  * current one lit. Done stations are buttons back; the ones ahead are not,
  * because each step depends on the one before it.
  */
-function StepRail({ current, onJump }: { current: number; onJump: (step: number) => void }) {
+function StepRail({
+  current,
+  disabled,
+  onJump,
+}: {
+  current: number
+  disabled: boolean
+  onJump: (step: number) => void
+}) {
   const form = useCharacterContent().form
 
   return (
@@ -433,7 +469,8 @@ function StepRail({ current, onJump }: { current: number; onJump: (step: number)
                 <button
                   type="button"
                   onClick={() => onJump(at)}
-                  className="landing-focus flex flex-col items-center gap-2 rounded-sm"
+                  disabled={disabled}
+                  className="landing-focus flex flex-col items-center gap-2 rounded-sm disabled:cursor-not-allowed"
                 >
                   {node}
                   <span className="sr-only">{form.change}</span>
@@ -546,11 +583,13 @@ function SummaryRow({
   value,
   onChange,
   changeLabel,
+  disabled,
 }: {
   label: string
   value: string
   onChange: () => void
   changeLabel: string
+  disabled: boolean
 }) {
   return (
     <div className="flex items-center justify-between gap-4 py-2.5 first:pt-0 last:pb-0">
@@ -561,24 +600,13 @@ function SummaryRow({
       <button
         type="button"
         onClick={onChange}
-        className="landing-focus shrink-0 text-xs text-foreground-soft underline underline-offset-4 hover:text-foreground"
+        disabled={disabled}
+        className="landing-focus shrink-0 disabled:opacity-50 text-xs text-foreground-soft underline underline-offset-4 hover:text-foreground"
       >
         {changeLabel}
         <span className="sr-only"> {label}</span>
       </button>
     </div>
-  )
-}
-
-function Brackets() {
-  const corner = 'pointer-events-none absolute size-2.5 border-accent/70'
-  return (
-    <span aria-hidden className="pointer-events-none absolute inset-0">
-      <span className={`${corner} left-1.5 top-1.5 border-l border-t`} />
-      <span className={`${corner} right-1.5 top-1.5 border-r border-t`} />
-      <span className={`${corner} bottom-1.5 left-1.5 border-b border-l`} />
-      <span className={`${corner} bottom-1.5 right-1.5 border-b border-r`} />
-    </span>
   )
 }
 
