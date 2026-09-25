@@ -35,12 +35,15 @@ const API_ERRORS: Record<string, 'mismatch' | 'categoryTaken' | 'gamertagLocked'
 export function CharacterForm({
   archetypes,
   onCreated,
+  initialCategory = '',
 }: {
   archetypes: ArchetypeOption[]
   onCreated: (character: CharacterView) => void
+  /** The slot the player clicked on the squad sheet. */
+  initialCategory?: CharacterCategory | ''
 }) {
   const content = useCharacterContent()
-  const [category, setCategory] = useState<CharacterCategory | ''>('')
+  const [category, setCategory] = useState<CharacterCategory | ''>(initialCategory)
   const [errors, setErrors] = useState<Errors>({})
   const [apiError, setApiError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)

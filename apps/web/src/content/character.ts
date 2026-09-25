@@ -21,7 +21,16 @@ export interface CharacterContent {
   title: string
   subtitle: string
   categories: Record<CharacterCategory, string>
+  /** The three-letter code a squad sheet prints above each slot. */
+  categoryCodes: Record<CharacterCategory, string>
   platforms: Record<Platform, string>
+  roster: {
+    heading: string
+    count: (filled: number, total: number) => string
+    claim: string
+    formHeading: string
+    cancel: string
+  }
   form: {
     categoryLabel: string
     archetypeLabel: string
@@ -68,6 +77,7 @@ export interface CharacterContent {
   existing: {
     heading: string
     pending: string
+    rejectedShort: string
     verified: string
     inReview: string
     rejectedPrefix: string
@@ -91,6 +101,20 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
       striker: 'Ataque',
     },
     platforms: { ps5: 'PlayStation 5', xbox_series: 'Xbox Series', pc: 'PC' },
+    categoryCodes: {
+      goalkeeper: 'GOL',
+      defender: 'ZAG',
+      midfielder: 'MEI',
+      winger: 'PON',
+      striker: 'ATA',
+    },
+    roster: {
+      heading: 'Seu elenco',
+      count: (filled, total) => `${filled}/${total} vagas`,
+      claim: 'Cadastrar',
+      formHeading: 'Novo personagem',
+      cancel: 'Cancelar',
+    },
     form: {
       categoryLabel: 'Categoria',
       archetypeLabel: 'Arquétipo',
@@ -162,6 +186,7 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
     existing: {
       heading: 'Seus personagens',
       pending: 'Aguardando print',
+      rejectedShort: 'Print recusado',
       verified: 'Verificado',
       inReview: 'Print em análise pela moderação',
       rejectedPrefix: 'Print recusado:',
@@ -183,6 +208,20 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
       striker: 'Delantero',
     },
     platforms: { ps5: 'PlayStation 5', xbox_series: 'Xbox Series', pc: 'PC' },
+    categoryCodes: {
+      goalkeeper: 'POR',
+      defender: 'DEF',
+      midfielder: 'MED',
+      winger: 'EXT',
+      striker: 'DEL',
+    },
+    roster: {
+      heading: 'Tu plantilla',
+      count: (filled, total) => `${filled}/${total} plazas`,
+      claim: 'Registrar',
+      formHeading: 'Nuevo personaje',
+      cancel: 'Cancelar',
+    },
     form: {
       categoryLabel: 'Categoría',
       archetypeLabel: 'Arquetipo',
@@ -256,6 +295,7 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
     existing: {
       heading: 'Tus personajes',
       pending: 'Esperando captura',
+      rejectedShort: 'Captura rechazada',
       verified: 'Verificado',
       inReview: 'Captura en revisión por la moderación',
       rejectedPrefix: 'Captura rechazada:',

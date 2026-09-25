@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { renderWithLocale } from '@/test-utils'
 import { CHARACTER_CONTENT } from '@/content/character'
+import { CharacterFlow } from './character-flow'
 import { CharacterForm } from './character-form'
 import { PrintUpload } from './print-upload'
 import type { ArchetypeOption } from './types'
@@ -267,5 +268,40 @@ describe('PrintUpload', () => {
     fireEvent.click(screen.getByRole('button', { name: pt.print.submit }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent(pt.print.inReview)
+  })
+})
+
+describe('Roster (squad sheet)', () => {
+  const verified = {
+    id: '44444444-4444-4444-4444-444444444444',
+    category: 'goalkeeper' as const,
+    archetype: 'shot_stopper',
+    platform: 'ps5' as const,
+    state: 'verified' as const,
+  }
+
+  it('shows the five slots and counts the filled ones', () => {
+    renderWithLocale(<CharacterFlow characters={[verified]} archetypes={ARCHETYPES} />)
+
+    expect(screen.getByText(pt.roster.count(1, 5))).toBeInTheDocument()
+    expect(screen.getByText('SHOT STOPPER')).toBeInTheDocument()
+    const slots = screen
+      .getAllByRole('button')
+      .filter((button) =>
+        Object.values(pt.categories).some((name) => button.textContent?.endsWith(name)),
+      )
+    expect(slots).toHaveLength(4)
+  })
+
+  it('opens the form already on the category of the empty slot clicked', () => {
+    renderWithLocale(<CharacterFlow characters={[verified]} archetypes={ARCHETYPES} />)
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: new RegExp(`${pt.roster.claim}.*${pt.categories.winger}`),
+      }),
+    )
+
+    expect(screen.getByLabelText(pt.form.categoryLabel)).toHaveValue('winger')
   })
 })

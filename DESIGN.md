@@ -361,6 +361,24 @@ que aquilo é exemplo. Vaga confirmada é disco sólido do acento; vaga em esper
 contorno tracejado pulsando. É o formato herdado do `escalacao-brasileirao`,
 redesenhado com conteúdo próprio, e é a base da tela de fila da Fase 2.5.
 
+### Signature: o Elenco
+
+A tela de personagens em forma de súmula: cinco vagas fixas, uma por categoria
+(GOL, ZAG, MEI, PON, ATA), na ordem em que o campo se lê, de trás pra frente.
+É o vocabulário do Quadro da Fila na tela onde o elenco é montado. A vaga vazia
+é **tracejada** e é um botão que abre o cadastro já na categoria dela. A vaga
+preenchida é superfície opaca com os cantos de mira do painel de login, que
+viram acento quando o personagem é verificado. O nome do arquétipo vem em caixa
+alta, como o jogo imprime, porque é a palavra que o jogador vai fotografar.
+
+Cada vaga carrega um **mini-campo em traço** com a posição marcada:
+- **disco sólido** quando o personagem está verificado;
+- **anel tracejado verde** respirando enquanto o print está em análise;
+- **anel tracejado apagado** quando a vaga está vazia, pendente ou recusada.
+
+No telefone as vagas empilham e o mini-campo encolhe pra 56px, alinhado à
+esquerda.
+
 ### Signature: o Painel de Instrumento
 
 A arte que acompanha formulário e seção: radar varrendo em gradiente cônico

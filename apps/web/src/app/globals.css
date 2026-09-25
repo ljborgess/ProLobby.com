@@ -901,6 +901,13 @@ input:-webkit-autofill:focus {
     translate: 0 0;
   }
 
+  /* A waiting slot says "waiting" by its dashed ring, not by breathing. */
+  .landing-slot-wait {
+    animation: none;
+    opacity: 1;
+    scale: 1;
+  }
+
   .landing-pitch-scan {
     animation: none;
     opacity: 0;
