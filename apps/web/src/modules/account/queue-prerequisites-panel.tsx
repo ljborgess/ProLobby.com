@@ -26,11 +26,11 @@ export interface QueuePrerequisites {
 /**
  * One action shape for every step card, whatever it does: a solid accent
  * pill with the step's own mark. Each card carries exactly one way forward,
- * so they all read the same at a glance, and each spans the card's text
- * column, so the three line up at one width (feedback of 2026-09-25).
+ * so they all read the same at a glance, one fixed width so the three line
+ * up (feedback of 2026-09-25; a full-width pill was too heavy for the card).
  */
 const STEP_ACTION =
-  'landing-focus landing-sheen inline-flex w-full items-center justify-center gap-2 rounded-full bg-accent px-4 py-2.5 text-sm font-medium text-background transition-[filter,transform] duration-200 hover:brightness-110 active:scale-[0.98] disabled:opacity-60'
+  'landing-focus landing-sheen inline-flex w-60 items-center justify-center gap-2 self-start whitespace-nowrap rounded-full bg-accent px-4 py-2 text-sm font-medium text-background transition-transform duration-200 hover:scale-[1.03] active:scale-95 disabled:opacity-60 disabled:hover:scale-100'
 
 type Resend = 'idle' | 'sending' | 'sent' | 'error'
 
