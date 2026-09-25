@@ -13,7 +13,7 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 | K-factor — calibrando | 32 (primeiras 9 partidas na categoria) | [Ranking](02-jogador/02-ranking.md) |
 | K-factor — estabilizado | 20 (a partir da 10ª) | [Ranking](02-jogador/02-ranking.md) |
 | Granularidade | por personagem/categoria (não por conta) | [Ranking](02-jogador/02-ranking.md) |
-| Decaimento por inatividade | −25 a cada 30 dias corridos após 60 dias parado (1º desconto no dia 90), piso no seed | [RF-017](../requisitos/05-funcionais.md) |
+| Decaimento por inatividade | −25 a cada 30 dias corridos após 60 dias parado (1º desconto no dia 90), piso no baseline (1000); elo abaixo de 1000 não decai | [RF-017](../requisitos/05-funcionais.md) |
 
 ## Reputação
 

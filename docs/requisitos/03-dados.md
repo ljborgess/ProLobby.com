@@ -46,10 +46,10 @@ Auto-declaração que habilita a pessoa a ser capitão.
 - **`vagas_livres` substitui o `tem_vaga` booleano (2026-09-11)**: [RF-006](05-funcionais.md#rf-006--lobby-só-fecha-com-candidato-a-capitão-em-cada-lado) passou a exigir vagas suficientes pros humanos do lado, não "pelo menos uma". Booleano deixava fechar lobby que não tinha como convidar todo mundo, e o estouro caía como abuso no capitão.
 
 ### Personagem
-`conta` · `categoria` (GK / zaga-lateral / meio / ponta / ataque) · `plataforma` · `edicao_jogo` · `nome` · `foto` · `overall` · `atributos` · `elo` · `partidas_na_categoria` · `estado` · `criado_em`
+`conta` · `categoria` (GK / zaga-lateral / meio / ponta / ataque) · `plataforma` · `edicao_jogo` · `nome` · `foto` · `arquetipo` · `elo` · `partidas_na_categoria` · `estado` · `criado_em`
 
 - **1 ativo por categoria por edição**, até 5 ativos. Recriação dentro da categoria é livre, então há personagens inativos e arquivados guardados.
-- `partidas_na_categoria` existe porque **o K-factor e o decaimento do seed dependem da contagem** (32 até a 9ª, 20 da 10ª — ver [Ranking](../produto/02-jogador/02-ranking.md)). Sem esse contador, nenhum dos dois é calculável.
+- `partidas_na_categoria` existe porque **o K-factor depende da contagem** (32 até a 9ª, 20 da 10ª — ver [Ranking](../produto/02-jogador/02-ranking.md)). Sem esse contador, ele não é calculável.
 
 ### EnvioDePrint
 `personagem` ou `lobby` · `hash_arquivo` (único, anti-reuso) · `arquivo` · `confianca_ocr` · `idioma_detectado` · `aceito` · `enviado_em`
