@@ -97,6 +97,8 @@ describe('queue prerequisites (#171)', () => {
       characterVerified: false,
       discordLinked: false,
       discordPresent: true,
+      reputation: 70,
+      reputationBand: 'good',
     })
   })
 
@@ -109,6 +111,8 @@ describe('queue prerequisites (#171)', () => {
       characterVerified: false,
       discordLinked: false,
       discordPresent: true,
+      reputation: 70,
+      reputationBand: 'good',
     })
   })
 
@@ -125,6 +129,8 @@ describe('queue prerequisites (#171)', () => {
       characterVerified: false,
       discordLinked: true,
       discordPresent: true,
+      reputation: 70,
+      reputationBand: 'good',
     })
     expect(JSON.stringify(res.body)).not.toContain('111111111111111111')
     expect(Object.keys(res.body).sort()).toEqual([
@@ -132,6 +138,8 @@ describe('queue prerequisites (#171)', () => {
       'discordLinked',
       'discordPresent',
       'emailVerified',
+      'reputation',
+      'reputationBand',
     ])
   })
 
@@ -152,6 +160,8 @@ describe('queue prerequisites (#171)', () => {
       characterVerified: false,
       discordLinked: true,
       discordPresent: false,
+      reputation: 70,
+      reputationBand: 'good',
     })
   })
 

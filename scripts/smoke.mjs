@@ -135,7 +135,7 @@ await check('/verifications mostra os próximos passos', async () => {
   const html = await res.text()
   expect(html.includes('Próximos passos'), true, 'painel em /verifications')
 })
-await check('queue-prerequisites devolve só os quatro booleanos', async () => {
+await check('queue-prerequisites devolve os quatro booleanos e a reputação', async () => {
   const res = await call(`${API}/api/accounts/me/queue-prerequisites`, { auth: true })
   expect(res.status, 200, 'status')
   const body = await res.json()
@@ -143,9 +143,10 @@ await check('queue-prerequisites devolve só os quatro booleanos', async () => {
   // vinculada lê o default da entidade (true) — discordLinked já cobre "não
   // vinculado ainda".
   // characterVerified entrou com a Fase 2.2 (#194, 2026-09-24).
+  // reputation entrou com a Fase 2.4 (#208, 2026-09-25).
   expect(
     Object.keys(body).sort().join(','),
-    'characterVerified,discordLinked,discordPresent,emailVerified',
+    'characterVerified,discordLinked,discordPresent,emailVerified,reputation,reputationBand',
     'campos',
   )
   expect(body.emailVerified, false, 'emailVerified de conta nova')

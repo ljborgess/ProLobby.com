@@ -18,6 +18,8 @@ describe('QueuePrerequisitesPanel', () => {
   it('offers the action only on what is pending', () => {
     renderWithLocale(
       <QueuePrerequisitesPanel
+        reputation={70}
+        reputationBand="good"
         characterVerified
         emailVerified
         discordLinked={false}
@@ -33,6 +35,8 @@ describe('QueuePrerequisitesPanel', () => {
   it('says all three are pending on a fresh account', () => {
     renderWithLocale(
       <QueuePrerequisitesPanel
+        reputation={70}
+        reputationBand="good"
         emailVerified={false}
         characterVerified={false}
         discordLinked={false}
@@ -49,6 +53,8 @@ describe('QueuePrerequisitesPanel', () => {
   it('sends a pending character to the character screen (#196)', () => {
     renderWithLocale(
       <QueuePrerequisitesPanel
+        reputation={70}
+        reputationBand="good"
         emailVerified
         characterVerified={false}
         discordLinked
@@ -67,6 +73,8 @@ describe('QueuePrerequisitesPanel', () => {
   it('carries the state in words, not only in colour (RNF-015)', () => {
     renderWithLocale(
       <QueuePrerequisitesPanel
+        reputation={70}
+        reputationBand="good"
         characterVerified
         emailVerified
         discordLinked={false}
@@ -80,7 +88,14 @@ describe('QueuePrerequisitesPanel', () => {
 
   it('congratulates and offers nothing once both are done', () => {
     renderWithLocale(
-      <QueuePrerequisitesPanel characterVerified emailVerified discordLinked discordPresent />,
+      <QueuePrerequisitesPanel
+        reputation={70}
+        reputationBand="good"
+        characterVerified
+        emailVerified
+        discordLinked
+        discordPresent
+      />,
     )
 
     expect(screen.getByText(pt.allDone)).toBeInTheDocument()
@@ -92,6 +107,8 @@ describe('QueuePrerequisitesPanel', () => {
     vi.mocked(fetch).mockResolvedValue(new Response(null, { status: 202 }))
     renderWithLocale(
       <QueuePrerequisitesPanel
+        reputation={70}
+        reputationBand="good"
         characterVerified
         emailVerified={false}
         discordLinked={false}
@@ -113,6 +130,8 @@ describe('QueuePrerequisitesPanel', () => {
     vi.mocked(fetch).mockImplementation(respond as never)
     renderWithLocale(
       <QueuePrerequisitesPanel
+        reputation={70}
+        reputationBand="good"
         characterVerified
         emailVerified={false}
         discordLinked={false}
@@ -129,6 +148,8 @@ describe('QueuePrerequisitesPanel', () => {
   it('shows the absence notice, not the link action, when Discord is linked but the person left the server (RF-060)', () => {
     renderWithLocale(
       <QueuePrerequisitesPanel
+        reputation={70}
+        reputationBand="good"
         characterVerified
         emailVerified
         discordLinked
@@ -152,6 +173,8 @@ describe('QueuePrerequisitesPanel', () => {
   it('speaks Spanish when the locale is Spanish', () => {
     renderWithLocale(
       <QueuePrerequisitesPanel
+        reputation={70}
+        reputationBand="good"
         characterVerified
         emailVerified={false}
         discordLinked
@@ -162,5 +185,33 @@ describe('QueuePrerequisitesPanel', () => {
 
     expect(screen.getByText(ACCOUNT_CONTENT.es.email.pendingLabel)).toBeInTheDocument()
     expect(screen.getByText(ACCOUNT_CONTENT.es.discord.doneLabel)).toBeInTheDocument()
+  })
+
+  it('shows the reputation, and says the queue slows under 55 (#208)', () => {
+    const first = renderWithLocale(
+      <QueuePrerequisitesPanel
+        reputation={70}
+        reputationBand="good"
+        emailVerified
+        characterVerified
+        discordLinked
+        discordPresent
+      />,
+    )
+    expect(screen.getByText('70/100')).toBeInTheDocument()
+    expect(screen.queryByText(pt.reputation.slowQueue)).toBeNull()
+
+    first.unmount()
+    renderWithLocale(
+      <QueuePrerequisitesPanel
+        reputation={50}
+        reputationBand="slow_queue"
+        emailVerified
+        characterVerified
+        discordLinked
+        discordPresent
+      />,
+    )
+    expect(screen.getByText(pt.reputation.slowQueue)).toBeInTheDocument()
   })
 })

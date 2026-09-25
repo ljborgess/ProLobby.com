@@ -20,6 +20,7 @@ import type { RequestWithAccount } from '../../common/auth/session.guard'
 import { LOGIN_THROTTLE, SIGNUP_THROTTLE } from '../../common/security/throttler.config'
 import { CharacterService } from '../character/character.service'
 import type { ModerationCase } from '../moderation/moderation-case.entity'
+import { reputationBand } from '../ranking/reputation.service'
 
 import { AccountRecoveryService } from './account-recovery.service'
 import { AccountState } from './account.enums'
@@ -237,9 +238,9 @@ export class AccountController {
    * What the person still has to do before the queue will take them — RF-002,
    * issue #171.
    *
-   * Booleans only, in the order RF-002 fixes for the refusal message
-   * (email → character → Discord), so the screen and that message never
-   * disagree about the order. One count query for the character; the rest is
+   * Booleans in the order RF-002 fixes for the refusal message (email →
+   * character → Discord), so the screen and that message never disagree
+   * about the order, plus the account's own reputation and its band (#208). One count query for the character; the rest is
    * the account the guard already loaded.
    */
   @Get('me/queue-prerequisites')
@@ -252,6 +253,8 @@ export class AccountController {
       characterVerified: await this.characterService.hasVerified(account.id),
       discordLinked: account.discordIdHash != null,
       discordPresent: account.discordPresent,
+      reputation: account.reputation,
+      reputationBand: reputationBand(account.reputation),
     }
   }
 
