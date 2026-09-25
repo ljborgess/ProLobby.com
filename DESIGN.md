@@ -310,7 +310,7 @@ sempre mais fraco do que o texto que ele acompanha.
 - **Hover / Focus:** escala `1.04` no primário com transição de 200ms, e
   `0.95` no `:active`. Foco visível é contorno de 2px no acento com
   `outline-offset: 3px`, nunca a remoção do contorno nativo.
-- **Voltar e cancelar** (): toda saída das telas logadas tem uma forma só.
+- **Voltar e cancelar** (`BackAction`): toda saída das telas logadas tem uma forma só.
   - **Forma:** marca desenhada dentro de um anel de fio de 32px, com o texto em
     Cinza Azulado Médio ao lado. Sem sublinhado e sem seta em texto.
   - **Marca:** chevron pra voltar, × pra cancelar.
