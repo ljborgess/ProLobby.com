@@ -8,22 +8,21 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 
 ## 2026-09-25 · Rafael
 
-### A Fase 2.4 (motor de elo e reputação) é sua
+### A Fase 2.4 (motor de elo e reputação) está dividida com o Luciano
 
-A [#53](https://github.com/ljborgess/ProLobby.com/issues/53) virou 5 issues, todas atribuídas a você. **Não tem decisão pendente**: os parâmetros estão em `parametros.md`, e nenhum é "a calibrar".
+A [#53](https://github.com/ljborgess/ProLobby.com/issues/53) virou 5 issues. **Não tem decisão pendente**: os parâmetros estão em `parametros.md`, e nenhum é "a calibrar".
 
-| Issue | O quê | Bloqueada por |
-|---|---|---|
-| [#207](https://github.com/ljborgess/ProLobby.com/issues/207) | elo da categoria calculado pelos eventos, sem coluna | — (a 2.2 já está em `dev`) |
-| [#208](https://github.com/ljborgess/ProLobby.com/issues/208) | reputação muda só por evento: partida limpa, desconexão, suspensão cumprida | — |
-| [#209](https://github.com/ljborgess/ProLobby.com/issues/209) | resultado de partida vira evento de elo (RF-077) | #207 |
-| [#210](https://github.com/ljborgess/ProLobby.com/issues/210) | rollback de partida anulada (RF-044) | #209, #208 |
-| [#211](https://github.com/ljborgess/ProLobby.com/issues/211) | decaimento por inatividade, piso em 1000 (RF-017) | #209 |
+| Issue | Quem | O quê | Bloqueada por |
+|---|---|---|---|
+| [#207](https://github.com/ljborgess/ProLobby.com/issues/207) | **Rafael** | elo da categoria calculado pelos eventos, sem coluna | — (a 2.2 já está em `dev`) |
+| [#209](https://github.com/ljborgess/ProLobby.com/issues/209) | **Rafael** | resultado de partida vira evento de elo (RF-077) | #207 |
+| [#208](https://github.com/ljborgess/ProLobby.com/issues/208) | Luciano | reputação muda só por evento: partida limpa, desconexão, suspensão cumprida | — |
+| [#210](https://github.com/ljborgess/ProLobby.com/issues/210) | Luciano | rollback de partida anulada (RF-044) | #209, #208 |
+| [#211](https://github.com/ljborgess/ProLobby.com/issues/211) | Luciano | decaimento por inatividade, piso em 1000 (RF-017) | #209 |
 
-- **Comece pela #207 ou pela #208**, que andam em paralelo.
+- **Sua trilha é a do elo: #207 e depois #209.** A #210 e a #211 do Luciano esperam a #209, então ela é o gargalo da fase.
 - **O elo não tem coluna** (decidido em 2026-09-25): é 1000 mais a soma dos eventos não revertidos de **todos os personagens da conta na categoria e edição**. Personagem substituto herda o elo (RF-027). Ninguém escreve elo direto.
 - **Ainda não existe partida** (Fases 3 e 4.1). O motor recebe o resultado como entrada de serviço, sem rota HTTP, e é conferido por teste.
-- **Na #208, só um serviço escreve a reputação**, na mesma transação do evento, com a trava da conta. É o mesmo padrão de trava do personagem e do envio de print.
 - **Ao pegar, comente na issue**, e o deploy (#121) continua valendo em paralelo.
 
 ---
