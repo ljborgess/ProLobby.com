@@ -4,6 +4,8 @@ import { relay } from '@/common/api/proxy-response'
 import { rejectCrossSite } from '@/common/api/same-origin'
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+/** Same ceiling as the proxy's body buffer; the API caps the file itself. */
+const MAX_PRINT_BODY_BYTES = 10 * 1024 * 1024
 
 /**
  * Thin proxy to `POST /characters/:id/prints` — issue #195, screen #196.
@@ -26,7 +28,17 @@ export async function POST(
     return Response.json({ message: 'character_not_found' }, { status: 404 })
   }
 
+  // Checked before the body is read: a request that skips the proxy (a
+  // prefetch header does) would otherwise buffer whatever it sends, logged in
+  // or not.
   const cookie = request.headers.get('cookie')
+  if (!cookie) {
+    return Response.json({ message: 'unauthenticated' }, { status: 401 })
+  }
+  const length = Number(request.headers.get('content-length'))
+  if (!Number.isFinite(length) || length <= 0 || length > MAX_PRINT_BODY_BYTES) {
+    return Response.json({ message: 'payload_too_large' }, { status: 413 })
+  }
   const contentType = request.headers.get('content-type')
 
   return relay(
@@ -34,7 +46,7 @@ export async function POST(
       method: 'POST',
       headers: {
         ...(contentType ? { 'content-type': contentType } : {}),
-        ...(cookie ? { cookie } : {}),
+        cookie,
       },
       body: await request.arrayBuffer(),
       forwardedIp: forwardedIpFrom(request),

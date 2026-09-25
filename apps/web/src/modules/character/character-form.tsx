@@ -17,8 +17,9 @@ const CATEGORIES: CharacterCategory[] = [
 const PLATFORMS: Platform[] = ['ps5', 'xbox_series', 'pc']
 // Same rule as `CreateCharacterDto`; the API is still what decides.
 const GAMERTAG = /^[A-Za-z0-9][A-Za-z0-9 _.#-]{2,19}$/
+const NAME = /^[\p{L}\p{N} ._-]+$/u
 
-type Errors = Partial<Record<'category' | 'archetype' | 'platform' | 'gamertag', string>>
+type Errors = Partial<Record<'category' | 'archetype' | 'platform' | 'gamertag' | 'name', string>>
 
 const API_ERRORS: Record<string, 'mismatch' | 'categoryTaken' | 'gamertagLocked'> = {
   archetype_category_mismatch: 'mismatch',
@@ -68,6 +69,9 @@ export function CharacterForm({
     if (values.gamertag && !GAMERTAG.test(values.gamertag)) {
       next.gamertag = content.form.gamertagInvalid
     }
+    if (values.name && !NAME.test(values.name)) {
+      next.name = content.form.nameInvalid
+    }
     setErrors(next)
     setApiError(null)
     if (Object.keys(next).length > 0) {
@@ -89,6 +93,10 @@ export function CharacterForm({
       })
       if (response.ok) {
         onCreated((await response.json()) as CharacterView)
+        return
+      }
+      if (response.status === 429) {
+        setApiError(content.form.createLimit)
         return
       }
       const body = (await response.json().catch(() => ({}))) as { message?: string }
@@ -148,6 +156,7 @@ export function CharacterForm({
         maxLength={40}
         label={content.form.nameLabel}
         hint={content.form.nameHint}
+        error={errors.name}
       />
 
       {apiError && (

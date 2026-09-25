@@ -96,6 +96,36 @@ describe('CharacterForm', () => {
 
     expect(await screen.findByText(pt.form.categoryTaken)).toBeInTheDocument()
   })
+
+  const fillValid = () => {
+    fireEvent.change(screen.getByLabelText(pt.form.categoryLabel), { target: { value: 'winger' } })
+    fireEvent.change(screen.getByLabelText(pt.form.archetypeLabel), { target: { value: 'spark' } })
+    fireEvent.change(screen.getByLabelText(pt.form.platformLabel), { target: { value: 'ps5' } })
+    fireEvent.change(screen.getByLabelText(pt.form.gamertagLabel), {
+      target: { value: 'Torvalen' },
+    })
+  }
+
+  it('says what is wrong with the name instead of asking to try again', () => {
+    renderWithLocale(<CharacterForm archetypes={ARCHETYPES} onCreated={vi.fn()} />)
+
+    fillValid()
+    fireEvent.change(screen.getByLabelText(pt.form.nameLabel), { target: { value: 'Pro<script>' } })
+    fireEvent.click(screen.getByRole('button', { name: pt.form.submit }))
+
+    expect(screen.getByText(pt.form.nameInvalid)).toBeInTheDocument()
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('explains the hourly creation limit', async () => {
+    vi.mocked(fetch).mockResolvedValue(json(429, { message: 'character_create_limit' }))
+    renderWithLocale(<CharacterForm archetypes={ARCHETYPES} onCreated={vi.fn()} />)
+
+    fillValid()
+    fireEvent.click(screen.getByRole('button', { name: pt.form.submit }))
+
+    expect(await screen.findByText(pt.form.createLimit)).toBeInTheDocument()
+  })
 })
 
 describe('PrintUpload', () => {
@@ -114,7 +144,7 @@ describe('PrintUpload', () => {
   })
 
   it('shows the three instructions and the example before the file picker', () => {
-    renderWithLocale(<PrintUpload characterId={ID} />)
+    renderWithLocale(<PrintUpload characterId={ID} onBack={() => {}} />)
 
     for (const instruction of pt.print.instructions) {
       expect(screen.getByText(instruction)).toBeInTheDocument()
@@ -124,7 +154,7 @@ describe('PrintUpload', () => {
 
   it('confirms a received print', async () => {
     vi.mocked(fetch).mockResolvedValue(json(201, { status: 'received', rejection: null }))
-    renderWithLocale(<PrintUpload characterId={ID} />)
+    renderWithLocale(<PrintUpload characterId={ID} onBack={() => {}} />)
 
     pick()
     fireEvent.click(screen.getByRole('button', { name: pt.print.submit }))
@@ -137,7 +167,7 @@ describe('PrintUpload', () => {
     'says what to redo on %s',
     async (rejection) => {
       vi.mocked(fetch).mockResolvedValue(json(201, { status: 'rejected', rejection }))
-      renderWithLocale(<PrintUpload characterId={ID} />)
+      renderWithLocale(<PrintUpload characterId={ID} onBack={() => {}} />)
 
       pick()
       fireEvent.click(screen.getByRole('button', { name: pt.print.submit }))
@@ -150,11 +180,44 @@ describe('PrintUpload', () => {
     vi.mocked(fetch).mockResolvedValue(
       json(429, { message: 'upload_limit', retryAfterSeconds: 610 }),
     )
-    renderWithLocale(<PrintUpload characterId={ID} />)
+    renderWithLocale(<PrintUpload characterId={ID} onBack={() => {}} />)
 
     pick()
     fireEvent.click(screen.getByRole('button', { name: pt.print.submit }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent(pt.print.uploadLimit(11))
+  })
+
+  it('asks for a file when none was picked', async () => {
+    renderWithLocale(<PrintUpload characterId={ID} onBack={() => {}} />)
+
+    fireEvent.click(screen.getByRole('button', { name: pt.print.submit }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(pt.print.fileRequired)
+    expect(screen.getByLabelText(pt.print.fileLabel)).toHaveAttribute('aria-invalid', 'true')
+  })
+
+  it('still says something for a cause it does not know yet', async () => {
+    vi.mocked(fetch).mockResolvedValue(json(201, { status: 'rejected', rejection: 'new_cause' }))
+    renderWithLocale(<PrintUpload characterId={ID} onBack={() => {}} />)
+
+    pick()
+    fireEvent.click(screen.getByRole('button', { name: pt.print.submit }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(pt.print.genericError)
+  })
+
+  it('moves focus to the confirmation and offers the way back', async () => {
+    vi.mocked(fetch).mockResolvedValue(json(201, { status: 'received', rejection: null }))
+    const onBack = vi.fn()
+    renderWithLocale(<PrintUpload characterId={ID} onBack={onBack} />)
+
+    pick()
+    fireEvent.click(screen.getByRole('button', { name: pt.print.submit }))
+
+    const status = await screen.findByRole('status')
+    await waitFor(() => expect(status).toHaveFocus())
+    fireEvent.click(screen.getByRole('button', { name: pt.print.backToList }))
+    expect(onBack).toHaveBeenCalled()
   })
 })

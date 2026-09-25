@@ -23,7 +23,7 @@ export function CharacterFlow({
   const [creating, setCreating] = useState(initial.length === 0)
 
   if (sendingFor) {
-    return <PrintUpload characterId={sendingFor} />
+    return <PrintUpload characterId={sendingFor} onBack={() => setSendingFor(null)} />
   }
 
   return (

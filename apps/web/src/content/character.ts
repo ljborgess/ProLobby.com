@@ -31,12 +31,15 @@ export interface CharacterContent {
     mismatch: string
     categoryTaken: string
     gamertagLocked: string
+    nameInvalid: string
+    createLimit: string
     genericError: string
   }
   print: {
     heading: string
     instructions: [string, string, string]
     exampleCaption: string
+    exampleGamertag: string
     fileLabel: string
     fileHint: string
     submit: string
@@ -45,6 +48,9 @@ export interface CharacterContent {
     rejections: Record<PrintRejection, string>
     uploadLimit: (minutes: number) => string
     tooLarge: string
+    fileRequired: string
+    cancel: string
+    backToList: string
     genericError: string
   }
   existing: {
@@ -88,6 +94,8 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
       categoryTaken: 'Você já tem um personagem ativo nessa categoria.',
       gamertagLocked:
         'Seu gamertag nessa plataforma já foi verificado. Pra trocar, abra um chamado com a moderação.',
+      nameInvalid: 'Use só letras, números, espaço e . _ -',
+      createLimit: 'Você cadastrou muitos personagens nesta hora. Tenta de novo mais tarde.',
       genericError: 'Não deu pra salvar agora. Tenta de novo em instantes.',
     },
     print: {
@@ -99,6 +107,7 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
       ],
       exampleCaption:
         'Exemplo: arquétipo ativo aberto, com o ✓ do lado do nome e o seu gamertag embaixo do card.',
+      exampleGamertag: 'SeuGamertag',
       fileLabel: 'Print (JPG, PNG ou WEBP, até 10 MB)',
       fileHint: 'No celular, dá pra escolher da galeria.',
       submit: 'Enviar print',
@@ -115,6 +124,9 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
       uploadLimit: (minutes) =>
         `Você chegou no limite de envios desta hora. Tenta de novo em ${minutes} min.`,
       tooLarge: 'O arquivo passa de 10 MB. Manda um print menor.',
+      fileRequired: 'Escolha o print antes de enviar.',
+      cancel: 'Voltar',
+      backToList: 'Voltar pros meus personagens',
       genericError: 'Não deu pra enviar agora. Tenta de novo em instantes.',
     },
     existing: {
@@ -156,6 +168,8 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
       categoryTaken: 'Ya tienes un personaje activo en esa categoría.',
       gamertagLocked:
         'Tu gamertag en esa plataforma ya fue verificado. Para cambiarlo, abre un caso con la moderación.',
+      nameInvalid: 'Usa solo letras, números, espacio y . _ -',
+      createLimit: 'Registraste muchos personajes en esta hora. Intenta de nuevo más tarde.',
       genericError: 'No se pudo guardar ahora. Intenta de nuevo en un momento.',
     },
     print: {
@@ -167,6 +181,7 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
       ],
       exampleCaption:
         'Ejemplo: arquetipo activo abierto, con el ✓ junto al nombre y tu gamertag debajo de la carta.',
+      exampleGamertag: 'TuGamertag',
       fileLabel: 'Captura (JPG, PNG o WEBP, hasta 10 MB)',
       fileHint: 'En el celular, puedes elegirla de la galería.',
       submit: 'Enviar captura',
@@ -183,6 +198,9 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
       uploadLimit: (minutes) =>
         `Llegaste al límite de envíos de esta hora. Intenta de nuevo en ${minutes} min.`,
       tooLarge: 'El archivo supera los 10 MB. Envía una captura más liviana.',
+      fileRequired: 'Elige la captura antes de enviar.',
+      cancel: 'Volver',
+      backToList: 'Volver a mis personajes',
       genericError: 'No se pudo enviar ahora. Intenta de nuevo en un momento.',
     },
     existing: {

@@ -3,7 +3,7 @@
  * would carry a real person's gamertag. Marks the two things the check reads,
  * the ✓ beside the active archetype and the gamertag under the card.
  */
-export function ArchetypeExample({ caption }: { caption: string }) {
+export function ArchetypeExample({ caption, gamertag }: { caption: string; gamertag: string }) {
   return (
     <figure className="flex flex-col gap-2">
       <svg
@@ -18,7 +18,7 @@ export function ArchetypeExample({ caption }: { caption: string }) {
           MAESTRO
         </text>
         <text x="58" y="143" textAnchor="middle" fontSize="9" fill="currentColor" opacity="0.8">
-          ◉ SeuGamertag
+          ◉ {gamertag}
         </text>
         <rect
           x="18"
