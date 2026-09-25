@@ -714,6 +714,53 @@ input:-webkit-autofill:focus {
   }
 }
 
+/**
+ * A player moving about their zone: a slow loop through four points, each
+ * player with their own reach and pace (set inline). `transform`, not
+ * `translate`, so it never fights the entrance or the centring. Stops under
+ * the pointer, on focus, and on the picked player — a target that moves is
+ * a target you miss.
+ */
+@keyframes board-roam {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(var(--roam-x), calc(var(--roam-y) * -1));
+  }
+  50% {
+    transform: translate(calc(var(--roam-x) * -0.7), calc(var(--roam-y) * 0.4));
+  }
+  75% {
+    transform: translate(calc(var(--roam-x) * 0.3), var(--roam-y));
+  }
+}
+
+.board-roam {
+  animation: board-roam var(--roam-time, 9s) ease-in-out var(--roam-delay, 0s) infinite;
+}
+
+.board-roam:hover,
+.board-roam:focus-within,
+.board-roam[data-selected] {
+  animation-play-state: paused;
+}
+
+/** The spot of light under the picked player, breathing. */
+@keyframes board-spot {
+  50% {
+    opacity: 0.55;
+    scale: 1.15 1;
+  }
+}
+
+.board-spot {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: board-spot 2.4s ease-in-out infinite;
+}
+
 /* The pitch drawing and the card surfaces: static art, no timeline needed. */
 /* Card surface: a top-edge highlight over a barely-there vertical gradient.
    It is what keeps a dark panel from looking like a flat hole in the page. */
@@ -899,6 +946,26 @@ input:-webkit-autofill:focus {
   .landing-bob {
     animation: none;
     translate: 0 0;
+  }
+
+  /* The ball's round is decoration: it leaves; the spot stays lit. */
+  .board-ball {
+    display: none;
+  }
+
+  .board-roam {
+    animation: none;
+  }
+
+  .board-spot {
+    animation: none;
+  }
+
+  /* A waiting slot says "waiting" by its dashed ring, not by breathing. */
+  .landing-slot-wait {
+    animation: none;
+    opacity: 1;
+    scale: 1;
   }
 
   .landing-pitch-scan {

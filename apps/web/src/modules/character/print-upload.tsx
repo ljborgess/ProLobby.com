@@ -1,5 +1,6 @@
 'use client'
 
+import { BackAction } from '@/common/ui/back-action'
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { useCharacterContent } from '@/hooks/use-character-content'
 import { ArchetypeExample } from './archetype-example'
@@ -119,13 +120,7 @@ export function PrintUpload({
         <p ref={receivedRef} tabIndex={-1} role="status" className="text-base text-foreground">
           {content.received}
         </p>
-        <button
-          type="button"
-          onClick={() => onBack(true)}
-          className="landing-focus self-start text-sm text-foreground-soft underline"
-        >
-          {content.backToList}
-        </button>
+        <BackAction onClick={() => onBack(true)} label={content.backToList} />
       </div>
     )
   }
@@ -176,13 +171,7 @@ export function PrintUpload({
       >
         {outcome.kind === 'sending' ? content.submitting : content.submit}
       </button>
-      <button
-        type="button"
-        onClick={() => onBack(false)}
-        className="landing-focus self-start text-sm text-foreground-soft underline"
-      >
-        {content.cancel}
-      </button>
+      <BackAction onClick={() => onBack(false)} label={content.cancel} kind="cancel" />
     </form>
   )
 }

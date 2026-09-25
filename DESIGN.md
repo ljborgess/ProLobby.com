@@ -310,6 +310,14 @@ sempre mais fraco do que o texto que ele acompanha.
 - **Hover / Focus:** escala `1.04` no primário com transição de 200ms, e
   `0.95` no `:active`. Foco visível é contorno de 2px no acento com
   `outline-offset: 3px`, nunca a remoção do contorno nativo.
+- **Voltar e cancelar** (`BackAction`): toda saída das telas logadas tem uma forma só.
+  - **Forma:** marca desenhada dentro de um anel de fio de 32px, com o texto em
+    Cinza Azulado Médio ao lado. Sem sublinhado e sem seta em texto.
+  - **Marca:** chevron pra voltar, × pra cancelar.
+  - **Hover:** o anel ganha o acento e a marca se inclina pro lado da saída (a
+    seta recua 2px, o × gira), e nada disso acontece sob reduced-motion.
+  - **Papel:** fica sempre abaixo da ação principal da etapa. Uma saída nunca
+    compete com o caminho.
 - **Varredura:** o primário carrega um brilho diagonal que atravessa a
   superfície no hover, só em dispositivo com ponteiro real.
 
@@ -360,6 +368,58 @@ agrupado por categoria com contagem preenchida/total; embaixo, a legenda que diz
 que aquilo é exemplo. Vaga confirmada é disco sólido do acento; vaga em espera é
 contorno tracejado pulsando. É o formato herdado do `escalacao-brasileirao`,
 redesenhado com conteúdo próprio, e é a base da tela de fila da Fase 2.5.
+
+### Signature: o Elenco
+
+A tela de personagens é um **quadro tático**, com o mínimo de texto: o campo
+diz o que falta. As cinco vagas (GOL, ZAG, MEI, PON, ATA) ficam no lugar delas
+num campo desenhado em traço, com listras de corte de grama em branco a 2,5% e
+um brilho verde no centro. No telefone o campo fica em pé e ataca pra cima; a
+partir de `sm`, deita e ataca pra direita. Todos numa linha, alinhados. A
+contagem ("4/5 vagas") é um chip no canto do campo, como num placar.
+
+**Sem pontilhado** (pedido de 2026-09-25). O estado vem do preenchimento e do
+movimento, não do traço tracejado.
+
+Cada vaga é uma **camisa desenhada** sobre uma sombra no gramado:
+- **verificado:** camisa sólida de acento com check e halo;
+- **em análise:** camisa com contorno verde e um ponto respirando;
+- **pendente ou recusado:** contorno branco com o código da posição;
+- **vaga livre:** contorno apagado com "+".
+
+A vaga escolhida ganha um **ponto de luz verde pulsando** sob a camisa.
+
+**Não há linhas no gramado além das do campo** (pedido de 2026-09-25): o
+caminho da bola é imaginário. Uma **bola** flutua do goleiro ao ataque e de
+volta, e os **jogadores de linha andam pelo campo**, cada um em volta da sua
+zona, com alcance e ritmo próprios. O **goleiro fica quase parado**, mexendo-se
+devagar na área. Uma varredura de luz atravessa o gramado. A camisa **para**
+quando o ponteiro passa por ela, quando recebe foco e quando está escolhida:
+alvo que se move é alvo que se erra. Sob reduced-motion, a bola some e todos
+ficam no lugar.
+
+**O painel ao lado do campo é um widget.** Escolher uma vaga mostra a carta
+dela, com a **silhueta desenhada do Pro** (cabeça e camisa sobre uma sombra,
+verde quando verificado), o arquétipo em caixa alta, o estado e a ação:
+- **vaga livre:** "Cadastrar";
+- **vaga ocupada:** "Mandar print" e "Trocar personagem".
+
+Cadastrar ou trocar abre o **cadastro ali mesmo**, no lugar da carta, já na
+etapa do arquétipo, porque o campo já disse a posição. Com o widget aberto, o
+campo fica fixo ao lado. Escolher outra vaga fecha o widget. A legenda com as
+mesmas marcas fica sob o campo.
+
+Cadastrar um personagem é o **pré-jogo em etapas**, uma decisão por vez, na
+ordem em que o jogo pergunta: Posição, Arquétipo, Plataforma, Gamertag,
+Confirmar. No topo fica uma trilha de cinco estações, e o trecho já percorrido
+acende no acento. Estação feita é disco sólido com check e vira botão de
+volta; a atual pulsa; as de frente são tracejadas e numeradas. Cada escolha é
+uma peça desenhada com o rádio nativo por dentro: a posição com o mini-campo, o
+arquétipo em caixa alta, a plataforma com o traço de controle ou monitor. A
+etapa do gamertag mostra ao lado uma prévia desenhada do card da tela de
+arquétipos, com o nome digitado embaixo, que é o que o print vai ter que
+mostrar. A confirmação resume tudo com Alterar em cada linha. Recusa da API
+leva de volta à etapa que resolve o problema.
 
 ### Signature: o Painel de Instrumento
 

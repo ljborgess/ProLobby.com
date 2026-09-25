@@ -64,7 +64,7 @@ export default async function CharacterPage() {
       <div className="mx-auto flex w-full max-w-6xl items-center justify-end gap-4">
         <LanguageSwitcher />
       </div>
-      <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-10">
+      <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col justify-center py-10">
         <CharacterScreen characters={characters} archetypes={archetypes} />
       </div>
     </main>
