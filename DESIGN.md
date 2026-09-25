@@ -389,11 +389,14 @@ Cada vaga é uma **camisa desenhada** sobre uma sombra no gramado:
 
 A vaga escolhida ganha um **ponto de luz verde pulsando** sob a camisa.
 
-Entre as posições correm **linhas de passe** finas, que acendem em verde quando
-as duas pontas estão verificadas, no estilo das linhas de química. Uma **bola**
-faz a ronda das linhas de passe, do goleiro ao ataque e de volta. Uma
-**varredura de luz** atravessa o gramado, e as camisas respiram de leve. Sob
-reduced-motion a bola some e o resto fica parado.
+**Não há linhas no gramado além das do campo** (pedido de 2026-09-25): o
+caminho da bola é imaginário. Uma **bola** flutua do goleiro ao ataque e de
+volta, e os **jogadores de linha andam pelo campo**, cada um em volta da sua
+zona, com alcance e ritmo próprios. O **goleiro fica quase parado**, mexendo-se
+devagar na área. Uma varredura de luz atravessa o gramado. A camisa **para**
+quando o ponteiro passa por ela, quando recebe foco e quando está escolhida:
+alvo que se move é alvo que se erra. Sob reduced-motion, a bola some e todos
+ficam no lugar.
 
 **O painel ao lado do campo é um widget.** Escolher uma vaga mostra a carta
 dela, com a **silhueta desenhada do Pro** (cabeça e camisa sobre uma sombra,

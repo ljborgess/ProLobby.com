@@ -132,14 +132,17 @@ const ROUND: CharacterCategory[] = [
   'goalkeeper',
 ]
 
-/** Passing lanes between the places; lit once both ends are verified. */
-const LINKS: [CharacterCategory, CharacterCategory][] = [
-  ['goalkeeper', 'defender'],
-  ['defender', 'midfielder'],
-  ['midfielder', 'winger'],
-  ['midfielder', 'striker'],
-  ['winger', 'striker'],
-]
+/**
+ * How each player moves about their place, in px and seconds: outfield
+ * players roam their zone, the keeper barely leaves the line and moves slow.
+ */
+const ROAM: Record<CharacterCategory, { x: number; y: number; s: number }> = {
+  goalkeeper: { x: 3, y: 7, s: 14 },
+  defender: { x: 11, y: 14, s: 9 },
+  midfielder: { x: 18, y: 12, s: 8 },
+  winger: { x: 14, y: 18, s: 10 },
+  striker: { x: 14, y: 12, s: 8.5 },
+}
 
 function Board({
   characters,
@@ -176,8 +179,8 @@ function Board({
       <span className="absolute right-3 top-3 z-10 rounded-full border border-white/10 bg-background/70 px-2.5 py-1 text-xs tabular-nums text-foreground-soft backdrop-blur-sm">
         {count}
       </span>
-      <PitchLines orientation="v" statusFor={statusFor} className="sm:hidden" />
-      <PitchLines orientation="h" statusFor={statusFor} className="hidden sm:block" />
+      <PitchLines orientation="v" className="sm:hidden" />
+      <PitchLines orientation="h" className="hidden sm:block" />
 
       <ol className="absolute inset-0">
         {CATEGORY_ORDER.map((category, index) => (
@@ -195,13 +198,26 @@ function Board({
             }
           >
             <div className="landing-fade-up">
-              <Marker
-                category={category}
-                character={characters.find((item) => item.category === category)}
-                status={statusFor(category)}
-                selected={selected === category}
-                onSelect={() => onSelect(category)}
-              />
+              <div
+                className="board-roam"
+                data-selected={selected === category || undefined}
+                style={
+                  {
+                    '--roam-x': `${ROAM[category].x}px`,
+                    '--roam-y': `${ROAM[category].y}px`,
+                    '--roam-time': `${ROAM[category].s}s`,
+                    '--roam-delay': `${-index * 1.7}s`,
+                  } as CSSProperties
+                }
+              >
+                <Marker
+                  category={category}
+                  character={characters.find((item) => item.category === category)}
+                  status={statusFor(category)}
+                  selected={selected === category}
+                  onSelect={() => onSelect(category)}
+                />
+              </div>
             </div>
           </li>
         ))}
@@ -210,16 +226,8 @@ function Board({
   )
 }
 
-/** The pitch, stroke only, plus the lanes between the places. */
-function PitchLines({
-  orientation,
-  statusFor,
-  className,
-}: {
-  orientation: 'h' | 'v'
-  statusFor: (category: CharacterCategory) => SlotStatus | 'empty'
-  className: string
-}) {
+/** The pitch, stroke only, and the ball. */
+function PitchLines({ orientation, className }: { orientation: 'h' | 'v'; className: string }) {
   const horizontal = orientation === 'h'
   const [w, h] = horizontal ? [160, 100] : [100, 150]
   const at = (category: CharacterCategory) => {
@@ -254,26 +262,10 @@ function PitchLines({
         )}
         <circle cx={w / 2} cy={h / 2} r="12" />
       </g>
-      {LINKS.map(([from, to]) => {
-        const a = at(from)
-        const b = at(to)
-        const lit = statusFor(from) === 'verified' && statusFor(to) === 'verified'
-        return (
-          <line
-            key={`${from}-${to}`}
-            x1={a.x}
-            y1={a.y}
-            x2={b.x}
-            y2={b.y}
-            strokeWidth={lit ? 0.9 : 0.6}
-            className={lit ? 'stroke-accent/70' : 'stroke-white/12'}
-          />
-        )
-      })}
-      {/* The ball does the rounds of the passing lanes, back to front and
-          home again. Drawn under the players; gone under reduced motion. */}
+      {/* The ball does the rounds from the keeper to the attack and home
+          again, on a route nobody draws. Gone under reduced motion. */}
       <g className="board-ball">
-        <circle r="1.9" className="fill-foreground">
+        <circle r="1.9" className="fill-foreground drop-shadow-[0_0_3px_rgb(255_255_255/60%)]">
           <animateMotion
             dur="11s"
             repeatCount="indefinite"
@@ -320,7 +312,7 @@ function Marker({
             selected ? 'board-spot bg-accent/45' : 'bg-black/50'
           }`}
         />
-        <span className="landing-bob relative block">
+        <span className="relative block">
           <Shirt status={status} code={content.categoryCodes[category]} />
         </span>
       </span>
