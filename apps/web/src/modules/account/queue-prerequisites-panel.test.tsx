@@ -186,32 +186,4 @@ describe('QueuePrerequisitesPanel', () => {
     expect(screen.getByText(ACCOUNT_CONTENT.es.email.pendingLabel)).toBeInTheDocument()
     expect(screen.getByText(ACCOUNT_CONTENT.es.discord.doneLabel)).toBeInTheDocument()
   })
-
-  it('shows the reputation, and says the queue slows under 55 (#208)', () => {
-    const first = renderWithLocale(
-      <QueuePrerequisitesPanel
-        reputation={70}
-        reputationBand="good"
-        emailVerified
-        characterVerified
-        discordLinked
-        discordPresent
-      />,
-    )
-    expect(screen.getByText('70/100')).toBeInTheDocument()
-    expect(screen.queryByText(pt.reputation.slowQueue)).toBeNull()
-
-    first.unmount()
-    renderWithLocale(
-      <QueuePrerequisitesPanel
-        reputation={50}
-        reputationBand="slow_queue"
-        emailVerified
-        characterVerified
-        discordLinked
-        discordPresent
-      />,
-    )
-    expect(screen.getByText(pt.reputation.slowQueue)).toBeInTheDocument()
-  })
 })

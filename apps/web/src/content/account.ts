@@ -38,10 +38,6 @@ export interface AccountContent {
     absentAction: string
   }
   allDone: string
-  reputation: {
-    label: string
-    slowQueue: string
-  }
   loadError: string
 }
 
@@ -77,11 +73,6 @@ export const ACCOUNT_CONTENT: Record<Locale, AccountContent> = {
       absentAction: 'Entrar no servidor',
     },
     allDone: 'Tudo pronto. A fila abre na próxima fase do projeto.',
-    reputation: {
-      label: 'Reputação',
-      slowQueue:
-        'Abaixo de 55, a fila demora mais pra achar partida. Partidas limpas sobem 1 ponto cada, até 70.',
-    },
     loadError: 'Não deu pra carregar sua conta agora. Atualiza a página em instantes.',
   },
   es: {
@@ -116,11 +107,6 @@ export const ACCOUNT_CONTENT: Record<Locale, AccountContent> = {
       absentAction: 'Entrar al servidor',
     },
     allDone: 'Todo listo. La cola abre en la próxima fase del proyecto.',
-    reputation: {
-      label: 'Reputación',
-      slowQueue:
-        'Por debajo de 55, la cola tarda más en encontrar partida. Cada partida limpia suma 1 punto, hasta 70.',
-    },
     loadError: 'No se pudo cargar tu cuenta ahora. Actualiza la página en un momento.',
   },
 }
