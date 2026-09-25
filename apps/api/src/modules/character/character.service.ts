@@ -3,6 +3,8 @@ import { EntityManager } from '@mikro-orm/postgresql'
 import {
   BadRequestException,
   ConflictException,
+  HttpException,
+  HttpStatus,
   Injectable,
   NotFoundException,
 } from '@nestjs/common'
@@ -17,6 +19,14 @@ import { ACTIVE_CHARACTER_STATES, Character, CharacterState } from './character.
 import type { ChangeCategoryDto } from './dto/change-category.dto'
 import type { CreateCharacterDto } from './dto/create-character.dto'
 import { PlatformGamertag } from './platform-gamertag.entity'
+
+/**
+ * Characters one account may create per hour. The per-IP throttle alone lets
+ * one account past it from another address; this one follows the account.
+ * Each creation inactivates the previous character and keeps it (RF-027).
+ */
+export const CHARACTER_CREATIONS_PER_HOUR = 10
+const HOUR_MS = 60 * 60 * 1000
 
 /** What the screen needs about a character — item 17: never the entity. */
 export type CharacterView = Pick<
@@ -59,53 +69,75 @@ export class CharacterService {
     }
     const gamertagHash = hashGamertag(this.hmacSecret, dto.gamertag)
 
-    return this.em.fork().transactional(async (em) => {
-      // One account creates one character at a time: the "inactivate the
-      // previous one" step below must not race a second creation.
-      const account = await em.findOneOrFail(
-        Account,
-        { id: accountId },
-        { lockMode: LockMode.PESSIMISTIC_WRITE },
-      )
+    try {
+      return await this.em
+        .fork()
+        .transactional((em) => this.createLocked(em, accountId, dto, gamertagHash))
+    } catch (error) {
+      // The account lock serializes this account's writes; a violation left
+      // here is the category index or the (account, platform) claim.
+      if (isUniqueViolation(error)) {
+        throw new ConflictException('category_taken')
+      }
+      throw error
+    }
+  }
 
-      // No ban-list or "already verified elsewhere" check here: typing a tag
-      // proves nothing, and answering those questions to anyone who types a
-      // name would tell strangers who is banned or registered. Both are
-      // checked when a print proves ownership (#197, #198).
-      await this.claimGamertag(em, account, dto, gamertagHash)
+  private async createLocked(
+    em: EntityManager,
+    accountId: string,
+    dto: CreateCharacterDto,
+    gamertagHash: string,
+  ): Promise<CharacterView> {
+    // One account creates one character at a time: the "inactivate the
+    // previous one" step below must not race a second creation.
+    const account = await lockAccount(em, accountId)
 
-      // RF-027: the replaced character stays in the history, and its match
-      // count carries over. Starting from zero would hand back the K-factor
-      // of a new player and reopen the category change RF-028 locks.
-      const previous = await em.findOne(Character, {
+    const recent = await em.count(Character, {
+      account: accountId,
+      createdAt: { $gt: new Date(Date.now() - HOUR_MS) },
+    })
+    if (recent >= CHARACTER_CREATIONS_PER_HOUR) {
+      throw new HttpException('character_create_limit', HttpStatus.TOO_MANY_REQUESTS)
+    }
+
+    // No ban-list or "already verified elsewhere" check here: typing a tag
+    // proves nothing, and answering those questions to anyone who types a
+    // name would tell strangers who is banned or registered. Both are
+    // checked when a print proves ownership (#197, #198).
+    await this.claimGamertag(em, account, dto, gamertagHash)
+
+    // RF-027: the replaced character stays in the history, and its match
+    // count carries over. Starting from zero would hand back the K-factor
+    // of a new player and reopen the category change RF-028 locks.
+    const previous = await em.findOne(Character, {
+      account: accountId,
+      category: dto.category,
+      edition: CURRENT_EDITION,
+      state: { $in: [...ACTIVE_CHARACTER_STATES] },
+    })
+    await em.nativeUpdate(
+      Character,
+      {
         account: accountId,
         category: dto.category,
         edition: CURRENT_EDITION,
         state: { $in: [...ACTIVE_CHARACTER_STATES] },
-      })
-      await em.nativeUpdate(
-        Character,
-        {
-          account: accountId,
-          category: dto.category,
-          edition: CURRENT_EDITION,
-          state: { $in: [...ACTIVE_CHARACTER_STATES] },
-        },
-        { state: CharacterState.INACTIVE },
-      )
+      },
+      { state: CharacterState.INACTIVE },
+    )
 
-      const character = em.create(Character, {
-        account,
-        category: dto.category,
-        archetype: dto.archetype,
-        platform: dto.platform,
-        edition: CURRENT_EDITION,
-        name: dto.name,
-        matchesInCategory: previous?.matchesInCategory ?? 0,
-      })
-      await em.flush()
-      return toView(character)
+    const character = em.create(Character, {
+      account,
+      category: dto.category,
+      archetype: dto.archetype,
+      platform: dto.platform,
+      edition: CURRENT_EDITION,
+      name: dto.name,
+      matchesInCategory: previous?.matchesInCategory ?? 0,
     })
+    await em.flush()
+    return toView(character)
   }
 
   async changeCategory(
@@ -115,6 +147,8 @@ export class CharacterService {
   ): Promise<CharacterView> {
     try {
       return await this.em.fork().transactional(async (em) => {
+        // Same lock as creation: both write the one-active-per-category index.
+        await lockAccount(em, accountId)
         const character = await em.findOne(
           Character,
           { id: characterId, account: accountId, state: { $in: [...ACTIVE_CHARACTER_STATES] } },
@@ -176,6 +210,10 @@ export class CharacterService {
       gamertagEncrypted,
     })
   }
+}
+
+function lockAccount(em: EntityManager, accountId: string): Promise<Account> {
+  return em.findOneOrFail(Account, { id: accountId }, { lockMode: LockMode.PESSIMISTIC_WRITE })
 }
 
 function toView(character: Character): CharacterView {

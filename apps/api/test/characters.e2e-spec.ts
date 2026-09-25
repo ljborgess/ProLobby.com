@@ -12,6 +12,7 @@ import { SESSION_COOKIE_NAME } from '../src/common/security/session-cookie'
 import { MailSender } from '../src/common/mail/mail.types'
 import { CURRENT_TERMS_VERSION } from '../src/modules/account/terms.constants'
 import { Character, CharacterState } from '../src/modules/character/character.entity'
+import { CHARACTER_CREATIONS_PER_HOUR } from '../src/modules/character/character.service'
 import { PlatformGamertag } from '../src/modules/character/platform-gamertag.entity'
 import { BlockedIdentity } from '../src/modules/moderation/blocked-identity.entity'
 import { CapturingMailSender } from './support/capturing-mail-sender'
@@ -328,6 +329,53 @@ describe('characters (#194)', () => {
     await em.flush()
 
     expect((await prerequisites()).body.characterVerified).toBe(true)
+  })
+
+  it('creates one character when two arrive at once for the same category', async () => {
+    const cookie = await account()
+
+    const results = await Promise.all([
+      create(cookie, midfielder('Race1xx')),
+      create(cookie, midfielder('Race1xx')),
+    ])
+
+    expect(results.map((res) => res.status).sort()).toEqual([201, 201])
+    const list = await request(app.getHttpServer()).get('/api/characters').set('Cookie', cookie)
+    expect(list.body).toHaveLength(1)
+  })
+
+  it('never answers 500 when a creation and a category move race for one category', async () => {
+    const cookie = await account()
+    const winger = (
+      await create(cookie, { ...midfielder('Race2xx'), archetype: 'spark', category: 'winger' })
+    ).body
+
+    const [moved, created] = await Promise.all([
+      request(app.getHttpServer())
+        .patch(`/api/characters/${winger.id}`)
+        .set('Cookie', cookie)
+        .send({ category: 'midfielder' }),
+      create(cookie, midfielder('Race2xx')),
+    ])
+
+    expect([moved.status, created.status]).not.toContain(500)
+    const list = await request(app.getHttpServer()).get('/api/characters').set('Cookie', cookie)
+    const midfield = list.body.filter(
+      (item: { category: string }) => item.category === 'midfielder',
+    )
+    expect(midfield).toHaveLength(1)
+  })
+
+  it('caps creations per account per hour, whatever the address', async () => {
+    const cookie = await account()
+    for (let i = 0; i < CHARACTER_CREATIONS_PER_HOUR; i += 1) {
+      await create(cookie, midfielder('Loop1xx'))
+    }
+
+    const res = await create(cookie, midfielder('Loop1xx'))
+
+    expect(res.status).toBe(429)
+    expect(res.body.message).toBe('character_create_limit')
   })
 
   it('rejects fields the server owns', async () => {
