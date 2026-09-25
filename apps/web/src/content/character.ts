@@ -35,6 +35,7 @@ export interface CharacterContent {
     freeHint: string
     legendReview: string
     legendPending: string
+    replace: string
   }
   form: {
     categoryLabel: string
@@ -135,6 +136,7 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
         'Ninguém nessa posição ainda. Cadastre um personagem e mande o print pra ele entrar em campo.',
       legendReview: 'Print em análise',
       legendPending: 'Esperando print',
+      replace: 'Trocar personagem',
     },
     form: {
       categoryLabel: 'Categoria',
@@ -270,6 +272,7 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
         'Nadie en esta posición todavía. Registra un personaje y envía la captura para que entre en el campo.',
       legendReview: 'Captura en revisión',
       legendPending: 'Esperando captura',
+      replace: 'Cambiar personaje',
     },
     form: {
       categoryLabel: 'Categoría',

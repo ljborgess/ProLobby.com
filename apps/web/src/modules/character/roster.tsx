@@ -21,17 +21,24 @@ type SlotStatus = 'verified' | 'review' | 'rejected' | 'pending'
  * The account's squad on a tactics board — the Quadro da Fila vocabulary on
  * the screen where the squad is built. Five places on a drawn pitch, one per
  * position category (one active character each, RF-027): an empty place is
- * part of the picture, dashed like a slot still waiting on someone. Picking a
+ * part of the picture, drawn faint like a slot still waiting on someone. Picking a
  * place opens its card beside the pitch.
  */
 export function Roster({
   characters,
   onClaim,
+  onPick,
   onSend,
+  widget,
 }: {
   characters: CharacterView[]
+  /** Register a character in this place — a free one, or replacing (RF-027). */
   onClaim: (category: CharacterCategory) => void
+  /** A place was picked on the pitch: whatever widget was open closes. */
+  onPick: () => void
   onSend: (characterId: string) => void
+  /** Takes the side panel while open: the registration, next to its pitch. */
+  widget: ReactNode
 }) {
   const content = useCharacterContent()
   const byCategory = (category: CharacterCategory) =>
@@ -42,27 +49,43 @@ export function Roster({
 
   return (
     <section aria-labelledby="roster-heading" className="flex flex-col gap-4">
-      <div className="flex items-baseline justify-between gap-4">
-        <h2 id="roster-heading" className="font-display text-lg font-medium text-foreground">
-          {content.roster.heading}
-        </h2>
-        <span className="rounded-full border border-white/10 px-3 py-1 text-xs tabular-nums text-foreground-soft">
-          {content.roster.count(filled, CATEGORY_ORDER.length)}
-        </span>
-      </div>
+      <h2 id="roster-heading" className="sr-only">
+        {content.roster.heading}
+      </h2>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
-        <Board characters={characters} selected={selected} onSelect={setSelected} />
-        <div key={selected} className="landing-fade-up flex">
-          {current ? (
-            <FilledSlot character={current} onSend={onSend} />
-          ) : (
-            <EmptySlot category={selected} onClaim={onClaim} />
-          )}
+      <div
+        className={`grid items-start gap-4 ${
+          widget
+            ? 'lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]'
+            : 'lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]'
+        }`}
+      >
+        <div className="flex flex-col gap-3 lg:sticky lg:top-6">
+          <Board
+            characters={characters}
+            selected={selected}
+            count={content.roster.count(filled, CATEGORY_ORDER.length)}
+            onSelect={(category) => {
+              setSelected(category)
+              onPick()
+            }}
+          />
+          <Legend />
         </div>
+        {widget ?? (
+          <div key={selected} className="landing-fade-up flex self-stretch">
+            {current ? (
+              <FilledSlot
+                character={current}
+                onSend={onSend}
+                onReplace={() => onClaim(current.category)}
+              />
+            ) : (
+              <EmptySlot category={selected} onClaim={onClaim} />
+            )}
+          </div>
+        )}
       </div>
-
-      <Legend />
     </section>
   )
 }
@@ -92,10 +115,22 @@ function firstToLookAt(characters: CharacterView[]): CharacterCategory {
 const SPOT: Record<CharacterCategory, { h: [number, number]; v: [number, number] }> = {
   goalkeeper: { h: [10, 50], v: [50, 89] },
   defender: { h: [27, 50], v: [50, 72] },
-  midfielder: { h: [48, 58], v: [42, 52] },
+  midfielder: { h: [48, 50], v: [50, 50] },
   winger: { h: [69, 22], v: [78, 32] },
   striker: { h: [86, 50], v: [50, 13] },
 }
+
+/** The ball's round: build-up from the keeper, the attack, and back. */
+const ROUND: CharacterCategory[] = [
+  'goalkeeper',
+  'defender',
+  'midfielder',
+  'winger',
+  'striker',
+  'midfielder',
+  'defender',
+  'goalkeeper',
+]
 
 /** Passing lanes between the places; lit once both ends are verified. */
 const LINKS: [CharacterCategory, CharacterCategory][] = [
@@ -109,10 +144,13 @@ const LINKS: [CharacterCategory, CharacterCategory][] = [
 function Board({
   characters,
   selected,
+  count,
   onSelect,
 }: {
   characters: CharacterView[]
   selected: CharacterCategory
+  /** "4/5 vagas", read off the pitch like a match HUD. */
+  count: string
   onSelect: (category: CharacterCategory) => void
 }) {
   const statusFor = (category: CharacterCategory): SlotStatus | 'empty' => {
@@ -131,6 +169,13 @@ function Board({
         aria-hidden
         className="absolute inset-0 bg-[radial-gradient(ellipse_60%_55%_at_50%_50%,color-mix(in_srgb,var(--color-accent-strong)_22%,transparent),transparent_75%)]"
       />
+      <div
+        aria-hidden
+        className="landing-pitch-scan pointer-events-none absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-transparent via-accent/[0.07] to-transparent"
+      />
+      <span className="absolute right-3 top-3 z-10 rounded-full border border-white/10 bg-background/70 px-2.5 py-1 text-xs tabular-nums text-foreground-soft backdrop-blur-sm">
+        {count}
+      </span>
       <PitchLines orientation="v" statusFor={statusFor} className="sm:hidden" />
       <PitchLines orientation="h" statusFor={statusFor} className="hidden sm:block" />
 
@@ -221,11 +266,23 @@ function PitchLines({
             x2={b.x}
             y2={b.y}
             strokeWidth={lit ? 0.9 : 0.6}
-            strokeDasharray={lit ? undefined : '2 2'}
-            className={lit ? 'stroke-accent/70' : 'stroke-white/15'}
+            className={lit ? 'stroke-accent/70' : 'stroke-white/12'}
           />
         )
       })}
+      {/* The ball does the rounds of the passing lanes, back to front and
+          home again. Drawn under the players; gone under reduced motion. */}
+      <g className="board-ball">
+        <circle r="1.9" className="fill-foreground">
+          <animateMotion
+            dur="11s"
+            repeatCount="indefinite"
+            path={ROUND.map(
+              (category, i) => `${i ? 'L' : 'M'}${at(category).x} ${at(category).y}`,
+            ).join(' ')}
+          />
+        </circle>
+      </g>
     </svg>
   )
 }
@@ -246,54 +303,99 @@ function Marker({
   const content = useCharacterContent()
   const label = character ? archetypeLabel(character.archetype) : content.roster.free
 
-  const disc: Record<SlotStatus | 'empty', string> = {
-    verified:
-      'bg-accent text-background shadow-[0_0_18px_color-mix(in_srgb,var(--color-accent)_45%,transparent)]',
-    review: 'border border-dashed border-accent bg-background text-accent',
-    pending: 'border border-white/45 bg-background text-foreground',
-    rejected: 'border border-white/45 bg-background text-foreground',
-    empty:
-      'border border-dashed border-white/30 bg-background/60 text-foreground-soft group-hover:border-accent/60 group-hover:text-accent',
-  }
-
   return (
     <button
       type="button"
       onClick={onSelect}
       aria-pressed={selected}
       aria-label={`${content.categories[category]}: ${label}`}
-      className="landing-focus group flex flex-col items-center gap-1.5 rounded-md p-1"
+      className="landing-focus group flex flex-col items-center gap-1 rounded-md p-1"
     >
-      <span
-        className={`relative flex size-11 items-center justify-center rounded-full transition-[box-shadow,border-color,color] duration-200 sm:size-12 ${disc[status]} ${
-          selected ? 'ring-2 ring-accent/70 ring-offset-2 ring-offset-surface' : ''
-        }`}
-      >
-        {status === 'verified' ? (
-          <CheckMark className="size-5" />
-        ) : status === 'review' ? (
-          <span className="landing-slot-wait size-2.5 rounded-full bg-accent" />
-        ) : status === 'empty' ? (
-          <PlusMark className="size-4" />
-        ) : (
-          <span className="text-[0.7rem] font-semibold">{content.categoryCodes[category]}</span>
-        )}
+      <span className="relative flex flex-col items-center">
+        {/* The player stands on a spot of light: lit and pulsing when picked,
+            a faint shadow otherwise — the game's own "this one" marker. */}
+        <span
+          aria-hidden
+          className={`absolute -bottom-1 h-2.5 w-12 rounded-[50%] transition-colors ${
+            selected ? 'board-spot bg-accent/45' : 'bg-black/50'
+          }`}
+        />
+        <span className="landing-bob relative block">
+          <Shirt status={status} code={content.categoryCodes[category]} />
+        </span>
       </span>
       <span
-        className={`flex flex-col items-center rounded-sm px-1.5 py-0.5 leading-tight ${
-          selected ? 'bg-background/80' : ''
-        }`}
+        className={`max-w-32 truncate rounded-sm px-1.5 py-0.5 text-xs leading-tight ${
+          character ? 'font-medium text-foreground' : 'text-foreground-soft'
+        } ${selected ? 'bg-background/80' : ''}`}
       >
-        <span className="text-[0.7rem] font-medium uppercase tracking-[0.2em] text-foreground-soft">
-          {content.categoryCodes[category]}
-        </span>
-        <span
-          className={`max-w-24 truncate text-xs ${character ? 'font-medium text-foreground' : 'text-foreground-soft'}`}
-        >
-          {label}
-        </span>
+        {label}
       </span>
     </button>
+  )
+}
+
+const SHIRT = 'M17 7l7 3 7-3 11 6-4 9-4-2v22H14V20l-4 2-4-9z'
+
+/** A drawn shirt, in the state of its place — the Quadro da Fila marks on a kit. */
+function Shirt({ status, code }: { status: SlotStatus | 'empty'; code: string }) {
+  const body: Record<SlotStatus | 'empty', string> = {
+    verified: 'fill-accent stroke-accent',
+    review: 'fill-background stroke-accent',
+    pending: 'fill-background stroke-white/55',
+    rejected: 'fill-background stroke-white/55',
+    empty: 'fill-background/40 stroke-white/25 group-hover:stroke-accent/70',
+  }
+  return (
+    <svg
+      viewBox="0 0 48 48"
+      aria-hidden
+      className={`size-12 overflow-visible transition-transform duration-200 group-hover:-translate-y-0.5 motion-reduce:transition-none sm:size-14 ${
+        status === 'verified'
+          ? 'drop-shadow-[0_0_10px_color-mix(in_srgb,var(--color-accent)_55%,transparent)]'
+          : ''
+      }`}
+    >
+      <path
+        d={SHIRT}
+        strokeWidth={1.4}
+        strokeLinejoin="round"
+        className={`transition-colors ${body[status]}`}
+      />
+      {status === 'verified' && (
+        <path
+          d="M18.5 27l4 4 7.5-8"
+          fill="none"
+          strokeWidth={2.4}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="stroke-background"
+        />
+      )}
+      {status === 'review' && (
+        <circle cx="24" cy="27" r="3.2" className="landing-slot-wait fill-accent" />
+      )}
+      {(status === 'pending' || status === 'rejected') && (
+        <text
+          x="24"
+          y="30.5"
+          textAnchor="middle"
+          fontSize="9"
+          fontWeight={600}
+          className="fill-foreground"
+        >
+          {code}
+        </text>
+      )}
+      {status === 'empty' && (
+        <path
+          d="M24 22v10M19 27h10"
+          strokeWidth={1.6}
+          strokeLinecap="round"
+          className="stroke-foreground-soft transition-colors group-hover:stroke-accent"
+        />
+      )}
+    </svg>
   )
 }
 
@@ -303,7 +405,11 @@ function Legend() {
   const items: { mark: ReactNode; text: string }[] = [
     { mark: <span className="size-3 rounded-full bg-accent" />, text: content.existing.verified },
     {
-      mark: <span className="size-3 rounded-full border border-dashed border-accent" />,
+      mark: (
+        <span className="flex size-3 items-center justify-center rounded-full border border-accent">
+          <span className="size-1 rounded-full bg-accent" />
+        </span>
+      ),
       text: content.roster.legendReview,
     },
     {
@@ -311,7 +417,7 @@ function Legend() {
       text: content.roster.legendPending,
     },
     {
-      mark: <span className="size-3 rounded-full border border-dashed border-white/30" />,
+      mark: <span className="size-3 rounded-full border border-white/20" />,
       text: content.roster.free,
     },
   ]
@@ -332,9 +438,11 @@ function Legend() {
 function FilledSlot({
   character,
   onSend,
+  onReplace,
 }: {
   character: CharacterView
   onSend: (characterId: string) => void
+  onReplace: () => void
 }) {
   const content = useCharacterContent()
   const status = statusOf(character)
@@ -360,6 +468,8 @@ function FilledSlot({
         </span>
       </header>
 
+      <ProFigure status={status} />
+
       {/* The archetype the way the game prints it — the word the player
           will photograph, so it is the loudest thing in the slot. */}
       <h3 className="font-display text-base font-medium leading-tight tracking-tight break-words text-foreground">
@@ -370,15 +480,25 @@ function FilledSlot({
       <StatusLine status={status} />
       {rejection && <p className="text-xs leading-relaxed text-danger">{rejection}</p>}
 
-      {canSend(character) && (
+      <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-2 pt-1">
+        {canSend(character) && (
+          <button
+            type="button"
+            onClick={() => onSend(character.id)}
+            className="landing-focus landing-sheen rounded-full bg-accent px-4 py-2 text-sm font-medium text-background transition-transform duration-200 hover:scale-[1.03] active:scale-95"
+          >
+            {status === 'rejected' ? content.existing.sendAgain : content.existing.sendPrint}
+          </button>
+        )}
         <button
           type="button"
-          onClick={() => onSend(character.id)}
-          className="landing-focus landing-sheen mt-auto self-start rounded-full bg-accent px-4 py-2 text-sm font-medium text-background transition-transform duration-200 hover:scale-[1.03] active:scale-95"
+          onClick={onReplace}
+          className="landing-focus inline-flex items-center gap-2 rounded-full py-2 text-sm text-foreground-soft transition-colors hover:text-foreground"
         >
-          {status === 'rejected' ? content.existing.sendAgain : content.existing.sendPrint}
+          <SwapMark className="size-4" />
+          {content.roster.replace}
         </button>
-      )}
+      </div>
     </article>
   )
 }
@@ -396,16 +516,16 @@ function EmptySlot({
     <button
       type="button"
       onClick={() => onClaim(category)}
-      className="landing-focus group flex min-h-44 w-full flex-col items-start gap-3 rounded-md border border-dashed border-white/15 px-4 pb-4 pt-5 text-left transition-colors hover:border-accent/50"
+      className="landing-focus group flex min-h-44 w-full flex-col items-start gap-3 rounded-md border border-white/10 bg-white/[0.015] px-4 pb-4 pt-5 text-left transition-colors hover:border-accent/50"
     >
       <span className="text-[0.7rem] font-medium uppercase tracking-[0.2em] text-foreground-soft transition-colors group-hover:text-foreground">
         {content.categoryCodes[category]}
       </span>
-      <p className="text-sm leading-relaxed text-foreground-soft">{content.roster.freeHint}</p>
+      <ProFigure status="empty" />
       <span className="mt-auto flex items-center gap-2.5">
         <span
           aria-hidden
-          className="flex size-7 shrink-0 items-center justify-center rounded-full border border-dashed border-white/25 text-foreground-soft transition-colors group-hover:border-accent/60 group-hover:text-accent"
+          className="flex size-7 shrink-0 items-center justify-center rounded-full border border-white/20 text-foreground-soft transition-colors group-hover:border-accent/60 group-hover:text-accent"
         >
           <PlusMark className="size-3.5" />
         </span>
@@ -434,13 +554,13 @@ function StatusLine({ status }: { status: SlotStatus }) {
     )
   }
   if (status === 'review') {
-    // Waiting on moderation: the same breathing dashed ring as a queue slot
+    // Waiting on moderation: the same breathing ring as a queue slot
     // still waiting on its player.
     return (
       <span className="inline-flex items-center gap-1.5 text-xs text-foreground-soft">
         <span
           aria-hidden
-          className="landing-slot-wait size-3.5 rounded-full border border-dashed border-accent"
+          className="landing-slot-wait flex size-3.5 items-center justify-center rounded-full border border-accent"
         />
         {content.existing.inReview}
       </span>
@@ -465,7 +585,7 @@ const ZONE: Record<CharacterCategory, { x: number; y: number }> = {
 
 /**
  * The slot's place on the pitch, drawn the Quadro da Fila way: a solid disc
- * once the character is verified and in the squad, a dashed ring while it
+ * once the character is verified and in the squad, a ring while it
  * still waits, a faint one for a place nobody has taken. Stroke, never fill,
  * and always quieter than the text beside it.
  */
@@ -502,10 +622,43 @@ export function PositionPitch({
           r="2.8"
           fill="none"
           strokeWidth={0.7}
-          strokeDasharray="1.4 1"
           className={marker === 'waiting' ? 'stroke-accent' : 'stroke-white/40'}
         />
       )}
+    </svg>
+  )
+}
+
+/**
+ * The Pro, drawn: a head and a kit over a spot of light — the card art the
+ * game would show, without the game's art. Lit green once verified, faint
+ * while the place waits on someone.
+ */
+function ProFigure({ status }: { status: SlotStatus | 'empty' }) {
+  const lit = status === 'verified'
+  const waiting = status === 'empty' || status === 'review'
+  const line = lit ? 'stroke-accent' : waiting ? 'stroke-white/25' : 'stroke-white/55'
+  return (
+    <svg viewBox="0 0 120 84" aria-hidden className="my-2 h-28 w-full">
+      <ellipse
+        cx="60"
+        cy="76"
+        rx="30"
+        ry="5"
+        className={lit ? 'board-spot fill-accent/30' : 'fill-white/[0.05]'}
+      />
+      <g
+        fill="none"
+        strokeWidth={1.4}
+        strokeLinejoin="round"
+        className={`${line} ${lit ? 'drop-shadow-[0_0_12px_color-mix(in_srgb,var(--color-accent)_45%,transparent)]' : ''}`}
+      >
+        <circle cx="60" cy="18" r="10" className={lit ? 'fill-accent/15' : ''} />
+        <path
+          d="M44 34l16 5 16-5 16 9-6 12-7-3v22H41V52l-7 3-6-12z"
+          className={lit ? 'fill-accent/15' : ''}
+        />
+      </g>
     </svg>
   )
 }
@@ -525,6 +678,23 @@ function Brackets({ verified }: { verified: boolean }) {
       <span className={`${corner} bottom-1.5 left-1.5 border-b border-l`} />
       <span className={`${corner} bottom-1.5 right-1.5 border-b border-r`} />
     </span>
+  )
+}
+
+function SwapMark({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      className={className}
+    >
+      <path d="M7 7h11l-3-3M17 17H6l3 3" />
+    </svg>
   )
 }
 

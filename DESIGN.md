@@ -371,25 +371,40 @@ redesenhado com conteúdo próprio, e é a base da tela de fila da Fase 2.5.
 
 ### Signature: o Elenco
 
-A tela de personagens é um **quadro tático**. As cinco vagas (GOL, ZAG, MEI,
-PON, ATA) ficam no lugar delas num campo desenhado em traço, com listras de
-corte de grama em branco a 2,5% e um brilho verde no centro. No telefone o
-campo fica em pé e ataca pra cima; a partir de `sm`, deita e ataca pra
-direita.
+A tela de personagens é um **quadro tático**, com o mínimo de texto: o campo
+diz o que falta. As cinco vagas (GOL, ZAG, MEI, PON, ATA) ficam no lugar delas
+num campo desenhado em traço, com listras de corte de grama em branco a 2,5% e
+um brilho verde no centro. No telefone o campo fica em pé e ataca pra cima; a
+partir de `sm`, deita e ataca pra direita. Todos numa linha, alinhados. A
+contagem ("4/5 vagas") é um chip no canto do campo, como num placar.
 
-Cada vaga é um **marcador**, no vocabulário do Quadro da Fila:
-- **verificado:** disco sólido de acento com check e halo;
-- **em análise:** anel tracejado verde com um ponto respirando;
-- **pendente ou recusado:** contorno com o código da posição;
-- **vaga livre:** tracejado apagado com "+".
+**Sem pontilhado** (pedido de 2026-09-25). O estado vem do preenchimento e do
+movimento, não do traço tracejado.
 
-Embaixo de cada marcador vão o código e o arquétipo. Entre as posições correm
-**linhas de passe** tracejadas, que acendem sólidas quando as duas pontas
-estão verificadas, no estilo das linhas de química dos jogos de futebol.
-Escolher um marcador abre o card daquela vaga ao lado do campo, ou embaixo
-dele no telefone. O card traz o arquétipo em caixa alta, o estado e a ação:
-mandar o print, ou cadastrar quando a vaga está livre. Uma legenda com as
-mesmas marcas fecha o quadro.
+Cada vaga é uma **camisa desenhada** sobre uma sombra no gramado:
+- **verificado:** camisa sólida de acento com check e halo;
+- **em análise:** camisa com contorno verde e um ponto respirando;
+- **pendente ou recusado:** contorno branco com o código da posição;
+- **vaga livre:** contorno apagado com "+".
+
+A vaga escolhida ganha um **ponto de luz verde pulsando** sob a camisa.
+
+Entre as posições correm **linhas de passe** finas, que acendem em verde quando
+as duas pontas estão verificadas, no estilo das linhas de química. Uma **bola**
+faz a ronda das linhas de passe, do goleiro ao ataque e de volta. Uma
+**varredura de luz** atravessa o gramado, e as camisas respiram de leve. Sob
+reduced-motion a bola some e o resto fica parado.
+
+**O painel ao lado do campo é um widget.** Escolher uma vaga mostra a carta
+dela, com a **silhueta desenhada do Pro** (cabeça e camisa sobre uma sombra,
+verde quando verificado), o arquétipo em caixa alta, o estado e a ação:
+- **vaga livre:** "Cadastrar";
+- **vaga ocupada:** "Mandar print" e "Trocar personagem".
+
+Cadastrar ou trocar abre o **cadastro ali mesmo**, no lugar da carta, já na
+etapa do arquétipo, porque o campo já disse a posição. Com o widget aberto, o
+campo fica fixo ao lado. Escolher outra vaga fecha o widget. A legenda com as
+mesmas marcas fica sob o campo.
 
 Cadastrar um personagem é o **pré-jogo em etapas**, uma decisão por vez, na
 ordem em que o jogo pergunta: Posição, Arquétipo, Plataforma, Gamertag,

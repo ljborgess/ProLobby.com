@@ -19,7 +19,6 @@ export function CharacterScreen({
       <BackAction href="/verifications" label={content.back} />
       <header className="flex flex-col gap-1">
         <h1 className="landing-section-title font-display text-foreground">{content.title}</h1>
-        <p className="text-sm leading-relaxed text-foreground-soft">{content.subtitle}</p>
       </header>
       <CharacterFlow characters={characters} archetypes={archetypes} />
     </div>

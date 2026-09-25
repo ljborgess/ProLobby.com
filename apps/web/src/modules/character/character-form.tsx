@@ -192,7 +192,7 @@ export function CharacterForm({
         </h3>
 
         {step === 'category' && (
-          <TileGroup legend={form.questions.category} columns="grid-cols-2 sm:grid-cols-5">
+          <TileGroup legend={form.questions.category} columns="grid-cols-2 sm:grid-cols-3">
             {CATEGORY_ORDER.map((category) => (
               <Tile
                 key={category}
@@ -227,7 +227,7 @@ export function CharacterForm({
             <p className="text-sm text-foreground-soft">
               {form.archetypeFor(content.categories[values.category as CharacterCategory])}
             </p>
-            <TileGroup legend={form.questions.archetype} columns="grid-cols-2 sm:grid-cols-3">
+            <TileGroup legend={form.questions.archetype} columns="grid-cols-2">
               {allowed.map((option) => (
                 <Tile
                   key={option.archetype}
@@ -246,7 +246,10 @@ export function CharacterForm({
         )}
 
         {step === 'platform' && (
-          <TileGroup legend={form.questions.platform} columns="grid-cols-1 sm:grid-cols-3">
+          <TileGroup
+            legend={form.questions.platform}
+            columns="grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3"
+          >
             {PLATFORMS.map((platform) => (
               <Tile
                 key={platform}
@@ -267,7 +270,7 @@ export function CharacterForm({
         )}
 
         {step === 'gamertag' && (
-          <div className="grid gap-5 sm:grid-cols-[1fr_15rem] sm:items-start">
+          <div className="grid gap-5 sm:grid-cols-[1fr_11rem] sm:items-start">
             <div className="flex flex-col gap-4">
               <TextField
                 name="gamertag"
@@ -299,7 +302,7 @@ export function CharacterForm({
         )}
 
         {step === 'confirm' && (
-          <div className="landing-card relative grid gap-5 overflow-hidden rounded-md border border-accent/30 bg-surface p-5 sm:grid-cols-[12rem_1fr]">
+          <div className="landing-card relative grid gap-5 overflow-hidden rounded-md border border-accent/30 bg-surface p-5 sm:grid-cols-[9rem_1fr]">
             <Brackets />
             <div className="flex flex-col gap-3">
               <span className="text-[0.7rem] font-medium uppercase tracking-[0.2em] text-foreground-soft">
@@ -400,7 +403,7 @@ function StepRail({ current, onJump }: { current: number; onJump: (step: number)
                     ? 'border-accent bg-accent text-background'
                     : state === 'current'
                       ? 'border-accent bg-background text-accent'
-                      : 'border-dashed border-white/25 bg-background text-foreground-soft'
+                      : 'border-white/20 bg-background text-foreground-soft'
                 }`}
               >
                 {state === 'done' ? (

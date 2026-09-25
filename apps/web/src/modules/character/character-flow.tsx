@@ -23,10 +23,9 @@ export function CharacterFlow({
   const content = useCharacterContent()
   const [characters, setCharacters] = useState(initial)
   const [sendingFor, setSendingFor] = useState<string | null>(null)
-  // null: no form open. '' or a category: the form, preset to the slot clicked.
-  const [creating, setCreating] = useState<CharacterCategory | '' | null>(
-    initial.length === 0 ? '' : null,
-  )
+  // null: no form open. A category: the form, preset to the place picked on
+  // the pitch — the pitch is the position picker, even on an empty account.
+  const [creating, setCreating] = useState<CharacterCategory | null>(null)
 
   if (sendingFor) {
     return (
@@ -49,56 +48,46 @@ export function CharacterFlow({
   }
 
   return (
-    <div className="flex flex-col gap-8">
-      <Roster
-        characters={characters}
-        onClaim={(category) => setCreating(category)}
-        onSend={(id) => setSendingFor(id)}
-      />
-
-      {characters.length > 0 && creating === null && (
-        <button
-          type="button"
-          onClick={() => setCreating('')}
-          className="landing-focus self-start text-sm text-foreground-soft underline underline-offset-4 hover:text-foreground"
-        >
-          {content.existing.newCharacter}
-        </button>
-      )}
-
-      {creating !== null && (
-        <section
-          aria-labelledby="new-character"
-          className="landing-card flex w-full max-w-3xl flex-col gap-4 rounded-md border border-white/10 px-5 py-6 sm:px-6"
-        >
-          <div className="flex items-center justify-between gap-4">
-            <h2 id="new-character" className="font-display text-lg font-medium text-foreground">
-              {content.roster.formHeading}
-            </h2>
-            {characters.length > 0 && (
-              <BackAction
-                onClick={() => setCreating(null)}
-                label={content.roster.cancel}
-                kind="cancel"
-              />
-            )}
-          </div>
-          <CharacterForm
-            key={creating}
-            archetypes={archetypes}
-            initialCategory={creating}
-            taken={characters.map((item) => item.category)}
-            onCreated={(character) => {
-              setCharacters((current) => [
-                ...current.filter((item) => item.category !== character.category),
-                character,
-              ])
-              setCreating(null)
-              setSendingFor(character.id)
-            }}
-          />
-        </section>
-      )}
-    </div>
+    <Roster
+      characters={characters}
+      onClaim={(category) => setCreating(category)}
+      onPick={() => setCreating(null)}
+      onSend={(id) => setSendingFor(id)}
+      widget={
+        creating === null ? null : (
+          <section
+            aria-labelledby="new-character"
+            className="landing-card landing-fade-up flex w-full flex-col gap-4 rounded-md border border-accent/25 bg-surface px-5 py-5"
+          >
+            <div className="flex items-center justify-between gap-4">
+              <h2 id="new-character" className="font-display text-lg font-medium text-foreground">
+                {content.roster.formHeading}
+              </h2>
+              {characters.length > 0 && (
+                <BackAction
+                  onClick={() => setCreating(null)}
+                  label={content.roster.cancel}
+                  kind="cancel"
+                />
+              )}
+            </div>
+            <CharacterForm
+              key={creating}
+              archetypes={archetypes}
+              initialCategory={creating}
+              taken={characters.map((item) => item.category)}
+              onCreated={(character) => {
+                setCharacters((current) => [
+                  ...current.filter((item) => item.category !== character.category),
+                  character,
+                ])
+                setCreating(null)
+                setSendingFor(character.id)
+              }}
+            />
+          </section>
+        )
+      }
+    />
   )
 }
