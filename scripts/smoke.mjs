@@ -146,7 +146,7 @@ await check('queue-prerequisites devolve os quatro booleanos e a reputação', a
   // reputation entrou com a Fase 2.4 (#208, 2026-09-25).
   expect(
     Object.keys(body).sort().join(','),
-    'characterVerified,discordLinked,discordPresent,emailVerified,reputation',
+    'characterVerified,discordLinked,discordPresent,emailVerified,reputation,reputationBand',
     'campos',
   )
   expect(body.emailVerified, false, 'emailVerified de conta nova')

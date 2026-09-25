@@ -59,23 +59,28 @@ export function reputationDelta(reason: AutomaticReputationReason, current: numb
 export type ReputationChange = {
   reputation: number
   band: ReputationBand
-  /** The band just entered, up or down; null when the change stayed inside one. */
-  crossed: ReputationBand | null
+  /**
+   * Set when the change left one band for another, with the direction: phase
+   * 4.2 suspends on the way down, never on someone climbing back out.
+   */
+  crossed: { from: ReputationBand; to: ReputationBand } | null
 }
 
 /**
  * The only writer of `Account.reputation` — #208. Every change is a
  * `ReputationEvent` in the same transaction, under the account lock, so two
- * results for one account at once cannot lose an update, and the rollback
- * (#210) can always rebuild the value from the log.
+ * results for one account at once cannot lose an update.
  *
- * A change of zero (a clean match at 70 or above) writes no event: the log
- * records what moved the number, and a zero never did.
+ * A change of zero (a clean match at 70) is still an event with delta 0:
+ * whether it moved the number depends on what came before, and a rollback
+ * (#210) replays the log to recompute it. A crossing is not stored apart:
+ * the ordered log already says where each event started and ended.
  */
 @Injectable()
 export class ReputationService {
   constructor(private readonly em: EntityManager) {}
 
+  /** Standalone: its own transaction, taking the account lock. */
   apply(
     accountId: string,
     reason: AutomaticReputationReason,
@@ -87,20 +92,34 @@ export class ReputationService {
         { id: accountId },
         { lockMode: LockMode.PESSIMISTIC_WRITE },
       )
-      const before = account.reputation
-      const delta = reputationDelta(reason, before)
-      if (delta !== 0) {
-        em.create(ReputationEvent, { account, delta, reason, lobbyId })
-        account.reputation = before + delta
-      }
+      const change = this.applyIn(em, account, reason, lobbyId)
       await em.flush()
-
-      const band = reputationBand(account.reputation)
-      return {
-        reputation: account.reputation,
-        band,
-        crossed: band === reputationBand(before) ? null : band,
-      }
+      return change
     })
+  }
+
+  /**
+   * Inside the caller's transaction, for a caller that changes more than
+   * reputation at once (a match result, a moderation decision). The caller
+   * must already hold the account's lock and flushes.
+   */
+  applyIn(
+    em: EntityManager,
+    account: Account,
+    reason: AutomaticReputationReason,
+    lobbyId?: string,
+  ): ReputationChange {
+    const before = account.reputation
+    const delta = reputationDelta(reason, before)
+    em.create(ReputationEvent, { account, delta, reason, lobbyId })
+    account.reputation = before + delta
+
+    const from = reputationBand(before)
+    const to = reputationBand(account.reputation)
+    return {
+      reputation: account.reputation,
+      band: to,
+      crossed: from === to ? null : { from, to },
+    }
   }
 }
