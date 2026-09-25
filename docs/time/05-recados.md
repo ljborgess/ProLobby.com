@@ -6,6 +6,28 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 
 ---
 
+## 2026-09-25 · Rafael
+
+### A Fase 2.4 (motor de elo e reputação) é sua
+
+A [#53](https://github.com/ljborgess/ProLobby.com/issues/53) virou 5 issues, todas atribuídas a você. **Não tem decisão pendente**: os parâmetros estão em `parametros.md`, e nenhum é "a calibrar".
+
+| Issue | O quê | Bloqueada por |
+|---|---|---|
+| [#207](https://github.com/ljborgess/ProLobby.com/issues/207) | elo da categoria calculado pelos eventos, sem coluna | — (a 2.2 já está em `dev`) |
+| [#208](https://github.com/ljborgess/ProLobby.com/issues/208) | reputação muda só por evento: partida limpa, desconexão, suspensão cumprida | — |
+| [#209](https://github.com/ljborgess/ProLobby.com/issues/209) | resultado de partida vira evento de elo (RF-077) | #207 |
+| [#210](https://github.com/ljborgess/ProLobby.com/issues/210) | rollback de partida anulada (RF-044) | #209, #208 |
+| [#211](https://github.com/ljborgess/ProLobby.com/issues/211) | decaimento por inatividade, piso em 1000 (RF-017) | #209 |
+
+- **Comece pela #207 ou pela #208**, que andam em paralelo.
+- **O elo não tem coluna** (decidido em 2026-09-25): é 1000 mais a soma dos eventos não revertidos de **todos os personagens da conta na categoria e edição**. Personagem substituto herda o elo (RF-027). Ninguém escreve elo direto.
+- **Ainda não existe partida** (Fases 3 e 4.1). O motor recebe o resultado como entrada de serviço, sem rota HTTP, e é conferido por teste.
+- **Na #208, só um serviço escreve a reputação**, na mesma transação do evento, com a trava da conta. É o mesmo padrão de trava do personagem e do envio de print.
+- **Ao pegar, comente na issue**, e o deploy (#121) continua valendo em paralelo.
+
+---
+
 ## 2026-09-24 · Para todos
 
 ### A Fase 2.2 abriu, e o OCR entra por último
@@ -21,7 +43,7 @@ A fase está quebrada em 6 issues, sub-issues da [#52](https://github.com/ljborg
 | [#197](https://github.com/ljborgess/ProLobby.com/issues/197) | [#205](https://github.com/ljborgess/ProLobby.com/pull/205) | confirmação do arquétipo ativo e cooldown de 24 h (parte) |
 | [#199](https://github.com/ljborgess/ProLobby.com/issues/199) | — | OCR no fluxo, bloqueada pela [#191](https://github.com/ljborgess/ProLobby.com/issues/191) |
 
-**Ordem de merge** (os PRs estão empilhados): #192 e #193 já estão em `dev` (2026-09-25); faltam #201 → #202 → #203 → #204 → #205 → #200.
+**Tudo em `dev` desde 2026-09-25** (#192, #193 e #200 a #205); as issues #194 a #198 foram fechadas à mão, porque merge em `dev` não fecha issue sozinho.
 
 - **Até a #199 entrar, todo print recebido abre caso de moderação** (#204). O moderador digita o arquétipo e o gamertag que vê no print, e o servidor compara com o cadastro. Ninguém verifica o próprio caso.
 - **O que a #205 cobre da #197**: caixa de confirmação do arquétipo ativo, cooldown de 24 h contado da aprovação, e um print em análise por personagem. A tela de confirmação com os campos lidos e a confiança foi pra #199, porque só existe com OCR.
