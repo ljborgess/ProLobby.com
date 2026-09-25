@@ -5,9 +5,14 @@ import type { OcrResult } from './types'
  * Vision is a later comparison (#50), so the rest of the script talks to this
  * interface and never imports a vendor SDK.
  */
+export type RecognizeOptions = {
+  /** Tesseract page segmentation mode; engines without the concept ignore it. */
+  psm?: string
+}
+
 export interface OcrEngine {
   readonly id: string
-  recognize(image: Buffer): Promise<OcrResult>
+  recognize(image: Buffer, options?: RecognizeOptions): Promise<OcrResult>
   close(): Promise<void>
 }
 

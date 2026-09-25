@@ -18,7 +18,7 @@ Só existem 3 jeitos de jogar 11v11 dentro do modo Clubes:
 
 ## Achados confirmados (pesquisa pública)
 
-- **Overall/atributos do Virtual Pro pertencem ao jogador/arquétipo, não ao clube** — trocar de clube não reseta nem esconde o overall real. A premissa de OCR/verificação em [Personagens e verificação](../02-jogador/01-verificacao.md) continua de pé.
+- **O arquétipo do Virtual Pro pertence ao jogador, não ao clube** — trocar de clube não reseta nem esconde o arquétipo. (Achado original falava de overall/atributos; overall saiu do produto em 2026-09-24.) A premissa de OCR/verificação em [Personagens e verificação](../02-jogador/01-verificacao.md) continua de pé.
 - **Amistoso Online exige coordenação manual dos dois gerentes** (busca o clube rival, cada lado clica "pronto" separadamente) — não é automático nem instantâneo. Sincronização real que o bot Discord não alcança (fora do jogo).
 - **Crossplay**: clube EA suporta membro de PS5/Xbox/PC misturado (mesma geração — coerente com [Escopo de plataforma, jogo e região](../05-produto/02-escopo.md)).
 - **Servidor dedicado, não P2P**: Pro Clubs roda em servidor dedicado da EA (Game Data Centers) — não existe "host de rede" cujo ping afeta os outros. Por isso o dossiê não tem mais conceito de "host" escolhido por conexão (ver [Discord e lobby](03-lobby.md)).

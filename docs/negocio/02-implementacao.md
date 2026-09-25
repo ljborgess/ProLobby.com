@@ -36,7 +36,7 @@ Ordem dentro da plataforma, cada item destrava o próximo:
 1. **Conta + autenticação** — o schema nasce com as entidades e atributos de [Modelo de dados](../requisitos/03-dados.md), incluindo o **log de evento de elo e reputação** (sem ele o rollback de disputa é inimplementável) e um gamertag por plataforma. E-mail + senha, verificação de e-mail, recuperação por link (30min), aceite versionado de ToS, pergunta de segurança no cadastro ([Onboarding](../produto/05-produto/01-onboarding.md)). O schema já nasce com **campo de plano na conta e tabela de evento de pagamento** ([Sustentabilidade](03-sustentabilidade.md)) — nada de cobrança implementado, só o espaço reservado, porque fazer isso como migração retroativa é o que custa caro. Interface já nasce em **português e espanhol** ([Escopo](../produto/05-produto/02-escopo.md)) — retrofit de i18n depois custa mais caro que nascer com ele.
 2. **OCR de personagem** (cadastro/verificação) — é o mesmo motor de OCR que "Resultado de partida" vai reusar depois, vale construir pensando nos dois usos desde já ([Personagens e verificação](../produto/02-jogador/01-verificacao.md)). Fluxo de upload nasce **mobile-first** — a maioria dos envios vem do celular (foto da tela do console), não do desktop.
 3. **Vínculo Discord (OAuth2)** — só depois de já ter conta + personagem funcionando, porque é o terceiro (e último) requisito do onboarding, e depende do bot já existir (etapa 1 acima).
-4. **Motor de elo/reputação** — precisa existir antes da fila, porque o equilíbrio da fila depende dele. Nasce com seed pelo overall do personagem verificado (item 2).
+4. **Motor de elo/reputação** — precisa existir antes da fila, porque o equilíbrio da fila depende dele. Todo personagem nasce com elo neutro no baseline (1000), sem seed (decidido em 2026-09-24, [Ranking](../produto/02-jogador/02-ranking.md)). Do item 2 só usa o personagem verificado, que é quem tem elo.
 5. **Fila e matchmaking** — distribuição por categoria, equilíbrio por elo ([Fila e matchmaking](../produto/03-partida/02-fila.md)). É a primeira peça que só faz sentido depois que personagem e elo existem.
 
 > **Corrigido em 2026-09-14**: este arquivo listava fila (4) antes de elo (5), enquanto a própria justificativa dizia o contrário e o [PRD Mestre](https://github.com/ljborgess/ProLobby.com/issues/64) já tinha fixado elo como Fase 2.4 e fila como 2.5. Os títulos dos PRDs #53 e #55 estavam trocados do mesmo jeito e foram corrigidos.
@@ -98,9 +98,9 @@ O recrutamento dos ~24 convidados do beta não depende de nenhuma trilha de cód
 | 2.1 — o que falta | 1–2 | as três | — |
 | 0 — piloto de OCR | 1 | Rafael | webhook da 2.1 |
 | 0 — checklist no jogo | minutos, zero código | qualquer um dos 4 | precisa rodar antes da 3 |
-| 2.2 — personagem e OCR | 2–3 | Rafael + Felipe (telas) | piloto de OCR |
+| 2.2 — personagem e OCR | 2–3 | Rafael + Felipe (telas) | só o OCR, que entra por último, espera o piloto |
 | 2.3 — vínculo Discord | 1–2 | Luciano | 2.1 |
-| 2.4 — elo e reputação | 1–2 | Luciano | 2.2 (seed por overall) e 2.3 |
+| 2.4 — elo e reputação | 1–2 | Luciano | 2.2 (personagem verificado, dono do elo) e 2.3 |
 | 2.5 — fila e matchmaking | 2–3 | Luciano + Felipe (telas) | 2.4 |
 | 3 — fechamento do lobby | 2–4 | Luciano + Rafael (bot) | 2.5 e checklist no jogo |
 | 4.1 — report de resultado | 2–3 | Luciano + Rafael (OCR) | 3 |
