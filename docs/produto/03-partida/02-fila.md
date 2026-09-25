@@ -12,8 +12,8 @@
 ## Equilíbrio de time
 
 - Formação dos times: sistema busca **equilibrar os dois lados por categoria** (não por média geral — ver "Comparação é categoria contra categoria" abaixo) — prioriza qualidade de partida sobre velocidade de entrada.
-- **Elo/rating de desempenho pesa mais que overall** no equilíbrio; overall é critério de desempate entre players de elo parecido.
-  - Motivo: overall é auto-declarado via print (mesmo verificado, é atributo do personagem); elo vem de resultado real dentro da plataforma — mais confiável, mais difícil de forjar.
+- **Elo/rating de desempenho é o critério do equilíbrio.** Entre players de elo parecido, o desempate é o **tempo na fila**: entra primeiro quem entrou antes (`entrou_em` da [fila](../../requisitos/03-dados.md)) — **a calibrar**.
+  - Motivo: elo vem de resultado real dentro da plataforma — mais confiável, mais difícil de forjar. O overall, que desempatava antes, saiu do produto em 2026-09-24: a tela verificada (`Archetypes`) não mostra overall ([Personagens e verificação](../02-jogador/01-verificacao.md)).
   - Detalhe do elo em [Ranking, reputação e punição](../02-jogador/02-ranking.md).
 - **Comparação é categoria contra categoria, não média geral do time**: goleiro do time A é pareado com goleiro do time B (elo próximo), zaga com zaga, meio com meio, ataque com ataque — coerente com elo já ser por categoria. Evita mascarar desequilíbrio grave numa posição crítica (goleiro fraco, por exemplo) atrás de uma média geral do time que parece equilibrada.
 - **Tolerância de elo e expansão de busca**: matchmaking começa buscando dentro de uma banda de **±150 pontos de elo por categoria**, expandindo em **incrementos de 50 pontos a cada 2 minutos desde o início da busca** (não espera o timeout de fila) — chega ao teto de **±400 pontos** aos 10 minutos, mesmo momento em que o timeout de fila (ver abaixo) avisa o jogador. Evita fila trancada esperando par perfeito numa base pequena de usuários, sem abrir mão de equilíbrio nos primeiros minutos (quando a chance de achar par próximo é maior).

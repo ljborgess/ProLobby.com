@@ -38,5 +38,5 @@ Busca feita via WebSearch e WebFetch, sem acesso ao jogo. Tentativas:
 
 ## Desdobramento no mesmo dia
 
-- **As 20 capturas da rodada 1 do piloto** (`Attributes`, `Archetypes`, `PlayStyles`) não mostram gamertag nem overall em nenhuma aba. A `Home` não aparece em nenhuma delas.
-- **Decisão do Luciano: a verificação usa a aba `Attributes`**, sem depender da `Home`. A prova de posse segue em aberto na #164. Registro completo em [Piloto de OCR, rodada 1](../requisitos/06-piloto-ocr.md#rodada-1-2026-09-24-tesseract-abaixo-de-60).
+- **As 20 capturas da rodada 1 do piloto** (`Attributes`, `Archetypes`, `PlayStyles`) não mostram overall em nenhuma aba, e a `Home` não aparece em nenhuma delas. O gamertag aparecia no card das 2 capturas de `Archetypes`, mas ainda não se sabia que era ele.
+- **A verificação passa para a tela `Archetypes`, com o arquétipo ativo aberto.** O nome embaixo do arquétipo no card (o nome do arquétipo e, logo abaixo, um nome menor) **é o gamertag**, com o ícone da plataforma. Isso foi confirmado na rodada 2a do piloto (#192) em dois jogadores, pela tela `Profile` de um e pelo indicador de voz do outro. **A prova de posse sai dessa tela, e a aba `Home` deixa de importar.** O overall ficou fora: desde o FC 26 ele só aparece no lobby do clube ([pesquisa](https://github.com/ljborgess/ProLobby.com/blob/dev/docs/research/overall-pro-clubs-fc27-2026-09-24.md)). Registro completo em [Piloto de OCR, rodada 2](../requisitos/06-piloto-ocr.md#rodada-2-tela-archetypes-decidido-em-2026-09-24).

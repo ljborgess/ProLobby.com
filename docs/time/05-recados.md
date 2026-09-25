@@ -21,7 +21,7 @@ A fase está quebrada em 6 issues, sub-issues da [#52](https://github.com/ljborg
 | [#197](https://github.com/ljborgess/ProLobby.com/issues/197) | [#205](https://github.com/ljborgess/ProLobby.com/pull/205) | confirmação do arquétipo ativo e cooldown de 24 h (parte) |
 | [#199](https://github.com/ljborgess/ProLobby.com/issues/199) | — | OCR no fluxo, bloqueada pela [#191](https://github.com/ljborgess/ProLobby.com/issues/191) |
 
-**Ordem de merge** (os PRs estão empilhados): #192 → #193 → #201 → #202 → #203 → #204 → #205 → #200. O #192 entra por **squash**: o histórico dele teve gamertag real.
+**Ordem de merge** (os PRs estão empilhados): #192 e #193 já estão em `dev` (2026-09-25); faltam #201 → #202 → #203 → #204 → #205 → #200.
 
 - **Até a #199 entrar, todo print recebido abre caso de moderação** (#204). O moderador digita o arquétipo e o gamertag que vê no print, e o servidor compara com o cadastro. Ninguém verifica o próprio caso.
 - **O que a #205 cobre da #197**: caixa de confirmação do arquétipo ativo, cooldown de 24 h contado da aprovação, e um print em análise por personagem. A tela de confirmação com os campos lidos e a confiança foi pra #199, porque só existe com OCR.
@@ -36,12 +36,12 @@ O `01-verificacao.md` libera a reivindicação provisória de gamertag depois de
 - **Os campos lidos são arquétipo e gamertag**; a categoria é escolhida pelo jogador e conferida pelo grupo do arquétipo. O nome embaixo do arquétipo no card **é o gamertag**, com o ícone da plataforma. Isso resolveu a [#164](https://github.com/ljborgess/ProLobby.com/issues/164) sem precisar abrir o jogo.
 - **Overall e atributos saíram.** Desde o FC 26, o overall só existe por posição, no lobby do clube. O seed do elo fica neutro.
 - **O jogador escolhe a categoria, e o arquétipo tem que ser compatível**: Keeper → Goleiro; Defender → Zaga/Lateral; Midfielder → Meio ou Ponta; Forward → Ponta ou Ataque. A tabela está em `01-verificacao.md` ([PR #193](https://github.com/ljborgess/ProLobby.com/pull/193)).
-- **Piloto, rodada 2a**: o número de aceite está sendo medido de novo, ver o [PR #192](https://github.com/ljborgess/ProLobby.com/pull/192); a regra fixa é **0 gamertags de outra pessoa aceitos**. Um número de 78% chegou a circular e estava errado: a conferência aceitava pedaço de gamertag. Por isso o OCR entra por último, e a #199 só anda quando a #191 medir de novo. Detalhes no `06-piloto-ocr.md`.
+- **Piloto, rodada 2a** ([PR #192](https://github.com/ljborgess/ProLobby.com/pull/192), em `dev`): 5 de 9 aceitos (56%) e zero falso aceite em 96 checagens, com a conferência pela linha inteira do card; a regra fixa é **0 gamertags de outra pessoa aceitos**. Um número de 78% chegou a circular e estava errado: a conferência aceitava pedaço de gamertag. Por isso o OCR entra por último, e a #199 só anda quando a #191 medir de novo. Detalhes no `06-piloto-ocr.md`.
 
 ### Duas regras novas
 
 - **Zero falso aceite.** Nenhum ajuste de OCR aumenta a aprovação afrouxando a conferência do gamertag. O relatório do piloto mede isso em toda rodada (`impostorCheck`).
-- **Print e gabarito com gamertag real não entram no git.** Vale pra `apps/ocr-pilot/prints/`, pros relatórios e pro gabarito da tela `Archetypes`. O `.gitignore` cobre os três depois do PR #192. Até ele entrar, **não use `git add .` no `ocr-pilot`**.
+- **Print e gabarito com gamertag real não entram no git.** Vale pra `apps/ocr-pilot/prints/`, pros relatórios e pro gabarito da tela `Archetypes`. O `.gitignore` da `dev` cobre os três desde o PR #192. Em branch criada antes disso, **não use `git add .` no `ocr-pilot`**.
 
 ### O OCR continua local
 

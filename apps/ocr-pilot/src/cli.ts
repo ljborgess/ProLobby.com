@@ -51,7 +51,7 @@ export function parseCliArgs(argv: string[]): {
     if (token === '--engine' && next) {
       if (next !== 'tesseract') {
         throw new Error(
-          'only the tesseract engine is wired in this slice; Google Vision waits on #50',
+          'only the tesseract engine is wired; Google Vision was dropped for cost (2026-09-24)',
         )
       }
       i += 1

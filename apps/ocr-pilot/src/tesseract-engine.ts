@@ -3,10 +3,13 @@ import path from 'node:path'
 
 import { createWorker } from 'tesseract.js'
 
-import type { OcrEngine } from './engine'
+import type { OcrEngine, RecognizeOptions } from './engine'
 import type { OcrResult, OcrWord } from './types'
 
 type TesseractWorker = Awaited<ReturnType<typeof createWorker>>
+
+// PSM 4 measured best on real FC 27 prints; 6 and 11 lose label→value order.
+const DEFAULT_PSM = '4'
 
 /**
  * Default motor for #120. Language packs stay on disk under `.tessdata` so the
@@ -16,11 +19,20 @@ type TesseractWorker = Awaited<ReturnType<typeof createWorker>>
 export class TesseractEngine implements OcrEngine {
   readonly id = 'tesseract'
   private worker: TesseractWorker | null = null
+  // Tracks the worker's PSM between calls: one caller at a time, never concurrent.
+  private psm = DEFAULT_PSM
 
   constructor(private readonly cacheDir = defaultCacheDir()) {}
 
-  async recognize(image: Buffer): Promise<OcrResult> {
+  async recognize(image: Buffer, options: RecognizeOptions = {}): Promise<OcrResult> {
     const worker = await this.ensureWorker()
+    const psm = options.psm ?? DEFAULT_PSM
+    if (psm !== this.psm) {
+      await worker.setParameters({
+        tessedit_pageseg_mode: psm,
+      } as Parameters<TesseractWorker['setParameters']>[0])
+      this.psm = psm
+    }
     const { data } = await worker.recognize(image)
     const words: OcrWord[] = (data.words ?? []).map((word) => ({
       text: word.text,
@@ -49,10 +61,10 @@ export class TesseractEngine implements OcrEngine {
       cachePath: this.cacheDir,
       gzip: true,
     })
-    // PSM 4 measured best on real FC 27 prints; 6 and 11 lose label→value order.
     await worker.setParameters({
-      tessedit_pageseg_mode: '4',
+      tessedit_pageseg_mode: DEFAULT_PSM,
     } as Parameters<TesseractWorker['setParameters']>[0])
+    this.psm = DEFAULT_PSM
     this.worker = worker
     return worker
   }
