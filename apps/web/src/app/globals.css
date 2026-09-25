@@ -961,7 +961,7 @@ input:-webkit-autofill:focus {
     animation: none;
   }
 
-  /* A waiting slot says "waiting" by its dashed ring, not by breathing. */
+  /* A waiting slot says "waiting" by its ring and its words, not by breathing. */
   .landing-slot-wait {
     animation: none;
     opacity: 1;

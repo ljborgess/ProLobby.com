@@ -6,7 +6,8 @@ import type { ReputationBand } from '../ranking/reputation.service'
  * Booleans, plus the reputation: the screen needs to know *what is missing*,
  * never the email itself or the Discord ID (item 17 of the security
  * checklist). The reputation is the account's own number, and under 55 it
- * slows the queue (#208), so the person sees it here first.
+ * slows the queue (#208). The web shows it on the queue screen, not on the
+ * next-steps panel (decided 2026-09-25); it rides here so the queue can read it.
  *
  * `characterVerified`: at least one verified character in the current edition
  * (phase 2.2, #194). It stays false until the print flow (#195 onward) exists.

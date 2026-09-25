@@ -91,12 +91,56 @@ describe('CharacterForm', () => {
     ])
   })
 
+  const keeper = {
+    id: '55555555-5555-5555-5555-555555555555',
+    category: 'goalkeeper' as const,
+    archetype: 'shot_stopper',
+    platform: 'ps5' as const,
+    state: 'verified' as const,
+  }
+
   it('warns that a taken position replaces the character in it (RF-027)', () => {
-    renderWithLocale(
-      <CharacterForm archetypes={ARCHETYPES} onCreated={vi.fn()} taken={['midfielder']} />,
-    )
+    renderWithLocale(<CharacterForm archetypes={ARCHETYPES} onCreated={vi.fn()} squad={[keeper]} />)
 
     expect(screen.getAllByText(pt.form.replaces)).toHaveLength(1)
+  })
+
+  it('says what a replacement replaces, before and at the confirmation', () => {
+    renderWithLocale(
+      <CharacterForm
+        archetypes={ARCHETYPES}
+        onCreated={vi.fn()}
+        initialCategory="goalkeeper"
+        squad={[keeper]}
+      />,
+    )
+
+    expect(screen.getByText(pt.form.replacingNow('SHOT STOPPER'))).toBeInTheDocument()
+    pick('SHOT STOPPER')
+    next()
+    pick(pt.platforms.ps5)
+    next()
+    fireEvent.change(screen.getByLabelText(pt.form.gamertagLabel), {
+      target: { value: 'Torvalen' },
+    })
+    next()
+
+    expect(screen.getByRole('note')).toHaveTextContent(pt.form.replacing('SHOT STOPPER', true))
+  })
+
+  it('clears the archetype when the position changes', () => {
+    renderWithLocale(<CharacterForm archetypes={ARCHETYPES} onCreated={vi.fn()} />)
+
+    complete()
+    fireEvent.click(
+      screen.getByRole('button', { name: `${pt.form.change} ${pt.form.steps.category}` }),
+    )
+    pick(pt.categories.midfielder)
+    next()
+
+    expect(
+      screen.getAllByRole('radio').every((radio) => !(radio as HTMLInputElement).checked),
+    ).toBe(true)
   })
 
   it('shows everything before creating, then creates and hands it on', async () => {
@@ -127,15 +171,33 @@ describe('CharacterForm', () => {
     })
   })
 
-  it('sends the player back to the position when it is already taken', async () => {
+  it('answers a race on the position with a retry, not "position taken"', async () => {
     vi.mocked(fetch).mockResolvedValue(json(409, { message: 'category_taken' }))
     renderWithLocale(<CharacterForm archetypes={ARCHETYPES} onCreated={vi.fn()} />)
 
     complete()
     fireEvent.click(screen.getByRole('button', { name: pt.form.create }))
 
-    expect(await screen.findByText(pt.form.categoryTaken)).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: pt.form.questions.category })).toBeInTheDocument()
+    expect(await screen.findByRole('alert')).toHaveTextContent(pt.form.genericError)
+    expect(screen.getByRole('heading', { name: pt.form.questions.confirm })).toBeInTheDocument()
+  })
+
+  it.each([
+    ['archetype_category_mismatch', 'archetype'],
+    ['gamertag_change_requires_moderation', 'gamertag'],
+  ] as const)('sends %s back to the %s step', async (message, step) => {
+    vi.mocked(fetch).mockResolvedValue(json(409, { message }))
+    renderWithLocale(<CharacterForm archetypes={ARCHETYPES} onCreated={vi.fn()} />)
+
+    complete()
+    fireEvent.click(screen.getByRole('button', { name: pt.form.create }))
+
+    expect(
+      await screen.findByRole('heading', { name: pt.form.questions[step] }),
+    ).toBeInTheDocument()
+    if (step === 'gamertag') {
+      expect(screen.getByLabelText(pt.form.gamertagLabel)).toHaveAttribute('aria-invalid', 'true')
+    }
   })
 
   it('says what is wrong with the name instead of asking to try again', () => {
@@ -144,6 +206,7 @@ describe('CharacterForm', () => {
     complete('Pro<script>')
 
     expect(screen.getByRole('alert')).toHaveTextContent(pt.form.nameInvalid)
+    expect(screen.getByLabelText(pt.form.nameLabel)).toHaveAttribute('aria-invalid', 'true')
     expect(fetch).not.toHaveBeenCalled()
   })
 
@@ -316,7 +379,9 @@ describe('Roster (tactics board)', () => {
     renderWithLocale(<CharacterFlow characters={[verified]} archetypes={ARCHETYPES} />)
 
     expect(screen.getByText(pt.roster.count(1, 5))).toBeInTheDocument()
-    expect(marker('goalkeeper')).toHaveAccessibleName(`${pt.categories.goalkeeper}: SHOT STOPPER`)
+    expect(marker('goalkeeper')).toHaveAccessibleName(
+      `${pt.categories.goalkeeper}: SHOT STOPPER, ${pt.existing.verified}`,
+    )
     expect(marker('winger')).toHaveAccessibleName(`${pt.categories.winger}: ${pt.roster.free}`)
     expect(screen.getAllByRole('button', { pressed: false })).toHaveLength(4)
   })
@@ -341,5 +406,61 @@ describe('Roster (tactics board)', () => {
     )
 
     expect(screen.getByText(pt.form.archetypeFor(pt.categories.winger))).toBeInTheDocument()
+  })
+
+  const pending = {
+    id: '66666666-6666-6666-6666-666666666666',
+    category: 'midfielder' as const,
+    archetype: 'maestro',
+    platform: 'ps5' as const,
+    state: 'pending_verification' as const,
+  }
+
+  it('offers the print on a pending card, and opens the upload', () => {
+    renderWithLocale(<CharacterFlow characters={[pending]} archetypes={ARCHETYPES} />)
+
+    fireEvent.click(screen.getByRole('button', { name: pt.existing.sendPrint }))
+
+    expect(screen.getByText(pt.print.heading)).toBeInTheDocument()
+  })
+
+  it('offers no print while one is in review', () => {
+    renderWithLocale(
+      <CharacterFlow
+        characters={[{ ...pending, lastPrint: { status: 'received', rejection: null } }]}
+        archetypes={ARCHETYPES}
+      />,
+    )
+
+    expect(screen.queryByRole('button', { name: pt.existing.sendPrint })).toBeNull()
+    expect(marker('midfielder')).toHaveAccessibleName(
+      `${pt.categories.midfielder}: MAESTRO, ${pt.roster.legendReview}`,
+    )
+  })
+
+  it('names a rejected place as rejected on the pitch', () => {
+    renderWithLocale(
+      <CharacterFlow
+        characters={[{ ...pending, lastPrint: { status: 'rejected', rejection: 'unreadable' } }]}
+        archetypes={ARCHETYPES}
+      />,
+    )
+
+    expect(marker('midfielder')).toHaveAccessibleName(
+      `${pt.categories.midfielder}: MAESTRO, ${pt.existing.rejectedShort}`,
+    )
+  })
+
+  it('warns on "replace" and puts focus back on the place when cancelled', () => {
+    renderWithLocale(<CharacterFlow characters={[verified]} archetypes={ARCHETYPES} />)
+
+    fireEvent.click(marker('goalkeeper'))
+    fireEvent.click(screen.getByRole('button', { name: pt.roster.replace }))
+    expect(screen.getByText(pt.form.replacingNow('SHOT STOPPER'))).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: pt.roster.cancel }))
+
+    expect(screen.queryByText(pt.form.replacingNow('SHOT STOPPER'))).toBeNull()
+    expect(marker('goalkeeper')).toHaveFocus()
   })
 })

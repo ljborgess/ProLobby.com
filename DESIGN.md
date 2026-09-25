@@ -384,7 +384,8 @@ movimento, não do traço tracejado.
 Cada vaga é uma **camisa desenhada** sobre uma sombra no gramado:
 - **verificado:** camisa sólida de acento com check e halo;
 - **em análise:** camisa com contorno verde e um ponto respirando;
-- **pendente ou recusado:** contorno branco com o código da posição;
+- **pendente:** contorno branco com o código da posição;
+- **recusado:** contorno vermelho com o código da posição (vermelho é erro, e um print recusado é um erro a corrigir);
 - **vaga livre:** contorno apagado com "+".
 
 A vaga escolhida ganha um **ponto de luz verde pulsando** sob a camisa.
@@ -396,7 +397,7 @@ zona, com alcance e ritmo próprios. O **goleiro fica quase parado**, mexendo-se
 devagar na área. Uma varredura de luz atravessa o gramado. A camisa **para**
 quando o ponteiro passa por ela, quando recebe foco e quando está escolhida:
 alvo que se move é alvo que se erra. Sob reduced-motion, a bola some e todos
-ficam no lugar.
+ficam no lugar. **Não há botão de pausa** (decidido em 2026-09-25): quem pede menos movimento no sistema já recebe o campo parado.
 
 **O painel ao lado do campo é um widget.** Escolher uma vaga mostra a carta
 dela, com a **silhueta desenhada do Pro** (cabeça e camisa sobre uma sombra,
@@ -413,7 +414,7 @@ Cadastrar um personagem é o **pré-jogo em etapas**, uma decisão por vez, na
 ordem em que o jogo pergunta: Posição, Arquétipo, Plataforma, Gamertag,
 Confirmar. No topo fica uma trilha de cinco estações, e o trecho já percorrido
 acende no acento. Estação feita é disco sólido com check e vira botão de
-volta; a atual pulsa; as de frente são tracejadas e numeradas. Cada escolha é
+volta; a atual pulsa; as de frente têm contorno apagado e número. Cada escolha é
 uma peça desenhada com o rádio nativo por dentro: a posição com o mini-campo, o
 arquétipo em caixa alta, a plataforma com o traço de controle ou monitor. A
 etapa do gamertag mostra ao lado uma prévia desenhada do card da tela de

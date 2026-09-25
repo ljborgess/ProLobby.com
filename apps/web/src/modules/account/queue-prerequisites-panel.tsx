@@ -30,7 +30,7 @@ export interface QueuePrerequisites {
  * up (feedback of 2026-09-25; a full-width pill was too heavy for the card).
  */
 const STEP_ACTION =
-  'landing-focus landing-sheen inline-flex w-60 items-center justify-center gap-2 self-start whitespace-nowrap rounded-full bg-accent px-4 py-2 text-sm font-medium text-background transition-transform duration-200 hover:scale-[1.03] active:scale-95 disabled:opacity-60 disabled:hover:scale-100'
+  'landing-focus landing-sheen inline-flex w-full max-w-60 items-center justify-center gap-2 self-start rounded-full bg-accent px-4 py-2 text-sm font-medium text-background transition-transform duration-200 hover:scale-[1.03] active:scale-95 disabled:opacity-60 disabled:hover:scale-100'
 
 type Resend = 'idle' | 'sending' | 'sent' | 'error'
 

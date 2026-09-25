@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, type CSSProperties, type ReactNode } from 'react'
+import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react'
 import type { CharacterCategory } from '@/content/character'
 import { useCharacterContent } from '@/hooks/use-character-content'
 import { CheckMark } from '@/common/ui/icons'
+import { Brackets } from './pitch-art'
 import { archetypeLabel, type CharacterView } from './types'
 
 /** Goalkeeper to striker: the order the pitch reads, back to front. */
@@ -26,49 +27,55 @@ type SlotStatus = 'verified' | 'review' | 'rejected' | 'pending'
  */
 export function Roster({
   characters,
+  selected,
+  onSelect,
+  focusKey,
   onClaim,
-  onPick,
   onSend,
   widget,
 }: {
   characters: CharacterView[]
+  /** The place picked on the pitch; kept by the flow, so it survives the print screen. */
+  selected: CharacterCategory
+  /** A place was picked on the pitch. */
+  onSelect: (category: CharacterCategory) => void
+  /** Bumped when a panel closes: focus goes back to the picked place, not to <body>. */
+  focusKey: number
   /** Register a character in this place — a free one, or replacing (RF-027). */
   onClaim: (category: CharacterCategory) => void
-  /** A place was picked on the pitch: whatever widget was open closes. */
-  onPick: () => void
   onSend: (characterId: string) => void
   /** Takes the side panel while open: the registration, next to its pitch. */
   widget: ReactNode
 }) {
   const content = useCharacterContent()
+  const sectionRef = useRef<HTMLElement>(null)
   const byCategory = (category: CharacterCategory) =>
     characters.find((character) => character.category === category)
   const filled = CATEGORY_ORDER.filter((category) => byCategory(category)).length
-  const [selected, setSelected] = useState<CharacterCategory>(() => firstToLookAt(characters))
   const current = byCategory(selected)
 
+  useEffect(() => {
+    if (focusKey > 0) {
+      sectionRef.current?.querySelector<HTMLButtonElement>(`[data-marker="${selected}"]`)?.focus()
+    }
+    // Only a closing panel moves focus, never a change of place.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusKey])
+
   return (
-    <section aria-labelledby="roster-heading" className="flex flex-col gap-4">
+    <section ref={sectionRef} aria-labelledby="roster-heading" className="flex flex-col gap-4">
       <h2 id="roster-heading" className="sr-only">
         {content.roster.heading}
       </h2>
 
-      <div
-        className={`grid items-start gap-4 ${
-          widget
-            ? 'lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]'
-            : 'lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]'
-        }`}
-      >
+      {/* The same columns with or without the widget: the pitch never resizes. */}
+      <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
         <div className="flex flex-col gap-3 lg:sticky lg:top-6">
           <Board
             characters={characters}
             selected={selected}
             count={content.roster.count(filled, CATEGORY_ORDER.length)}
-            onSelect={(category) => {
-              setSelected(category)
-              onPick()
-            }}
+            onSelect={onSelect}
           />
           <Legend />
         </div>
@@ -90,22 +97,17 @@ export function Roster({
   )
 }
 
-/** Opens on what needs the player (a print to send), then on their own characters, then a free place. */
-function firstToLookAt(characters: CharacterView[]): CharacterCategory {
+/** Where the board opens: a print to send, else the player's first character, else the keeper. */
+export function firstToLookAt(characters: CharacterView[]): CharacterCategory {
   const pending = characters.find((character) => canSend(character))
   if (pending) {
     return pending.category
   }
-  const own = CATEGORY_ORDER.find((category) =>
-    characters.some((character) => character.category === category),
+  return (
+    CATEGORY_ORDER.find((category) =>
+      characters.some((character) => character.category === category),
+    ) ?? CATEGORY_ORDER[0]!
   )
-  if (own) {
-    return own
-  }
-  const free = CATEGORY_ORDER.find(
-    (category) => !characters.some((character) => character.category === category),
-  )
-  return free ?? CATEGORY_ORDER[0]!
 }
 
 /**
@@ -113,8 +115,8 @@ function firstToLookAt(characters: CharacterView[]): CharacterCategory {
  * screen, attacking up on a phone.
  */
 const SPOT: Record<CharacterCategory, { h: [number, number]; v: [number, number] }> = {
-  goalkeeper: { h: [10, 50], v: [50, 89] },
-  defender: { h: [27, 50], v: [50, 72] },
+  goalkeeper: { h: [11, 46], v: [50, 89] },
+  defender: { h: [28, 62], v: [50, 72] },
   midfielder: { h: [48, 50], v: [50, 50] },
   winger: { h: [69, 22], v: [78, 32] },
   striker: { h: [86, 50], v: [50, 13] },
@@ -176,7 +178,7 @@ function Board({
         aria-hidden
         className="landing-pitch-scan pointer-events-none absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-transparent via-accent/[0.07] to-transparent"
       />
-      <span className="absolute right-3 top-3 z-10 rounded-full border border-white/10 bg-background/70 px-2.5 py-1 text-xs tabular-nums text-foreground-soft backdrop-blur-sm">
+      <span className="absolute right-3 top-3 z-10 rounded-full border border-white/10 bg-background/70 px-2.5 py-1 text-xs tabular-nums text-foreground-soft">
         {count}
       </span>
       <PitchLines orientation="v" className="sm:hidden" />
@@ -265,7 +267,7 @@ function PitchLines({ orientation, className }: { orientation: 'h' | 'v'; classN
       {/* The ball does the rounds from the keeper to the attack and home
           again, on a route nobody draws. Gone under reduced motion. */}
       <g className="board-ball">
-        <circle r="1.9" className="fill-foreground drop-shadow-[0_0_3px_rgb(255_255_255/60%)]">
+        <circle r="1.9" className="fill-foreground">
           <animateMotion
             dur="11s"
             repeatCount="indefinite"
@@ -294,13 +296,24 @@ function Marker({
 }) {
   const content = useCharacterContent()
   const label = character ? archetypeLabel(character.archetype) : content.roster.free
+  const state: Record<SlotStatus | 'empty', string> = {
+    verified: content.existing.verified,
+    review: content.roster.legendReview,
+    pending: content.roster.legendPending,
+    rejected: content.existing.rejectedShort,
+    empty: '',
+  }
+  const name = state[status]
+    ? `${content.categories[category]}: ${label}, ${state[status]}`
+    : `${content.categories[category]}: ${label}`
 
   return (
     <button
       type="button"
       onClick={onSelect}
+      data-marker={category}
       aria-pressed={selected}
-      aria-label={`${content.categories[category]}: ${label}`}
+      aria-label={name}
       className="landing-focus group flex flex-col items-center gap-1 rounded-md p-1"
     >
       <span className="relative flex flex-col items-center">
@@ -335,14 +348,14 @@ function Shirt({ status, code }: { status: SlotStatus | 'empty'; code: string })
     verified: 'fill-accent stroke-accent',
     review: 'fill-background stroke-accent',
     pending: 'fill-background stroke-white/55',
-    rejected: 'fill-background stroke-white/55',
+    rejected: 'fill-background stroke-danger',
     empty: 'fill-background/40 stroke-white/25 group-hover:stroke-accent/70',
   }
   return (
     <svg
       viewBox="0 0 48 48"
       aria-hidden
-      className={`size-12 overflow-visible transition-transform duration-200 group-hover:-translate-y-0.5 motion-reduce:transition-none sm:size-14 ${
+      className={`size-12 overflow-visible transition-transform duration-200 group-hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:group-hover:translate-y-0 sm:size-14 ${
         status === 'verified'
           ? 'drop-shadow-[0_0_10px_color-mix(in_srgb,var(--color-accent)_55%,transparent)]'
           : ''
@@ -409,6 +422,10 @@ function Legend() {
       text: content.roster.legendPending,
     },
     {
+      mark: <span className="size-3 rounded-full border border-danger" />,
+      text: content.existing.rejectedShort,
+    },
+    {
       mark: <span className="size-3 rounded-full border border-white/20" />,
       text: content.roster.free,
     },
@@ -445,11 +462,11 @@ function FilledSlot({
 
   return (
     <article
-      className={`landing-card relative flex w-full flex-col gap-3 overflow-hidden rounded-md border bg-surface px-4 pb-4 pt-5 ${
+      className={`relative flex w-full flex-col gap-3 overflow-hidden rounded-md border bg-surface px-4 pb-4 pt-5 shadow-[inset_0_1px_0_0_rgb(255_255_255/6%)] ${
         status === 'verified' ? 'border-accent/35' : 'border-white/10'
       }`}
     >
-      <Brackets verified={status === 'verified'} />
+      <Brackets lit={status === 'verified'} />
 
       <header className="flex items-center justify-between gap-2">
         <span className="text-[0.7rem] font-medium uppercase tracking-[0.2em] text-foreground-soft">
@@ -566,61 +583,6 @@ function StatusLine({ status }: { status: SlotStatus }) {
   )
 }
 
-/** Where each category stands, on a pitch drawn attacking to the right. */
-const ZONE: Record<CharacterCategory, { x: number; y: number }> = {
-  goalkeeper: { x: 5, y: 20 },
-  defender: { x: 16, y: 20 },
-  midfielder: { x: 30, y: 20 },
-  winger: { x: 43, y: 8 },
-  striker: { x: 52, y: 20 },
-}
-
-/**
- * The slot's place on the pitch, drawn the Quadro da Fila way: a solid disc
- * once the character is verified and in the squad, a ring while it
- * still waits, a faint one for a place nobody has taken. Stroke, never fill,
- * and always quieter than the text beside it.
- */
-export function PositionPitch({
-  category,
-  marker,
-}: {
-  category: CharacterCategory
-  marker: 'set' | 'waiting' | 'empty'
-}) {
-  const { x, y } = ZONE[category]
-  return (
-    <svg
-      viewBox="0 0 60 40"
-      aria-hidden
-      className="h-14 w-auto self-start text-white/20 sm:h-auto sm:w-full"
-    >
-      <g fill="none" stroke="currentColor" strokeWidth={0.5}>
-        <rect x="1" y="1" width="58" height="38" rx="1.5" />
-        <path d="M30 1v38" />
-        <circle cx="30" cy="20" r="5" />
-        <rect x="1" y="11" width="8" height="18" />
-        <rect x="51" y="11" width="8" height="18" />
-      </g>
-      {marker === 'set' ? (
-        <>
-          <circle cx={x} cy={y} r="5" className="fill-accent/20" />
-          <circle cx={x} cy={y} r="2.6" className="fill-accent" />
-        </>
-      ) : (
-        <circle
-          cx={x}
-          cy={y}
-          r="2.8"
-          fill="none"
-          strokeWidth={0.7}
-          className={marker === 'waiting' ? 'stroke-accent' : 'stroke-white/40'}
-        />
-      )}
-    </svg>
-  )
-}
-
 /**
  * The Pro, drawn: a head and a kit over a spot of light — the card art the
  * game would show, without the game's art. Lit green once verified, faint
@@ -652,24 +614,6 @@ function ProFigure({ status }: { status: SlotStatus | 'empty' }) {
         />
       </g>
     </svg>
-  )
-}
-
-/**
- * The corner brackets of the auth panel's readout, at slot size: the frame
- * that says "this was read and locked in". Accent once verified, faint until.
- */
-function Brackets({ verified }: { verified: boolean }) {
-  const corner = `pointer-events-none absolute size-2.5 ${
-    verified ? 'border-accent/70' : 'border-white/25'
-  }`
-  return (
-    <span aria-hidden className="pointer-events-none absolute inset-0">
-      <span className={`${corner} left-1.5 top-1.5 border-l border-t`} />
-      <span className={`${corner} right-1.5 top-1.5 border-r border-t`} />
-      <span className={`${corner} bottom-1.5 left-1.5 border-b border-l`} />
-      <span className={`${corner} bottom-1.5 right-1.5 border-b border-r`} />
-    </span>
   )
 }
 
@@ -720,6 +664,6 @@ function statusOf(character: CharacterView): SlotStatus {
 }
 
 /** A print already under review is not sent again; a rejected one can be. */
-export function canSend(character: CharacterView): boolean {
+function canSend(character: CharacterView): boolean {
   return character.state === 'pending_verification' && character.lastPrint?.status !== 'received'
 }
