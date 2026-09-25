@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import { BackAction } from '@/common/ui/back-action'
 import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { AccountBackdrop } from '@/modules/account/account-backdrop'
@@ -71,12 +71,7 @@ function Screen({ linked, status }: { linked: boolean; status?: DiscordLinkStatu
       <AccountBackdrop />
 
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4">
-        <Link
-          href="/verifications"
-          className="landing-focus rounded-full border border-white/15 px-4 py-1.5 text-sm text-foreground-soft transition-colors hover:border-white/35 hover:text-foreground"
-        >
-          ← ProLobby
-        </Link>
+        <BackAction href="/verifications" label="ProLobby" />
         <LanguageSwitcher />
       </div>
 

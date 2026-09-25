@@ -1,5 +1,6 @@
 'use client'
 
+import { BackAction } from '@/common/ui/back-action'
 import { useState } from 'react'
 import { useCharacterContent } from '@/hooks/use-character-content'
 import { CharacterForm } from './character-form'
@@ -75,13 +76,11 @@ export function CharacterFlow({
               {content.roster.formHeading}
             </h2>
             {characters.length > 0 && (
-              <button
-                type="button"
+              <BackAction
                 onClick={() => setCreating(null)}
-                className="landing-focus text-sm text-foreground-soft underline underline-offset-4 hover:text-foreground"
-              >
-                {content.roster.cancel}
-              </button>
+                label={content.roster.cancel}
+                kind="cancel"
+              />
             )}
           </div>
           <CharacterForm

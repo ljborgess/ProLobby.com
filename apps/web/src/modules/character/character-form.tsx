@@ -1,5 +1,6 @@
 'use client'
 
+import { BackAction } from '@/common/ui/back-action'
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { CheckMark } from '@/common/ui/icons'
 import { TextField } from '@/common/ui/text-field'
@@ -352,13 +353,7 @@ export function CharacterForm({
 
       <div className="flex items-center justify-between gap-4 border-t border-white/8 pt-5">
         {index > 0 ? (
-          <button
-            type="button"
-            onClick={() => go(STEPS[index - 1]!)}
-            className="landing-focus rounded-full border border-white/15 px-5 py-2.5 text-sm text-foreground-soft transition-colors hover:border-white/35 hover:text-foreground"
-          >
-            {form.back}
-          </button>
+          <BackAction onClick={() => go(STEPS[index - 1]!)} label={form.back} />
         ) : (
           <span />
         )}

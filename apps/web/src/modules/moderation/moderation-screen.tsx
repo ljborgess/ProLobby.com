@@ -1,6 +1,6 @@
 'use client'
 
-import Link from 'next/link'
+import { BackAction } from '@/common/ui/back-action'
 import { useModerationContent } from '@/hooks/use-moderation-content'
 import { VerificationQueue, type VerificationCase } from './verification-queue'
 
@@ -15,12 +15,7 @@ export function ModerationScreen({
 
   return (
     <div className="flex flex-col gap-6">
-      <Link
-        href="/verifications"
-        className="landing-focus self-start text-sm text-foreground-soft underline"
-      >
-        ← ProLobby
-      </Link>
+      <BackAction href="/verifications" label="ProLobby" />
       <header className="flex flex-col gap-1">
         <h1 className="landing-section-title font-display text-foreground">{content.title}</h1>
         <p className="text-sm leading-relaxed text-foreground-soft">{content.subtitle}</p>

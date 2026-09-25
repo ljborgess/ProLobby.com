@@ -229,7 +229,7 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
       sendAgain: 'Enviar de novo',
       newCharacter: 'Cadastrar outro personagem',
     },
-    back: '← Próximos passos',
+    back: 'Próximos passos',
   },
   es: {
     title: 'Tu personaje',
@@ -361,6 +361,6 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
       sendAgain: 'Enviar de nuevo',
       newCharacter: 'Registrar otro personaje',
     },
-    back: '← Próximos pasos',
+    back: 'Próximos pasos',
   },
 }
