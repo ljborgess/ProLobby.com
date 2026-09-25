@@ -19,6 +19,7 @@ import { AccountModule } from './modules/account/account.module'
 import { BotIntegrationModule } from './modules/bot-integration/bot-integration.module'
 import { CharacterModule } from './modules/character/character.module'
 import { OpsModule } from './modules/ops/ops.module'
+import { RankingModule } from './modules/ranking/ranking.module'
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { OpsModule } from './modules/ops/ops.module'
     AuthModule,
     MailModule,
     AccountModule,
+    RankingModule,
     CharacterModule,
     BotIntegrationModule,
     OpsModule,

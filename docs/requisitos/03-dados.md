@@ -124,6 +124,8 @@ Três regras do dossiê dependem desse log, não só o rollback:
 - **Recuperação de +1 por partida limpa com teto em 70** precisa distinguir a origem de cada ganho, senão o teto não é aplicável.
 - **Reverter uma penalidade sem deixar rastro no histórico de reincidência** exige marcar o evento como revertido, não apagá-lo.
 
+**Como a reputação é escrita (2026-09-25, #208):** um serviço só grava o `EventoReputacao` e atualiza a `reputacao` da conta, na mesma transação e com a conta travada. Assim a coluna é sempre 70 mais a soma dos eventos não revertidos. O `delta` guardado é a mudança que de fato aconteceu, já com o teto de 70 da partida limpa e o chão de 0. **Mudança zero não grava evento**, por exemplo partida limpa com a reputação em 70: o log registra o que moveu o número, e zero não moveu. As faixas (abaixo de 55 a fila fica mais lenta, abaixo de 40 suspensão, abaixo de 25 banimento) saem do número, então nunca discordam dele. A suspensão e o banimento em si são da Fase 4.2.
+
 ### CasoModeracao
 `tipo` · `estado` · `aberto_em` · `origem` (sistema / usuário / mensagem no Discord) · `lobby` · `conta_alvo` · `aberto_por` · `resolvido_por` · `resolvido_em` · `decisao` · `caminho_evidencia` · `mensagem_apelacao` · `caso_apelado`
 

@@ -252,6 +252,7 @@ export class AccountController {
       characterVerified: await this.characterService.hasVerified(account.id),
       discordLinked: account.discordIdHash != null,
       discordPresent: account.discordPresent,
+      reputation: account.reputation,
     }
   }
 

@@ -17,6 +17,8 @@ export interface QueuePrerequisites {
   characterVerified: boolean
   discordLinked: boolean
   discordPresent: boolean
+  /** 0–100; under 55 the queue is slower (#208). */
+  reputation: number
 }
 
 type Resend = 'idle' | 'sending' | 'sent' | 'error'
@@ -39,6 +41,7 @@ export function QueuePrerequisitesPanel({
   characterVerified,
   discordLinked,
   discordPresent,
+  reputation,
 }: QueuePrerequisites) {
   const content = useAccountContent()
   const [resend, setResend] = useState<Resend>('idle')
@@ -74,6 +77,15 @@ export function QueuePrerequisitesPanel({
             <p className="text-sm leading-relaxed text-foreground-soft">
               {allDone ? content.allDone : content.subtitle}
             </p>
+            <p className="text-sm text-foreground-soft">
+              {content.reputation.label}:{' '}
+              <span className="tabular-nums text-foreground">{reputation}/100</span>
+            </p>
+            {reputation < 55 && (
+              <p className="text-sm leading-relaxed text-foreground-soft">
+                {content.reputation.slowQueue}
+              </p>
+            )}
           </div>
           <span className="shrink-0 rounded-full border border-white/10 px-3 py-1 text-xs tabular-nums text-foreground-soft">
             {doneCount}/{steps.length}
