@@ -26,9 +26,9 @@ export enum ReputationEventReason {
  * Why an elo changed — docs/produto/02-jogador/02-ranking.md.
  *
  * Elo moves only on match results (RF-077), with two exceptions that are not
- * results: the initial seed derived from overall, and inactivity decay
- * (RF-017). Keeping them apart is what makes "the seed floor" computable —
- * decay never pushes a character below the value it started with.
+ * results: the initial seed (a neutral 1000 since the character's overall
+ * left the product) and inactivity decay (RF-017). Decay never pushes a
+ * character below that baseline.
  */
 export enum EloEventReason {
   MATCH_RESULT = 'match_result',

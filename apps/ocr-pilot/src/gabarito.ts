@@ -1,3 +1,4 @@
+import { ARCHETYPES } from './archetypes'
 import { ATTRIBUTE_KEYS } from './types'
 import type {
   AttributeKey,
@@ -49,18 +50,30 @@ function parseEntry(input: unknown, index: number, ids: Set<string>): GabaritoEn
     language: language as GameLanguage,
     origin: origin as PrintOrigin,
     capture: capture as CaptureKind,
-    expected: parseExpected(input.expected, index, edition as GameEdition),
+    expected: parseExpected(input.expected, index, edition as GameEdition, screen as PilotScreen),
   }
 }
 
-function parseExpected(input: unknown, index: number, edition: GameEdition): ExpectedFields {
+function parseExpected(
+  input: unknown,
+  index: number,
+  edition: GameEdition,
+  screen: PilotScreen,
+): ExpectedFields {
   if (!isRecord(input)) {
     throw new Error(`entries[${index}].expected must be an object`)
   }
-  const attributes = parseAttributes(input.attributes, index)
   const overall = optionalNumberOrNull(input.overall, `entries[${index}].expected.overall`)
   const gamertag = optionalStringOrNull(input.gamertag, `entries[${index}].expected.gamertag`)
   const position = optionalStringOrNull(input.position, `entries[${index}].expected.position`)
+  const archetype = optionalStringOrNull(input.archetype, `entries[${index}].expected.archetype`)
+
+  if (screen === 'archetypes') {
+    if (archetype === null || !ARCHETYPES.includes(archetype)) {
+      throw new Error(`entries[${index}].expected.archetype must be one of the 13 archetypes`)
+    }
+    return { overall: null, gamertag, position: null, archetype, attributes: {} }
+  }
 
   // FC 27 Attributes tab does not show these — the 2026-09-18 evidence.
   // A gabarito that claims they are on that screen is a labelling error, not
@@ -71,7 +84,13 @@ function parseExpected(input: unknown, index: number, edition: GameEdition): Exp
     )
   }
 
-  return { overall, gamertag, position, attributes }
+  return {
+    overall,
+    gamertag,
+    position,
+    archetype: null,
+    attributes: parseAttributes(input.attributes, index),
+  }
 }
 
 function parseAttributes(input: unknown, index: number): Partial<Record<AttributeKey, number>> {
