@@ -48,7 +48,7 @@ antes de haver apego ao que foi construído. Detalhe completo em [Negócio](docs
 
 | Etapa | O que acontece |
 |---|---|
-| **1. Identidade** | O jogador envia o print do Virtual Pro; OCR extrai overall, posição e gamertag. Sem API pública da EA, toda verificação é evidência |
+| **1. Identidade** | O jogador escolhe a posição e o arquétipo do Pro e envia o print da tela `Archetypes`: o arquétipo aberto e o gamertag embaixo do card provam de quem é o personagem. Até o OCR entrar, a moderação confere cada print. Sem API pública da EA, toda verificação é evidência |
 | **2. Fila** | Entrada individual por categoria: goleiro, zaga, meio, ponta ou ataque |
 | **3. Matchmaking** | Dois lados equilibrados por elo, categoria contra categoria, com simetria obrigatória. A IA do jogo completa as vagas vazias |
 | **4. Lobby** | Um capitão por lado, escolhido por reputação, empresta o próprio clube. O bot cria os canais de voz |
@@ -63,7 +63,7 @@ Regras completas, com o motivo de cada decisão, no [dossiê de produto](docs/pr
 flowchart TD
     A[Conta criada e verificada] --> B[Discord vinculado]
     B --> C{Personagem verificado?}
-    C -->|não| C1[Envia print do Virtual Pro<br/>OCR extrai overall/posição/gamertag]
+    C -->|não| C1[Envia print da tela Archetypes<br/>moderação confere arquétipo e gamertag]
     C1 --> C
     C -->|sim| D[Entra na fila por categoria]
     D --> E{8 a 12 na fila,<br/>simetria por categoria?}
@@ -83,11 +83,12 @@ flowchart TD
     class D,E,F,G,H,I,J,K,L fazer
 ```
 
-Verde é o que já está em `dev` (conta, autenticação, vínculo Discord). Cinza é a lógica ainda a
-desenvolver — fila, matchmaking, lobby, resultado e governança —, hoje bloqueada pelo piloto de OCR
-([#50](https://github.com/ljborgess/ProLobby.com/issues/50)) e pela confirmação da aba Home do FC 27
-([#164](https://github.com/ljborgess/ProLobby.com/issues/164)). Roadmap completo, fase a fase, no
-[PRD Mestre](https://github.com/ljborgess/ProLobby.com/issues/64).
+Verde é o que já está em `dev`: conta, autenticação, vínculo Discord, e o personagem verificado por
+print (Fase 2.2). Cinza é o que falta — fila, matchmaking, lobby, resultado e governança. O motor de
+elo e reputação (Fase 2.4, [#53](https://github.com/ljborgess/ProLobby.com/issues/53)) está sendo
+construído agora, e a fila (Fase 2.5) vem depois dele. O OCR entra no fluxo de verificação por último
+([#199](https://github.com/ljborgess/ProLobby.com/issues/199)); até lá, a moderação confere todo print.
+Roadmap completo, fase a fase, no [PRD Mestre](https://github.com/ljborgess/ProLobby.com/issues/64).
 
 ## As telas
 
@@ -123,6 +124,33 @@ segurança que recupera a conta (RF-025).
 a pessoa sair daqui: só identificação.
 
 ## Novidades
+
+### Personagem verificado por print — Fase 2.2 ([#52](https://github.com/ljborgess/ProLobby.com/issues/52))
+
+Em `dev` pelos PRs [#201](https://github.com/ljborgess/ProLobby.com/pull/201) a
+[#205](https://github.com/ljborgess/ProLobby.com/pull/205):
+
+- **Personagem por posição.** Até 5 por conta, um por categoria (goleiro, zaga, meio, ponta, ataque). O
+  arquétipo do Pro tem que caber na categoria: goleiro só com arquétipo `Keeper`, meio com
+  `Midfielder`, ponta com `Midfielder` ou `Forward`, e assim por diante. São os 13 arquétipos do FC 27
+  ([pesquisa](docs/research/arquetipos-fc27-2026-09-25.md)).
+- **O print da tela `Archetypes` prova a posse.** Embaixo do card do arquétipo aberto fica o gamertag,
+  com o ícone da plataforma. O envio checa formato, tamanho, reuso do mesmo print (por hash) e limite
+  de 10 envios por hora, e guarda o arquivo criptografado por 90 dias.
+- **Moderação confere enquanto o OCR não entra.** Em `/moderation`, o moderador **digita** o arquétipo e
+  o gamertag que vê no print, e o servidor compara com o que o jogador declarou. A tela nunca mostra o
+  gamertag declarado, pra ninguém copiar. Ninguém verifica o próprio personagem.
+- **Uma atualização por dia.** Depois de um print aceito, o personagem espera 24 h pra mandar outro
+  (RF-030). O jogador confirma que o arquétipo aberto é o ativo, porque o `✓` da tela não é lido.
+
+### Reputação e rollback — início da Fase 2.4 ([#53](https://github.com/ljborgess/ProLobby.com/issues/53))
+
+Em `dev` pelos PRs [#213](https://github.com/ljborgess/ProLobby.com/pull/213) e
+[#214](https://github.com/ljborgess/ProLobby.com/pull/214): a reputação muda só por evento, gravado na
+mesma transação (partida limpa +1 até 70, desconexão −8, suspensão cumprida volta a 45). Uma partida
+anulada é desfeita marcando os eventos dela como revertidos, e a reputação é refeita em ordem. O elo
+por eventos e o decaimento por inatividade vêm a seguir ([#207](https://github.com/ljborgess/ProLobby.com/issues/207)
+a [#211](https://github.com/ljborgess/ProLobby.com/issues/211)).
 
 ### Vínculo com o Discord — [#149](https://github.com/ljborgess/ProLobby.com/issues/149)
 
@@ -193,12 +221,14 @@ em `dev` pelo [PR #183](https://github.com/ljborgess/ProLobby.com/pull/183): o b
 `guildMemberRemove` / retorno, e `/verifications` mostra o aviso in-app (pt/es) quando
 `discordPresent` é falso.
 
-### Script do piloto de OCR — [#120](https://github.com/ljborgess/ProLobby.com/issues/120)
+### Piloto de OCR — [#50](https://github.com/ljborgess/ProLobby.com/issues/50)
 
-O bloqueador nº 2 ganhou o script isolado em `apps/ocr-pilot` ([PR #181](https://github.com/ljborgess/ProLobby.com/pull/181)):
-Tesseract atrás de uma interface, gabarito versionado, prints reais fora do git. A **medição** nos
-20 prints de FC 27 continua na [#50](https://github.com/ljborgess/ProLobby.com/issues/50) — sem ela a
-Fase 2.2 não abre.
+Script isolado em `apps/ocr-pilot`: Tesseract, recorte com `sharp`, gabarito e prints reais fora do
+git (têm gamertag de terceiros). A rodada 2a, na tela `Archetypes`
+([PR #192](https://github.com/ljborgess/ProLobby.com/pull/192)), aceitou **5 de 9 prints (56%) com
+zero falso aceite em 96 checagens**: o gamertag só passa se bater com a linha inteira do card. A
+rodada 2b completa os 20 prints ([#191](https://github.com/ljborgess/ProLobby.com/issues/191)), e só
+depois o OCR entra no fluxo ([#199](https://github.com/ljborgess/ProLobby.com/issues/199)).
 
 ### Correções da auditoria de 2026-09-21
 
@@ -362,9 +392,14 @@ O fluxo completo está no [`CONTRIBUTING.md`](CONTRIBUTING.md). Quem entra no ti
 
 ## Status
 
-Em desenvolvimento. Conta e autenticação (Fase 2.1) e o vínculo Discord com RF-060 (Fase 2.3) estão
-em `dev`. A Fase 2.2 espera o piloto de OCR ([#50](https://github.com/ljborgess/ProLobby.com/issues/50))
-e a confirmação da aba Home no FC 27 ([#164](https://github.com/ljborgess/ProLobby.com/issues/164)).
+Em desenvolvimento. Estão em `dev`:
+- conta e autenticação (Fase 2.1);
+- vínculo Discord com RF-060 (Fase 2.3);
+- personagem verificado por print pela moderação (Fase 2.2).
+
+A reputação por evento e o rollback de partida, primeiras fatias da Fase 2.4, também já entraram.
+Agora estão sendo feitos o elo por eventos e o decaimento. Depois vêm a fila (Fase 2.5) e o OCR no
+fluxo de verificação ([#199](https://github.com/ljborgess/ProLobby.com/issues/199)).
 O roadmap completo, fase a fase, está no [PRD Mestre](https://github.com/ljborgess/ProLobby.com/issues/64).
 
 ## Licença
