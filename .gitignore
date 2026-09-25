@@ -36,7 +36,9 @@ apps/web/CLAUDE.md
 apps/ocr-pilot/prints/**
 !apps/ocr-pilot/prints/.gitkeep
 apps/ocr-pilot/*.csv
-apps/ocr-pilot/report.json
+apps/ocr-pilot/report*.json
+# Gabarito da tela Archetypes guarda gamertag real de terceiros: fica local.
+apps/ocr-pilot/fixtures/gabarito-archetypes.json
 apps/ocr-pilot/.tessdata/
 apps/*/piloto-ocr/prints/
 apps/*/piloto-ocr/*.csv
