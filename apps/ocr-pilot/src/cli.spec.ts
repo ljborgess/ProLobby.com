@@ -30,7 +30,7 @@ describe('parseCliArgs', () => {
       engine: 'tesseract',
       help: false,
     })
-    expect(() => parseCliArgs(['--engine', 'google-vision'])).toThrow(/#50/)
+    expect(() => parseCliArgs(['--engine', 'google-vision'])).toThrow(/dropped for cost/)
   })
 
   it('prints usage without touching the filesystem', () => {

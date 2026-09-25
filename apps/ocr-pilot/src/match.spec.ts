@@ -5,6 +5,7 @@ const extracted = (overrides: Partial<ExtractedFields> = {}): ExtractedFields =>
   overall: null,
   gamertag: null,
   position: null,
+  archetype: null,
   attributes: { acceleration: 85, finishing: 76 },
   ...overrides,
 })
@@ -15,6 +16,7 @@ describe('matchFields', () => {
       overall: null,
       gamertag: null,
       position: null,
+      archetype: null,
       attributes: { acceleration: 85, finishing: 76 },
     }
     expect(matchFields(expected, extracted())).toEqual({
@@ -28,6 +30,7 @@ describe('matchFields', () => {
       overall: 88,
       gamertag: 'ProPlayer',
       position: null,
+      archetype: null,
       attributes: { acceleration: 85 },
     }
     const match = matchFields(expected, extracted({ overall: 88, gamertag: 'someone-else' }))
@@ -40,6 +43,7 @@ describe('matchFields', () => {
       overall: null,
       gamertag: null,
       position: null,
+      archetype: null,
       attributes: { acceleration: 85, finishing: 70 },
     }
     expect(matchFields(expected, extracted()).mismatchedFields).toEqual(['attributes.finishing'])

@@ -1,8 +1,12 @@
 import { FIRST_PASS_TARGET } from './constants'
-import type { PilotReport, PrintMeasurement, RejectionCause } from './types'
+import type { ImpostorCheck, PilotReport, PrintMeasurement, RejectionCause } from './types'
 import { REJECTION_CAUSES } from './types'
 
-export function aggregateReport(engine: string, prints: PrintMeasurement[]): PilotReport {
+export function aggregateReport(
+  engine: string,
+  prints: PrintMeasurement[],
+  impostorCheck: ImpostorCheck = { checks: 0, falseAccepts: 0 },
+): PilotReport {
   const accepted = prints.filter((print) => print.accepted).length
   const firstPassAcceptRate = prints.length === 0 ? 0 : accepted / prints.length
   const rejectionCauses = emptyCauses()
@@ -13,6 +17,7 @@ export function aggregateReport(engine: string, prints: PrintMeasurement[]): Pil
   }
   return {
     engine,
+    impostorCheck,
     firstPassAcceptRate,
     firstPassTarget: FIRST_PASS_TARGET,
     meetsTarget: firstPassAcceptRate >= FIRST_PASS_TARGET,

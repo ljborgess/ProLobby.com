@@ -23,6 +23,9 @@ export function matchFields(expected: ExpectedFields, extracted: ExtractedFields
   ) {
     mismatchedFields.push('position')
   }
+  if (expected.archetype !== null && expected.archetype !== extracted.archetype) {
+    mismatchedFields.push('archetype')
+  }
 
   const gamertagMismatch =
     expected.gamertag !== null &&
@@ -55,5 +58,5 @@ export function firstPassAccepted(input: {
 }
 
 function normalizeToken(value: string | null): string {
-  return (value ?? '').trim().toLowerCase()
+  return (value ?? '').trim().toLowerCase().replace(/\s+/g, ' ')
 }
