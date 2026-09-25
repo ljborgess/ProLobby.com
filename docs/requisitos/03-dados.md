@@ -126,6 +126,8 @@ Três regras do dossiê dependem desse log, não só o rollback:
 
 **Como a reputação é escrita (2026-09-25, #208):** um serviço só grava o `EventoReputacao` e atualiza a `reputacao` da conta, na mesma transação e com a conta travada. Assim a coluna é sempre 70 mais a soma dos eventos não revertidos. O `delta` guardado é a mudança que de fato aconteceu, já com o teto de 70 da partida limpa e o chão de 0. **Mudança zero não grava evento**, por exemplo partida limpa com a reputação em 70: o log registra o que moveu o número, e zero não moveu. As faixas (abaixo de 55 a fila fica mais lenta, abaixo de 40 suspensão, abaixo de 25 banimento) saem do número, então nunca discordam dele. A suspensão e o banimento em si são da Fase 4.2.
 
+**Como a partida anulada é desfeita (2026-09-25, #210):** todos os `EventoElo` e `EventoReputacao` do lobby recebem `revertido_em`, e nenhum evento novo é gravado (RF-044). O elo volta sozinho, porque é derivado dos eventos. A reputação perde o `delta` de cada evento revertido, dentro de 0 a 100. `partidas_na_categoria` perde a partida no personagem que jogou e também no ativo da categoria, se ele foi substituído depois, porque o substituto herdou a contagem (RF-027). As contas envolvidas são travadas em ordem fixa, então dois rollbacks do mesmo lobby revertem uma vez só.
+
 ### CasoModeracao
 `tipo` · `estado` · `aberto_em` · `origem` (sistema / usuário / mensagem no Discord) · `lobby` · `conta_alvo` · `aberto_por` · `resolvido_por` · `resolvido_em` · `decisao` · `caminho_evidencia` · `mensagem_apelacao` · `caso_apelado`
 

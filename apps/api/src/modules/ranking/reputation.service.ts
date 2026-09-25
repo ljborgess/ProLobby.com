@@ -103,4 +103,17 @@ export class ReputationService {
       }
     })
   }
+
+  /**
+   * Marks events of an annulled match as reverted and takes their delta back
+   * off the column (RF-044) — no new event, the log keeps the original with
+   * its revertedAt. Runs inside the caller's transaction, which must already
+   * hold the lock of every account involved.
+   */
+  revertEvents(events: ReputationEvent[], at: Date): void {
+    for (const event of events) {
+      event.revertedAt = at
+      event.account.reputation = Math.min(100, Math.max(0, event.account.reputation - event.delta))
+    }
+  }
 }
