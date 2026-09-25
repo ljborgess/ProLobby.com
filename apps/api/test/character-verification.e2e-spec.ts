@@ -291,6 +291,22 @@ describe('character verification by moderation (#198)', () => {
     expect((await decide(caseId, { approve: false, rejection: 'unreadable' })).status).toBe(404)
   })
 
+  it('never deadlocks when a decision and a replacement arrive together', async () => {
+    const { player, caseId } = await playerWithPrint('Clash1x')
+
+    const results = await Promise.all([
+      decide(caseId, { approve: true, archetype: 'maestro', gamertag: 'Clash1x' }),
+      request(app.getHttpServer()).post('/api/characters').set('Cookie', player.cookie).send({
+        category: 'midfielder',
+        archetype: 'creator',
+        platform: 'ps5',
+        gamertag: 'Clash1x',
+      }),
+    ])
+
+    expect(results.map((res) => res.status)).not.toContain(500)
+  })
+
   it('lets only one of two accounts verify the same tag when both are approved at once', async () => {
     const first = await playerWithPrint('Rival1x')
     const second = await playerWithPrint('Rival1x')

@@ -146,6 +146,21 @@ export class CharacterVerificationService {
   ): Promise<VerificationOutcome> {
     try {
       return await this.em.fork().transactional(async (em) => {
+        // Lock order is account, then case — the order character creation
+        // uses when it closes a replaced character's case. The account lock
+        // also keeps the claim from changing tag between check and approval.
+        const target = await em.findOne(
+          ModerationCase,
+          { id: caseId, type: ModerationCaseType.CHARACTER_VERIFICATION },
+          { fields: ['targetAccount'] },
+        )
+        if (target?.targetAccount) {
+          await em.findOneOrFail(
+            Account,
+            { id: target.targetAccount.id },
+            { lockMode: LockMode.PESSIMISTIC_WRITE },
+          )
+        }
         const moderationCase = await this.openCaseFor(em, moderatorId, caseId, true)
         const submission = moderationCase.printSubmission!
         const character = submission.character
@@ -155,13 +170,6 @@ export class CharacterVerificationService {
         ) {
           throw new ConflictException('character_replaced')
         }
-        // Same lock character creation takes: the claim cannot change tag
-        // between the check below and the approval.
-        await em.findOneOrFail(
-          Account,
-          { id: character.account.id },
-          { lockMode: LockMode.PESSIMISTIC_WRITE },
-        )
         const claim = await em.findOne(PlatformGamertag, {
           account: character.account,
           platform: character.platform,
@@ -204,8 +212,9 @@ export class CharacterVerificationService {
     caseId: string,
     lock = false,
   ): Promise<ModerationCase> {
-    // Only the case row is locked; relations load after. Two moderators on the
-    // same case: the second waits, then the OPEN filter no longer matches.
+    // Only the case row is locked here; relations load after. Two moderators
+    // on the same case: the second waits, then the OPEN filter no longer
+    // matches.
     const moderationCase = await em.findOne(
       ModerationCase,
       {
@@ -213,7 +222,7 @@ export class CharacterVerificationService {
         type: ModerationCaseType.CHARACTER_VERIFICATION,
         state: ModerationCaseState.OPEN,
       },
-      lock ? { lockMode: LockMode.PESSIMISTIC_WRITE } : {},
+      lock ? { lockMode: LockMode.PESSIMISTIC_WRITE, refresh: true } : {},
     )
     if (!moderationCase) {
       throw new NotFoundException('case_not_found')
