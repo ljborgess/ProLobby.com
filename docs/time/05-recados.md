@@ -6,6 +6,74 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 
 ---
 
+## 2026-09-24 · Para todos
+
+### A Fase 2.2 abriu, e o OCR entra por último
+
+A fase está quebrada em 6 issues, sub-issues da [#52](https://github.com/ljborgess/ProLobby.com/issues/52). Cinco já viraram PR; **só a #199 é trabalho em aberto**:
+
+| Issue | PR | O quê |
+|---|---|---|
+| [#194](https://github.com/ljborgess/ProLobby.com/issues/194) | [#201](https://github.com/ljborgess/ProLobby.com/pull/201) | personagem: tabela e cadastro com categoria e arquétipo |
+| [#195](https://github.com/ljborgess/ProLobby.com/issues/195) | [#202](https://github.com/ljborgess/ProLobby.com/pull/202) | envio de print: upload, hash e checagens antes do OCR |
+| [#196](https://github.com/ljborgess/ProLobby.com/issues/196) | [#203](https://github.com/ljborgess/ProLobby.com/pull/203) | tela de envio, com instruções e mensagem por causa de rejeição |
+| [#198](https://github.com/ljborgess/ProLobby.com/issues/198) | [#204](https://github.com/ljborgess/ProLobby.com/pull/204) | verificação pela moderação, que faz o fluxo andar sem OCR |
+| [#197](https://github.com/ljborgess/ProLobby.com/issues/197) | [#205](https://github.com/ljborgess/ProLobby.com/pull/205) | confirmação do arquétipo ativo e cooldown de 24 h (parte) |
+| [#199](https://github.com/ljborgess/ProLobby.com/issues/199) | — | OCR no fluxo, bloqueada pela [#191](https://github.com/ljborgess/ProLobby.com/issues/191) |
+
+**Ordem de merge** (os PRs estão empilhados): #192 e #193 já estão em `dev` (2026-09-25); faltam #201 → #202 → #203 → #204 → #205 → #200.
+
+- **Até a #199 entrar, todo print recebido abre caso de moderação** (#204). O moderador digita o arquétipo e o gamertag que vê no print, e o servidor compara com o cadastro. Ninguém verifica o próprio caso.
+- **O que a #205 cobre da #197**: caixa de confirmação do arquétipo ativo, cooldown de 24 h contado da aprovação, e um print em análise por personagem. A tela de confirmação com os campos lidos e a confiança foi pra #199, porque só existe com OCR.
+
+### Decisão pendente: regra dos 7 dias (Luciano)
+
+O `01-verificacao.md` libera a reivindicação provisória de gamertag depois de 7 dias sem verificação. O #205 não implementou: a provisória não bloqueia ninguém (quem impõe exclusividade é o índice das verificadas), então apagá-la não libera nada, e ainda quebraria o personagem pendente se a moderação passar de 7 dias. **Proposta: tirar a regra do documento.**
+
+### O que mudou na verificação, e onde está escrito
+
+- **O print de verificação é a tela `Archetypes`**, com o arquétipo ativo aberto. Não é mais a aba `Attributes`.
+- **Os campos lidos são arquétipo e gamertag**; a categoria é escolhida pelo jogador e conferida pelo grupo do arquétipo. O nome embaixo do arquétipo no card **é o gamertag**, com o ícone da plataforma. Isso resolveu a [#164](https://github.com/ljborgess/ProLobby.com/issues/164) sem precisar abrir o jogo.
+- **Overall e atributos saíram.** Desde o FC 26, o overall só existe por posição, no lobby do clube. O seed do elo fica neutro.
+- **O jogador escolhe a categoria, e o arquétipo tem que ser compatível**: Keeper → Goleiro; Defender → Zaga/Lateral; Midfielder → Meio ou Ponta; Forward → Ponta ou Ataque. A tabela está em `01-verificacao.md` ([PR #193](https://github.com/ljborgess/ProLobby.com/pull/193)).
+- **Piloto, rodada 2a** ([PR #192](https://github.com/ljborgess/ProLobby.com/pull/192), em `dev`): 5 de 9 aceitos (56%) e zero falso aceite em 96 checagens, com a conferência pela linha inteira do card; a regra fixa é **0 gamertags de outra pessoa aceitos**. Um número de 78% chegou a circular e estava errado: a conferência aceitava pedaço de gamertag. Por isso o OCR entra por último, e a #199 só anda quando a #191 medir de novo. Detalhes no `06-piloto-ocr.md`.
+
+### Duas regras novas
+
+- **Zero falso aceite.** Nenhum ajuste de OCR aumenta a aprovação afrouxando a conferência do gamertag. O relatório do piloto mede isso em toda rodada (`impostorCheck`).
+- **Print e gabarito com gamertag real não entram no git.** Vale pra `apps/ocr-pilot/prints/`, pros relatórios e pro gabarito da tela `Archetypes`. O `.gitignore` da `dev` cobre os três desde o PR #192. Em branch criada antes disso, **não use `git add .` no `ocr-pilot`**.
+
+### O OCR continua local
+
+Google Vision foi descartado por custo. O motor é Tesseract, com a biblioteca de imagem `sharp` (entrou no `ocr-pilot`) pra recortar e ampliar o card antes da leitura.
+
+---
+
+## 2026-09-24 · Rafael
+
+### A #199 é da sua área, mas espera
+
+O OCR no fluxo cai no seu paralelo pelo #64, mas está bloqueado pela #191: o número do piloto precisa se confirmar com prints novos. **Não há o que adiantar antes dela**: #195 a #198 já estão nos PRs #202 a #205. A #199 é o que sobra da 2.2, e é sua (ou de quem estiver livre quando a #191 destravar).
+
+A #199 inclui uma decisão com ADR: **onde o OCR roda**, se no processo da API ou num worker separado. O OCR é pesado pra rodar no mesmo processo que atende requisição.
+
+---
+
+## 2026-09-24 · Felipe
+
+### As telas da 2.2 já viraram PR: revise e abra no navegador
+
+A tela de envio (#196) e a confirmação com cooldown (#197) já estão nos PRs [#203](https://github.com/ljborgess/ProLobby.com/pull/203) e [#205](https://github.com/ljborgess/ProLobby.com/pull/205). O trabalho agora é outro:
+
+- **Revisar o #203 e o #205.**
+- **Abrir `/account/character` e `/moderation` no navegador**: nenhuma das duas foi vista rodando, só em teste. Anote no PR o que quebrar ou ficar confuso, em pt e es.
+- O visual segue o padrão das telas atuais: o redesenho só começa no fim da 2.5.
+- O exemplo da tela de envio é desenho (`archetype-example.tsx`, #203): **não troque por print real**.
+
+Não há issue de código livre na 2.2 além da #199, que espera a #191.
+
+---
+
 ## 2026-09-23 · Para todos
 
 ### #150 em `dev` — **resolvido** (PR #183 mergeado em 2026-09-23)
@@ -14,7 +82,9 @@ A última fatia da Fase 2.3 (RF-060: sair do Discord bloqueia a fila, com aviso 
 
 O script do piloto ([#120](https://github.com/ljborgess/ProLobby.com/issues/120), PR #181) já está em `dev`. A medição nos 20 prints reais é a [#50](https://github.com/ljborgess/ProLobby.com/issues/50).
 
-### #164 precisa de alguém com o FC27 aberto — minutos de jogo, não código
+### #164 precisa de alguém com o FC27 aberto — **resolvido sem abrir o jogo** (2026-09-24)
+
+A aba `Home` deixou de importar: o gamertag aparece no card da tela `Archetypes`. Ver o recado de 2026-09-24. O texto abaixo fica como histórico.
 
 **Não é tarefa de IA**: exige console/PC com o jogo rodando e um Virtual Pro salvo. Quem pegar:
 
