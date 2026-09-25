@@ -371,21 +371,25 @@ redesenhado com conteúdo próprio, e é a base da tela de fila da Fase 2.5.
 
 ### Signature: o Elenco
 
-A tela de personagens em forma de súmula: cinco vagas fixas, uma por categoria
-(GOL, ZAG, MEI, PON, ATA), na ordem em que o campo se lê, de trás pra frente.
-É o vocabulário do Quadro da Fila na tela onde o elenco é montado. A vaga vazia
-é **tracejada** e é um botão que abre o cadastro já na categoria dela. A vaga
-preenchida é superfície opaca com os cantos de mira do painel de login, que
-viram acento quando o personagem é verificado. O nome do arquétipo vem em caixa
-alta, como o jogo imprime, porque é a palavra que o jogador vai fotografar.
+A tela de personagens é um **quadro tático**. As cinco vagas (GOL, ZAG, MEI,
+PON, ATA) ficam no lugar delas num campo desenhado em traço, com listras de
+corte de grama em branco a 2,5% e um brilho verde no centro. No telefone o
+campo fica em pé e ataca pra cima; a partir de `sm`, deita e ataca pra
+direita.
 
-Cada vaga carrega um **mini-campo em traço** com a posição marcada:
-- **disco sólido** quando o personagem está verificado;
-- **anel tracejado verde** respirando enquanto o print está em análise;
-- **anel tracejado apagado** quando a vaga está vazia, pendente ou recusada.
+Cada vaga é um **marcador**, no vocabulário do Quadro da Fila:
+- **verificado:** disco sólido de acento com check e halo;
+- **em análise:** anel tracejado verde com um ponto respirando;
+- **pendente ou recusado:** contorno com o código da posição;
+- **vaga livre:** tracejado apagado com "+".
 
-No telefone as vagas empilham e o mini-campo encolhe pra 56px, alinhado à
-esquerda.
+Embaixo de cada marcador vão o código e o arquétipo. Entre as posições correm
+**linhas de passe** tracejadas, que acendem sólidas quando as duas pontas
+estão verificadas, no estilo das linhas de química dos jogos de futebol.
+Escolher um marcador abre o card daquela vaga ao lado do campo, ou embaixo
+dele no telefone. O card traz o arquétipo em caixa alta, o estado e a ação:
+mandar o print, ou cadastrar quando a vaga está livre. Uma legenda com as
+mesmas marcas fecha o quadro.
 
 Cadastrar um personagem é o **pré-jogo em etapas**, uma decisão por vez, na
 ordem em que o jogo pergunta: Posição, Arquétipo, Plataforma, Gamertag,

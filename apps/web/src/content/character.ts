@@ -31,6 +31,10 @@ export interface CharacterContent {
     claim: string
     formHeading: string
     cancel: string
+    free: string
+    freeHint: string
+    legendReview: string
+    legendPending: string
   }
   form: {
     categoryLabel: string
@@ -126,6 +130,11 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
       claim: 'Cadastrar',
       formHeading: 'Novo personagem',
       cancel: 'Cancelar',
+      free: 'Vaga livre',
+      freeHint:
+        'Ninguém nessa posição ainda. Cadastre um personagem e mande o print pra ele entrar em campo.',
+      legendReview: 'Print em análise',
+      legendPending: 'Esperando print',
     },
     form: {
       categoryLabel: 'Categoria',
@@ -256,6 +265,11 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
       claim: 'Registrar',
       formHeading: 'Nuevo personaje',
       cancel: 'Cancelar',
+      free: 'Plaza libre',
+      freeHint:
+        'Nadie en esta posición todavía. Registra un personaje y envía la captura para que entre en el campo.',
+      legendReview: 'Captura en revisión',
+      legendPending: 'Esperando captura',
     },
     form: {
       categoryLabel: 'Categoría',

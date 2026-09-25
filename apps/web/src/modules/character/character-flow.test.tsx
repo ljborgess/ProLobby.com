@@ -300,7 +300,7 @@ describe('PrintUpload', () => {
   })
 })
 
-describe('Roster (squad sheet)', () => {
+describe('Roster (tactics board)', () => {
   const verified = {
     id: '44444444-4444-4444-4444-444444444444',
     category: 'goalkeeper' as const,
@@ -309,25 +309,34 @@ describe('Roster (squad sheet)', () => {
     state: 'verified' as const,
   }
 
-  it('shows the five slots and counts the filled ones', () => {
+  const marker = (category: keyof typeof pt.categories) =>
+    screen.getByRole('button', { name: new RegExp(`^${pt.categories[category]}:`) })
+
+  it('puts the five places on the pitch and counts the filled ones', () => {
     renderWithLocale(<CharacterFlow characters={[verified]} archetypes={ARCHETYPES} />)
 
     expect(screen.getByText(pt.roster.count(1, 5))).toBeInTheDocument()
-    expect(screen.getByText('SHOT STOPPER')).toBeInTheDocument()
-    const slots = screen
-      .getAllByRole('button')
-      .filter((button) =>
-        Object.values(pt.categories).some((name) => button.textContent?.endsWith(name)),
-      )
-    expect(slots).toHaveLength(4)
+    expect(marker('goalkeeper')).toHaveAccessibleName(`${pt.categories.goalkeeper}: SHOT STOPPER`)
+    expect(marker('winger')).toHaveAccessibleName(`${pt.categories.winger}: ${pt.roster.free}`)
+    expect(screen.getAllByRole('button', { pressed: false })).toHaveLength(4)
   })
 
-  it('opens the form already on the category of the empty slot clicked', () => {
+  it('opens the card of the place picked on the pitch', () => {
     renderWithLocale(<CharacterFlow characters={[verified]} archetypes={ARCHETYPES} />)
 
+    fireEvent.click(marker('goalkeeper'))
+
+    expect(marker('goalkeeper')).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('heading', { level: 3, name: 'SHOT STOPPER' })).toBeInTheDocument()
+  })
+
+  it('opens the form already on the category of a free place', () => {
+    renderWithLocale(<CharacterFlow characters={[verified]} archetypes={ARCHETYPES} />)
+
+    fireEvent.click(marker('winger'))
     fireEvent.click(
       screen.getByRole('button', {
-        name: new RegExp(`${pt.roster.claim}.*${pt.categories.winger}`),
+        name: new RegExp(`${pt.roster.claim}\\s*${pt.categories.winger}`),
       }),
     )
 

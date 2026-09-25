@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, type CSSProperties, type ReactNode } from 'react'
 import type { CharacterCategory } from '@/content/character'
 import { useCharacterContent } from '@/hooks/use-character-content'
 import { CheckMark } from '@/common/ui/icons'
@@ -17,11 +18,11 @@ export const CATEGORY_ORDER: CharacterCategory[] = [
 type SlotStatus = 'verified' | 'review' | 'rejected' | 'pending'
 
 /**
- * The account's five slots as a squad sheet — the Quadro da Fila vocabulary
- * on the screen where the squad is built. One slot per position category
- * (one active character each, RF-027), so an empty slot is part of the
- * picture, drawn dashed like a place still waiting on someone, and not an
- * absence the player has to infer.
+ * The account's squad on a tactics board — the Quadro da Fila vocabulary on
+ * the screen where the squad is built. Five places on a drawn pitch, one per
+ * position category (one active character each, RF-027): an empty place is
+ * part of the picture, dashed like a slot still waiting on someone. Picking a
+ * place opens its card beside the pitch.
  */
 export function Roster({
   characters,
@@ -33,9 +34,11 @@ export function Roster({
   onSend: (characterId: string) => void
 }) {
   const content = useCharacterContent()
-  const filled = CATEGORY_ORDER.filter((category) =>
-    characters.some((character) => character.category === category),
-  ).length
+  const byCategory = (category: CharacterCategory) =>
+    characters.find((character) => character.category === category)
+  const filled = CATEGORY_ORDER.filter((category) => byCategory(category)).length
+  const [selected, setSelected] = useState<CharacterCategory>(() => firstToLookAt(characters))
+  const current = byCategory(selected)
 
   return (
     <section aria-labelledby="roster-heading" className="flex flex-col gap-4">
@@ -48,21 +51,281 @@ export function Roster({
         </span>
       </div>
 
-      <ol className="grid grid-cols-1 gap-3 sm:grid-cols-5">
-        {CATEGORY_ORDER.map((category) => {
-          const character = characters.find((item) => item.category === category)
-          return (
-            <li key={category} className="flex">
-              {character ? (
-                <FilledSlot character={character} onSend={onSend} />
-              ) : (
-                <EmptySlot category={category} onClaim={onClaim} />
-              )}
-            </li>
-          )
-        })}
-      </ol>
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
+        <Board characters={characters} selected={selected} onSelect={setSelected} />
+        <div key={selected} className="landing-fade-up flex">
+          {current ? (
+            <FilledSlot character={current} onSend={onSend} />
+          ) : (
+            <EmptySlot category={selected} onClaim={onClaim} />
+          )}
+        </div>
+      </div>
+
+      <Legend />
     </section>
+  )
+}
+
+/** Opens on what needs the player (a print to send), then on their own characters, then a free place. */
+function firstToLookAt(characters: CharacterView[]): CharacterCategory {
+  const pending = characters.find((character) => canSend(character))
+  if (pending) {
+    return pending.category
+  }
+  const own = CATEGORY_ORDER.find((category) =>
+    characters.some((character) => character.category === category),
+  )
+  if (own) {
+    return own
+  }
+  const free = CATEGORY_ORDER.find(
+    (category) => !characters.some((character) => character.category === category),
+  )
+  return free ?? CATEGORY_ORDER[0]!
+}
+
+/**
+ * Where each place stands, in % of the board: attacking right on a wide
+ * screen, attacking up on a phone.
+ */
+const SPOT: Record<CharacterCategory, { h: [number, number]; v: [number, number] }> = {
+  goalkeeper: { h: [10, 50], v: [50, 89] },
+  defender: { h: [27, 50], v: [50, 72] },
+  midfielder: { h: [48, 58], v: [42, 52] },
+  winger: { h: [69, 22], v: [78, 32] },
+  striker: { h: [86, 50], v: [50, 13] },
+}
+
+/** Passing lanes between the places; lit once both ends are verified. */
+const LINKS: [CharacterCategory, CharacterCategory][] = [
+  ['goalkeeper', 'defender'],
+  ['defender', 'midfielder'],
+  ['midfielder', 'winger'],
+  ['midfielder', 'striker'],
+  ['winger', 'striker'],
+]
+
+function Board({
+  characters,
+  selected,
+  onSelect,
+}: {
+  characters: CharacterView[]
+  selected: CharacterCategory
+  onSelect: (category: CharacterCategory) => void
+}) {
+  const statusFor = (category: CharacterCategory): SlotStatus | 'empty' => {
+    const character = characters.find((item) => item.category === category)
+    return character ? statusOf(character) : 'empty'
+  }
+
+  return (
+    <div className="relative aspect-[2/3] w-full overflow-hidden rounded-lg border border-white/10 bg-surface shadow-[inset_0_1px_0_0_rgb(255_255_255/6%)] sm:aspect-[16/10]">
+      {/* Mowing stripes: the one texture that says "grass" without a photo. */}
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-[repeating-linear-gradient(180deg,rgb(255_255_255/2.5%)_0_10%,transparent_10%_20%)] sm:bg-[repeating-linear-gradient(90deg,rgb(255_255_255/2.5%)_0_10%,transparent_10%_20%)]"
+      />
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-[radial-gradient(ellipse_60%_55%_at_50%_50%,color-mix(in_srgb,var(--color-accent-strong)_22%,transparent),transparent_75%)]"
+      />
+      <PitchLines orientation="v" statusFor={statusFor} className="sm:hidden" />
+      <PitchLines orientation="h" statusFor={statusFor} className="hidden sm:block" />
+
+      <ol className="absolute inset-0">
+        {CATEGORY_ORDER.map((category, index) => (
+          <li
+            key={category}
+            className="absolute left-[var(--v-x)] top-[var(--v-y)] -translate-x-1/2 -translate-y-1/2 sm:left-[var(--h-x)] sm:top-[var(--h-y)]"
+            style={
+              {
+                '--v-x': `${SPOT[category].v[0]}%`,
+                '--v-y': `${SPOT[category].v[1]}%`,
+                '--h-x': `${SPOT[category].h[0]}%`,
+                '--h-y': `${SPOT[category].h[1]}%`,
+                '--landing-delay': `${index * 70}ms`,
+              } as CSSProperties
+            }
+          >
+            <div className="landing-fade-up">
+              <Marker
+                category={category}
+                character={characters.find((item) => item.category === category)}
+                status={statusFor(category)}
+                selected={selected === category}
+                onSelect={() => onSelect(category)}
+              />
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  )
+}
+
+/** The pitch, stroke only, plus the lanes between the places. */
+function PitchLines({
+  orientation,
+  statusFor,
+  className,
+}: {
+  orientation: 'h' | 'v'
+  statusFor: (category: CharacterCategory) => SlotStatus | 'empty'
+  className: string
+}) {
+  const horizontal = orientation === 'h'
+  const [w, h] = horizontal ? [160, 100] : [100, 150]
+  const at = (category: CharacterCategory) => {
+    const [x, y] = SPOT[category][orientation]
+    return { x: (x / 100) * w, y: (y / 100) * h }
+  }
+
+  return (
+    <svg
+      viewBox={`0 0 ${w} ${h}`}
+      aria-hidden
+      className={`absolute inset-0 size-full ${className}`}
+    >
+      <g fill="none" stroke="rgb(255 255 255 / 16%)" strokeWidth={0.5}>
+        <rect x="4" y="4" width={w - 8} height={h - 8} rx="2" />
+        {horizontal ? (
+          <>
+            <path d={`M${w / 2} 4v${h - 8}`} />
+            <rect x="4" y={h / 2 - 22} width="22" height="44" />
+            <rect x={w - 26} y={h / 2 - 22} width="22" height="44" />
+            <rect x="4" y={h / 2 - 10} width="8" height="20" />
+            <rect x={w - 12} y={h / 2 - 10} width="8" height="20" />
+          </>
+        ) : (
+          <>
+            <path d={`M4 ${h / 2}h${w - 8}`} />
+            <rect x={w / 2 - 22} y={h - 26} width="44" height="22" />
+            <rect x={w / 2 - 22} y="4" width="44" height="22" />
+            <rect x={w / 2 - 10} y={h - 12} width="20" height="8" />
+            <rect x={w / 2 - 10} y="4" width="20" height="8" />
+          </>
+        )}
+        <circle cx={w / 2} cy={h / 2} r="12" />
+      </g>
+      {LINKS.map(([from, to]) => {
+        const a = at(from)
+        const b = at(to)
+        const lit = statusFor(from) === 'verified' && statusFor(to) === 'verified'
+        return (
+          <line
+            key={`${from}-${to}`}
+            x1={a.x}
+            y1={a.y}
+            x2={b.x}
+            y2={b.y}
+            strokeWidth={lit ? 0.9 : 0.6}
+            strokeDasharray={lit ? undefined : '2 2'}
+            className={lit ? 'stroke-accent/70' : 'stroke-white/15'}
+          />
+        )
+      })}
+    </svg>
+  )
+}
+
+function Marker({
+  category,
+  character,
+  status,
+  selected,
+  onSelect,
+}: {
+  category: CharacterCategory
+  character?: CharacterView
+  status: SlotStatus | 'empty'
+  selected: boolean
+  onSelect: () => void
+}) {
+  const content = useCharacterContent()
+  const label = character ? archetypeLabel(character.archetype) : content.roster.free
+
+  const disc: Record<SlotStatus | 'empty', string> = {
+    verified:
+      'bg-accent text-background shadow-[0_0_18px_color-mix(in_srgb,var(--color-accent)_45%,transparent)]',
+    review: 'border border-dashed border-accent bg-background text-accent',
+    pending: 'border border-white/45 bg-background text-foreground',
+    rejected: 'border border-white/45 bg-background text-foreground',
+    empty:
+      'border border-dashed border-white/30 bg-background/60 text-foreground-soft group-hover:border-accent/60 group-hover:text-accent',
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-pressed={selected}
+      aria-label={`${content.categories[category]}: ${label}`}
+      className="landing-focus group flex flex-col items-center gap-1.5 rounded-md p-1"
+    >
+      <span
+        className={`relative flex size-11 items-center justify-center rounded-full transition-[box-shadow,border-color,color] duration-200 sm:size-12 ${disc[status]} ${
+          selected ? 'ring-2 ring-accent/70 ring-offset-2 ring-offset-surface' : ''
+        }`}
+      >
+        {status === 'verified' ? (
+          <CheckMark className="size-5" />
+        ) : status === 'review' ? (
+          <span className="landing-slot-wait size-2.5 rounded-full bg-accent" />
+        ) : status === 'empty' ? (
+          <PlusMark className="size-4" />
+        ) : (
+          <span className="text-[0.7rem] font-semibold">{content.categoryCodes[category]}</span>
+        )}
+      </span>
+      <span
+        className={`flex flex-col items-center rounded-sm px-1.5 py-0.5 leading-tight ${
+          selected ? 'bg-background/80' : ''
+        }`}
+      >
+        <span className="text-[0.7rem] font-medium uppercase tracking-[0.2em] text-foreground-soft">
+          {content.categoryCodes[category]}
+        </span>
+        <span
+          className={`max-w-24 truncate text-xs ${character ? 'font-medium text-foreground' : 'text-foreground-soft'}`}
+        >
+          {label}
+        </span>
+      </span>
+    </button>
+  )
+}
+
+/** What each mark on the board means, drawn the same way. */
+function Legend() {
+  const content = useCharacterContent()
+  const items: { mark: ReactNode; text: string }[] = [
+    { mark: <span className="size-3 rounded-full bg-accent" />, text: content.existing.verified },
+    {
+      mark: <span className="size-3 rounded-full border border-dashed border-accent" />,
+      text: content.roster.legendReview,
+    },
+    {
+      mark: <span className="size-3 rounded-full border border-white/45" />,
+      text: content.roster.legendPending,
+    },
+    {
+      mark: <span className="size-3 rounded-full border border-dashed border-white/30" />,
+      text: content.roster.free,
+    },
+  ]
+  return (
+    <ul className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-foreground-soft">
+      {items.map((item) => (
+        <li key={item.text} className="inline-flex items-center gap-2">
+          <span aria-hidden className="flex">
+            {item.mark}
+          </span>
+          {item.text}
+        </li>
+      ))}
+    </ul>
   )
 }
 
@@ -97,16 +360,11 @@ function FilledSlot({
         </span>
       </header>
 
-      <PositionPitch
-        category={character.category}
-        marker={status === 'verified' ? 'set' : status === 'review' ? 'waiting' : 'empty'}
-      />
-
       {/* The archetype the way the game prints it — the word the player
           will photograph, so it is the loudest thing in the slot. */}
-      <p className="font-display text-base font-medium leading-tight tracking-tight break-words text-foreground">
+      <h3 className="font-display text-base font-medium leading-tight tracking-tight break-words text-foreground">
         {archetypeLabel(character.archetype)}
-      </p>
+      </h3>
       <p className="sr-only">{content.categories[character.category]}</p>
 
       <StatusLine status={status} />
@@ -138,12 +396,12 @@ function EmptySlot({
     <button
       type="button"
       onClick={() => onClaim(category)}
-      className="landing-focus group flex w-full flex-col items-start gap-3 rounded-md border border-dashed border-white/15 px-4 pb-4 pt-5 text-left transition-colors hover:border-accent/50 sm:min-h-44"
+      className="landing-focus group flex min-h-44 w-full flex-col items-start gap-3 rounded-md border border-dashed border-white/15 px-4 pb-4 pt-5 text-left transition-colors hover:border-accent/50"
     >
       <span className="text-[0.7rem] font-medium uppercase tracking-[0.2em] text-foreground-soft transition-colors group-hover:text-foreground">
         {content.categoryCodes[category]}
       </span>
-      <PositionPitch category={category} marker="empty" />
+      <p className="text-sm leading-relaxed text-foreground-soft">{content.roster.freeHint}</p>
       <span className="mt-auto flex items-center gap-2.5">
         <span
           aria-hidden
