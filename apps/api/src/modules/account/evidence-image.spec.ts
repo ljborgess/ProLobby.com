@@ -43,14 +43,30 @@ describe('detectRealImageType', () => {
 describe('readImageSize', () => {
   it('reads PNG width and height from the header', () => {
     const png = Buffer.alloc(24)
+    png.write('IHDR', 12)
     png.writeUInt32BE(926, 16)
     png.writeUInt32BE(521, 20)
     expect(readImageSize(png, 'png')).toEqual({ width: 926, height: 521 })
   })
 
+  it('does not trust a PNG size outside an IHDR chunk', () => {
+    const png = Buffer.alloc(24)
+    png.write('tEXt', 12)
+    png.writeUInt32BE(926, 16)
+    expect(readImageSize(png, 'png')).toBeNull()
+  })
+
   it('finds the JPEG start-of-frame after other segments', () => {
     const jpeg = Buffer.from([
       0xff, 0xd8, 0xff, 0xe0, 0x00, 0x04, 0x00, 0x00, 0xff, 0xc0, 0x00, 0x0b, 0x08, 0x02, 0x09,
+      0x03, 0x9e, 0x01, 0x01, 0x11, 0x00, 0xff, 0xd9,
+    ])
+    expect(readImageSize(jpeg, 'jpg')).toEqual({ width: 926, height: 521 })
+  })
+
+  it('skips JPEG fill bytes and markers that carry no length', () => {
+    const jpeg = Buffer.from([
+      0xff, 0xd8, 0xff, 0xff, 0xff, 0xd0, 0xff, 0x01, 0xff, 0xc0, 0x00, 0x0b, 0x08, 0x02, 0x09,
       0x03, 0x9e, 0x01, 0x01, 0x11, 0x00, 0xff, 0xd9,
     ])
     expect(readImageSize(jpeg, 'jpg')).toEqual({ width: 926, height: 521 })

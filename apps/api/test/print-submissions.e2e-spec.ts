@@ -11,6 +11,7 @@ import { AppModule } from '../src/app.module'
 import { MailSender } from '../src/common/mail/mail.types'
 import { applySecurity } from '../src/common/security/security.config'
 import { SESSION_COOKIE_NAME } from '../src/common/security/session-cookie'
+import { Account } from '../src/modules/account/account.entity'
 import { CURRENT_TERMS_VERSION } from '../src/modules/account/terms.constants'
 import { PrintSubmission } from '../src/modules/character/print-submission.entity'
 import {
@@ -201,6 +202,61 @@ describe('print submissions (#195)', () => {
     expect(after.fileHash).toBe(stored.fileHash)
     const again = await send(cookie, await character(cookie), file)
     expect(again.body.rejection).toBe('print_already_used')
+  })
+
+  it('refuses a header that claims more than 8192 px a side', async () => {
+    const cookie = await account()
+    const bomb = makePng(400, 300, 9)
+    bomb.writeUInt32BE(100_000, 16)
+
+    const res = await send(cookie, await character(cookie), bomb)
+
+    expect(res.body.rejection).toBe('invalid_format')
+  })
+
+  it('holds the hourly limit when uploads arrive at once (RF-065)', async () => {
+    const cookie = await account()
+    const id = await character(cookie)
+
+    const results = await Promise.all(
+      Array.from({ length: PRINT_UPLOADS_PER_HOUR + 2 }, (_, i) =>
+        send(cookie, id, Buffer.from(`not an image, parallel ${i} ......`)),
+      ),
+    )
+
+    expect(results.filter((res) => res.status === 201)).toHaveLength(PRINT_UPLOADS_PER_HOUR)
+    expect(results.filter((res) => res.status === 429)).toHaveLength(2)
+  })
+
+  it('lets only one of two accounts sending the same file at once keep it (RF-063)', async () => {
+    const file = makePng(400, 300, 10)
+    const first = await account()
+    const second = await account()
+    const [a, b] = [await character(first), await character(second)]
+
+    const results = await Promise.all([send(first, a, file), send(second, b, file)])
+
+    expect(results.map((res) => res.body.status).sort()).toEqual(['received', 'rejected'])
+    expect(results.map((res) => res.body.rejection)).toContain('print_already_used')
+  })
+
+  it('deletes the file of a deleted account on the next run and keeps the hash', async () => {
+    const cookie = await account()
+    const file = makePng(400, 300, 11)
+    const { body } = await send(cookie, await character(cookie), file)
+    const em = orm.em.fork()
+    const stored = await em.findOneOrFail(
+      PrintSubmission,
+      { id: body.id },
+      { populate: ['account'] },
+    )
+    await em.nativeDelete(Account, { id: stored.account!.id })
+
+    await app.get(PrintSubmissionService).deleteExpiredFiles()
+
+    expect(existsSync(stored.filePath!)).toBe(false)
+    const after = await orm.em.fork().findOneOrFail(PrintSubmission, { id: body.id })
+    expect(after.fileHash).toBe(stored.fileHash)
   })
 
   it('needs a session', async () => {

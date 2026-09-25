@@ -30,11 +30,16 @@ export class PrintSubmission {
   @PrimaryKey({ type: 'uuid' })
   id: string & Opt = randomUUID()
 
-  @ManyToOne(() => Account, { deleteRule: 'cascade' })
-  account!: Account
+  /**
+   * Set null, not cascade, when the account goes: the hash must outlive it
+   * (RF-063), and the retention job deletes the file of an orphaned row on
+   * its next run instead of leaving it on disk with nothing pointing at it.
+   */
+  @ManyToOne(() => Account, { deleteRule: 'set null', nullable: true })
+  account?: Account
 
-  @ManyToOne(() => Character, { deleteRule: 'cascade' })
-  character!: Character
+  @ManyToOne(() => Character, { deleteRule: 'set null', nullable: true })
+  character?: Character
 
   /** Null on rejected attempts: only a stored print owns a hash. */
   @Property({ length: 64, nullable: true })

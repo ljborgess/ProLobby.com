@@ -1,3 +1,4 @@
+import { LockMode } from '@mikro-orm/core'
 import { EntityManager } from '@mikro-orm/postgresql'
 import {
   HttpException,
@@ -29,6 +30,8 @@ const HOUR_MS = 60 * 60 * 1000
  */
 export const MIN_PRINT_WIDTH = 320
 export const MIN_PRINT_HEIGHT = 240
+/** A header can claim 2³² pixels a side; nobody's screen is past 8K. */
+export const MAX_PRINT_SIDE = 8192
 
 const RETENTION_MS = 90 * 24 * HOUR_MS
 
@@ -74,7 +77,33 @@ export class PrintSubmissionService implements OnModuleInit {
   }
 
   async submit(accountId: string, characterId: string, file: Buffer): Promise<PrintSubmissionView> {
-    const em = this.em.fork()
+    try {
+      return await this.em
+        .fork()
+        .transactional((em) => this.submitLocked(em, accountId, characterId, file))
+    } catch (error) {
+      // Same file sent at the same moment from another account: the unique
+      // hash decides, and this attempt is recorded as a reuse.
+      if (isUniqueViolation(error)) {
+        const em = this.em.fork()
+        const character = await em.findOneOrFail(Character, { id: characterId })
+        return this.record(em, accountId, character, {
+          rejection: PrintRejection.PRINT_ALREADY_USED,
+        })
+      }
+      throw error
+    }
+  }
+
+  private async submitLocked(
+    em: EntityManager,
+    accountId: string,
+    characterId: string,
+    file: Buffer,
+  ): Promise<PrintSubmissionView> {
+    // One upload at a time per account: the hourly count below (RF-065) and
+    // the insert must not interleave with a concurrent upload.
+    await em.findOneOrFail(Account, { id: accountId }, { lockMode: LockMode.PESSIMISTIC_WRITE })
     const character = await em.findOne(Character, {
       id: characterId,
       account: accountId,
@@ -106,6 +135,8 @@ export class PrintSubmissionService implements OnModuleInit {
       return this.record(em, accountId, character, { rejection })
     }
 
+    // ponytail: a crash between this write and the commit leaves an encrypted
+    // file no row points at; add a sweep of PRINTS_DIR if that ever shows up.
     const path = join(printsDir(), `${randomUUID()}.enc`)
     await mkdir(printsDir(), { recursive: true })
     await writeFile(path, encryptAtRest(this.encryptionKey, file))
@@ -113,22 +144,19 @@ export class PrintSubmissionService implements OnModuleInit {
       return await this.record(em, accountId, character, { fileHash: sha256(file), path })
     } catch (error) {
       await rm(path, { force: true })
-      // Same file sent twice at the same moment: the unique hash decides.
-      if (isUniqueViolation(error)) {
-        return this.record(this.em.fork(), accountId, character, {
-          rejection: PrintRejection.PRINT_ALREADY_USED,
-        })
-      }
       throw error
     }
   }
 
-  /** Deletes stored prints past 90 days; the row and its hash stay (RF-063). */
+  /**
+   * Deletes stored prints past 90 days, and those whose account was deleted;
+   * the row and its hash stay (RF-063).
+   */
   async deleteExpiredFiles(now: Date = new Date()): Promise<number> {
     const em = this.em.fork()
     const expired = await em.find(PrintSubmission, {
       filePath: { $ne: null },
-      createdAt: { $lt: new Date(now.getTime() - RETENTION_MS) },
+      $or: [{ createdAt: { $lt: new Date(now.getTime() - RETENTION_MS) } }, { account: null }],
     })
     let deleted = 0
     for (const submission of expired) {
@@ -157,6 +185,9 @@ export class PrintSubmissionService implements OnModuleInit {
     }
     const size = readImageSize(file, type)
     if (!size) {
+      return PrintRejection.INVALID_FORMAT
+    }
+    if (size.width > MAX_PRINT_SIDE || size.height > MAX_PRINT_SIDE) {
       return PrintRejection.INVALID_FORMAT
     }
     if (size.width < MIN_PRINT_WIDTH || size.height < MIN_PRINT_HEIGHT) {

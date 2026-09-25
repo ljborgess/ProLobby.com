@@ -46,7 +46,8 @@ export function readImageSize(
   type: 'jpg' | 'png' | 'webp',
 ): { width: number; height: number } | null {
   if (type === 'png') {
-    return buffer.length >= 24
+    // The first chunk must be IHDR; anything else is not a size to trust.
+    return buffer.length >= 24 && buffer.toString('ascii', 12, 16) === 'IHDR'
       ? { width: buffer.readUInt32BE(16), height: buffer.readUInt32BE(20) }
       : null
   }
@@ -58,14 +59,23 @@ export function readImageSize(
 
 function readJpegSize(buffer: Buffer): { width: number; height: number } | null {
   let offset = 2
-  while (offset + 9 < buffer.length) {
+  while (offset + 1 < buffer.length) {
     if (buffer[offset] !== 0xff) {
       return null
     }
     const marker = buffer[offset + 1] ?? 0
-    if (marker === 0xd8 || marker === 0xd9) {
+    // Fill bytes: any number of 0xFF may precede a marker.
+    if (marker === 0xff) {
+      offset += 1
+      continue
+    }
+    // Markers with no length field: TEM, RST0-7, SOI, EOI.
+    if (marker === 0x01 || (marker >= 0xd0 && marker <= 0xd9)) {
       offset += 2
       continue
+    }
+    if (offset + 9 >= buffer.length) {
+      return null
     }
     const length = buffer.readUInt16BE(offset + 2)
     // Start-of-frame markers carry the size; C4, C8 and CC are other tables.

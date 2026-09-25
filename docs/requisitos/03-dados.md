@@ -62,7 +62,7 @@ Auto-declaração que habilita a pessoa a ser capitão.
 `personagem` ou `lobby` · `hash_arquivo` (único, anti-reuso) · `arquivo` · `confianca_ocr` · `idioma_detectado` · `aceito` · `enviado_em`
 
 - `hash_arquivo` é a trava de reuso de print ([Resultado](../produto/03-partida/04-resultado.md)); `idioma_detectado` existe porque o OCR reconhece PT, ES e EN ([Personagens](../produto/02-jogador/01-verificacao.md)) e o valor ajuda a diagnosticar rejeição.
-- Arquivo apagado aos **90 dias**; o registro sobrevive pra manter o hash funcionando ([LGPD](../produto/04-governanca/02-lgpd.md)).
+- Arquivo apagado aos **90 dias**, ou na rodada seguinte do job se a conta for apagada antes; o registro sobrevive (sem conta nem personagem) pra manter o hash funcionando ([LGPD](../produto/04-governanca/02-lgpd.md)).
 
 ### EntradaFila
 `conta` · `personagem` · `categoria` · `elo_no_momento` · `entrou_em` — uma ativa por conta.

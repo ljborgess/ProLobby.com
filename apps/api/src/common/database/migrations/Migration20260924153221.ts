@@ -4,7 +4,7 @@ import { Migration } from '@mikro-orm/migrations'
 export class Migration20260924153221 extends Migration {
   override async up(): Promise<void> {
     this.addSql(
-      `create table "print_submission" ("id" uuid not null, "account_id" uuid not null, "character_id" uuid not null, "file_hash" varchar(64) null, "file_path" text null, "status" text check ("status" in ('received', 'rejected')) not null, "rejection" text check ("rejection" in ('invalid_format', 'image_too_small', 'print_already_used')) null, "created_at" timestamptz not null, constraint "print_submission_pkey" primary key ("id"));`,
+      `create table "print_submission" ("id" uuid not null, "account_id" uuid null, "character_id" uuid null, "file_hash" varchar(64) null, "file_path" text null, "status" text check ("status" in ('received', 'rejected')) not null, "rejection" text check ("rejection" in ('invalid_format', 'image_too_small', 'print_already_used')) null, "created_at" timestamptz not null, constraint "print_submission_pkey" primary key ("id"));`,
     )
     this.addSql(
       `alter table "print_submission" add constraint "print_submission_file_hash_unique" unique ("file_hash");`,
@@ -14,10 +14,10 @@ export class Migration20260924153221 extends Migration {
     )
 
     this.addSql(
-      `alter table "print_submission" add constraint "print_submission_account_id_foreign" foreign key ("account_id") references "account" ("id") on update cascade on delete cascade;`,
+      `alter table "print_submission" add constraint "print_submission_account_id_foreign" foreign key ("account_id") references "account" ("id") on update cascade on delete set null;`,
     )
     this.addSql(
-      `alter table "print_submission" add constraint "print_submission_character_id_foreign" foreign key ("character_id") references "character" ("id") on update cascade on delete cascade;`,
+      `alter table "print_submission" add constraint "print_submission_character_id_foreign" foreign key ("character_id") references "character" ("id") on update cascade on delete set null;`,
     )
   }
 
