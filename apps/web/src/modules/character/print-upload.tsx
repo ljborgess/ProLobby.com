@@ -17,7 +17,14 @@ type Outcome =
  * file picker, not after a failure: they are what keeps bad prints from being
  * sent at all (06-piloto-ocr.md, decisions of 2026-09-24).
  */
-export function PrintUpload({ characterId, onBack }: { characterId: string; onBack: () => void }) {
+export function PrintUpload({
+  characterId,
+  onBack,
+}: {
+  characterId: string
+  /** `received`: a print went in, so the list shows it in review. */
+  onBack: (received: boolean) => void
+}) {
   const content = useCharacterContent().print
   const inputId = useId()
   const hintId = `${inputId}-hint`
@@ -100,7 +107,7 @@ export function PrintUpload({ characterId, onBack }: { characterId: string; onBa
         </p>
         <button
           type="button"
-          onClick={onBack}
+          onClick={() => onBack(true)}
           className="landing-focus self-start text-sm text-foreground-soft underline"
         >
           {content.backToList}
@@ -152,7 +159,7 @@ export function PrintUpload({ characterId, onBack }: { characterId: string; onBa
       </button>
       <button
         type="button"
-        onClick={onBack}
+        onClick={() => onBack(false)}
         className="landing-focus self-start text-sm text-foreground-soft underline"
       >
         {content.cancel}

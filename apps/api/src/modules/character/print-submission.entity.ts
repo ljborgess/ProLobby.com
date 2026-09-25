@@ -7,14 +7,26 @@ import { Character } from './character.entity'
 export enum PrintSubmissionStatus {
   /** Passed the pre-checks; waits for verification (moderation now, OCR later). */
   RECEIVED = 'received',
+  /** Verified: the character it belongs to is verified by this print. */
+  ACCEPTED = 'accepted',
   REJECTED = 'rejected',
 }
 
-/** RF-029 causes that can already happen before any OCR runs. */
+/** RF-029 causes: the first three before any reading, the rest at verification. */
 export enum PrintRejection {
   INVALID_FORMAT = 'invalid_format',
   IMAGE_TOO_SMALL = 'image_too_small',
   PRINT_ALREADY_USED = 'print_already_used',
+  /** The tag on the card is not the one declared for that platform. */
+  GAMERTAG_MISMATCH = 'gamertag_mismatch',
+  /** Banned, or already verified by another account. Said the same way on purpose. */
+  GAMERTAG_UNAVAILABLE = 'gamertag_unavailable',
+  /** The archetype on the print does not fit the chosen category. */
+  ARCHETYPE_MISMATCH = 'archetype_mismatch',
+  /** The open card is not the active archetype (no ✓ beside the name). */
+  NOT_ACTIVE_ARCHETYPE = 'not_active_archetype',
+  /** Not the Archetypes screen, or nothing on it can be read. */
+  UNREADABLE = 'unreadable',
 }
 
 /**

@@ -17,6 +17,7 @@ import { encryptAtRest, readEvidenceEncryptionKey } from '../../common/security/
 import { Account } from '../account/account.entity'
 import { detectRealImageType, readImageSize } from '../account/evidence-image'
 import { ACTIVE_CHARACTER_STATES, Character } from './character.entity'
+import { CharacterVerificationService } from './character-verification.service'
 import { PrintRejection, PrintSubmission, PrintSubmissionStatus } from './print-submission.entity'
 
 /** RF-065: attempts per account per hour, accepted or not. */
@@ -59,7 +60,10 @@ export class PrintSubmissionService implements OnModuleInit {
   private readonly logger = new Logger(PrintSubmissionService.name)
   private readonly encryptionKey = readEvidenceEncryptionKey()
 
-  constructor(private readonly em: EntityManager) {}
+  constructor(
+    private readonly em: EntityManager,
+    private readonly verificationService: CharacterVerificationService,
+  ) {}
 
   /** Same boot probe as the account-recovery evidence: fail loud, not silent. */
   async onModuleInit(): Promise<void> {
@@ -216,6 +220,10 @@ export class PrintSubmissionService implements OnModuleInit {
       fileHash: rejected ? undefined : outcome.fileHash,
       filePath: rejected ? undefined : outcome.path,
     })
+    if (!rejected) {
+      // Moderation verifies every received print until OCR joins the flow (#199).
+      this.verificationService.openCase(em, submission, em.getReference(Account, accountId))
+    }
     await em.flush()
     return { id: submission.id, status: submission.status, rejection: submission.rejection ?? null }
   }

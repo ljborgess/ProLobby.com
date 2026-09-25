@@ -22,8 +22,39 @@ export function CharacterFlow({
   const [sendingFor, setSendingFor] = useState<string | null>(null)
   const [creating, setCreating] = useState(initial.length === 0)
 
+  function statusText(character: CharacterView): string {
+    if (character.state === 'verified') {
+      return content.existing.verified
+    }
+    const last = character.lastPrint
+    if (last?.status === 'received') {
+      return content.existing.inReview
+    }
+    if (last?.status === 'rejected' && last.rejection) {
+      const cause = content.print.rejections[last.rejection] ?? content.print.genericError
+      return `${content.existing.rejectedPrefix} ${cause}`
+    }
+    return content.existing.pending
+  }
+
   if (sendingFor) {
-    return <PrintUpload characterId={sendingFor} onBack={() => setSendingFor(null)} />
+    return (
+      <PrintUpload
+        characterId={sendingFor}
+        onBack={(received) => {
+          if (received) {
+            setCharacters((current) =>
+              current.map((item) =>
+                item.id === sendingFor
+                  ? { ...item, lastPrint: { status: 'received', rejection: null } }
+                  : item,
+              ),
+            )
+          }
+          setSendingFor(null)
+        }}
+      />
+    )
   }
 
   return (
@@ -43,19 +74,17 @@ export function CharacterFlow({
                   <span className="text-sm font-medium text-foreground">
                     {content.categories[character.category]} · {archetypeLabel(character.archetype)}
                   </span>
-                  <span className="text-xs text-foreground-soft">
-                    {character.state === 'verified'
-                      ? content.existing.verified
-                      : content.existing.pending}
-                  </span>
+                  <span className="text-xs text-foreground-soft">{statusText(character)}</span>
                 </div>
-                {character.state === 'pending_verification' && (
+                {canSend(character) && (
                   <button
                     type="button"
                     onClick={() => setSendingFor(character.id)}
                     className="landing-focus shrink-0 rounded-full bg-accent px-4 py-2 text-sm font-medium text-background"
                   >
-                    {content.existing.sendPrint}
+                    {character.lastPrint?.status === 'rejected'
+                      ? content.existing.sendAgain
+                      : content.existing.sendPrint}
                   </button>
                 )}
               </li>
@@ -87,4 +116,9 @@ export function CharacterFlow({
       )}
     </div>
   )
+}
+
+/** A print already under review is not sent again; a rejected one can be. */
+function canSend(character: CharacterView): boolean {
+  return character.state === 'pending_verification' && character.lastPrint?.status !== 'received'
 }

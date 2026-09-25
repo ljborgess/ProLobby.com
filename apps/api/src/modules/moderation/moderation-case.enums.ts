@@ -24,6 +24,12 @@ export enum ModerationCaseType {
   LINKED_IDENTITY_CHANGE = 'linked_identity_change',
   /** Individual score of 0.0 on the screenshot — possibly a game bug (RF-046). */
   POSSIBLE_GAME_BUG = 'possible_game_bug',
+  /**
+   * A character print waiting for a moderator — #198. Every received print
+   * opens one while OCR is not in the flow; afterwards only repeated OCR
+   * failures do.
+   */
+  CHARACTER_VERIFICATION = 'character_verification',
 }
 
 export enum ModerationCaseState {
