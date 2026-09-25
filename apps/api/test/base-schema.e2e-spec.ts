@@ -11,6 +11,7 @@ import {
   ModerationCaseState,
   ModerationCaseType,
 } from '../src/modules/moderation/moderation-case.enums'
+import { Character } from '../src/modules/character/character.entity'
 import { EloEvent } from '../src/modules/ranking/elo-event.entity'
 import { ReputationEvent } from '../src/modules/ranking/reputation-event.entity'
 import { EloEventReason, ReputationEventReason } from '../src/modules/ranking/ranking-event.enums'
@@ -76,18 +77,18 @@ describe('base schema', () => {
     expect(stored.delta).toBe(-8)
   })
 
-  it('accepts an elo event for a character that has no table yet', async () => {
+  it('refuses an elo event for a character that does not exist (#194)', async () => {
     const em = orm.em.fork()
     em.persist(
       em.create(EloEvent, {
-        characterId: '11111111-1111-1111-1111-111111111111',
+        character: em.getReference(Character, '11111111-1111-1111-1111-111111111111'),
         delta: 20,
         reason: EloEventReason.MATCH_RESULT,
       }),
     )
 
-    // No foreign key until phase 2.2 — the column is a plain uuid on purpose.
-    await expect(em.flush()).resolves.toBeUndefined()
+    // Phase 2.2 added the foreign key the plain uuid was waiting for.
+    await expect(em.flush()).rejects.toThrow()
   })
 
   it('opens a linked-identity-change case — RF-082 / #155', async () => {

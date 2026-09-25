@@ -1,6 +1,7 @@
 import { MikroOrmModule } from '@mikro-orm/nestjs'
 import { Module } from '@nestjs/common'
 
+import { CharacterModule } from '../character/character.module'
 import { ModerationCase } from '../moderation/moderation-case.entity'
 import { ReputationEvent } from '../ranking/reputation-event.entity'
 import { AccountCleanupJob } from './account-cleanup.job'
@@ -29,6 +30,7 @@ import { WaitingListService } from './waiting-list.service'
 
 @Module({
   imports: [
+    CharacterModule,
     MikroOrmModule.forFeature([
       Account,
       DiscordLinkState,

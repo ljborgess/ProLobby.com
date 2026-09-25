@@ -72,6 +72,15 @@ export const SIGNUP_THROTTLE: ThrottleOptions = { default: { ttl: 3_600_000, lim
 export const UPLOAD_THROTTLE: ThrottleOptions = { default: { ttl: 3_600_000, limit: 30 } }
 
 /**
+ * Creating a character. Each creation inactivates the previous one, which is
+ * never deleted (RF-027), so an unbounded loop would grow the table forever.
+ * Nobody legitimate creates more than a handful an hour.
+ */
+export const CHARACTER_CREATE_THROTTLE: ThrottleOptions = {
+  default: { ttl: 3_600_000, limit: 10 },
+}
+
+/**
  * The bot's events (#150). One caller, many events: a raid that empties the
  * server is hundreds of "left" events in a minute, and the login bucket would
  * refuse most of them. The HMAC, not this limit, is what authenticates — this

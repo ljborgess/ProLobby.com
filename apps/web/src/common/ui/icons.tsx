@@ -31,6 +31,26 @@ export function DiscordMark({ className }: IconProps) {
 }
 
 /** An open envelope, for the e-mail verification step. */
+/** A player card: the verified character is an archetype card in the game. */
+export function PlayerCardMark({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      className={className}
+    >
+      <rect x="5" y="3" width="14" height="18" rx="2" />
+      <circle cx="12" cy="10" r="2.5" />
+      <path d="M8.5 17c.6-1.8 2-2.8 3.5-2.8s2.9 1 3.5 2.8" />
+    </svg>
+  )
+}
+
 export function MailMark({ className }: IconProps) {
   return (
     <svg

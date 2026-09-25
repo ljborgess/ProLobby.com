@@ -18,6 +18,7 @@ import { memoryStorage } from 'multer'
 import { AllowStates, Public, SkipTermsCheck } from '../../common/auth/auth.decorators'
 import type { RequestWithAccount } from '../../common/auth/session.guard'
 import { LOGIN_THROTTLE, SIGNUP_THROTTLE } from '../../common/security/throttler.config'
+import { CharacterService } from '../character/character.service'
 import type { ModerationCase } from '../moderation/moderation-case.entity'
 
 import { AccountRecoveryService } from './account-recovery.service'
@@ -57,6 +58,7 @@ export class AccountController {
     private readonly punishmentAppealService: PunishmentAppealService,
     private readonly waitingListService: WaitingListService,
     private readonly discordLinkService: DiscordLinkService,
+    private readonly characterService: CharacterService,
   ) {}
 
   /**
@@ -235,22 +237,19 @@ export class AccountController {
    * What the person still has to do before the queue will take them — RF-002,
    * issue #171.
    *
-   * Costs no query: the guard already loaded the account to authorise the
-   * request, so this is a projection of what it holds. Booleans only, in the
-   * order RF-002 fixes for the refusal message (email → character → Discord),
-   * so the screen and that message never disagree about the order.
-   *
-   * `characterVerified` is deliberately absent until phase 2.2 exists: a
-   * pending item nobody can act on is noise, and the field arrives with the
-   * feature that can turn it true.
+   * Booleans only, in the order RF-002 fixes for the refusal message
+   * (email → character → Discord), so the screen and that message never
+   * disagree about the order. One count query for the character; the rest is
+   * the account the guard already loaded.
    */
   @Get('me/queue-prerequisites')
   @AllowStates(AccountState.ACTIVE, AccountState.UNVERIFIED)
-  queuePrerequisites(@Req() request: RequestWithAccount): QueuePrerequisites {
+  async queuePrerequisites(@Req() request: RequestWithAccount): Promise<QueuePrerequisites> {
     const account = request.account!
 
     return {
       emailVerified: account.emailVerified,
+      characterVerified: await this.characterService.hasVerified(account.id),
       discordLinked: account.discordIdHash != null,
       discordPresent: account.discordPresent,
     }

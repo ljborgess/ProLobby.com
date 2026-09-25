@@ -46,10 +46,17 @@ Auto-declaração que habilita a pessoa a ser capitão.
 - **`vagas_livres` substitui o `tem_vaga` booleano (2026-09-11)**: [RF-006](05-funcionais.md#rf-006--lobby-só-fecha-com-candidato-a-capitão-em-cada-lado) passou a exigir vagas suficientes pros humanos do lado, não "pelo menos uma". Booleano deixava fechar lobby que não tinha como convidar todo mundo, e o estouro caía como abuso no capitão.
 
 ### Personagem
-`conta` · `categoria` (GK / zaga-lateral / meio / ponta / ataque) · `plataforma` · `edicao_jogo` · `nome` · `foto` · `arquetipo` · `elo` · `partidas_na_categoria` · `estado` · `criado_em`
+`conta` · `categoria` (GK / zaga-lateral / meio / ponta / ataque) · `arquetipo` · `plataforma` · `edicao_jogo` · `nome` · `foto` · `elo` · `partidas_na_categoria` · `estado` · `verificado_em` · `criado_em`
 
-- **1 ativo por categoria por edição**, até 5 ativos. Recriação dentro da categoria é livre, então há personagens inativos e arquivados guardados.
+- **`arquetipo` entra, `overall` e `atributos` saem (2026-09-24, #194).**
+  - A verificação lê a tela `Archetypes`, que não mostra nenhum dos dois.
+  - Desde o FC 26, o overall só existe por posição, no lobby do clube, e o seed do elo fica neutro ([piloto de OCR, rodada 2](06-piloto-ocr.md)).
+  - O arquétipo tem que ser compatível com a categoria ([Personagens](../produto/02-jogador/01-verificacao.md), "Categoria e arquétipo").
+- **`estado`**: pendente de verificação, verificado, inativo (substituído na mesma categoria) ou arquivado (edição passada). Pendente e verificado contam como "o ativo" da categoria.
+- **1 ativo por categoria por edição**, até 5 ativos. Recriação dentro da categoria é livre, então há personagens inativos e arquivados guardados. A regra é um índice único parcial no banco, e não uma checagem no código: duas criações ao mesmo tempo não podem ganhar as duas.
 - `partidas_na_categoria` existe porque **o K-factor depende da contagem** (32 até a 9ª, 20 da 10ª — ver [Ranking](../produto/02-jogador/02-ranking.md)). Sem esse contador, ele não é calculável.
+- **O personagem que substitui outro na mesma categoria herda `partidas_na_categoria`** (RF-027, 2026-09-24). Começar do zero entregaria de novo o K-factor de jogador novo, e reabriria a troca de categoria que a RF-028 trava.
+- **Pendência pra Fase 2.4: o elo é da categoria, e o `EventoElo` aponta pro personagem.** A RF-027 diz que trocar o personagem não zera o elo, então o motor de elo precisa somar os eventos de todos os personagens da conta naquela categoria e edição, e não só os do personagem ativo.
 
 ### EnvioDePrint
 `personagem` ou `lobby` · `hash_arquivo` (único, anti-reuso) · `arquivo` · `confianca_ocr` · `idioma_detectado` · `aceito` · `enviado_em`
