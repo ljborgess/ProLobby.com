@@ -26,6 +26,7 @@ export interface AccountContent {
     doneLabel: string
     pendingLabel: string
     pendingHint: string
+    action: string
   }
   discord: {
     doneLabel: string
@@ -58,8 +59,8 @@ export const ACCOUNT_CONTENT: Record<Locale, AccountContent> = {
     character: {
       doneLabel: 'Personagem verificado',
       pendingLabel: 'Personagem não verificado',
-      pendingHint:
-        'Você vai cadastrar um personagem e mandar o print da tela de arquétipos do seu Pro. O envio do print chega em breve.',
+      pendingHint: 'Cadastre seu personagem e mande o print da tela de arquétipos do seu Pro.',
+      action: 'Cadastrar personagem',
     },
     discord: {
       doneLabel: 'Discord vinculado',
@@ -92,7 +93,8 @@ export const ACCOUNT_CONTENT: Record<Locale, AccountContent> = {
       doneLabel: 'Personaje verificado',
       pendingLabel: 'Personaje no verificado',
       pendingHint:
-        'Vas a registrar un personaje y enviar la captura de la pantalla de arquetipos de tu Pro. El envío de la captura llega pronto.',
+        'Registra tu personaje y envía la captura de la pantalla de arquetipos de tu Pro.',
+      action: 'Registrar personaje',
     },
     discord: {
       doneLabel: 'Discord vinculado',

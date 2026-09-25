@@ -10,6 +10,8 @@ import { POST as resendVerification } from './accounts/me/verifications/resends/
 import { POST as confirmPasswordReset } from './accounts/password-resets/confirmations/route'
 import { POST as requestPasswordReset } from './accounts/password-resets/route'
 import { POST as verifyEmail } from './accounts/verifications/route'
+import { POST as sendPrint } from './characters/[id]/prints/route'
+import { POST as createCharacter } from './characters/route'
 import { DELETE as signOut, POST as signIn } from './sessions/route'
 
 const BODY = '{"email":"atk@example.com","password":"a=long-enough-password"}'
@@ -37,6 +39,7 @@ describe('the /bff proxies refuse requests from other sites', () => {
     ['verify email', verifyEmail],
     ['request password reset', requestPasswordReset],
     ['confirm password reset', confirmPasswordReset],
+    ['create character', createCharacter],
   ])('%s refuses the text/plain form that carried the attack', async (_name, handler) => {
     const res = await post(handler, { 'content-type': 'text/plain' })
 
@@ -50,6 +53,7 @@ describe('the /bff proxies refuse requests from other sites', () => {
     ['verify email', verifyEmail],
     ['request password reset', requestPasswordReset],
     ['confirm password reset', confirmPasswordReset],
+    ['create character', createCharacter],
   ])('%s refuses a cross-site fetch even with a JSON body', async (_name, handler) => {
     const res = await post(handler, {
       'content-type': 'application/json',
@@ -138,6 +142,58 @@ describe('the /bff proxies refuse requests from other sites', () => {
     )
 
     expect(res.status).toBe(200)
+    expect(apiFetch).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('the print upload proxy', () => {
+  const ID = '11111111-1111-1111-1111-111111111111'
+  const upload = (headers: Record<string, string>, id = ID) =>
+    sendPrint(
+      new Request(`https://prolobby.test/bff/characters/${id}/prints`, {
+        method: 'POST',
+        headers,
+        body: 'x',
+      }),
+      { params: Promise.resolve({ id }) },
+    )
+  const ok = { 'sec-fetch-site': 'same-origin', cookie: 's=1', 'content-length': '1' }
+
+  beforeEach(() => {
+    apiFetch.mockReset()
+    apiFetch.mockResolvedValue(new Response('{}', { status: 201 }))
+  })
+
+  it('refuses another site', async () => {
+    const res = await upload({ ...ok, 'sec-fetch-site': 'cross-site' })
+
+    expect(res.status).toBe(403)
+    expect(apiFetch).not.toHaveBeenCalled()
+  })
+
+  it('never puts an id that is not a UUID into the API path', async () => {
+    const res = await upload(ok, '..%2F..%2Faccounts')
+
+    expect(res.status).toBe(404)
+    expect(apiFetch).not.toHaveBeenCalled()
+  })
+
+  it('refuses without a session before reading the body', async () => {
+    const anonymous = { 'sec-fetch-site': 'same-origin', 'content-length': '1' }
+
+    expect((await upload(anonymous)).status).toBe(401)
+    expect(apiFetch).not.toHaveBeenCalled()
+  })
+
+  it('refuses a body past 10 MB, or one that does not say its size', async () => {
+    expect((await upload({ ...ok, 'content-length': String(11 * 1024 * 1024) })).status).toBe(413)
+    const unsized = { 'sec-fetch-site': 'same-origin', cookie: 's=1' }
+    expect((await upload(unsized)).status).toBe(413)
+    expect(apiFetch).not.toHaveBeenCalled()
+  })
+
+  it('lets the app’s own upload through', async () => {
+    expect((await upload(ok)).status).toBe(201)
     expect(apiFetch).toHaveBeenCalledTimes(1)
   })
 })

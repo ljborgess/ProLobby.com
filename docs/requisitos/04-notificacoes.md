@@ -77,7 +77,7 @@ Urgente = a pessoa precisa agir agora, com prazo correndo. O resto é informativ
 
 ## Regras de comportamento
 
-- **Mensagem de rejeição diz o que fazer**, não só que falhou ([Requisitos transversais](01-transversais.md)). Print rejeitado é o caso mais importante: o motivo precisa distinguir confiança baixa, idioma não reconhecido, gamertag divergente, formato inválido e print já usado — cinco causas com cinco ações diferentes, e hoje todas cairiam num "não foi possível processar".
+- **Mensagem de rejeição diz o que fazer**, não só que falhou ([Requisitos transversais](01-transversais.md)). Print rejeitado é o caso mais importante: o motivo precisa distinguir confiança baixa, idioma não reconhecido, gamertag divergente, formato inválido e print já usado — cinco causas com cinco ações diferentes, e hoje todas cairiam num "não foi possível processar". Desde 2026-09-24 são mais três: imagem pequena demais, gamertag não encontrado no card e arquétipo não ativo ([RF-029](05-funcionais.md#rf-029--print-rejeitado-diz-a-causa)).
 - **DM que falha não vira caso.** O in-app já recebeu o mesmo evento; a decisão de não tratar falha de DM está em [Lobby](../produto/03-partida/03-lobby.md).
 - **Notificação de lobby cancelado diz explicitamente que não houve penalidade.** Sem isso a pessoa assume que perdeu reputação e a percepção de injustiça acontece mesmo sem o fato — foi o problema que os três cancelamentos distintos foram desenhados pra evitar ([Estados](02-estados.md)).
 - **Nada de notificação de marketing ou reengajamento** no MVP. Todo evento da lista é consequência de uma ação real da pessoa ou de algo que afeta a conta dela.

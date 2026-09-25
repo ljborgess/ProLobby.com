@@ -46,7 +46,7 @@ describe('QueuePrerequisitesPanel', () => {
     expect(screen.getAllByText(pt.pending)).toHaveLength(3)
   })
 
-  it('explains the character step without a link until the print screen exists (#194)', () => {
+  it('sends a pending character to the character screen (#196)', () => {
     renderWithLocale(
       <QueuePrerequisitesPanel
         emailVerified
@@ -57,7 +57,10 @@ describe('QueuePrerequisitesPanel', () => {
     )
 
     expect(screen.getByText(pt.character.pendingHint)).toBeInTheDocument()
-    expect(screen.queryByRole('link')).toBeNull()
+    expect(screen.getByRole('link', { name: pt.character.action })).toHaveAttribute(
+      'href',
+      '/account/character',
+    )
     expect(screen.getByText('2/3')).toBeInTheDocument()
   })
 

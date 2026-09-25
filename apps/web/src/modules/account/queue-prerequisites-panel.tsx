@@ -127,7 +127,6 @@ export function QueuePrerequisitesPanel({
         )}
       </Step>
 
-      {/* No link yet: the screen that sends the print is #196. */}
       <Step
         done={characterVerified}
         doneLabel={content.character.doneLabel}
@@ -137,6 +136,13 @@ export function QueuePrerequisitesPanel({
         <p className="text-sm leading-relaxed text-foreground-soft">
           {content.character.pendingHint}
         </p>
+        <Link
+          href="/account/character"
+          className="landing-focus landing-sheen inline-flex items-center gap-2 self-start rounded-full bg-accent px-4 py-2 text-sm font-medium text-background transition-transform duration-200 hover:scale-[1.03] active:scale-95"
+        >
+          <PlayerCardMark className="size-4" />
+          {content.character.action}
+        </Link>
       </Step>
 
       <Step
