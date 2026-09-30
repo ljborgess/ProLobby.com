@@ -24,8 +24,9 @@ export const ACTIVE_CHARACTER_STATES = [
 /**
  * Dossier counterpart: `Personagem` in docs/requisitos/03-dados.md.
  *
- * No overall and no attributes: the verified screen (Archetypes) shows
- * neither, and the elo seed is neutral (06-piloto-ocr.md, rodada 2).
+ * No overall, no attributes, no elo column: the verified screen (Archetypes)
+ * shows neither overall nor attributes, the seed is the baseline 1000, and
+ * category elo is derived from unreverted events (#207, 06-piloto-ocr.md).
  *
  * "One active per category per edition" is a partial unique index in the
  * migration, not a check in the service: two concurrent creations must not
