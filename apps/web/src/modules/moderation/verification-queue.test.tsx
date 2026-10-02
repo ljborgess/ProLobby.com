@@ -97,6 +97,7 @@ describe('CharacterFlow statuses', () => {
     archetype: 'maestro',
     platform: 'ps5' as const,
     state: 'pending_verification' as const,
+    elo: 1000,
   }
 
   it('hides the send button while a print is under review', () => {

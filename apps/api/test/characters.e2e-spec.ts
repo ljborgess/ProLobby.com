@@ -15,6 +15,8 @@ import { Character, CharacterState } from '../src/modules/character/character.en
 import { CHARACTER_CREATIONS_PER_HOUR } from '../src/modules/character/character.service'
 import { PlatformGamertag } from '../src/modules/character/platform-gamertag.entity'
 import { BlockedIdentity } from '../src/modules/moderation/blocked-identity.entity'
+import { EloEvent } from '../src/modules/ranking/elo-event.entity'
+import { EloEventReason } from '../src/modules/ranking/ranking-event.enums'
 import { CapturingMailSender } from './support/capturing-mail-sender'
 
 const PASSWORD = 'a-long-enough-password'
@@ -100,6 +102,7 @@ describe('characters (#194)', () => {
       'archetype',
       'category',
       'edition',
+      'elo',
       'id',
       'matchesInCategory',
       'name',
@@ -239,6 +242,29 @@ describe('characters (#194)', () => {
       .set('Cookie', cookie)
       .send({ category: 'winger' })
     expect(res.status).toBe(409)
+  })
+
+  it('shows the category elo, which a pending replacement inherits (#207, RF-027)', async () => {
+    const cookie = await account()
+    const first = (await create(cookie, midfielder('Rated1'))).body
+    expect(first.elo).toBe(1000)
+    const em = orm.em.fork()
+    const row = await em.findOneOrFail(Character, { id: first.id })
+    em.create(EloEvent, { character: row, delta: 16, reason: EloEventReason.MATCH_RESULT })
+    em.create(EloEvent, {
+      character: row,
+      delta: 16,
+      reason: EloEventReason.MATCH_RESULT,
+      revertedAt: new Date(),
+    })
+    await em.flush()
+
+    const second = (await create(cookie, { ...midfielder('Rated1'), archetype: 'creator' })).body
+    const list = await request(app.getHttpServer()).get('/api/characters').set('Cookie', cookie)
+
+    expect(second.state).toBe(CharacterState.PENDING_VERIFICATION)
+    expect(second.elo).toBe(1016)
+    expect(list.body).toEqual([expect.objectContaining({ id: second.id, elo: 1016 })])
   })
 
   it('refuses to move a character into a category its archetype does not allow', async () => {

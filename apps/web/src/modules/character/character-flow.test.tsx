@@ -97,6 +97,7 @@ describe('CharacterForm', () => {
     archetype: 'shot_stopper',
     platform: 'ps5' as const,
     state: 'verified' as const,
+    elo: 1000,
   }
 
   it('warns that a taken position replaces the character in it (RF-027)', () => {
@@ -150,6 +151,7 @@ describe('CharacterForm', () => {
       archetype: 'spark',
       platform: 'ps5',
       state: 'pending_verification',
+      elo: 1000,
     }
     vi.mocked(fetch).mockResolvedValue(json(201, created))
     const onCreated = vi.fn()
@@ -370,6 +372,7 @@ describe('Roster (tactics board)', () => {
     archetype: 'shot_stopper',
     platform: 'ps5' as const,
     state: 'verified' as const,
+    elo: 1000,
   }
 
   const marker = (category: keyof typeof pt.categories) =>
@@ -414,6 +417,7 @@ describe('Roster (tactics board)', () => {
     archetype: 'maestro',
     platform: 'ps5' as const,
     state: 'pending_verification' as const,
+    elo: 1150,
   }
 
   it('offers the print on a pending card, and opens the upload', () => {
@@ -422,6 +426,12 @@ describe('Roster (tactics board)', () => {
     fireEvent.click(screen.getByRole('button', { name: pt.existing.sendPrint }))
 
     expect(screen.getByText(pt.print.heading)).toBeInTheDocument()
+  })
+
+  it('shows the category elo on a pending card, inherited from the one replaced (#207)', () => {
+    renderWithLocale(<CharacterFlow characters={[pending]} archetypes={ARCHETYPES} />)
+
+    expect(screen.getByText(pt.roster.elo)).toHaveTextContent('1150')
   })
 
   it('offers no print while one is in review', () => {

@@ -14,6 +14,7 @@ import { CURRENT_EDITION } from '../../common/domain/game-edition.enum'
 import { encryptAtRest, readEvidenceEncryptionKey } from '../../common/security/evidence-encryption'
 import { hashGamertag, readIdentityHmacSecret } from '../../common/security/identity-hmac'
 import { Account } from '../account/account.entity'
+import { EloService, eloOf } from '../ranking/elo.service'
 import { archetypeFitsCategory } from './archetype'
 import { ACTIVE_CHARACTER_STATES, Character, CharacterState } from './character.entity'
 import type { ChangeCategoryDto } from './dto/change-category.dto'
@@ -30,11 +31,15 @@ import { PrintRejection, PrintSubmission, PrintSubmissionStatus } from './print-
 export const CHARACTER_CREATIONS_PER_HOUR = 10
 const HOUR_MS = 60 * 60 * 1000
 
-/** What the screen needs about a character — item 17: never the entity. */
+/**
+ * What the screen needs about a character — item 17: never the entity.
+ * `elo` is the category's, read through `EloService` (#207): a pending
+ * replacement shows the rating it inherited (RF-027).
+ */
 export type CharacterView = Pick<
   Character,
   'id' | 'category' | 'archetype' | 'platform' | 'edition' | 'name' | 'state' | 'matchesInCategory'
->
+> & { elo: number }
 
 /**
  * The list also says what happened to the latest print: with no notification
@@ -52,6 +57,7 @@ export class CharacterService {
   constructor(
     private readonly em: EntityManager,
     private readonly verificationService: CharacterVerificationService,
+    private readonly eloService: EloService,
   ) {}
 
   async list(accountId: string): Promise<CharacterListItem[]> {
@@ -65,6 +71,7 @@ export class CharacterService {
       },
       { orderBy: { createdAt: 'asc' } },
     )
+    const elo = await this.eloService.byCategory(accountId, CURRENT_EDITION)
     const prints = await em.find(
       PrintSubmission,
       { character: { $in: characters.map((character) => character.id) } },
@@ -73,7 +80,7 @@ export class CharacterService {
     return characters.map((character) => {
       const last = prints.find((print) => print.character?.id === character.id)
       return {
-        ...toView(character),
+        ...toView(character, eloOf(elo, character.category)),
         lastPrint: last ? { status: last.status, rejection: last.rejection ?? null } : null,
       }
     })
@@ -165,7 +172,10 @@ export class CharacterService {
       matchesInCategory: previous?.matchesInCategory ?? 0,
     })
     await em.flush()
-    return toView(character)
+    return toView(
+      character,
+      await this.eloService.ofIn(em, accountId, dto.category, CURRENT_EDITION),
+    )
   }
 
   async changeCategory(
@@ -195,7 +205,10 @@ export class CharacterService {
         }
         character.category = dto.category
         await em.flush()
-        return toView(character)
+        return toView(
+          character,
+          await this.eloService.ofIn(em, accountId, character.category, character.edition),
+        )
       })
     } catch (error) {
       // The partial unique index: that category already has an active one.
@@ -244,7 +257,7 @@ function lockAccount(em: EntityManager, accountId: string): Promise<Account> {
   return em.findOneOrFail(Account, { id: accountId }, { lockMode: LockMode.PESSIMISTIC_WRITE })
 }
 
-function toView(character: Character): CharacterView {
+function toView(character: Character, elo: number): CharacterView {
   return {
     id: character.id,
     category: character.category,
@@ -254,5 +267,6 @@ function toView(character: Character): CharacterView {
     name: character.name,
     state: character.state,
     matchesInCategory: character.matchesInCategory,
+    elo,
   }
 }

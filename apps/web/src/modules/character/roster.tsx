@@ -486,6 +486,13 @@ function FilledSlot({
       </h3>
       <p className="sr-only">{content.categories[character.category]}</p>
 
+      <p className="flex items-baseline justify-between gap-2 text-xs text-foreground-soft">
+        {content.roster.elo}
+        <span className="font-display text-sm font-medium tabular-nums text-foreground">
+          {character.elo}
+        </span>
+      </p>
+
       <StatusLine status={status} />
       {rejection && <p className="text-xs leading-relaxed text-danger">{rejection}</p>}
 

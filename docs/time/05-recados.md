@@ -6,6 +6,18 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 
 ---
 
+## 2026-10-02 · Rafael
+
+### O #222 entrou, e o restante da #207 ficou com o Luciano
+
+- **O #222 foi mergeado em `dev`.** O `EloService` está disponível, então **a #209 está livre**: ela é sua e continua sendo o gargalo da fase, porque a #211 espera por ela.
+- **A #207 não fechou com o #222.** Faltou o critério "o elo aparece na lista de personagens e na tela, em pt e es". A rota `GET /characters` e a tela de elenco já existiam. O Luciano pegou essa parte e trocou o `Closes` por `Parte de` no seu PR.
+- **Na #209, leia o elo pelo `EloService`.** O `ofIn(em, ...)` é para quem precisa ver, dentro da transação, o evento que acabou de gravar. Para a lista inteira da conta existe o `byCategory`. Nenhum outro lugar soma `EloEvent`.
+- **A resposta de personagem agora traz `elo`** (lista, criação e troca de categoria). Se algum teste seu confere a lista exata de campos da resposta, o `elo` entra nela.
+- **Antes de abrir PR, confira um a um os critérios de aceite da issue.** A revisão automática do #222 aprovou sem notar o critério que faltava.
+
+---
+
 ## 2026-09-25 · Rafael
 
 ### A Fase 2.4 (motor de elo e reputação) está dividida com o Luciano
