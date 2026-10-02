@@ -14,6 +14,7 @@ import { Platform } from '../src/common/domain/platform.enum'
 import { Archetype, CharacterCategory } from '../src/modules/character/archetype'
 import { Character, CharacterState } from '../src/modules/character/character.entity'
 import { EloEvent } from '../src/modules/ranking/elo-event.entity'
+import { EloService } from '../src/modules/ranking/elo.service'
 import { MatchRollbackService } from '../src/modules/ranking/match-rollback.service'
 import { EloEventReason, ReputationEventReason } from '../src/modules/ranking/ranking-event.enums'
 import { ReputationService } from '../src/modules/ranking/reputation.service'
@@ -30,6 +31,7 @@ describe('match rollback (#210)', () => {
   let orm: MikroORM
   let rollback: MatchRollbackService
   let reputation: ReputationService
+  let elo: EloService
   let counter = 0
 
   const player = async (): Promise<{ accountId: string; characterId: string }> => {
@@ -70,11 +72,10 @@ describe('match rollback (#210)', () => {
     const em = orm.em.fork()
     const account = await em.findOneOrFail(Account, { id: accountId })
     const character = await em.findOneOrFail(Character, { id: characterId })
-    const elo = await em.find(EloEvent, { character: characterId, revertedAt: null })
     return {
       reputation: account.reputation,
       matches: character.matchesInCategory,
-      elo: 1000 + elo.reduce((sum, event) => sum + event.delta, 0),
+      elo: await elo.ofIn(em, accountId, character.category, character.edition),
     }
   }
 
@@ -97,6 +98,7 @@ describe('match rollback (#210)', () => {
     await orm.getSchemaGenerator().refreshDatabase()
     rollback = moduleRef.get(MatchRollbackService)
     reputation = moduleRef.get(ReputationService)
+    elo = moduleRef.get(EloService)
   }, 60_000)
 
   afterAll(async () => {

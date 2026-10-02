@@ -32,7 +32,9 @@
       "unrs-resolver"
     ],
     "overrides": {
-      "multer": ">=2.3.0"
+      "multer": ">=2.3.0",
+      "brace-expansion@<2": "1.1.20",
+      "brace-expansion@>=4": "5.0.12"
     }
   }
 }
