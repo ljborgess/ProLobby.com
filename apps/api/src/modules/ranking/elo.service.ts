@@ -51,4 +51,32 @@ export class EloService {
     )
     return ELO_BASELINE + events.reduce((sum, event) => sum + event.delta, 0)
   }
+
+  /**
+   * Every category of the account in one query, for the character list. A
+   * category with no events is absent from the map: read it as the baseline
+   * with `eloOf`.
+   */
+  async byCategory(
+    accountId: string,
+    edition: GameEdition,
+  ): Promise<Map<CharacterCategory, number>> {
+    const events = await this.em
+      .fork()
+      .find(
+        EloEvent,
+        { revertedAt: null, character: { account: accountId, edition } },
+        { fields: ['delta', 'character.category'] },
+      )
+    const elo = new Map<CharacterCategory, number>()
+    for (const event of events) {
+      const category = event.character.category
+      elo.set(category, eloOf(elo, category) + event.delta)
+    }
+    return elo
+  }
+}
+
+export function eloOf(elo: Map<CharacterCategory, number>, category: CharacterCategory): number {
+  return elo.get(category) ?? ELO_BASELINE
 }

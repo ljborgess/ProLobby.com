@@ -34,6 +34,7 @@ export interface CharacterContent {
     legendReview: string
     legendPending: string
     replace: string
+    elo: string
   }
   form: {
     gamertagLabel: string
@@ -123,6 +124,7 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
       legendReview: 'Print em análise',
       legendPending: 'Esperando print',
       replace: 'Trocar personagem',
+      elo: 'Elo da categoria',
     },
     form: {
       gamertagLabel: 'Gamertag nessa plataforma',
@@ -250,6 +252,7 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
       legendReview: 'Captura en revisión',
       legendPending: 'Esperando captura',
       replace: 'Cambiar personaje',
+      elo: 'Elo de la categoría',
     },
     form: {
       gamertagLabel: 'Gamertag en esa plataforma',

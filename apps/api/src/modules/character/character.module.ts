@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common'
 
 import { BlockedIdentity } from '../moderation/blocked-identity.entity'
 import { ModerationCase } from '../moderation/moderation-case.entity'
+import { RankingModule } from '../ranking/ranking.module'
 import { CharacterVerificationService } from './character-verification.service'
 import { CharacterController } from './character.controller'
 import { Character } from './character.entity'
@@ -22,6 +23,7 @@ import { VerificationController } from './verification.controller'
       ModerationCase,
       BlockedIdentity,
     ]),
+    RankingModule,
   ],
   controllers: [CharacterController, VerificationController],
   providers: [

@@ -8,6 +8,8 @@ export interface CharacterView {
   platform: Platform
   name?: string | null
   state: 'pending_verification' | 'verified'
+  /** The category's rating, not the character's: a replacement inherits it (RF-027). */
+  elo: number
   /** Latest print: the character screen is where a rejection reaches the player. */
   lastPrint?: {
     status: 'received' | 'accepted' | 'rejected'
