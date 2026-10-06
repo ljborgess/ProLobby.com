@@ -59,9 +59,9 @@ A fase está quebrada em 6 issues, sub-issues da [#52](https://github.com/ljborg
 - **Até a #199 entrar, todo print recebido abre caso de moderação** (#204). O moderador digita o arquétipo e o gamertag que vê no print, e o servidor compara com o cadastro. Ninguém verifica o próprio caso.
 - **O que a #205 cobre da #197**: caixa de confirmação do arquétipo ativo, cooldown de 24 h contado da aprovação, e um print em análise por personagem. A tela de confirmação com os campos lidos e a confiança foi pra #199, porque só existe com OCR.
 
-### Decisão pendente: regra dos 7 dias (Luciano)
+### Decidido em 2026-10-06: regra dos 7 dias sai
 
-O `01-verificacao.md` libera a reivindicação provisória de gamertag depois de 7 dias sem verificação. O #205 não implementou: a provisória não bloqueia ninguém (quem impõe exclusividade é o índice das verificadas), então apagá-la não libera nada, e ainda quebraria o personagem pendente se a moderação passar de 7 dias. **Proposta: tirar a regra do documento.**
+O `01-verificacao.md` liberava a reivindicação provisória de gamertag depois de 7 dias sem verificação. O #205 não implementou: a provisória não bloqueia ninguém (quem impõe exclusividade é o índice das verificadas), então apagá-la não libera nada, e ainda quebraria o personagem pendente se a moderação passar de 7 dias. **Decisão: a regra saiu do documento**; a provisória não expira.
 
 ### O que mudou na verificação, e onde está escrito
 
