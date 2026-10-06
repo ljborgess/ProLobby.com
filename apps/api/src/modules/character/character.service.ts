@@ -14,6 +14,7 @@ import { CURRENT_EDITION } from '../../common/domain/game-edition.enum'
 import { encryptAtRest, readEvidenceEncryptionKey } from '../../common/security/evidence-encryption'
 import { hashGamertag, readIdentityHmacSecret } from '../../common/security/identity-hmac'
 import { Account } from '../account/account.entity'
+import { assertNotQueued } from '../queue/queue-entry.entity'
 import { EloService, eloOf } from '../ranking/elo.service'
 import { archetypeFitsCategory } from './archetype'
 import { ACTIVE_CHARACTER_STATES, Character, CharacterState } from './character.entity'
@@ -149,6 +150,7 @@ export class CharacterService {
       state: { $in: [...ACTIVE_CHARACTER_STATES] },
     })
     if (previous) {
+      await assertNotQueued(em, previous.id)
       await this.verificationService.closeCaseOfReplaced(em, previous.id)
     }
     await em.nativeUpdate(
@@ -195,6 +197,7 @@ export class CharacterService {
         if (!character) {
           throw new NotFoundException('character_not_found')
         }
+        await assertNotQueued(em, character.id)
         // RF-028: from the first match on, elo exists in that category, and
         // moving would carry performance between positions.
         if (character.matchesInCategory > 0) {
