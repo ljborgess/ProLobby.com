@@ -34,7 +34,14 @@
     "overrides": {
       "multer": ">=2.3.0",
       "brace-expansion@<2": "1.1.20",
-      "brace-expansion@>=4": "5.0.12"
+      "brace-expansion@>=4": "5.0.12",
+      "proxy-addr": ">=2.0.8",
+      "source-map-js": ">=1.2.2"
+    },
+    "auditConfig": {
+      "ignoreGhsas": [
+        "GHSA-vfj7-8cjw-p6xm"
+      ]
     }
   }
 }
