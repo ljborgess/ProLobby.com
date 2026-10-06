@@ -49,6 +49,9 @@ pnpm turbo lint type-check test build e2e
 ```
 
 - Mudança que envolve **tempo, concorrência ou banco compartilhado**: rode a suíte e2e **três vezes seguidas**. Teste flaky é pior que teste ausente — ensina todo mundo a ignorar CI vermelho.
+- **Aviso do `pnpm audit` sem correção.** Quando a única saída é ignorar, o GHSA entra em `pnpm.auditConfig.ignoreGhsas` no `package.json` da raiz, com o motivo escrito aqui. Hoje há um:
+  - `GHSA-vfj7-8cjw-p6xm` (`braces`, negação de serviço por padrão de glob muito aninhado), desde 2026-10-06. Não há versão corrigida. Chega pela descoberta de entidades do MikroORM (`globby` → `micromatch`), que só recebe os globs fixos da nossa configuração, nunca entrada de usuário. Revisar quando sair versão corrigida.
+- Quando há versão corrigida e a dependência é indireta, a correção é um `pnpm.overrides` na raiz (como `multer`, `proxy-addr` e `source-map-js`).
 - **Variável de ambiente nova?** Declare no `turbo.json`. O Turborepo não repassa variável não declarada, e a falha é cruel: o log do CI mostra a variável e o processo jura que ela não existe.
 
 ## Descrição do PR — as 7 seções
