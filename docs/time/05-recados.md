@@ -6,6 +6,29 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 
 ---
 
+## 2026-10-06 · Felipe
+
+### A Fase 2.5 (fila e matchmaking) está dividida com o Luciano
+
+A [#55](https://github.com/ljborgess/ProLobby.com/issues/55) virou 7 issues. As telas são suas, como manda a ordem de implementação.
+
+| Issue | Quem | O quê | Bloqueada por |
+|---|---|---|---|
+| [#228](https://github.com/ljborgess/ProLobby.com/issues/228) | Luciano | entrar e sair da fila, personagem travado | — |
+| [#229](https://github.com/ljborgess/ProLobby.com/issues/229) | **Felipe** | clube declarado, API e formulário | — |
+| [#230](https://github.com/ljborgess/ProLobby.com/issues/230) | Luciano | montador de partida, função pura | — |
+| [#231](https://github.com/ljborgess/ProLobby.com/issues/231) | Luciano | job que cria o lobby | #228, #229, #230 |
+| [#232](https://github.com/ljborgess/ProLobby.com/issues/232) | Luciano | confirmação de 30 s e timeout progressivo | #231 |
+| [#233](https://github.com/ljborgess/ProLobby.com/issues/233) | **Felipe** | tela da fila, faixa de movimento, medidor | #228 |
+| [#234](https://github.com/ljborgess/ProLobby.com/issues/234) | **Felipe** | tela de confirmação, bloqueio e aviso do que falta | #230, #232, #233 |
+
+- **Comece pela #229**: ela não espera ninguém, e a #231 espera por ela.
+- **O medidor de reputação está pronto** na branch `feat/painel-medidor` (`reputation-gauge.tsx`). Traga ele pra #233 em vez de desenhar de novo.
+- **Nenhuma resposta de API mostra quantas pessoas estão na fila** (RF-008), só a faixa.
+- **O cargo Beta na entrada (RF-076) ficou fora**: entra com a Fase 6 ([#61](https://github.com/ljborgess/ProLobby.com/issues/61)).
+
+---
+
 ## 2026-10-02 · Rafael
 
 ### O #222 entrou, e o restante da #207 ficou com o Luciano
