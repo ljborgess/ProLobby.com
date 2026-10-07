@@ -47,6 +47,15 @@ export interface QueueEntryView {
   lobby: { state: LobbyState; confirmBy: Date; confirmed: boolean } | null
 }
 
+/** RF-008: what the screen shows of each category, never the count. */
+export type MovementBand = 'low' | 'busy' | 'full'
+
+/** #233: under 5 searching is "pouca gente", 5 to 15 "movimentada", over 15 "cheia". */
+export function movementBand(searching: number): MovementBand {
+  if (searching < 5) return 'low'
+  return searching <= 15 ? 'busy' : 'full'
+}
+
 /** Joining and leaving the queue — RF-001, RF-002, RF-003, RF-009, #228. */
 @Injectable()
 export class QueueService {
@@ -68,6 +77,23 @@ export class QueueService {
       entry: entry ? toView(entry, mine ? !!mine.confirmedAt : false) : null,
       blockedUntil: await blockedUntilFor(em, accountId, now),
     }
+  }
+
+  /** The band of each category among those still searching (RF-008). */
+  async movement(): Promise<Record<CharacterCategory, MovementBand>> {
+    const rows = await this.em
+      .fork()
+      .getConnection()
+      .execute<{ category: CharacterCategory; searching: string }[]>(
+        `select category, count(*) as searching from queue_entry where lobby_id is null group by category`,
+      )
+    const counts = new Map(rows.map((row) => [row.category, Number(row.searching)]))
+    return Object.fromEntries(
+      Object.values(CharacterCategory).map((category) => [
+        category,
+        movementBand(counts.get(category) ?? 0),
+      ]),
+    ) as Record<CharacterCategory, MovementBand>
   }
 
   async join(accountId: string, characterId: string): Promise<QueueEntryView> {

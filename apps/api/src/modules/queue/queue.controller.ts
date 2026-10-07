@@ -3,10 +3,11 @@ import { Body, Controller, Delete, Get, HttpCode, Post, Put, Req } from '@nestjs
 import { AllowStates } from '../../common/auth/auth.decorators'
 import type { RequestWithAccount } from '../../common/auth/session.guard'
 import { AccountState } from '../account/account.enums'
+import type { CharacterCategory } from '../character/archetype'
 import { ConfirmLobbyDto } from './dto/confirm-lobby.dto'
 import { JoinQueueDto } from './dto/join-queue.dto'
 import { LobbyConfirmationService } from './lobby-confirmation.service'
-import { QueueService, type QueueEntryView } from './queue.service'
+import { QueueService, type MovementBand, type QueueEntryView } from './queue.service'
 
 /**
  * The logged-in account's place in the queue — #228, #232.
@@ -27,6 +28,12 @@ export class QueueController {
     @Req() request: RequestWithAccount,
   ): Promise<{ entry: QueueEntryView | null; blockedUntil: Date | null }> {
     return this.queueService.current(request.account!.id)
+  }
+
+  /** RF-008: only the band per category; the count never leaves the API. */
+  @Get('movement')
+  movement(): Promise<Record<CharacterCategory, MovementBand>> {
+    return this.queueService.movement()
   }
 
   @Post()

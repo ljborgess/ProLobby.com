@@ -108,6 +108,11 @@ export function QueuePrerequisitesPanel({
             />
           ))}
         </div>
+        {allDone && (
+          <Link href="/queue" className={STEP_ACTION}>
+            {content.goToQueue}
+          </Link>
+        )}
       </header>
 
       <Step

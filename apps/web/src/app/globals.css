@@ -761,6 +761,34 @@ input:-webkit-autofill:focus {
   animation: board-spot 2.4s ease-in-out infinite;
 }
 
+/**
+ * The reputation dial draws its arc once, from zero, and the bead lands
+ * with it — the panel's one authored moment. Reduced motion: drawn, still.
+ */
+@keyframes reputation-gauge-fill {
+  from {
+    stroke-dasharray: 0 100;
+  }
+}
+
+@keyframes reputation-gauge-bead {
+  0%,
+  60% {
+    opacity: 0;
+    scale: 0.4;
+  }
+}
+
+.reputation-gauge-fill {
+  animation: reputation-gauge-fill 1.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.reputation-gauge-bead {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: reputation-gauge-bead 1.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 /* The pitch drawing and the card surfaces: static art, no timeline needed. */
 /* Card surface: a top-edge highlight over a barely-there vertical gradient.
    It is what keeps a dark panel from looking like a flat hole in the page. */
@@ -966,6 +994,11 @@ input:-webkit-autofill:focus {
     animation: none;
     opacity: 1;
     scale: 1;
+  }
+
+  .reputation-gauge-fill,
+  .reputation-gauge-bead {
+    animation: none;
   }
 
   .landing-pitch-scan {
