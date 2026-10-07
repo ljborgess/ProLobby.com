@@ -5,6 +5,7 @@ import { apiFetch } from '@/common/api/client'
 import { forwardedIpFrom } from '@/common/api/forwarded-ip'
 import { SESSION_COOKIE_NAME } from '@/common/auth/session-cookie'
 import { LanguageSwitcher } from '@/common/ui/language-switcher'
+import { ProLobbyEmblem } from '@/common/ui/pro-lobby-emblem'
 import type { CharacterCategory } from '@/content/character'
 import type { MovementBand } from '@/content/queue'
 import { AccountBackdrop } from '@/modules/account/account-backdrop'
@@ -69,10 +70,12 @@ export default async function QueuePage() {
   return (
     <main className="relative flex min-h-svh flex-1 flex-col overflow-hidden px-4 py-4 sm:px-6">
       <AccountBackdrop />
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-end gap-4">
+      {/* The emblem as a watermark: huge, faint, behind the whole walk. */}
+      <ProLobbyEmblem className="pointer-events-none absolute left-1/2 top-1/2 w-[min(110vw,58rem)] -translate-x-1/2 -translate-y-1/2 text-white/[0.035]" />
+      <div className="relative mx-auto flex w-full max-w-6xl items-center justify-end gap-4">
         <LanguageSwitcher />
       </div>
-      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center py-2">
+      <div className="relative mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center py-2">
         <QueueScreen
           initial={queue}
           characters={characters}
