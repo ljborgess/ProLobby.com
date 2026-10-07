@@ -17,6 +17,7 @@ import { isUniqueViolation } from '../../common/database/postgres-error'
 import { encryptAtRest, readEvidenceEncryptionKey } from '../../common/security/evidence-encryption'
 import { Account } from '../account/account.entity'
 import { detectRealImageType, readImageSize } from '../account/evidence-image'
+import { assertNotQueued } from '../queue/queue-entry.entity'
 import { ACTIVE_CHARACTER_STATES, Character } from './character.entity'
 import { CharacterVerificationService } from './character-verification.service'
 import { PrintRejection, PrintSubmission, PrintSubmissionStatus } from './print-submission.entity'
@@ -120,6 +121,7 @@ export class PrintSubmissionService implements OnModuleInit {
     if (!character) {
       throw new NotFoundException('character_not_found')
     }
+    await assertNotQueued(em, character.id)
 
     // Neither counts as an attempt: nothing was sent to be judged. A
     // replacement (RF-027) is born without verifiedAt, so the cooldown reads
