@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { type CSSProperties, type PointerEvent, useEffect, useRef, useState } from 'react'
 import { DISCORD_INVITE_URL } from '@/common/discord/invite'
 import { BackAction } from '@/common/ui/back-action'
+import { LanguageSwitcher } from '@/common/ui/language-switcher'
 import { DISCORD_BLURPLE, DiscordMark, MailMark, PlayerCardMark } from '@/common/ui/icons'
 import type { CharacterCategory } from '@/content/character'
 import type { MissingPrerequisite, MovementBand } from '@/content/queue'
@@ -30,15 +31,6 @@ export interface QueueState {
 const POLL_MS = 5000
 const BAND_LEVEL: Record<MovementBand, number> = { low: 1, busy: 2, full: 3 }
 const ARCHES = Array.from({ length: 9 }, (_, index) => index)
-
-/** The arc of lockers around you: how far each one turns in and comes close. */
-const ARC = [
-  { turn: '24deg', near: '48px' },
-  { turn: '12deg', near: '14px' },
-  { turn: '0deg', near: '0px' },
-  { turn: '-12deg', near: '14px' },
-  { turn: '-24deg', near: '48px' },
-]
 
 /** RF-003, drawn: ±150, +50 every 2 min of search, ±400 at most. */
 function bandAt(waitedMs: number): number {
@@ -116,6 +108,11 @@ const DUST = Array.from({ length: 16 }, (_, index) => ({
   size: index % 3 === 0 ? 3 : 2,
 }))
 
+/** An ISO instant `seconds` from now, for a block whose end the API left out. */
+function deadlineIn(seconds: number): string {
+  return new Date(Date.now() + seconds * 1000).toISOString()
+}
+
 const clockOf = (ms: number) => {
   const seconds = Math.max(0, Math.floor(ms / 1000))
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
@@ -156,15 +153,30 @@ export function QueueScreen({
   const codes = useCharacterContent().categoryCodes
   const verified = characters.filter((character) => character.state === 'verified')
   const [state, setState] = useState(initial)
-  const [picked, setPicked] = useState(verified[0]?.id ?? '')
+  // The ring's turn, cumulative so it always goes the short way round.
+  const [spin, setSpin] = useState(() => {
+    const first = CATEGORY_ORDER.findIndex((category) =>
+      verified.some((character) => character.category === category),
+    )
+    return -Math.max(first, 0) * 72
+  })
   const [busy, setBusy] = useState(false)
   const [refusal, setRefusal] = useState<Refusal | null>(null)
   const now = useNow(state.entry !== null || state.blockedUntil !== null)
 
+  const focus = (((Math.round(-spin / 72) % 5) + 5) % 5) as number
+  const chosen = verified.find((character) => character.category === CATEGORY_ORDER[focus])
+  const picked = chosen?.id ?? ''
   const blockedLeft = state.blockedUntil ? new Date(state.blockedUntil).getTime() - now : 0
   const blocked = blockedLeft > 0
-  const chosen = verified.find((character) => character.id === picked)
   const walking = characters.find((character) => character.id === state.entry?.characterId)
+
+  /** Turns the ring the short way to locker `index`. */
+  const turnTo = (index: number) => {
+    const delta = ((index - focus + 7) % 5) - 2
+    setSpin((current) => current - delta * 72)
+  }
+  const step = (direction: 1 | -1) => setSpin((current) => current - direction * 72)
 
   // While in the queue, ask again every few seconds: the lobby arrives on its own.
   const inQueue = state.entry !== null
@@ -201,9 +213,7 @@ export function QueueScreen({
       } else if (body.message === 'queue_prerequisites_missing' && body.missing) {
         setRefusal({ kind: 'missing', missing: body.missing })
       } else if (body.message === 'queue_blocked') {
-        const until =
-          body.blockedUntil ??
-          new Date(Date.now() + (body.retryAfterSeconds ?? 60) * 1000).toISOString()
+        const until = body.blockedUntil ?? deadlineIn(body.retryAfterSeconds ?? 60)
         setState((current) => ({ ...current, blockedUntil: until }))
       } else {
         setRefusal({ kind: 'error' })
@@ -236,56 +246,76 @@ export function QueueScreen({
   const look = useLook()
 
   return (
-    <div className="flex flex-col gap-3 sm:gap-4">
-      <div className="flex items-center gap-4">
-        <BackAction href="/verifications" label={content.back} />
-        <h1 className="font-display text-[clamp(1.65rem,1.1rem+1.7vw,2.4rem)] font-light leading-none tracking-[-0.028em] text-foreground">
-          {content.title}
-        </h1>
-      </div>
+    <div className="absolute inset-0 flex flex-col">
+      {/* The scene is the whole window; everything else sits over it. */}
+      <section {...look} className="absolute inset-0">
+        {state.entry ? (
+          <Tunnel
+            entry={state.entry}
+            now={now}
+            code={codes[state.entry.category]}
+            archetype={walking ? archetypeLabel(walking.archetype) : codes[state.entry.category]}
+            exit={scene === 'found'}
+          />
+        ) : (
+          <Carousel
+            characters={verified}
+            movement={movement}
+            spin={spin}
+            focus={focus}
+            onTurnTo={turnTo}
+            onStep={step}
+          />
+        )}
+      </section>
 
-      <div className="flex flex-col">
-        <section {...look} className="relative">
-          {state.entry ? (
-            <Tunnel
-              entry={state.entry}
-              now={now}
-              code={codes[state.entry.category]}
-              archetype={walking ? archetypeLabel(walking.archetype) : codes[state.entry.category]}
-              exit={scene === 'found'}
-              reputation={<ReputationGauge inline reputation={reputation} band={reputationBand} />}
-            />
-          ) : (
-            <DressingRoom
-              characters={verified}
-              movement={movement}
-              picked={picked}
-              onPick={setPicked}
-              reputation={<ReputationGauge inline reputation={reputation} band={reputationBand} />}
-            />
-          )}
+      <header className="pointer-events-none relative z-10 flex items-start justify-between gap-4 px-4 pt-4 sm:px-8 sm:pt-6">
+        <div className="pointer-events-auto flex items-center gap-4">
+          <BackAction href="/verifications" label={content.back} />
+          <h1 className="font-display text-[clamp(1.65rem,1.1rem+1.7vw,2.4rem)] font-light leading-none tracking-[-0.028em] text-foreground">
+            {content.title}
+          </h1>
+        </div>
+        <div className="pointer-events-auto flex flex-col items-end gap-3">
+          <LanguageSwitcher />
+          <ReputationGauge inline reputation={reputation} band={reputationBand} />
+        </div>
+      </header>
 
-          <div className="flex flex-col gap-3">
-            {scene === 'picking' &&
-              (verified.length === 0 ? (
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <p className="text-sm text-foreground-soft">{content.noVerified}</p>
-                  <Link href="/account/character" className={PRIMARY}>
-                    {content.goToRoster}
-                  </Link>
-                </div>
-              ) : blocked ? (
-                <BlockDial left={blockedLeft} />
-              ) : (
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  {chosen && (
-                    <p className="flex items-baseline gap-2 text-sm text-foreground-soft">
-                      <span className="font-display text-lg font-medium tracking-tight text-foreground">
+      <div className="flex-1" />
+
+      <footer className="pointer-events-none relative z-10 flex flex-col gap-3 px-4 pb-5 sm:px-8 sm:pb-7">
+        <div className="pointer-events-auto">
+          {scene === 'picking' &&
+            (verified.length === 0 ? (
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <p className="text-sm text-foreground-soft">{content.noVerified}</p>
+                <Link href="/account/character" className={PRIMARY}>
+                  {content.goToRoster}
+                </Link>
+              </div>
+            ) : blocked ? (
+              <BlockDial left={blockedLeft} />
+            ) : (
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <p className="flex min-w-0 items-baseline gap-2 text-sm text-foreground-soft">
+                  {chosen ? (
+                    <>
+                      <span className="truncate font-display text-lg font-medium tracking-tight text-foreground">
                         {archetypeLabel(chosen.archetype)}
                       </span>
                       <span className="tabular-nums">Elo {chosen.elo}</span>
-                    </p>
+                    </>
+                  ) : (
+                    <Link
+                      href="/account/character"
+                      className="landing-focus text-accent underline-offset-4 hover:underline"
+                    >
+                      {content.goToRoster}
+                    </Link>
                   )}
+                </p>
+                <div>
                   <button
                     type="button"
                     onClick={join}
@@ -299,93 +329,167 @@ export function QueueScreen({
                         : content.join}
                   </button>
                 </div>
-              ))}
+              </div>
+            ))}
 
-            {scene === 'searching' && (
-              <BackAction kind="cancel" onClick={leave} label={content.leave} />
-            )}
-            {scene === 'found' && (
-              <p className="text-sm text-foreground-soft">{content.placedHint}</p>
-            )}
+          {scene === 'searching' && (
+            <BackAction kind="cancel" onClick={leave} label={content.leave} />
+          )}
+          {scene === 'found' && (
+            <p className="text-sm text-foreground-soft">{content.placedHint}</p>
+          )}
 
-            {refusal && <RefusalMessage refusal={refusal} />}
-          </div>
-        </section>
+          {refusal && (
+            <div className="mt-3">
+              <RefusalMessage refusal={refusal} />
+            </div>
+          )}
+        </div>
+      </footer>
 
-        {state.entry?.lobby && (
-          <MatchFound
-            lobby={state.entry.lobby}
-            now={now}
-            code={codes[state.entry.category]}
-            onAnswered={(next) => setState(next)}
-          />
-        )}
-      </div>
+      {state.entry?.lobby && (
+        <MatchFound
+          lobby={state.entry.lobby}
+          now={now}
+          code={codes[state.entry.category]}
+          onAnswered={(next) => setState(next)}
+        />
+      )}
     </div>
   )
 }
 
 /**
- * Choosing who to play as: one locker per place. Each locker is a native radio
- * (arrow keys move between them); an empty place is a closed door that cannot
- * be chosen. The plate under each locker says how busy that place is.
+ * A side of the ring: a tall, thin chevron at the edge of the scene, faint
+ * until the pointer finds it. No ring, no fill — drawn like the rest.
  */
-function DressingRoom({
+function SideChevron({
+  direction,
+  label,
+  onStep,
+}: {
+  direction: 1 | -1
+  label: string
+  onStep: (direction: 1 | -1) => void
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={() => onStep(direction)}
+      className={`landing-focus group absolute top-1/2 z-10 flex h-40 w-16 -translate-y-1/2 items-center justify-center text-white/20 transition-colors hover:text-accent ${
+        direction === 1 ? 'right-2 sm:right-8' : 'left-2 sm:left-8'
+      }`}
+    >
+      <svg
+        viewBox="0 0 20 64"
+        aria-hidden
+        className={`h-16 w-5 transition-transform duration-300 ${
+          direction === 1 ? 'group-hover:translate-x-1' : 'rotate-180 group-hover:-translate-x-1'
+        } motion-reduce:transition-none`}
+      >
+        <path
+          d="M3 2l14 30L3 62"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </button>
+  )
+}
+
+/**
+ * The dressing room as a carousel: the five lockers on a ring around you, the
+ * chosen one facing you with its door open, the others receding behind it —
+ * smaller, darker, softer with the distance. Turn it by dragging, with the
+ * mouse wheel, the arrows, or the arrow keys (each locker is a native radio;
+ * a free place cannot be chosen, but the ring can still face it).
+ */
+function Carousel({
   characters,
   movement,
-  picked,
-  onPick,
-  reputation,
+  spin,
+  focus,
+  onTurnTo,
+  onStep,
 }: {
   characters: CharacterView[]
   movement: Record<CharacterCategory, MovementBand>
-  picked: string
-  onPick: (id: string) => void
-  /** Hung on the dressing room wall, above the lockers. */
-  reputation: React.ReactNode
+  spin: number
+  focus: number
+  onTurnTo: (index: number) => void
+  onStep: (direction: 1 | -1) => void
 }) {
   const content = useQueueContent()
   const characterContent = useCharacterContent()
+  const drag = useRef<number | null>(null)
+  const wheel = useRef(0)
 
   return (
-    <fieldset className="relative pb-2">
+    <fieldset
+      className="queue-carousel absolute inset-0 flex touch-pan-y items-center justify-center pt-[6svh]"
+      onPointerDown={(event) => {
+        drag.current = event.clientX
+      }}
+      onPointerUp={(event) => {
+        if (drag.current === null) return
+        const moved = event.clientX - drag.current
+        drag.current = null
+        if (Math.abs(moved) > 40) onStep(moved < 0 ? 1 : -1)
+      }}
+      onWheel={(event) => {
+        if (Math.abs(event.deltaY) < 8 || Date.now() - wheel.current < 450) return
+        wheel.current = Date.now()
+        onStep(event.deltaY > 0 ? 1 : -1)
+      }}
+    >
       <legend className="sr-only">{content.pickHeading}</legend>
-      {/* The wall: the reputation dial hung like the dressing room clock. */}
-      <div className="relative mb-3 flex flex-wrap items-center justify-between gap-4 sm:mb-4">
-        <h2
-          id="movement"
-          className="text-[0.7rem] font-medium uppercase tracking-[0.2em] text-foreground-soft"
-        >
-          {content.movementHeading}
-        </h2>
-        {reputation}
-      </div>
+      <SideChevron direction={-1} label={content.previous} onStep={onStep} />
+      <SideChevron direction={1} label={content.next} onStep={onStep} />
+      <h2
+        id="movement"
+        className="absolute left-1/2 top-[19svh] -translate-x-1/2 text-[0.7rem] font-medium uppercase tracking-[0.2em] text-foreground-soft"
+      >
+        {content.movementHeading}
+      </h2>
+      {/* The floor under the ring: a pool of light where the front locker stands. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute left-1/2 top-[72%] h-[18svh] w-[min(90vw,60rem)] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(ellipse_at_center,color-mix(in_srgb,var(--color-accent)_14%,transparent),transparent_70%)]"
+      />
 
-      {/* The ceiling strip lighting the row from above. */}
       <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-[8%] top-[18%] h-[60%] bg-[radial-gradient(ellipse_50%_40%_at_50%_0%,color-mix(in_srgb,var(--color-accent)_10%,transparent),transparent_75%)]"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none mx-auto mb-4 h-px w-[70%] bg-gradient-to-r from-transparent via-white/30 to-transparent shadow-[0_0_18px_2px_rgb(255_255_255/12%)]"
-      />
-      <div className="queue-lockers relative grid grid-cols-5 gap-2 pb-[clamp(2.5rem,9svh,5rem)] sm:gap-6">
+        className="queue-ring relative h-[calc(var(--w)*2.1+3.25rem)] w-[var(--w)]"
+        style={
+          {
+            '--w': 'clamp(8rem, min(19vw, 23svh), 15.5rem)',
+            '--radius': 'calc(var(--w) * 2.1)',
+            '--spin': `${spin}deg`,
+          } as CSSProperties
+        }
+      >
         {CATEGORY_ORDER.map((category, index) => {
           const character = characters.find((item) => item.category === category)
           const code = characterContent.categoryCodes[category]
           const band = movement[category]
+          const distance = Math.min((index - focus + 5) % 5, (focus - index + 5) % 5)
           return (
             <label
               key={category}
-              className={`queue-locker landing-fade-up group flex min-w-0 flex-col items-center gap-2 ${
+              className={`queue-slot queue-locker absolute inset-0 flex flex-col items-center gap-1.5 ${
                 character ? 'cursor-pointer' : 'cursor-default'
               }`}
               style={
                 {
-                  '--landing-delay': `${index * 80}ms`,
-                  '--turn': ARC[index]!.turn,
-                  '--near': ARC[index]!.near,
+                  '--i': index,
+                  opacity: distance === 0 ? 1 : distance === 1 ? 0.75 : 0.4,
+                  filter:
+                    distance === 0
+                      ? 'none'
+                      : `blur(${distance}px) brightness(${1 - distance * 0.2})`,
                 } as CSSProperties
               }
             >
@@ -393,9 +497,9 @@ function DressingRoom({
                 type="radio"
                 name="character"
                 value={character?.id ?? category}
-                checked={character !== undefined && character.id === picked}
+                checked={character !== undefined && index === focus}
                 disabled={!character}
-                onChange={() => character && onPick(character.id)}
+                onChange={() => onTurnTo(index)}
                 aria-label={
                   character
                     ? `${characterContent.categories[category]}: ${archetypeLabel(character.archetype)}, ${content.bands[band]}`
@@ -404,25 +508,30 @@ function DressingRoom({
                 className="peer sr-only"
               />
               <span
-                className={`max-w-full truncate text-[0.68rem] leading-tight sm:text-xs ${
+                className={`max-w-full truncate text-xs leading-tight ${
                   character ? 'font-medium text-foreground' : 'text-foreground-soft'
                 }`}
               >
                 {character ? archetypeLabel(character.archetype) : code}
               </span>
               <MovementChip band={band} />
-              <Locker code={code} filled={character !== undefined} />
+              <span
+                className="w-full"
+                onClick={() => {
+                  // A free place cannot be chosen, but the ring still turns to it.
+                  if (!character) onTurnTo(index)
+                }}
+              >
+                <Locker
+                  code={code}
+                  filled={character !== undefined}
+                  name={character ? archetypeLabel(character.archetype) : ''}
+                  number={SHIRT_NUMBER[category]}
+                />
+              </span>
             </label>
           )
         })}
-      </div>
-      {/* The bench in front of the lockers. */}
-      <div aria-hidden className="relative mx-auto -mt-[clamp(2rem,7svh,4rem)] w-[92%]">
-        <div className="h-2 rounded-sm border-t border-white/15 bg-gradient-to-b from-white/[0.06] to-transparent" />
-        <div className="mx-[6%] flex justify-between">
-          <span className="h-3 w-px bg-white/10" />
-          <span className="h-3 w-px bg-white/10" />
-        </div>
       </div>
     </fieldset>
   )
@@ -435,10 +544,21 @@ function DressingRoom({
  *   leaks through the gap. Choosing it swings the door open in 3D.
  * - **free:** shut and dim, the code on its plate and nothing behind it.
  */
-function Locker({ code, filled }: { code: string; filled: boolean }) {
+function Locker({
+  code,
+  filled,
+  name = '',
+  number = 0,
+}: {
+  code: string
+  filled: boolean
+  /** On the back of the shirt, when the door opens. */
+  name?: string
+  number?: number
+}) {
   return (
     <span
-      className={`queue-locker-door relative block aspect-[1/2.1] w-full sm:h-[clamp(10rem,34svh,17rem)] sm:w-auto ${
+      className={`queue-locker-door relative block aspect-[1/2.1] w-full ${
         filled
           ? 'peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-4 peer-focus-visible:outline-accent'
           : ''
@@ -452,8 +572,8 @@ function Locker({ code, filled }: { code: string; filled: boolean }) {
         {filled && (
           <>
             <span className="queue-locker-light absolute inset-0" />
-            <span className="queue-hanger absolute inset-x-0 top-[14%] flex flex-col items-center">
-              <svg viewBox="0 0 24 10" className="w-7 text-white/45">
+            <span className="queue-hanger absolute inset-x-[6%] top-[24%] flex flex-col items-center">
+              <svg viewBox="0 0 24 10" className="w-8 text-white/45">
                 <path
                   d="M12 1.5a1.5 1.5 0 1 1 1.4 1.5L12 4 2 9h20L12 4"
                   fill="none"
@@ -462,9 +582,7 @@ function Locker({ code, filled }: { code: string; filled: boolean }) {
                   strokeLinejoin="round"
                 />
               </svg>
-              <span className="-mt-1 scale-100 sm:scale-125">
-                <Shirt status="verified" code={code} />
-              </span>
+              <KitReveal code={code} name={name} number={number} />
             </span>
           </>
         )}
@@ -491,6 +609,95 @@ function Locker({ code, filled }: { code: string; filled: boolean }) {
         </span>
         <span className="absolute right-[12%] top-[50%] h-[11%] w-[5%] min-w-1 rounded-full bg-white/25" />
         <span className="absolute inset-x-[14%] bottom-[8%] h-px bg-white/10" />
+      </span>
+    </span>
+  )
+}
+
+/** The number each place wears on its back. */
+const SHIRT_NUMBER: Record<CharacterCategory, number> = {
+  goalkeeper: 1,
+  defender: 4,
+  midfielder: 8,
+  winger: 11,
+  striker: 9,
+}
+
+const KIT = 'M17 7l7 3 7-3 11 6-4 9-4-2v22H14V20l-4 2-4-9z'
+
+/**
+ * The kit on its hanger, two-sided. Through the gap you see the front; when
+ * the door opens it turns round in 3D, the signing-day reveal: the archetype
+ * arched over a big number on the back, then a slow sway on the hanger.
+ */
+function KitReveal({ code, name, number }: { code: string; name: string; number: number }) {
+  return (
+    <span className="queue-kit relative -mt-1 block aspect-square w-[78%]">
+      <span className="queue-kit-turn absolute inset-0">
+        {/* Front: the shirt, the check, the place. */}
+        <svg
+          viewBox="0 0 48 48"
+          aria-hidden
+          className="queue-kit-face absolute inset-0 size-full overflow-visible drop-shadow-[0_0_14px_color-mix(in_srgb,var(--color-accent)_50%,transparent)]"
+        >
+          <path
+            d={KIT}
+            strokeWidth={1.2}
+            strokeLinejoin="round"
+            className="fill-accent stroke-accent"
+          />
+          <path d="M14 13h20" strokeWidth={0.8} className="stroke-background/40" />
+          <path
+            d="M18.5 27l4 4 7.5-8"
+            fill="none"
+            strokeWidth={2.4}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="stroke-background"
+          />
+          <text
+            x="24"
+            y="38.5"
+            textAnchor="middle"
+            fontSize="4.2"
+            fontWeight={700}
+            letterSpacing="0.6"
+            className="fill-background/70"
+          >
+            {code}
+          </text>
+        </svg>
+        {/* Back: name arched over the number. */}
+        <svg
+          viewBox="0 0 48 48"
+          aria-hidden
+          className="queue-kit-face queue-kit-back absolute inset-0 size-full overflow-visible drop-shadow-[0_0_18px_color-mix(in_srgb,var(--color-accent)_60%,transparent)]"
+        >
+          <defs>
+            <path id={`kit-arc-${code}`} d="M15 19 Q24 14 33 19" />
+          </defs>
+          <path
+            d={KIT}
+            strokeWidth={1.2}
+            strokeLinejoin="round"
+            className="fill-accent stroke-accent"
+          />
+          <text fontSize="3.6" fontWeight={700} letterSpacing="0.4" className="fill-background">
+            <textPath href={`#kit-arc-${code}`} startOffset="50%" textAnchor="middle">
+              {name}
+            </textPath>
+          </text>
+          <text
+            x="24"
+            y="37"
+            textAnchor="middle"
+            fontSize="15"
+            fontWeight={800}
+            className="fill-background"
+          >
+            {number}
+          </text>
+        </svg>
       </span>
     </span>
   )
@@ -526,14 +733,12 @@ function Tunnel({
   code,
   archetype,
   exit,
-  reputation,
 }: {
   entry: QueueEntryView
   now: number
   code: string
   archetype: string
   exit: boolean
-  reputation: React.ReactNode
 }) {
   const content = useQueueContent()
   const waited = now - new Date(entry.joinedAt).getTime()
@@ -541,10 +746,7 @@ function Tunnel({
   const light = 0.55 + ((band - 150) / 250) * 0.9
 
   return (
-    <div
-      role="status"
-      className="queue-push-in relative aspect-[3/4] max-h-[62svh] w-full sm:aspect-[16/9]"
-    >
+    <div role="status" className="queue-push-in absolute inset-0">
       <div
         data-exit={exit || undefined}
         className="queue-tunnel absolute inset-0 overflow-hidden [mask-image:radial-gradient(ellipse_72%_68%_at_50%_46%,black_58%,transparent_100%)]"
@@ -603,8 +805,9 @@ function Tunnel({
         </div>
       </div>
 
-      <div className="absolute left-4 top-4 flex flex-col gap-1">
-        <span className="font-display text-[clamp(2rem,1.4rem+2.2vw,3.2rem)] font-light leading-none tracking-[-0.03em] text-foreground tabular-nums">
+      {/* The readout, in the middle of the screen, just under the light. */}
+      <div className="absolute left-1/2 top-[56%] flex -translate-x-1/2 flex-col items-center gap-1 text-center">
+        <span className="font-display text-[clamp(2.4rem,1.6rem+3vw,4.5rem)] font-light leading-none tracking-[-0.035em] text-foreground tabular-nums">
           {clockOf(waited)}
         </span>
         <span className="text-sm text-foreground-soft">
@@ -613,15 +816,14 @@ function Tunnel({
         <span className="text-xs font-medium uppercase tracking-[0.2em] text-foreground-soft">
           {code} · {archetype}
         </span>
-        <span className="sr-only">{content.waited(clockOf(waited))}</span>
-      </div>
-      <div className="absolute right-4 top-4 flex flex-col items-end gap-1 text-right">
-        <span className="text-xs font-medium tabular-nums text-accent">{content.band(band)}</span>
-        <span className="hidden max-w-44 text-[0.7rem] leading-snug text-foreground-soft sm:block">
+        <span className="mt-3 text-xs font-medium tabular-nums text-accent">
+          {content.band(band)}
+        </span>
+        <span className="max-w-56 text-[0.7rem] leading-snug text-foreground-soft">
           {content.bandWidens}
         </span>
+        <span className="sr-only">{content.waited(clockOf(waited))}</span>
       </div>
-      <div className="absolute bottom-4 right-4 hidden sm:block">{reputation}</div>
     </div>
   )
 }

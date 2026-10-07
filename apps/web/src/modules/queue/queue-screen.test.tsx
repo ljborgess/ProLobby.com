@@ -53,11 +53,14 @@ describe('QueueScreen (#233)', () => {
     renderScreen()
 
     expect(screen.getByRole('heading', { name: pt.movementHeading })).toBeInTheDocument()
-    const lockers = screen.getAllByRole('radio').map((radio) => radio.closest('label')!)
-    expect(lockers).toHaveLength(5)
-    expect(within(lockers[2]!).getByText(pt.bands.full)).toBeInTheDocument()
-    expect(lockers.filter((locker) => locker.textContent?.includes(pt.bands.low))).toHaveLength(2)
-    expect(lockers.map((locker) => locker.textContent).join(' ')).not.toMatch(/\d/)
+    expect(screen.getAllByRole('radio')).toHaveLength(5)
+    // The shirt numbers on the kits are not counts; the bands are what RF-008 guards.
+    const chips = [pt.bands.low, pt.bands.busy, pt.bands.full].flatMap((band) =>
+      screen.getAllByText(band),
+    )
+    expect(screen.getAllByText(pt.bands.low)).toHaveLength(2)
+    expect(screen.getAllByText(pt.bands.full)).toHaveLength(1)
+    for (const chip of chips) expect(chip.textContent).not.toMatch(/[0-9]/)
   })
 
   it('shows the reputation dial, with the band under 55 explained', () => {

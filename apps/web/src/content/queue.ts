@@ -23,6 +23,8 @@ export interface QueueContent {
   placedTitle: string
   placedHint: string
   secondsLeft: string
+  previous: string
+  next: string
   accept: string
   refuse: string
   confirmed: string
@@ -57,6 +59,8 @@ export const QUEUE_CONTENT: Record<Locale, QueueContent> = {
     placedTitle: 'Partida encontrada',
     placedHint: 'Esperando a confirmação dos jogadores.',
     secondsLeft: 's pra confirmar',
+    previous: 'Armário anterior',
+    next: 'Próximo armário',
     accept: 'Aceitar',
     refuse: 'Recusar',
     confirmed: 'Confirmado. Esperando os outros jogadores.',
@@ -95,6 +99,8 @@ export const QUEUE_CONTENT: Record<Locale, QueueContent> = {
     placedTitle: 'Partido encontrado',
     placedHint: 'Esperando la confirmación de los jugadores.',
     secondsLeft: 's para confirmar',
+    previous: 'Casillero anterior',
+    next: 'Siguiente casillero',
     accept: 'Aceptar',
     refuse: 'Rechazar',
     confirmed: 'Confirmado. Esperando a los demás jugadores.',

@@ -832,30 +832,30 @@ input:-webkit-autofill:focus {
 }
 
 /**
- * The lockers stand on an arc around you, first person like the tunnel: the
- * ones at the ends turn towards you and come closer (--turn and --near, set
- * per locker), the chosen one steps forward, and the polished floor
- * reflects them.
+ * The dressing room as a carousel: five lockers on a ring around you. The
+ * ring turns (--spin, cumulative, set by the screen) so the chosen locker
+ * faces you; the ones behind recede in the perspective, darker and soft.
+ * --look-x / --look-y (−1…1) follow the pointer: the camera is your head.
  */
-/* --look-x / --look-y (−1…1) follow the pointer, set by the screen: the
-   camera is your head, and the room turns a little the way you look. */
-.queue-lockers {
-  perspective: 900px;
-  perspective-origin: calc(50% + var(--look-x, 0) * 18%) calc(30% + var(--look-y, 0) * 14%);
+.queue-carousel {
+  perspective: 1400px;
+  perspective-origin: calc(50% + var(--look-x, 0) * 14%) calc(38% + var(--look-y, 0) * 10%);
+  transition: perspective-origin 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.queue-ring {
   transform-style: preserve-3d;
-  transform: rotateY(calc(var(--look-x, 0) * -5deg)) rotateX(calc(var(--look-y, 0) * 4deg));
+  transform: translateZ(calc(var(--radius) * -1)) rotateY(var(--spin, 0deg))
+    rotateX(calc(var(--look-y, 0) * -3deg));
+  transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.queue-slot {
+  transform-style: preserve-3d;
+  transform: rotateY(calc(var(--i) * 72deg)) translateZ(var(--radius));
   transition:
-    transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
-    perspective-origin 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.queue-locker {
-  transform: rotateY(var(--turn, 0deg)) translateZ(var(--near, 0px));
-  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.queue-locker:has(:checked) {
-  transform: rotateY(calc(var(--turn, 0deg) * 0.6)) translateZ(calc(var(--near, 0px) + 36px));
+    opacity 0.8s ease,
+    filter 0.8s ease;
 }
 
 .queue-locker-door {
@@ -887,6 +887,44 @@ input:-webkit-autofill:focus {
 
 .queue-locker:has(:checked) .queue-door-ajar {
   transform: perspective(700px) rotateY(-112deg);
+}
+
+/* The kit: front and back faces; the chosen one turns round once, then
+   sways on its hanger. */
+.queue-kit {
+  perspective: 600px;
+}
+
+.queue-kit-turn {
+  transform-style: preserve-3d;
+  transition: transform 1.1s cubic-bezier(0.34, 1.4, 0.5, 1) 0.35s;
+}
+
+.queue-kit-face {
+  backface-visibility: hidden;
+}
+
+.queue-kit-back {
+  transform: rotateY(180deg);
+}
+
+.queue-locker:has(:checked) .queue-kit-turn {
+  transform: rotateY(180deg);
+}
+
+@keyframes queue-kit-sway {
+  0%,
+  100% {
+    rotate: -3deg;
+  }
+  50% {
+    rotate: 3deg;
+  }
+}
+
+.queue-locker:has(:checked) .queue-kit {
+  transform-origin: 50% -10%;
+  animation: queue-kit-sway 3.4s ease-in-out 1.5s infinite;
 }
 
 /* The tunnel: arches on a loop from far to past the camera. */
@@ -1305,11 +1343,17 @@ input:-webkit-autofill:focus {
     animation: none;
   }
 
-  .queue-locker,
-  .queue-lockers,
+  .queue-carousel,
+  .queue-ring,
+  .queue-slot,
   .queue-tunnel,
-  .queue-door {
+  .queue-door,
+  .queue-kit-turn {
     transition: none;
+  }
+
+  .queue-locker:has(:checked) .queue-kit {
+    animation: none;
   }
 
   .queue-dust {
