@@ -361,7 +361,16 @@ function DressingRoom({
         {reputation}
       </div>
 
-      <div className="queue-lockers relative grid grid-cols-5 gap-1.5 pb-[clamp(2.5rem,9svh,5rem)] sm:gap-4">
+      {/* The ceiling strip lighting the row from above. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-[8%] top-[18%] h-[60%] bg-[radial-gradient(ellipse_50%_40%_at_50%_0%,color-mix(in_srgb,var(--color-accent)_10%,transparent),transparent_75%)]"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none mx-auto mb-4 h-px w-[70%] bg-gradient-to-r from-transparent via-white/30 to-transparent shadow-[0_0_18px_2px_rgb(255_255_255/12%)]"
+      />
+      <div className="queue-lockers relative grid grid-cols-5 gap-2 pb-[clamp(2.5rem,9svh,5rem)] sm:gap-6">
         {CATEGORY_ORDER.map((category, index) => {
           const character = characters.find((item) => item.category === category)
           const code = characterContent.categoryCodes[category]
@@ -407,53 +416,82 @@ function DressingRoom({
           )
         })}
       </div>
+      {/* The bench in front of the lockers. */}
+      <div aria-hidden className="relative mx-auto -mt-[clamp(2rem,7svh,4rem)] w-[92%]">
+        <div className="h-2 rounded-sm border-t border-white/15 bg-gradient-to-b from-white/[0.06] to-transparent" />
+        <div className="mx-[6%] flex justify-between">
+          <span className="h-3 w-px bg-white/10" />
+          <span className="h-3 w-px bg-white/10" />
+        </div>
+      </div>
     </fieldset>
   )
 }
 
 /**
- * A locker: vents at the top, the place's code on the door plate, and inside
- * either the shirt on its hanger (lit when chosen) or a closed door.
+ * A locker, as a real one: a lit interior and a door hinged on the left.
+ *
+ * - **taken:** the shirt hangs inside; the door stands ajar and the light
+ *   leaks through the gap. Choosing it swings the door open in 3D.
+ * - **free:** shut and dim, the code on its plate and nothing behind it.
  */
 function Locker({ code, filled }: { code: string; filled: boolean }) {
   return (
     <span
-      className={`queue-locker-door relative flex aspect-[1/2.1] w-full flex-col sm:h-[clamp(8rem,26svh,14rem)] sm:w-auto items-center overflow-hidden rounded-t-md rounded-b-sm border transition-[border-color,translate] duration-300 ${
+      className={`queue-locker-door relative block aspect-[1/2.1] w-full sm:h-[clamp(10rem,34svh,17rem)] sm:w-auto ${
         filled
-          ? 'border-white/15 group-hover:-translate-y-0.5 peer-checked:border-accent/60 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent motion-reduce:group-hover:translate-y-0'
-          : 'border-white/8'
+          ? 'peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-4 peer-focus-visible:outline-accent'
+          : ''
       }`}
     >
-      <span aria-hidden className="queue-locker-light absolute inset-0" />
-      <span aria-hidden className="mt-2 flex w-1/2 flex-col gap-1">
-        {[0, 1, 2].map((vent) => (
-          <span key={vent} className="h-px w-full rounded-full bg-white/15" />
-        ))}
+      {/* Inside: the back wall, the light from the top, the shirt. */}
+      <span
+        aria-hidden
+        className="absolute inset-0 overflow-hidden rounded-t-md rounded-b-sm border border-white/10 bg-[linear-gradient(to_bottom,rgb(255_255_255/5%),rgb(0_0_0/40%))]"
+      >
+        {filled && (
+          <>
+            <span className="queue-locker-light absolute inset-0" />
+            <span className="queue-hanger absolute inset-x-0 top-[14%] flex flex-col items-center">
+              <svg viewBox="0 0 24 10" className="w-7 text-white/45">
+                <path
+                  d="M12 1.5a1.5 1.5 0 1 1 1.4 1.5L12 4 2 9h20L12 4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1}
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span className="-mt-1 scale-100 sm:scale-125">
+                <Shirt status="verified" code={code} />
+              </span>
+            </span>
+          </>
+        )}
       </span>
-      <span className="relative mt-2 text-[0.55rem] font-semibold tracking-[0.15em] text-foreground-soft sm:text-[0.68rem]">
-        {code}
-      </span>
-      {filled ? (
-        <span aria-hidden className="queue-hanger relative mt-3 flex flex-col items-center">
-          <svg viewBox="0 0 24 10" className="w-6 text-white/40">
-            <path
-              d="M12 1.5a1.5 1.5 0 1 1 1.4 1.5L12 4 2 9h20L12 4"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={1}
-              strokeLinejoin="round"
-            />
-          </svg>
-          <span className="-mt-1 scale-90 sm:scale-110">
-            <Shirt status="verified" code={code} />
-          </span>
+
+      {/* The door. */}
+      <span
+        aria-hidden
+        className={`queue-door absolute inset-0 flex flex-col items-center rounded-t-md rounded-b-sm border bg-[linear-gradient(160deg,#131c2e,#0a101c_70%)] shadow-[inset_0_1px_0_0_rgb(255_255_255/8%),inset_0_0_0_3px_rgb(255_255_255/2%)] ${
+          filled ? 'queue-door-ajar border-white/20' : 'border-white/10'
+        }`}
+      >
+        <span className="mt-[10%] flex w-1/2 flex-col gap-[3px]">
+          {[0, 1, 2, 3].map((vent) => (
+            <span key={vent} className="h-px w-full rounded-full bg-white/20" />
+          ))}
         </span>
-      ) : (
         <span
-          aria-hidden
-          className="absolute right-[16%] top-[52%] h-[12%] w-[5%] min-w-1 rounded-full bg-white/15"
-        />
-      )}
+          className={`mt-[10%] rounded-sm border px-1.5 py-0.5 text-[0.55rem] font-semibold tracking-[0.15em] sm:text-[0.7rem] ${
+            filled ? 'border-accent/40 text-accent' : 'border-white/10 text-foreground-soft'
+          }`}
+        >
+          {code}
+        </span>
+        <span className="absolute right-[12%] top-[50%] h-[11%] w-[5%] min-w-1 rounded-full bg-white/25" />
+        <span className="absolute inset-x-[14%] bottom-[8%] h-px bg-white/10" />
+      </span>
     </span>
   )
 }

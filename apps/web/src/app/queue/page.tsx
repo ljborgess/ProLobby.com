@@ -71,7 +71,7 @@ export default async function QueuePage() {
     <main className="relative flex min-h-svh flex-1 flex-col overflow-hidden px-4 py-4 sm:px-6">
       <AccountBackdrop />
       {/* The emblem as a watermark: huge, faint, behind the whole walk. */}
-      <ProLobbyEmblem className="pointer-events-none absolute left-1/2 top-1/2 w-[min(110vw,58rem)] -translate-x-1/2 -translate-y-1/2 text-white/[0.035]" />
+      <ProLobbyEmblem className="pointer-events-none absolute left-1/2 top-1/2 w-[min(110vw,58rem)] -translate-x-1/2 -translate-y-1/2 text-white/[0.022]" />
       <div className="relative mx-auto flex w-full max-w-6xl items-center justify-end gap-4">
         <LanguageSwitcher />
       </div>
