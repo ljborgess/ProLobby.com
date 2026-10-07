@@ -6,6 +6,17 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 
 ---
 
+## 2026-10-07 · Rafael
+
+### A #229 foi dividida: a API fica com o Luciano, a tela continua sua
+
+- **Por quê:** a #231 (a fila cria o lobby) precisa do `freeSlots` de cada pessoa pra achar capitão (RF-006). Sem a declaração de clube, nenhum lobby fecha. O montador (#230) e a entrada na fila (#228) já estão em `dev`.
+- **O Luciano faz a API:** tabela `declared_club` e `GET`/`PUT`/`DELETE /api/accounts/me/club`, com a validação (0 a 10 vagas, nome até 20) e o e2e.
+- **Você faz o formulário no painel:** pt e es, DESIGN.md e teste do formulário. Começa quando o PR da API entrar em `dev`. O formato da resposta vai estar descrito no PR.
+- **A #233 e a #234 continuam suas**, e a #234 espera a #232.
+
+---
+
 ## 2026-10-02 · Rafael
 
 ### O #222 entrou, e o restante da #207 ficou com o Luciano
