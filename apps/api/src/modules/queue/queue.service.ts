@@ -12,7 +12,11 @@ import { isUniqueViolation } from '../../common/database/postgres-error'
 import { Account } from '../account/account.entity'
 import { CharacterCategory } from '../character/archetype'
 import { ACTIVE_CHARACTER_STATES, Character, CharacterState } from '../character/character.entity'
+import { LobbyParticipation } from '../lobby/lobby-participation.entity'
+import type { LobbyState } from '../lobby/lobby.entity'
 import { EloService } from '../ranking/elo.service'
+import { confirmBy } from './lobby-confirmation.service'
+import { blockedUntilFor } from './queue-block'
 import { QueueEntry } from './queue-entry.entity'
 
 /** RF-002, in the order the refusal lists them. */
@@ -39,9 +43,11 @@ export interface QueueEntryView {
   characterId: string
   category: CharacterCategory
   joinedAt: Date
+  /** Null while searching; once placed, what the 30 s screen needs (#232). */
+  lobby: { state: LobbyState; confirmBy: Date; confirmed: boolean } | null
 }
 
-/** Joining and leaving the queue — RF-001, RF-002, RF-003, #228. */
+/** Joining and leaving the queue — RF-001, RF-002, RF-003, RF-009, #228. */
 @Injectable()
 export class QueueService {
   constructor(
@@ -49,9 +55,19 @@ export class QueueService {
     private readonly eloService: EloService,
   ) {}
 
-  async current(accountId: string): Promise<QueueEntryView | null> {
-    const entry = await this.em.fork().findOne(QueueEntry, { account: accountId })
-    return entry ? toView(entry) : null
+  async current(
+    accountId: string,
+    now: Date = new Date(),
+  ): Promise<{ entry: QueueEntryView | null; blockedUntil: Date | null }> {
+    const em = this.em.fork()
+    const entry = await em.findOne(QueueEntry, { account: accountId }, { populate: ['lobby'] })
+    const mine =
+      entry?.lobby &&
+      (await em.findOne(LobbyParticipation, { lobby: entry.lobby, account: accountId }))
+    return {
+      entry: entry ? toView(entry, mine ? !!mine.confirmedAt : false) : null,
+      blockedUntil: await blockedUntilFor(em, accountId, now),
+    }
   }
 
   async join(accountId: string, characterId: string): Promise<QueueEntryView> {
@@ -66,6 +82,16 @@ export class QueueService {
         )
         if (await em.count(QueueEntry, { account: accountId })) {
           throw new ConflictException('already_in_queue')
+        }
+        // RF-009: the message carries the time left.
+        const now = new Date()
+        const blocked = await blockedUntilFor(em, accountId, now)
+        if (blocked) {
+          throw new ForbiddenException({
+            message: 'queue_blocked',
+            blockedUntil: blocked,
+            retryAfterSeconds: Math.ceil((blocked.getTime() - now.getTime()) / 1000),
+          })
         }
         const character = await em.findOne(Character, {
           id: characterId,
@@ -117,6 +143,13 @@ export class QueueService {
   }
 }
 
-function toView(entry: QueueEntry): QueueEntryView {
-  return { characterId: entry.character.id, category: entry.category, joinedAt: entry.joinedAt }
+function toView(entry: QueueEntry, confirmed = false): QueueEntryView {
+  return {
+    characterId: entry.character.id,
+    category: entry.category,
+    joinedAt: entry.joinedAt,
+    lobby: entry.lobby
+      ? { state: entry.lobby.state, confirmBy: confirmBy(entry.lobby), confirmed }
+      : null,
+  }
 }

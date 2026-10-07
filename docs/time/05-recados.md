@@ -15,6 +15,13 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 - **Você faz o formulário no painel:** pt e es, DESIGN.md e teste do formulário. Começa quando o PR da API entrar em `dev`. O formato da resposta vai estar descrito no PR.
 - **A #233 e a #234 continuam suas**, e a #234 espera a #232.
 
+### O que a API da fila entrega pras suas telas (#231 e #232, PRs #239 e #240)
+
+- **`GET /api/queue`** agora devolve `{ entry, blockedUntil }`. `blockedUntil` é o fim do bloqueio por recusa, ou `null`. A `entry` ganhou `lobby`: `null` enquanto busca e, depois de escalado, `{ state, confirmBy, confirmed }`. O `confirmBy` é o fim dos 30 s; a contagem da tela sai dele, não do relógio do navegador no momento em que a tela abriu.
+- **`PUT /api/queue/confirmation`** com `{ accept: true | false }` responde `204`. Depois dos 30 s, dá `409 confirmation_closed`; sem lobby, `404 no_lobby_to_confirm`.
+- **Entrar na fila bloqueado** dá `403 queue_blocked`, com `blockedUntil` e `retryAfterSeconds`.
+- **Sair da fila depois de escalado** dá `409 queue_entry_in_lobby`: a saída é recusar.
+
 ---
 
 ## 2026-10-02 · Rafael
