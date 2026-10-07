@@ -91,6 +91,19 @@ describe('findMatch (#230)', () => {
     }
   })
 
+  it('does not wait for a category without a pair, even at minute 0', () => {
+    // The 8-minute symmetry relief lost its effect on 2026-10-06: the lobby
+    // closes with the pairs it has, and the lone winger waits for the next one.
+    const lone = player(CharacterCategory.WINGER, { joinedAt: NOW })
+
+    const result = findMatch([...eight(), lone], NOW)
+
+    expect(result.kind).toBe('match')
+    if (result.kind === 'match') {
+      expect(ids(result.sides)).not.toContain(lone.id)
+    }
+  })
+
   it('opens the band 50 every 2 minutes, up to 400 (RF-003)', () => {
     const at = (minutes: number) =>
       player(CharacterCategory.STRIKER, {

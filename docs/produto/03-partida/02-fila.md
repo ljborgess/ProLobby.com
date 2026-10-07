@@ -46,7 +46,7 @@
 - **Pré-requisito de capitão pra fechar o lobby**: cada lado precisa ter, entre os humanos escalados, **ao menos 1 jogador com clube EA declarado com vagas suficientes pros outros humanos do lado** (ver [Personagens e verificação](../02-jogador/01-verificacao.md) e [RF-006](../../requisitos/05-funcionais.md#rf-006--lobby-só-fecha-com-candidato-a-capitão-em-cada-lado)) — é critério de fechamento de lobby, não de entrada na fila (qualquer um entra na fila, com clube ou sem).
   - Motivo: o piso de 4 encolheu a lista de candidatos a capitão de 11 pra 4 por lado. Sem esse critério, a cascata de escolha de capitão ([Discord e lobby](03-lobby.md)) esgota com frequência alta numa base pequena, e o lobby é desfeito depois de todo mundo já ter confirmado entrada — a pior forma de falhar, porque desperdiça a confirmação de 8 pessoas. Melhor não fechar o lobby do que fechar e desfazer.
   - Não elimina o caso de cascata esgotada (a declaração pode estar desatualizada e ser recusada na confirmação de 30s — ver [Discord e lobby](03-lobby.md)), só o torna raro em vez de comum.
-- **Teto natural de 11 por lado** — quanto mais humano, melhor; a fila sempre tenta juntar o máximo dentro do prazo.
+- **Teto natural de 11 por lado** — quanto mais humano, melhor; o lobby leva todos os pares que existirem no instante em que fecha (ver "Timeout de fila").
 - **Partida com IA conta igual pro elo**: como os dois lados têm a mesma quantidade de IA (simetria acima), a disputa é justa entre si — não há razão pra valer menos, e evita mecanismo de peso variável difícil de explicar pro jogador.
 - Isso é o que destrava o problema de arranque da plataforma (ver [tese de mercado](../../negocio/01-mercado.md)): meta realista de 8 pessoas em vez de 22 pra uma partida acontecer.
 
