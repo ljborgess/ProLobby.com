@@ -367,7 +367,9 @@ O componente que define o sistema. Campo em planta com as onze vagas de um
 agrupado por categoria com contagem preenchida/total; embaixo, a legenda que diz
 que aquilo é exemplo. Vaga confirmada é disco sólido do acento; vaga em espera é
 contorno tracejado pulsando. É o formato herdado do `escalacao-brasileirao`,
-redesenhado com conteúdo próprio, e é a base da tela de fila da Fase 2.5.
+redesenhado com conteúdo próprio. Ficou na home; a tela de fila da Fase 2.5
+seguiu outro caminho, o Túnel do Vestiário (abaixo), porque a fila só conhece
+você e o relógio, e um campo pede 22 jogadores que ela não pode mostrar.
 
 ### Signature: o Elenco
 
@@ -438,6 +440,33 @@ reputação está no arco.
   desenhado.
 - **Acessibilidade:** é um `role="meter"` com `aria-valuetext` do tipo
   "70 de 100, Boa".
+
+### Signature: o Túnel do Vestiário
+
+A tela de fila (`/queue`, 2026-10-07) é um **percurso em primeira pessoa**, do
+vestiário ao gramado, numa peça só: **sem card, sem fundo, sem moldura**. A cena
+se funde com a página e o túnel some no escuro pelas bordas. Rótulo é texto, não
+chip.
+
+- **Vestiário (escolha):** um arco de cinco armários à sua volta, em
+  perspectiva; os das pontas viram pra você e chegam perto, o escolhido avança
+  e acende a luz de dentro, e o piso encerado reflete os armários. Personagem
+  verificado é a camisa no cabide; vaga sem personagem é porta fechada com
+  maçaneta. Nome e faixa de movimento ficam em cima do armário. O medidor de
+  reputação fica pendurado na parede, na versão `inline`, sem moldura.
+- **Túnel (busca):** arcos vindo na sua direção em loop, piso deslizando, a sua
+  camisa de costas caminhando e poeira subindo na luz. **A luz no fim do túnel
+  é a banda de elo** (RF-003): cresce quando a banda abre, e só aí. Relógio em
+  Sora 300, banda e reputação ficam fora da máscara, sempre nítidos.
+- **Gramado (partida encontrada):** a caminhada vira corrida, a luz toma a
+  tela, os quatro refletores acendem um a um e o cartão sobe com o anel dos
+  30 s e Aceitar / Recusar.
+- **Câmera:** com mouse, a perspectiva segue o ponteiro (`--look-x`,
+  `--look-y`); o arco de armários gira e o ponto de fuga do túnel desloca. Em
+  toque e sob reduced-motion, nada se mexe e toda cena continua legível pelo
+  texto.
+- **Enquadramento:** cabe numa altura de tela; a altura do armário segue `svh`
+  a partir de `sm`, e a largura manda no telefone.
 
 ### Signature: o Painel de Instrumento
 

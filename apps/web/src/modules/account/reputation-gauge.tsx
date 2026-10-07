@@ -31,9 +31,12 @@ function point(value: number, radius: number): { x: number; y: number } {
 export function ReputationGauge({
   reputation,
   band,
+  inline = false,
 }: {
   reputation: number
   band: ReputationBand
+  /** Without the card: mounted inside another scene, smaller. */
+  inline?: boolean
 }) {
   const content = useAccountContent().reputation
   const value = Math.min(100, Math.max(0, reputation))
@@ -41,7 +44,13 @@ export function ReputationGauge({
   const tip = point(value, R)
 
   return (
-    <div className="landing-card relative flex items-center gap-5 overflow-hidden rounded-md border border-white/10 bg-surface px-5 py-5">
+    <div
+      className={
+        inline
+          ? 'relative flex items-center gap-3'
+          : 'landing-card relative flex items-center gap-5 overflow-hidden rounded-md border border-white/10 bg-surface px-5 py-5'
+      }
+    >
       <div
         role="meter"
         aria-valuemin={0}
@@ -49,7 +58,7 @@ export function ReputationGauge({
         aria-valuenow={value}
         aria-valuetext={content.valueText(value, content.bands[band])}
         aria-label={content.label}
-        className="relative w-36 shrink-0 sm:w-40"
+        className={`relative shrink-0 ${inline ? 'w-24 sm:w-28' : 'w-36 sm:w-40'}`}
       >
         <svg viewBox="0 -10 120 76" aria-hidden className="w-full overflow-visible">
           {/* Track, then the lit stretch drawn over it from 0. */}
@@ -107,21 +116,30 @@ export function ReputationGauge({
           />
         </svg>
         <p className="absolute inset-x-0 bottom-0 flex items-baseline justify-center gap-0.5">
-          <span className="font-display text-3xl font-light leading-none tracking-tight text-foreground tabular-nums">
+          <span
+            className={`font-display ${inline ? 'text-2xl' : 'text-3xl'} font-light leading-none tracking-tight text-foreground tabular-nums`}
+          >
             {value}
           </span>
           <span className="text-xs text-foreground-soft">/100</span>
         </p>
       </div>
 
-      <div className="flex min-w-0 flex-col gap-1.5">
-        <p className="text-sm text-foreground-soft">{content.label}</p>
-        <p className={`text-base font-medium ${good ? 'text-accent' : 'text-foreground'}`}>
+      <div className={`flex min-w-0 flex-col ${inline ? 'max-w-44 gap-0.5' : 'gap-1.5'}`}>
+        <p className={`${inline ? 'text-xs' : 'text-sm'} text-foreground-soft`}>{content.label}</p>
+        <p
+          className={`${inline ? 'text-sm' : 'text-base'} font-medium ${good ? 'text-accent' : 'text-foreground'}`}
+        >
           {content.bands[band]}
         </p>
-        <p className="text-xs leading-relaxed text-foreground-soft">
-          {good ? content.howItMoves : content.slowQueue}
-        </p>
+        {/* Inline, the good band needs no explaining; under 55 the line stays. */}
+        {(!inline || !good) && (
+          <p
+            className={`${inline ? 'text-[0.7rem] leading-snug' : 'text-xs leading-relaxed'} text-foreground-soft`}
+          >
+            {good ? content.howItMoves : content.slowQueue}
+          </p>
+        )}
       </div>
     </div>
   )

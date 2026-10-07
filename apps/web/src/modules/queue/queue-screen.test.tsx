@@ -52,10 +52,12 @@ describe('QueueScreen (#233)', () => {
   it('shows each category as a band, never a count (RF-008)', () => {
     renderScreen()
 
-    const movement = screen.getByRole('heading', { name: pt.movementHeading }).parentElement!
-    expect(within(movement).getByText(pt.bands.full)).toBeInTheDocument()
-    expect(within(movement).getAllByText(pt.bands.low)).toHaveLength(2)
-    expect(movement.textContent).not.toMatch(/\d/)
+    expect(screen.getByRole('heading', { name: pt.movementHeading })).toBeInTheDocument()
+    const lockers = screen.getAllByRole('radio').map((radio) => radio.closest('label')!)
+    expect(lockers).toHaveLength(5)
+    expect(within(lockers[2]!).getByText(pt.bands.full)).toBeInTheDocument()
+    expect(lockers.filter((locker) => locker.textContent?.includes(pt.bands.low))).toHaveLength(2)
+    expect(lockers.map((locker) => locker.textContent).join(' ')).not.toMatch(/\d/)
   })
 
   it('shows the reputation dial, with the band under 55 explained', () => {
@@ -74,7 +76,7 @@ describe('QueueScreen (#233)', () => {
     )
     renderScreen()
 
-    fireEvent.click(screen.getByRole('button', { name: pt.join }))
+    fireEvent.click(screen.getByRole('button', { name: pt.joinAs('MEI') }))
 
     const alert = await screen.findByRole('alert')
     const links = within(alert).getAllByRole('link')
@@ -99,12 +101,14 @@ describe('QueueScreen (#233)', () => {
       .mockResolvedValueOnce(answer(204, {}))
     renderScreen()
 
-    fireEvent.click(screen.getByRole('button', { name: pt.join }))
+    fireEvent.click(screen.getByRole('button', { name: pt.joinAs('MEI') }))
     expect(await screen.findByText(pt.searching)).toBeInTheDocument()
     expect(fetch).toHaveBeenCalledWith('/bff/queue', expect.objectContaining({ method: 'POST' }))
 
     fireEvent.click(screen.getByRole('button', { name: pt.leave }))
-    await waitFor(() => expect(screen.getByRole('button', { name: pt.join })).toBeInTheDocument())
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: pt.joinAs('MEI') })).toBeInTheDocument(),
+    )
   })
 
   it('says how long a block lasts', async () => {
@@ -113,7 +117,7 @@ describe('QueueScreen (#233)', () => {
     )
     renderScreen()
 
-    fireEvent.click(screen.getByRole('button', { name: pt.join }))
+    fireEvent.click(screen.getByRole('button', { name: pt.joinAs('MEI') }))
 
     expect(await screen.findByText(pt.blocked(5))).toBeInTheDocument()
   })
@@ -122,6 +126,6 @@ describe('QueueScreen (#233)', () => {
     renderScreen(undefined, 'es')
 
     expect(screen.getByRole('heading', { name: QUEUE_CONTENT.es.title })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: QUEUE_CONTENT.es.join })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: QUEUE_CONTENT.es.joinAs('MED') })).toBeInTheDocument()
   })
 })

@@ -67,12 +67,12 @@ export default async function QueuePage() {
   }
 
   return (
-    <main className="relative flex min-h-svh flex-1 flex-col overflow-hidden px-4 py-8 sm:px-6">
+    <main className="relative flex min-h-svh flex-1 flex-col overflow-hidden px-4 py-4 sm:px-6">
       <AccountBackdrop />
       <div className="mx-auto flex w-full max-w-6xl items-center justify-end gap-4">
         <LanguageSwitcher />
       </div>
-      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center py-10">
+      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center py-2">
         <QueueScreen
           initial={queue}
           characters={characters}
