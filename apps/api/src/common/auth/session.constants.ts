@@ -21,4 +21,9 @@ export const SESSION_TTL_MS = SESSION_TTL_SECONDS * 1000
  */
 export interface SessionTokenPayload {
   sub: string
+  /** Seconds since the epoch, set by the signer: when the session began. */
+  iat?: number
 }
+
+/** RNF-021: an HS256 secret short enough to guess forges any session. */
+export const MIN_JWT_SECRET_LENGTH = 32

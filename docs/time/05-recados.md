@@ -6,6 +6,16 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 
 ---
 
+## 2026-10-08 · Para todos
+
+### `JWT_SECRET` com menos de 32 caracteres derruba a API no boot
+
+- **O que mudou:** a API exige pelo menos 32 caracteres no `JWT_SECRET` (revisão de segurança, PR `fix/sessao-revogavel`). Se o seu `apps/api/.env` tiver um valor curto, a API para de subir com uma mensagem dizendo isso.
+- **O que fazer:** gere um novo com `openssl rand -base64 48` e troque no `.env`. Quem estiver logado na sua máquina vai precisar logar de novo.
+- **E também:** redefinir a senha agora encerra todas as sessões abertas daquela conta (ADR-007 revisto). Num teste e2e que faz login e depois redefine a senha, o cookie antigo deixa de valer.
+
+---
+
 ## 2026-10-07 · Rafael
 
 ### A #229 foi dividida: a API fica com o Luciano, a tela continua sua

@@ -19,7 +19,7 @@ describe('EventDelivery (e2e)', () => {
 
   beforeAll(async () => {
     process.env.THROTTLE_DISABLED = 'true'
-    process.env.JWT_SECRET ??= 'test-secret-not-the-placeholder'
+    process.env.JWT_SECRET ??= 'test-secret-not-the-placeholder-0123456789'
     process.env.WEBHOOK_SECRET = WEBHOOK_SECRET
     process.env.BOT_WEBHOOK_URL = 'http://127.0.0.1:3002/events'
     global.fetch = fetchMock as unknown as typeof fetch

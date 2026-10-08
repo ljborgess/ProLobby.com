@@ -79,7 +79,7 @@ describe('sessions', () => {
 
   beforeAll(async () => {
     process.env.THROTTLE_DISABLED = 'true'
-    process.env.JWT_SECRET ??= 'test-secret-not-the-placeholder'
+    process.env.JWT_SECRET ??= 'test-secret-not-the-placeholder-0123456789'
 
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],

@@ -98,7 +98,7 @@ describe('queue closes matches (#231)', () => {
 
   beforeAll(async () => {
     process.env.THROTTLE_DISABLED = 'true'
-    process.env.JWT_SECRET ??= 'test-secret-not-the-placeholder'
+    process.env.JWT_SECRET ??= 'test-secret-not-the-placeholder-0123456789'
     process.env.EVIDENCE_ENCRYPTION_KEY ??= randomBytes(32).toString('base64')
     process.env.IDENTITY_HMAC_SECRET ??= randomBytes(32).toString('base64')
 

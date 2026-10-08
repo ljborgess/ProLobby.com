@@ -15,7 +15,7 @@ A última é a que morde. Sem decidir, a implementação natural (papel e estado
 
 | Item | Escolha |
 |---|---|
-| **Revogação por sessão** | não existe |
+| **Revogação por sessão** | não existe; **por conta, sim, desde 2026-10-08**: redefinir a senha encerra toda sessão aberta (`sessionsValidFrom`) |
 | **Duração** | 7 dias fixos, sem renovação deslizante |
 | **Claims do token** | só o id da conta (`sub`) — nada de papel, estado ou permissão |
 | **Papel e estado** | lidos do banco a cada request autenticado |
@@ -24,6 +24,8 @@ A última é a que morde. Sem decidir, a implementação natural (papel e estado
 | **Revogação em massa** | trocar o `JWT_SECRET`, como procedimento de emergência |
 
 ### Sem revogação por sessão, e o que isso custa
+
+> **Revisto em 2026-10-08** (revisão de segurança, decisão do Luciano): a alternativa `sessionsValidFrom`, descartada abaixo "por enquanto", foi adotada antes do beta. Redefinir a senha grava o instante na conta, e o guard, que já lê a conta a cada request, recusa token emitido antes dele. Não há consulta nova. O efeito colateral previsto continua: as sessões legítimas da mesma conta também caem. O texto a seguir fica como o raciocínio original.
 
 Trocar a senha **não** derruba sessão nenhuma. Quem tiver um token válido segue dentro até ele expirar — inclusive alguém que roubou a conta e de quem a vítima está justamente tentando se livrar via [RF-024](../requisitos/05-funcionais.md#rf-024--link-de-redefinição-de-senha-expira-em-30-min-e-é-de-uso-único)/[RF-025](../requisitos/05-funcionais.md#rf-025--recuperação-sem-e-mail-e-sem-discord-exige-dois-fatores).
 
@@ -77,7 +79,7 @@ Descartada, por ora, a rotação sem derrubar ninguém (aceitar dois secrets na 
 
 **Sessão revogável com tabela no banco.** Permitiria "ver meus dispositivos" e derrubar um específico, e faria a troca de senha expulsar o invasor. Descartada pelo custo por request (consulta a cada chamada autenticada, além da consulta da conta) e por resolver um problema que o MVP não tem: sem painel de moderação com poder de expulsar sessão (Fase 5) e sem dado financeiro na conta, a capacidade de revogar não tem consumidor. **Revisitar quando o painel existir** — é a fase em que "expulsar sessão" vira ação de moderação de verdade.
 
-**Campo `sessionsValidFrom` na conta.** Meio-termo barato: uma coluna, uma comparação, e a troca de senha mataria todas as sessões daquela conta. Descartada por enquanto porque resolve só o caso da senha trocada e ainda assim derruba as sessões legítimas junto — se esse caso aparecer no beta, é a primeira coisa a implementar, não a tabela completa.
+**Campo `sessionsValidFrom` na conta.** *(Adotado em 2026-10-08; ver a nota acima.)* Meio-termo barato: uma coluna, uma comparação, e a troca de senha mataria todas as sessões daquela conta. Descartada por enquanto porque resolve só o caso da senha trocada e ainda assim derruba as sessões legítimas junto — se esse caso aparecer no beta, é a primeira coisa a implementar, não a tabela completa.
 
 **Refresh token.** Daria access token curto com sessão longa. Descartado por dobrar a superfície (duas credenciais, dois ciclos de vida, rotação) pra ganhar revogabilidade que o item acima já mostrou não ter consumidor no MVP.
 

@@ -78,7 +78,7 @@ describe('password reset (RF-024)', () => {
 
   beforeAll(async () => {
     process.env.THROTTLE_DISABLED = 'true'
-    process.env.JWT_SECRET ??= 'test-secret-not-the-placeholder'
+    process.env.JWT_SECRET ??= 'test-secret-not-the-placeholder-0123456789'
 
     mail = new CapturingMailSender()
 
@@ -190,6 +190,32 @@ describe('password reset (RF-024)', () => {
       expect(res.status).toBe(204)
       await expect(signInStatus('use-ok@test.local', NEW_PASSWORD)).resolves.toBe(200)
       await expect(signInStatus('use-ok@test.local', OLD_PASSWORD)).resolves.toBe(401)
+    })
+
+    it('ends every session opened before the reset, and a new sign-in works (ADR-007)', async () => {
+      const email = 'use-sessions@test.local'
+      await signUp(email)
+      const signIn = await request(app.getHttpServer())
+        .post('/api/sessions')
+        .send({ email, password: OLD_PASSWORD })
+      const oldCookie = signIn.headers['set-cookie'] as unknown as string[]
+      const me = (cookie: string[]) =>
+        request(app.getHttpServer())
+          .get('/api/accounts/me/queue-prerequisites')
+          .set('Cookie', cookie)
+      expect((await me(oldCookie)).status).toBe(200)
+
+      // The token counts in whole seconds: step past the second it was issued in.
+      await new Promise((resolve) => setTimeout(resolve, 1100))
+      expect((await confirm(await issueToken(email))).status).toBe(204)
+
+      const stale = await me(oldCookie)
+      expect(stale.status).toBe(401)
+      expect(stale.body.message).toBe('invalid_session')
+      const fresh = await request(app.getHttpServer())
+        .post('/api/sessions')
+        .send({ email, password: NEW_PASSWORD })
+      expect((await me(fresh.headers['set-cookie'] as unknown as string[])).status).toBe(200)
     })
 
     it('works once: the second use fails', async () => {

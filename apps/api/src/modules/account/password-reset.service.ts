@@ -160,7 +160,8 @@ export class PasswordResetService {
       const updated = await tx.nativeUpdate(
         Account,
         { id: accountId, state: { $ne: AccountState.DELETED } },
-        { passwordHash },
+        // Every session open before this moment ends (session.guard.ts).
+        { passwordHash, sessionsValidFrom: now },
       )
 
       if (updated === 0) {

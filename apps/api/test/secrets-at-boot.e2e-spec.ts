@@ -85,6 +85,13 @@ describe('secrets are validated at boot', () => {
     await expect(bootAuth()).rejects.toThrow(/JWT_SECRET/)
   })
 
+  it('refuses a JWT_SECRET short enough to guess', async () => {
+    // 31 characters: not the placeholder, not empty, still brute-forceable.
+    process.env.JWT_SECRET = 'a'.repeat(31)
+
+    await expect(bootAuth()).rejects.toThrow(/at least 32 characters/)
+  })
+
   it('refuses a key that decodes to the wrong length, not just a missing one', async () => {
     // 31 bytes: passes a truthiness check, fails AES-256. The shape of
     // mistake a hand-typed value actually produces.

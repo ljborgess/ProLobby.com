@@ -129,6 +129,14 @@ export class Account {
   @Property({ nullable: true })
   suspensionEndsAt?: Date
 
+  /**
+   * Sessions issued before this instant no longer count. The token itself is
+   * stateless, so this is how a password reset ends every open session —
+   * including one held by whoever made the reset necessary.
+   */
+  @Property({ nullable: true })
+  sessionsValidFrom?: Date
+
   @Property()
   createdAt: Date & Opt = new Date()
 }

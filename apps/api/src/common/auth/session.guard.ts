@@ -92,6 +92,15 @@ export class SessionGuard implements CanActivate {
       throw new UnauthorizedException('invalid_session')
     }
 
+    // A session older than the last password reset is over. Compared in whole
+    // seconds, the token's own unit, so signing in right after a reset works.
+    if (
+      account.sessionsValidFrom &&
+      (payload.iat ?? 0) < Math.floor(account.sessionsValidFrom.getTime() / 1000)
+    ) {
+      throw new UnauthorizedException('invalid_session')
+    }
+
     const allowedStates = this.reflector.getAllAndOverride<AccountState[]>(ALLOWED_STATES, [
       context.getHandler(),
       context.getClass(),
