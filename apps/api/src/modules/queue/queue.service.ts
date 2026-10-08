@@ -103,9 +103,17 @@ export class QueueService {
     }
   }
 
-  /** Frees the account and the character at once; leaving twice is fine. */
+  /**
+   * Frees the account and the character at once; leaving twice is fine. Once
+   * placed in a lobby, the way out is refusing it (#232), not leaving: a
+   * deleted entry would leave a hole in a roster already formed.
+   */
   async leave(accountId: string): Promise<void> {
-    await this.em.fork().nativeDelete(QueueEntry, { account: accountId })
+    const em = this.em.fork()
+    const deleted = await em.nativeDelete(QueueEntry, { account: accountId, lobby: null })
+    if (deleted === 0 && (await em.count(QueueEntry, { account: accountId }))) {
+      throw new ConflictException('queue_entry_in_lobby')
+    }
   }
 }
 

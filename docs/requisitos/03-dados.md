@@ -72,6 +72,8 @@ Auto-declaração que habilita a pessoa a ser capitão.
 
 O personagem `travado` de [Estados](02-estados.md) **não é coluna**: é derivado de existir entrada pra ele (#228, 2026-10-06). Enquanto existe, o personagem não recebe print, troca de categoria nem substituto ([RF-031](05-funcionais.md#rf-031--personagem-em-fila-ou-lobby-não-aceita-atualização)). Sair da fila apaga a linha.
 
+**`lobby` (#231, 2026-10-07)**: nulo enquanto busca. Quando a fila escala a entrada, ela ganha o lobby em vez de ser apagada: a conta segue com a única entrada, o personagem segue travado e quem voltar à busca mantém o `entrou_em`. Escalado não sai da fila pela rota de saída; sai recusando o lobby (#232).
+
 `elo_no_momento` é congelado na entrada: a banda de busca (±150 abrindo a ±400) precisa de referência estável, senão o alvo se move durante a própria busca. É também o valor que entra na média de cada lado no cálculo de elo ([RF-077](05-funcionais.md#rf-077--expectativa-de-elo-usa-a-média-dos-humanos-de-cada-lado)).
 
 ### OcorrenciaRecusaFila
