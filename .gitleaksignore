@@ -1,0 +1,16 @@
+# Falsos positivos conferidos à mão na revisão de segurança de 2026-10-08.
+# Cada linha é o fingerprint de um achado do gitleaks (commit:arquivo:regra:linha).
+# Segredo de verdade não entra aqui: se vazou, troca o segredo e reescreve.
+
+# IDs do Discord inventados em testes (snowflakes de exemplo, não credencial).
+d1dce207b75ebee207a3f0ff805d19bcb095ca6f:apps/bot/src/discord/presence.spec.ts:discord-client-id:58
+d1dce207b75ebee207a3f0ff805d19bcb095ca6f:apps/bot/src/platform/client.spec.ts:discord-client-id:25
+89f65a35613a5fc5867fbd6aa4bd180fe280edfe:apps/api/src/common/security/identity-hmac.spec.ts:discord-client-id:6
+
+# Chaves descartáveis do CI, válidas só no runner efêmero (comentário no ci.yml).
+b670079998c22af5a20c122f7d6baa8b3a4b1fd9:.github/workflows/ci.yml:generic-api-key:48
+036063b2200de52fd1a48afd14ad48d02d18da90:.github/workflows/ci.yml:generic-api-key:48
+af3ff309f39946396c9063da015e8c31010a9fce:.github/workflows/ci.yml:generic-api-key:47
+
+# Token de exemplo ("abc123def456") no README padrão gerado pelo NestJS.
+d25e153faa51c31bd069ee9bcce7a90b92912c72:apps/api/README.md:generic-api-key:5
