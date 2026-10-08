@@ -1,0 +1,224 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { fireEvent, screen, waitFor, within } from '@testing-library/react'
+import { renderWithLocale } from '@/test-utils'
+import { QUEUE_CONTENT } from '@/content/queue'
+import type { CharacterView } from '@/modules/character/types'
+import { QueueScreen, type QueueState } from './queue-screen'
+
+const pt = QUEUE_CONTENT.pt
+
+const MAESTRO: CharacterView = {
+  id: 'c1',
+  category: 'midfielder',
+  archetype: 'MAESTRO',
+  platform: 'ps5',
+  state: 'verified',
+  elo: 1000,
+}
+
+const MOVEMENT = {
+  goalkeeper: 'low',
+  defender: 'busy',
+  midfielder: 'full',
+  winger: 'low',
+  striker: 'busy',
+} as const
+
+function renderScreen(initial: QueueState = { entry: null, blockedUntil: null }, locale?: 'es') {
+  return renderWithLocale(
+    <QueueScreen
+      initial={initial}
+      characters={[MAESTRO]}
+      movement={MOVEMENT}
+      reputation={50}
+      reputationBand="slow_queue"
+    />,
+    locale,
+  )
+}
+
+const answer = (status: number, body: unknown) =>
+  ({ ok: status < 300, status, json: async () => body }) as Response
+
+describe('QueueScreen (#233)', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn())
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('shows each category as a band, never a count (RF-008)', () => {
+    renderScreen()
+
+    expect(screen.getByRole('heading', { name: pt.movementHeading })).toBeInTheDocument()
+    expect(screen.getAllByRole('radio')).toHaveLength(5)
+    // The shirt numbers on the kits are not counts; the bands are what RF-008 guards.
+    const chips = [pt.bands.low, pt.bands.busy, pt.bands.full].flatMap((band) =>
+      screen.getAllByText(band),
+    )
+    expect(screen.getAllByText(pt.bands.low)).toHaveLength(2)
+    expect(screen.getAllByText(pt.bands.full)).toHaveLength(1)
+    for (const chip of chips) expect(chip.textContent).not.toMatch(/[0-9]/)
+  })
+
+  it('shows the reputation dial, with the band under 55 explained', () => {
+    renderScreen()
+
+    expect(screen.getByRole('meter')).toHaveAttribute('aria-valuenow', '50')
+    expect(screen.getByText(/Abaixo de 55/)).toBeInTheDocument()
+  })
+
+  it('lists every missing prerequisite at once, in order, each with its link (RF-002)', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      answer(403, {
+        message: 'queue_prerequisites_missing',
+        missing: ['email', 'character', 'discord'],
+      }),
+    )
+    renderScreen()
+
+    fireEvent.click(screen.getByRole('button', { name: pt.joinAs('MEI') }))
+
+    const alert = await screen.findByRole('alert')
+    const links = within(alert).getAllByRole('link')
+    expect(links.map((link) => link.textContent)).toEqual([
+      pt.missing.email,
+      pt.missing.character,
+      pt.missing.discord,
+    ])
+    expect(links[1]).toHaveAttribute('href', '/account/character')
+  })
+
+  it('joins, shows the search, and leaves', async () => {
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(
+        answer(201, {
+          characterId: 'c1',
+          category: 'midfielder',
+          joinedAt: new Date().toISOString(),
+          lobby: null,
+        }),
+      )
+      .mockResolvedValueOnce(answer(204, {}))
+    renderScreen()
+
+    fireEvent.click(screen.getByRole('button', { name: pt.joinAs('MEI') }))
+    expect(await screen.findByText(pt.searching)).toBeInTheDocument()
+    expect(fetch).toHaveBeenCalledWith('/bff/queue', expect.objectContaining({ method: 'POST' }))
+
+    fireEvent.click(screen.getByRole('button', { name: pt.leave }))
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: pt.joinAs('MEI') })).toBeInTheDocument(),
+    )
+  })
+
+  it('says how long a block lasts', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      answer(403, { message: 'queue_blocked', retryAfterSeconds: 290 }),
+    )
+    renderScreen()
+
+    fireEvent.click(screen.getByRole('button', { name: pt.joinAs('MEI') }))
+
+    expect(await screen.findByText(pt.blocked(5))).toBeInTheDocument()
+  })
+
+  it('turns the ring with the side arrows: a free locker cannot be joined', async () => {
+    renderScreen()
+
+    fireEvent.click(screen.getByRole('button', { name: pt.next }))
+    const join = await screen.findByRole('button', { name: pt.join })
+    expect(join).toBeDisabled()
+
+    fireEvent.click(screen.getByRole('button', { name: pt.previous }))
+    expect(await screen.findByRole('button', { name: pt.joinAs('MEI') })).toBeEnabled()
+  })
+
+  describe('match found (#232)', () => {
+    const found = (confirmed = false): QueueState => ({
+      entry: {
+        characterId: 'c1',
+        category: 'midfielder',
+        joinedAt: new Date().toISOString(),
+        lobby: {
+          state: 'waiting_players',
+          confirmBy: new Date(Date.now() + 25_000).toISOString(),
+          confirmed,
+        },
+      },
+      blockedUntil: null,
+    })
+
+    it('accepts, then shows the card confirmed', async () => {
+      vi.mocked(fetch)
+        .mockResolvedValueOnce(answer(204, {}))
+        .mockResolvedValueOnce(answer(200, found(true)))
+      renderScreen(found())
+
+      const dialog = screen.getByRole('dialog', { name: pt.placedTitle })
+      fireEvent.click(within(dialog).getByRole('button', { name: pt.accept }))
+
+      expect(await within(dialog).findByText(pt.confirmed)).toBeInTheDocument()
+      expect(fetch).toHaveBeenNthCalledWith(
+        1,
+        '/bff/queue/confirmation',
+        expect.objectContaining({ method: 'PUT', body: JSON.stringify({ accept: true }) }),
+      )
+      expect(within(dialog).queryByRole('button', { name: pt.accept })).toBeNull()
+    })
+
+    it('refuses, and the queue state it reloads takes the card away', async () => {
+      vi.mocked(fetch)
+        .mockResolvedValueOnce(answer(204, {}))
+        .mockResolvedValueOnce(
+          answer(200, { entry: null, blockedUntil: new Date(Date.now() + 300_000).toISOString() }),
+        )
+      renderScreen(found())
+
+      fireEvent.click(screen.getByRole('button', { name: pt.refuse }))
+
+      await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+      expect(fetch).toHaveBeenNthCalledWith(
+        1,
+        '/bff/queue/confirmation',
+        expect.objectContaining({ body: JSON.stringify({ accept: false }) }),
+      )
+      expect(await screen.findByText(pt.blockedTitle)).toBeInTheDocument()
+    })
+
+    it('says the time ran out when the API closed the answer (409)', async () => {
+      vi.mocked(fetch).mockResolvedValueOnce(answer(409, { message: 'confirmation_closed' }))
+      renderScreen(found())
+
+      fireEvent.click(screen.getByRole('button', { name: pt.accept }))
+
+      expect(await screen.findByText(pt.answerClosed)).toBeInTheDocument()
+    })
+
+    it('keeps Tab inside the card', () => {
+      renderScreen(found())
+      const dialog = screen.getByRole('dialog')
+      const accept = within(dialog).getByRole('button', { name: pt.accept })
+      const refuse = within(dialog).getByRole('button', { name: pt.refuse })
+      const [first, last] = [accept, refuse].sort((a, b) =>
+        a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1,
+      )
+
+      last!.focus()
+      fireEvent.keyDown(dialog, { key: 'Tab' })
+      expect(document.activeElement).toBe(first)
+
+      fireEvent.keyDown(dialog, { key: 'Tab', shiftKey: true })
+      expect(document.activeElement).toBe(last)
+    })
+  })
+
+  it('speaks Spanish', () => {
+    renderScreen(undefined, 'es')
+
+    expect(screen.getByRole('heading', { name: QUEUE_CONTENT.es.title })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: QUEUE_CONTENT.es.joinAs('MED') })).toBeInTheDocument()
+  })
+})

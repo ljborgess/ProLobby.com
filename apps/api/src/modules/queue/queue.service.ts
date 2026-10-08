@@ -12,7 +12,11 @@ import { isUniqueViolation } from '../../common/database/postgres-error'
 import { Account } from '../account/account.entity'
 import { CharacterCategory } from '../character/archetype'
 import { ACTIVE_CHARACTER_STATES, Character, CharacterState } from '../character/character.entity'
+import { LobbyParticipation } from '../lobby/lobby-participation.entity'
+import type { LobbyState } from '../lobby/lobby.entity'
 import { EloService } from '../ranking/elo.service'
+import { confirmBy } from './lobby-confirmation.service'
+import { blockedUntilFor } from './queue-block'
 import { QueueEntry } from './queue-entry.entity'
 
 /** RF-002, in the order the refusal lists them. */
@@ -39,9 +43,20 @@ export interface QueueEntryView {
   characterId: string
   category: CharacterCategory
   joinedAt: Date
+  /** Null while searching; once placed, what the 30 s screen needs (#232). */
+  lobby: { state: LobbyState; confirmBy: Date; confirmed: boolean } | null
 }
 
-/** Joining and leaving the queue — RF-001, RF-002, RF-003, #228. */
+/** RF-008: what the screen shows of each category, never the count. */
+export type MovementBand = 'low' | 'busy' | 'full'
+
+/** #233: under 5 searching is "pouca gente", 5 to 15 "movimentada", over 15 "cheia". */
+export function movementBand(searching: number): MovementBand {
+  if (searching < 5) return 'low'
+  return searching <= 15 ? 'busy' : 'full'
+}
+
+/** Joining and leaving the queue — RF-001, RF-002, RF-003, RF-009, #228. */
 @Injectable()
 export class QueueService {
   constructor(
@@ -49,9 +64,36 @@ export class QueueService {
     private readonly eloService: EloService,
   ) {}
 
-  async current(accountId: string): Promise<QueueEntryView | null> {
-    const entry = await this.em.fork().findOne(QueueEntry, { account: accountId })
-    return entry ? toView(entry) : null
+  async current(
+    accountId: string,
+    now: Date = new Date(),
+  ): Promise<{ entry: QueueEntryView | null; blockedUntil: Date | null }> {
+    const em = this.em.fork()
+    const entry = await em.findOne(QueueEntry, { account: accountId }, { populate: ['lobby'] })
+    const mine =
+      entry?.lobby &&
+      (await em.findOne(LobbyParticipation, { lobby: entry.lobby, account: accountId }))
+    return {
+      entry: entry ? toView(entry, mine ? !!mine.confirmedAt : false) : null,
+      blockedUntil: await blockedUntilFor(em, accountId, now),
+    }
+  }
+
+  /** The band of each category among those still searching (RF-008). */
+  async movement(): Promise<Record<CharacterCategory, MovementBand>> {
+    const rows = await this.em
+      .fork()
+      .getConnection()
+      .execute<{ category: CharacterCategory; searching: string }[]>(
+        `select category, count(*) as searching from queue_entry where lobby_id is null group by category`,
+      )
+    const counts = new Map(rows.map((row) => [row.category, Number(row.searching)]))
+    return Object.fromEntries(
+      Object.values(CharacterCategory).map((category) => [
+        category,
+        movementBand(counts.get(category) ?? 0),
+      ]),
+    ) as Record<CharacterCategory, MovementBand>
   }
 
   async join(accountId: string, characterId: string): Promise<QueueEntryView> {
@@ -66,6 +108,16 @@ export class QueueService {
         )
         if (await em.count(QueueEntry, { account: accountId })) {
           throw new ConflictException('already_in_queue')
+        }
+        // RF-009: the message carries the time left.
+        const now = new Date()
+        const blocked = await blockedUntilFor(em, accountId, now)
+        if (blocked) {
+          throw new ForbiddenException({
+            message: 'queue_blocked',
+            blockedUntil: blocked,
+            retryAfterSeconds: Math.ceil((blocked.getTime() - now.getTime()) / 1000),
+          })
         }
         const character = await em.findOne(Character, {
           id: characterId,
@@ -103,12 +155,27 @@ export class QueueService {
     }
   }
 
-  /** Frees the account and the character at once; leaving twice is fine. */
+  /**
+   * Frees the account and the character at once; leaving twice is fine. Once
+   * placed in a lobby, the way out is refusing it (#232), not leaving: a
+   * deleted entry would leave a hole in a roster already formed.
+   */
   async leave(accountId: string): Promise<void> {
-    await this.em.fork().nativeDelete(QueueEntry, { account: accountId })
+    const em = this.em.fork()
+    const deleted = await em.nativeDelete(QueueEntry, { account: accountId, lobby: null })
+    if (deleted === 0 && (await em.count(QueueEntry, { account: accountId }))) {
+      throw new ConflictException('queue_entry_in_lobby')
+    }
   }
 }
 
-function toView(entry: QueueEntry): QueueEntryView {
-  return { characterId: entry.character.id, category: entry.category, joinedAt: entry.joinedAt }
+function toView(entry: QueueEntry, confirmed = false): QueueEntryView {
+  return {
+    characterId: entry.character.id,
+    category: entry.category,
+    joinedAt: entry.joinedAt,
+    lobby: entry.lobby
+      ? { state: entry.lobby.state, confirmBy: confirmBy(entry.lobby), confirmed }
+      : null,
+  }
 }

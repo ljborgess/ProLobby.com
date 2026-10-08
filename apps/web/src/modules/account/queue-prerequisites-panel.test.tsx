@@ -86,7 +86,7 @@ describe('QueuePrerequisitesPanel', () => {
     expect(screen.getAllByText(pt.pending)).toHaveLength(1)
   })
 
-  it('congratulates and offers nothing once both are done', () => {
+  it('congratulates and offers only the way to the queue once all are done', () => {
     renderWithLocale(
       <QueuePrerequisitesPanel
         reputation={70}
@@ -100,7 +100,8 @@ describe('QueuePrerequisitesPanel', () => {
 
     expect(screen.getByText(pt.allDone)).toBeInTheDocument()
     expect(screen.queryByRole('button')).toBeNull()
-    expect(screen.queryByRole('link')).toBeNull()
+    expect(screen.getAllByRole('link')).toHaveLength(1)
+    expect(screen.getByRole('link', { name: pt.goToQueue })).toHaveAttribute('href', '/queue')
   })
 
   it('resends the verification email and then hides the button', async () => {

@@ -6,6 +6,7 @@ import { randomUUID } from 'node:crypto'
 import { Account } from '../account/account.entity'
 import { CharacterCategory } from '../character/archetype'
 import { Character } from '../character/character.entity'
+import { Lobby } from '../lobby/lobby.entity'
 
 /**
  * Dossier counterpart: `EntradaFila` in docs/requisitos/03-dados.md — #228.
@@ -38,6 +39,15 @@ export class QueueEntry {
 
   @Property()
   joinedAt: Date & Opt = new Date()
+
+  /**
+   * Null while searching (`buscando`). Set when the queue places the entry in
+   * a lobby (#231): the row stays, so the account still holds its one entry,
+   * the character stays locked (RF-031 covers the lobby too), and whoever
+   * returns to the search keeps `joinedAt`.
+   */
+  @ManyToOne(() => Lobby, { nullable: true, deleteRule: 'set null' })
+  lobby?: Lobby | null
 }
 
 /**
