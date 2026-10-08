@@ -13,7 +13,7 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 - **Por quê:** a #231 (a fila cria o lobby) precisa do `freeSlots` de cada pessoa pra achar capitão (RF-006). Sem a declaração de clube, nenhum lobby fecha. O montador (#230) e a entrada na fila (#228) já estão em `dev`.
 - **O Luciano faz a API:** tabela `declared_club` e `GET`/`PUT`/`DELETE /api/accounts/me/club`, com a validação (0 a 10 vagas, nome até 20) e o e2e.
 - **Você faz o formulário no painel:** pt e es, DESIGN.md e teste do formulário. Começa quando o PR da API entrar em `dev`. O formato da resposta vai estar descrito no PR.
-- **A #233 e a #234 continuam suas**, e a #234 espera a #232.
+- **A #233 passou pro Luciano** (decidido no mesmo dia, pra ver a fila no visual antes dos merges). A tela `/queue` está no PR #241. **A tela virou o Túnel do Vestiário** (DESIGN.md) e, a pedido do Luciano, **já traz o cartão de Aceitar / Recusar** com o anel dos 30 s (`MatchFound`, em `queue-screen.tsx`, via `PUT /bff/queue/confirmation`) e o mostrador do bloqueio. **Antes de pegar a #234, alinhe com o Luciano o que sobra dela**: provavelmente o aviso do que falta aos 10 min (RF-007) e a repetição a cada 5 min.
 
 ### O que a API da fila entrega pras suas telas (#231 e #232, PRs #239 e #240)
 
