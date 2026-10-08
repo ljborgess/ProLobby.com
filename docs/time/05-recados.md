@@ -24,6 +24,29 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 
 ---
 
+## 2026-10-06 · Rafael
+
+### A Fase 2.5 (fila e matchmaking) está dividida com o Luciano
+
+A [#55](https://github.com/ljborgess/ProLobby.com/issues/55) virou 7 issues. O Felipe não entra nesta fase: as telas ficam com você.
+
+| Issue | Quem | O quê | Bloqueada por |
+|---|---|---|---|
+| [#228](https://github.com/ljborgess/ProLobby.com/issues/228) | Luciano | entrar e sair da fila, personagem travado | — |
+| [#229](https://github.com/ljborgess/ProLobby.com/issues/229) | **Rafael** | clube declarado, API e formulário | — |
+| [#230](https://github.com/ljborgess/ProLobby.com/issues/230) | Luciano | montador de partida, função pura | — |
+| [#231](https://github.com/ljborgess/ProLobby.com/issues/231) | Luciano | job que cria o lobby | #228, #229, #230 |
+| [#232](https://github.com/ljborgess/ProLobby.com/issues/232) | Luciano | confirmação de 30 s e timeout progressivo | #231 |
+| [#233](https://github.com/ljborgess/ProLobby.com/issues/233) | **Rafael** | tela da fila, faixa de movimento, medidor | #228 |
+| [#234](https://github.com/ljborgess/ProLobby.com/issues/234) | **Rafael** | tela de confirmação, bloqueio e aviso do que falta | #230, #232, #233 |
+
+- **Termine a #209 antes**: a #211 já entrou, mas o resultado de partida ainda não vira elo. Depois, **a #229**: ela não espera ninguém, e a #231 espera por ela.
+- **O medidor de reputação está pronto** na branch `feat/painel-medidor` (`reputation-gauge.tsx`). Traga ele pra #233 em vez de desenhar de novo.
+- **Nenhuma resposta de API mostra quantas pessoas estão na fila** (RF-008), só a faixa.
+- **O cargo Beta na entrada (RF-076) ficou fora**: entra com a Fase 6 ([#61](https://github.com/ljborgess/ProLobby.com/issues/61)).
+
+---
+
 ## 2026-10-02 · Rafael
 
 ### O #222 entrou, e o restante da #207 ficou com o Luciano
@@ -77,9 +100,9 @@ A fase está quebrada em 6 issues, sub-issues da [#52](https://github.com/ljborg
 - **Até a #199 entrar, todo print recebido abre caso de moderação** (#204). O moderador digita o arquétipo e o gamertag que vê no print, e o servidor compara com o cadastro. Ninguém verifica o próprio caso.
 - **O que a #205 cobre da #197**: caixa de confirmação do arquétipo ativo, cooldown de 24 h contado da aprovação, e um print em análise por personagem. A tela de confirmação com os campos lidos e a confiança foi pra #199, porque só existe com OCR.
 
-### Decisão pendente: regra dos 7 dias (Luciano)
+### Decidido em 2026-10-06: regra dos 7 dias sai
 
-O `01-verificacao.md` libera a reivindicação provisória de gamertag depois de 7 dias sem verificação. O #205 não implementou: a provisória não bloqueia ninguém (quem impõe exclusividade é o índice das verificadas), então apagá-la não libera nada, e ainda quebraria o personagem pendente se a moderação passar de 7 dias. **Proposta: tirar a regra do documento.**
+O `01-verificacao.md` liberava a reivindicação provisória de gamertag depois de 7 dias sem verificação. O #205 não implementou: a provisória não bloqueia ninguém (quem impõe exclusividade é o índice das verificadas), então apagá-la não libera nada, e ainda quebraria o personagem pendente se a moderação passar de 7 dias. **Decisão: a regra saiu do documento**; a provisória não expira.
 
 ### O que mudou na verificação, e onde está escrito
 
