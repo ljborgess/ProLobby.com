@@ -142,6 +142,16 @@ describe('queue closes matches (#231)', () => {
     expect(await matching.closeMatches()).toBe(0)
   })
 
+  it('stamps the lobby with the clock of the run, where the 30 s count from', async () => {
+    await eight()
+    const now = new Date('2026-10-08T12:00:00Z')
+
+    expect(await matching.closeMatches(now)).toBe(1)
+
+    const [lobby] = await orm.em.fork().find(Lobby, {})
+    expect(lobby!.createdAt).toEqual(now)
+  })
+
   it('makes a single lobby out of two runs at once', async () => {
     await eight()
 
