@@ -113,7 +113,12 @@ describe('queue entry (#228)', () => {
     const res = await join(cookie, characterId)
 
     expect(res.status).toBe(201)
-    expect(res.body).toEqual({ characterId, category: 'midfielder', joinedAt: expect.any(String) })
+    expect(res.body).toEqual({
+      characterId,
+      category: 'midfielder',
+      joinedAt: expect.any(String),
+      lobby: null,
+    })
     const current = await request(app.getHttpServer()).get('/api/queue').set('Cookie', cookie)
     expect(current.body.entry).toMatchObject({ characterId })
   })

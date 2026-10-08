@@ -83,6 +83,8 @@ O personagem `travado` de [Estados](02-estados.md) **não é coluna**: é deriva
 
 O bloqueio corrente é **derivado**, não guardado: conta as ocorrências desde o mais recente entre (agora − 12 h) e a última partida completada, e aplica a escada. Estado derivado não dessincroniza.
 
+**Como a contagem ficou no código (#232, 2026-10-07)**: em cadeia, lendo ao pé da letra o "12 h sem recusa" do [RF-010](05-funcionais.md#rf-010--contador-de-timeout-zera-com-12-h-limpas-ou-uma-partida-completada). Cada recusa sobe um degrau quando vem menos de 12 h depois da anterior; um intervalo de 12 h ou uma partida completada recomeça do 1º. A janela móvel de 12 h da frase acima dá outro número quando as recusas vêm espaçadas: recusas a cada 6 h seguem subindo na cadeia, e na janela ficariam presas no 2º degrau. Partida completada = último evento de elo `match_result` da conta. A recusa grava o id do lobby como valor simples, porque o lobby recusado é desfeito.
+
 ### Lobby
 `estado` · `criado_em` · `fechado_em` · `encerrado_em` · `capitao_lado_a` · `capitao_lado_b` · `clube_a` · `clube_b` · `formacao_a` · `formacao_b` · `placar_a` · `placar_b` · `anulada` · `canal_texto_id` · `canal_voz_a_id` · `canal_voz_b_id`
 

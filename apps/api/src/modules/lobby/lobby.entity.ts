@@ -7,6 +7,7 @@ import { randomUUID } from 'node:crypto'
  */
 export enum LobbyState {
   WAITING_PLAYERS = 'waiting_players',
+  WAITING_CAPTAIN = 'waiting_captain',
 }
 
 /**
