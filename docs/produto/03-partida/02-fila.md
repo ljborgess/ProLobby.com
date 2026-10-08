@@ -17,6 +17,7 @@
   - Detalhe do elo em [Ranking, reputação e punição](../02-jogador/02-ranking.md).
 - **Comparação é categoria contra categoria, não média geral do time**: goleiro do time A é pareado com goleiro do time B (elo próximo), zaga com zaga, meio com meio, ataque com ataque — coerente com elo já ser por categoria. Evita mascarar desequilíbrio grave numa posição crítica (goleiro fraco, por exemplo) atrás de uma média geral do time que parece equilibrada.
 - **Tolerância de elo e expansão de busca**: matchmaking começa buscando dentro de uma banda de **±150 pontos de elo por categoria**, expandindo em **incrementos de 50 pontos a cada 2 minutos desde o início da busca** (não espera o timeout de fila) — chega ao teto de **±400 pontos** aos 10 minutos, mesmo momento em que o timeout de fila (ver abaixo) avisa o jogador. Evita fila trancada esperando par perfeito numa base pequena de usuários, sem abrir mão de equilíbrio nos primeiros minutos (quando a chance de achar par próximo é maior).
+  - **Vale a banda maior do par** (decidido em 2026-10-06, #230): quem espera há 10 min (±400) pareia com quem acabou de entrar (±150) se a diferença couber em ±400. A expansão existe pra destravar quem está esperando; exigir a banda dos dois anularia isso sempre que alguém novo chega.
 
 ## Composição do time
 
@@ -41,11 +42,11 @@
   | 14+ | praticamente sempre |
 
   Recrutamento, largada coordenada e critério de beta miram **12**, não 8 — um número que só funciona 7% das noites não serve pra planejar. Cálculo: cada categoria precisa de par (contagem par), e cada par tem que caber nos slots do lado (GK 1, ZAG 4, MEI 2, PON 2, ATA 2); quem sobra espera o próximo lobby. Contraintuitivo e confirmado: **poucos goleiros não atrapalham** — só se usa 1 por lado, então o clássico "ninguém quer ser goleiro" não é o gargalo aqui.
-- **Simetria relaxa com o tempo, como a banda de elo já relaxa.** Passados **8 minutos** sem fechar, a categoria sem par deixa de ser exigida: os **dois** lados abrem mão do humano naquela categoria e a IA cobre os dois. A simetria continua valendo (os dois lados ficam iguais), e a partida destrava. Mesma filosofia da expansão de ±150 pra ±400 — aplicada à variável que de fato trava a fila numa base pequena.
+- **Simetria relaxa com o tempo, como a banda de elo já relaxa.** Passados **8 minutos** sem fechar, a categoria sem par deixa de ser exigida: os **dois** lados abrem mão do humano naquela categoria e a IA cobre os dois. A simetria continua valendo (os dois lados ficam iguais), e a partida destrava. Mesma filosofia da expansão de ±150 pra ±400 — aplicada à variável que de fato trava a fila numa base pequena. **Sem efeito desde 2026-10-06**: com a fila fechando assim que dá, categoria sem par não trava mais nada (ver "Timeout de fila").
 - **Pré-requisito de capitão pra fechar o lobby**: cada lado precisa ter, entre os humanos escalados, **ao menos 1 jogador com clube EA declarado com vagas suficientes pros outros humanos do lado** (ver [Personagens e verificação](../02-jogador/01-verificacao.md) e [RF-006](../../requisitos/05-funcionais.md#rf-006--lobby-só-fecha-com-candidato-a-capitão-em-cada-lado)) — é critério de fechamento de lobby, não de entrada na fila (qualquer um entra na fila, com clube ou sem).
   - Motivo: o piso de 4 encolheu a lista de candidatos a capitão de 11 pra 4 por lado. Sem esse critério, a cascata de escolha de capitão ([Discord e lobby](03-lobby.md)) esgota com frequência alta numa base pequena, e o lobby é desfeito depois de todo mundo já ter confirmado entrada — a pior forma de falhar, porque desperdiça a confirmação de 8 pessoas. Melhor não fechar o lobby do que fechar e desfazer.
   - Não elimina o caso de cascata esgotada (a declaração pode estar desatualizada e ser recusada na confirmação de 30s — ver [Discord e lobby](03-lobby.md)), só o torna raro em vez de comum.
-- **Teto natural de 11 por lado** — quanto mais humano, melhor; a fila sempre tenta juntar o máximo dentro do prazo.
+- **Teto natural de 11 por lado** — quanto mais humano, melhor; o lobby leva todos os pares que existirem no instante em que fecha (ver "Timeout de fila").
 - **Partida com IA conta igual pro elo**: como os dois lados têm a mesma quantidade de IA (simetria acima), a disputa é justa entre si — não há razão pra valer menos, e evita mecanismo de peso variável difícil de explicar pro jogador.
 - Isso é o que destrava o problema de arranque da plataforma (ver [tese de mercado](../../negocio/01-mercado.md)): meta realista de 8 pessoas em vez de 22 pra uma partida acontecer.
 
@@ -59,7 +60,9 @@
 
 ## Timeout de fila
 
-- Durante **10 minutos** a fila trabalha pra juntar o **máximo de humanos possível** (com a banda de elo expandindo, como descrito acima). No fim do prazo, fecha com quem tiver — respeitando a simetria entre os lados e o piso de 4 por lado. O que faltar vira IA dentro do jogo.
+- **A fila fecha assim que dá** (decidido em 2026-10-06, #230): bateu piso, simetria e capitão nos dois lados, o lobby nasce, com todos os pares que couberem naquele instante. Não segura ninguém esperando mais gente. O que faltar vira IA dentro do jogo.
+  - Antes o texto dizia que a fila "trabalha 10 minutos pra juntar o máximo" e fecha no fim do prazo. Numa base planejada em 12 pessoas, isso faria toda partida esperar 10 min. Os 10 min ficam só como o momento do aviso abaixo.
+  - Consequência: **o alívio de simetria dos 8 minutos perdeu efeito**. Como o lobby fecha com os pares que existem, uma categoria sem par nunca trava ninguém: quem está nela espera o próximo lobby.
 - Se nem o piso for atingido em 10 minutos, avisa o player apontando o **que falta** — a categoria específica sem par (ex.: "falta goleiro do outro lado") ou, se for esse o caso, que **nenhum lado tem candidato a capitão** (ninguém com clube declarado com vaga) com opção de continuar esperando ou sair — mais útil que mensagem genérica. Aviso se repete a cada 5 minutos adicionais enquanto o jogador continuar esperando.
 
 ## Confirmação de entrada no lobby
