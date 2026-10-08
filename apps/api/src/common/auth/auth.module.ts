@@ -2,7 +2,7 @@ import { Global, Module } from '@nestjs/common'
 import { JwtModule } from '@nestjs/jwt'
 
 import { HashService } from './hash.service'
-import { SESSION_TTL_SECONDS } from './session.constants'
+import { MIN_JWT_SECRET_LENGTH, SESSION_TTL_SECONDS } from './session.constants'
 
 /**
  * Signing and hashing, available everywhere.
@@ -19,9 +19,9 @@ import { SESSION_TTL_SECONDS } from './session.constants'
       useFactory: () => {
         const secret = process.env.JWT_SECRET
 
-        if (!secret || secret === 'changeme') {
+        if (!secret || secret === 'changeme' || secret.length < MIN_JWT_SECRET_LENGTH) {
           throw new Error(
-            'JWT_SECRET is required and must not be the placeholder — it forges sessions for any account, including Admin (RNF-021)',
+            `JWT_SECRET is required, must not be the placeholder and needs at least ${MIN_JWT_SECRET_LENGTH} characters — it forges sessions for any account, including Admin (RNF-021)`,
           )
         }
 

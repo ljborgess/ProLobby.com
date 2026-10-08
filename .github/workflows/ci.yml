@@ -42,7 +42,7 @@ jobs:
       DATABASE_URL: postgres://prolobby:prolobby@localhost:5432/prolobby_e2e
       # Descartavel e efemero no runner. O segredo real vive em variavel de
       # ambiente do deploy e forja sessao de qualquer conta (RNF-021).
-      JWT_SECRET: ci-secret-not-the-placeholder
+      JWT_SECRET: ci-secret-not-the-placeholder-0123456789
       WEBHOOK_SECRET: ci-webhook-secret-not-the-placeholder
       # 32 raw bytes, base64 — same discardable-runner rule as the two above.
       EVIDENCE_ENCRYPTION_KEY: 'MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDE='

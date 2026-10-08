@@ -31,7 +31,7 @@ Nunca pare nem apague container de outro projeto pra liberar a porta.
 
 Crie `apps/api/.env` a partir de `apps/api/.env.example`.
 
-- `JWT_SECRET` **não pode ser** `changeme` nem vazio — a API se recusa a subir, de propósito. Gere um com `openssl rand -base64 48`.
+- `JWT_SECRET` **não pode ser** `changeme`, vazio nem ter menos de 32 caracteres — a API se recusa a subir, de propósito. Gere um com `openssl rand -base64 48`.
 - `WEBHOOK_SECRET` segue a mesma regra no bot (e na API quando ela dispara evento). Placeholder no `.env.example`, nunca um valor real.
 - `.env` **nunca** vai pro git. Segredo nenhum (token de bot, chave, senha) vai pra commit, issue, PR, log ou chat — nem "só pra testar".
 

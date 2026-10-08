@@ -39,7 +39,7 @@ describe('sign-in limit per account (item 11, RNF-011)', () => {
 
   beforeAll(async () => {
     process.env.THROTTLE_DISABLED = 'true'
-    process.env.JWT_SECRET ??= 'test-secret-not-the-placeholder'
+    process.env.JWT_SECRET ??= 'test-secret-not-the-placeholder-0123456789'
 
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile()
 

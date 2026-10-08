@@ -53,7 +53,7 @@ describe('every API path the web calls exists', () => {
   let app: INestApplication
 
   beforeAll(async () => {
-    process.env.JWT_SECRET ??= 'test-secret-not-the-placeholder'
+    process.env.JWT_SECRET ??= 'test-secret-not-the-placeholder-0123456789'
     process.env.WEBHOOK_SECRET ??= 'test-webhook-secret-not-the-placeholder'
     process.env.EVIDENCE_ENCRYPTION_KEY ??= randomBytes(32).toString('base64')
     process.env.IDENTITY_HMAC_SECRET ??= randomBytes(32).toString('base64')
