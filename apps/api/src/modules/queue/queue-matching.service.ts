@@ -45,7 +45,8 @@ export class QueueMatchingService {
         const result = findMatch(remaining, now)
         if (result.kind === 'wait') break
 
-        const lobby = em.create(Lobby, {})
+        // Born at the run's clock: the 30 s confirmation counts from here (#232).
+        const lobby = em.create(Lobby, { createdAt: now })
         result.sides.forEach((side, index) => {
           for (const candidate of side) {
             const entry = entryById.get(candidate.id)!
