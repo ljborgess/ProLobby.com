@@ -96,6 +96,8 @@ describe('declared club (#229)', () => {
     [{ freeSlots: '3', clubName: 'Clube' }],
     [{ freeSlots: 3, clubName: 'x'.repeat(21) }],
     [{ freeSlots: 3, clubName: '   ' }],
+    [{ freeSlots: 3, clubName: 'Clube\u200bFC' }],
+    [{ freeSlots: 3, clubName: 'Clube\u202eCF' }],
     [{ freeSlots: 3 }],
   ])('refuses %j in the API, not just on the screen', async (body) => {
     const { cookie } = await account()
