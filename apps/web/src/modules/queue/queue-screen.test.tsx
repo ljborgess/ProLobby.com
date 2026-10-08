@@ -125,6 +125,96 @@ describe('QueueScreen (#233)', () => {
     expect(await screen.findByText(pt.blocked(5))).toBeInTheDocument()
   })
 
+  it('turns the ring with the side arrows: a free locker cannot be joined', async () => {
+    renderScreen()
+
+    fireEvent.click(screen.getByRole('button', { name: pt.next }))
+    const join = await screen.findByRole('button', { name: pt.join })
+    expect(join).toBeDisabled()
+
+    fireEvent.click(screen.getByRole('button', { name: pt.previous }))
+    expect(await screen.findByRole('button', { name: pt.joinAs('MEI') })).toBeEnabled()
+  })
+
+  describe('match found (#232)', () => {
+    const found = (confirmed = false): QueueState => ({
+      entry: {
+        characterId: 'c1',
+        category: 'midfielder',
+        joinedAt: new Date().toISOString(),
+        lobby: {
+          state: 'waiting_players',
+          confirmBy: new Date(Date.now() + 25_000).toISOString(),
+          confirmed,
+        },
+      },
+      blockedUntil: null,
+    })
+
+    it('accepts, then shows the card confirmed', async () => {
+      vi.mocked(fetch)
+        .mockResolvedValueOnce(answer(204, {}))
+        .mockResolvedValueOnce(answer(200, found(true)))
+      renderScreen(found())
+
+      const dialog = screen.getByRole('dialog', { name: pt.placedTitle })
+      fireEvent.click(within(dialog).getByRole('button', { name: pt.accept }))
+
+      expect(await within(dialog).findByText(pt.confirmed)).toBeInTheDocument()
+      expect(fetch).toHaveBeenNthCalledWith(
+        1,
+        '/bff/queue/confirmation',
+        expect.objectContaining({ method: 'PUT', body: JSON.stringify({ accept: true }) }),
+      )
+      expect(within(dialog).queryByRole('button', { name: pt.accept })).toBeNull()
+    })
+
+    it('refuses, and the queue state it reloads takes the card away', async () => {
+      vi.mocked(fetch)
+        .mockResolvedValueOnce(answer(204, {}))
+        .mockResolvedValueOnce(
+          answer(200, { entry: null, blockedUntil: new Date(Date.now() + 300_000).toISOString() }),
+        )
+      renderScreen(found())
+
+      fireEvent.click(screen.getByRole('button', { name: pt.refuse }))
+
+      await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+      expect(fetch).toHaveBeenNthCalledWith(
+        1,
+        '/bff/queue/confirmation',
+        expect.objectContaining({ body: JSON.stringify({ accept: false }) }),
+      )
+      expect(await screen.findByText(pt.blockedTitle)).toBeInTheDocument()
+    })
+
+    it('says the time ran out when the API closed the answer (409)', async () => {
+      vi.mocked(fetch).mockResolvedValueOnce(answer(409, { message: 'confirmation_closed' }))
+      renderScreen(found())
+
+      fireEvent.click(screen.getByRole('button', { name: pt.accept }))
+
+      expect(await screen.findByText(pt.answerClosed)).toBeInTheDocument()
+    })
+
+    it('keeps Tab inside the card', () => {
+      renderScreen(found())
+      const dialog = screen.getByRole('dialog')
+      const accept = within(dialog).getByRole('button', { name: pt.accept })
+      const refuse = within(dialog).getByRole('button', { name: pt.refuse })
+      const [first, last] = [accept, refuse].sort((a, b) =>
+        a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1,
+      )
+
+      last!.focus()
+      fireEvent.keyDown(dialog, { key: 'Tab' })
+      expect(document.activeElement).toBe(first)
+
+      fireEvent.keyDown(dialog, { key: 'Tab', shiftKey: true })
+      expect(document.activeElement).toBe(last)
+    })
+  })
+
   it('speaks Spanish', () => {
     renderScreen(undefined, 'es')
 

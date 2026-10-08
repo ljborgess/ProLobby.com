@@ -843,6 +843,31 @@ const BEAMS = [
  * answers (#232's `PUT /queue/confirmation`). Accepting keeps the card up,
  * confirmed; refusing reloads the queue state, which now carries the block.
  */
+/**
+ * Keeps Tab inside a modal: from the last control back to the first, and
+ * the other way with Shift. With nothing to focus (the card after accepting),
+ * focus stays on the dialog itself.
+ */
+function trapFocus(event: React.KeyboardEvent<HTMLElement>) {
+  if (event.key !== 'Tab') return
+  const controls = Array.from(
+    event.currentTarget.querySelectorAll<HTMLElement>('button:not([disabled]), a[href]'),
+  )
+  const first = controls[0]
+  const last = controls.at(-1)
+  if (!first || !last) {
+    event.preventDefault()
+    return
+  }
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault()
+    last.focus()
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault()
+    first.focus()
+  }
+}
+
 function MatchFound({
   lobby,
   now,
@@ -888,6 +913,8 @@ function MatchFound({
       role="dialog"
       aria-modal="true"
       aria-labelledby="match-found"
+      tabIndex={-1}
+      onKeyDown={trapFocus}
       className="queue-overlay fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-background/85 px-4 backdrop-blur-sm"
     >
       {/* The stadium: the pitch glowing under the lights, and the beams. */}
