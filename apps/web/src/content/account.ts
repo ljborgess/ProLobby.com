@@ -38,6 +38,14 @@ export interface AccountContent {
     absentAction: string
   }
   allDone: string
+  goToQueue: string
+  reputation: {
+    label: string
+    slowQueue: string
+    howItMoves: string
+    bands: Record<'good' | 'slow_queue' | 'suspension' | 'ban', string>
+    valueText: (value: number, band: string) => string
+  }
   loadError: string
 }
 
@@ -72,7 +80,21 @@ export const ACCOUNT_CONTENT: Record<Locale, AccountContent> = {
         'A fila fica bloqueada enquanto você estiver fora. Volte pelo convite abaixo e o acesso libera sozinho — seu vínculo continua o mesmo.',
       absentAction: 'Entrar no servidor',
     },
-    allDone: 'Tudo pronto. A fila abre na próxima fase do projeto.',
+    allDone: 'Tudo pronto. A fila já te aceita.',
+    goToQueue: 'Ir pra fila',
+    reputation: {
+      label: 'Reputação',
+      slowQueue:
+        'Abaixo de 55, a fila demora mais pra achar partida. Partidas limpas sobem 1 ponto cada, até 70.',
+      howItMoves: 'Cada partida limpa soma 1 ponto, até 70. Desconexão tira 8.',
+      bands: {
+        good: 'Boa',
+        slow_queue: 'Fila mais lenta',
+        suspension: 'Faixa de suspensão',
+        ban: 'Faixa de banimento',
+      },
+      valueText: (value, band) => `${value} de 100, ${band}`,
+    },
     loadError: 'Não deu pra carregar sua conta agora. Atualiza a página em instantes.',
   },
   es: {
@@ -106,7 +128,21 @@ export const ACCOUNT_CONTENT: Record<Locale, AccountContent> = {
         'La cola queda bloqueada mientras estés fuera. Vuelve por la invitación de abajo y el acceso se libera solo — tu vínculo sigue siendo el mismo.',
       absentAction: 'Entrar al servidor',
     },
-    allDone: 'Todo listo. La cola abre en la próxima fase del proyecto.',
+    allDone: 'Todo listo. La cola ya te acepta.',
+    goToQueue: 'Ir a la cola',
+    reputation: {
+      label: 'Reputación',
+      slowQueue:
+        'Por debajo de 55, la cola tarda más en encontrar partida. Cada partida limpia suma 1 punto, hasta 70.',
+      howItMoves: 'Cada partida limpia suma 1 punto, hasta 70. Una desconexión resta 8.',
+      bands: {
+        good: 'Buena',
+        slow_queue: 'Cola más lenta',
+        suspension: 'Franja de suspensión',
+        ban: 'Franja de baneo',
+      },
+      valueText: (value, band) => `${value} de 100, ${band}`,
+    },
     loadError: 'No se pudo cargar tu cuenta ahora. Actualiza la página en un momento.',
   },
 }

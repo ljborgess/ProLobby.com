@@ -10,6 +10,8 @@ import { AccountController } from './account.controller'
 import { Account } from './account.entity'
 import { AccountService } from './account.service'
 import { CapacityService } from './capacity.service'
+import { DeclaredClub } from './declared-club.entity'
+import { DeclaredClubController } from './declared-club.controller'
 import { DiscordPresenceService } from './discord-presence.service'
 import { DiscordLinkState } from './discord-link-state.entity'
 import { DiscordLinkService } from './discord-link.service'
@@ -33,6 +35,7 @@ import { WaitingListService } from './waiting-list.service'
     CharacterModule,
     MikroOrmModule.forFeature([
       Account,
+      DeclaredClub,
       DiscordLinkState,
       EmailVerification,
       FailedSignIn,
@@ -43,7 +46,7 @@ import { WaitingListService } from './waiting-list.service'
       WaitingListEntry,
     ]),
   ],
-  controllers: [AccountController, SessionController],
+  controllers: [AccountController, DeclaredClubController, SessionController],
   providers: [
     AccountCleanupJob,
     AccountRecoveryService,

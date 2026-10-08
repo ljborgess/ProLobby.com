@@ -72,6 +72,8 @@ Auto-declaração que habilita a pessoa a ser capitão.
 
 O personagem `travado` de [Estados](02-estados.md) **não é coluna**: é derivado de existir entrada pra ele (#228, 2026-10-06). Enquanto existe, o personagem não recebe print, troca de categoria nem substituto ([RF-031](05-funcionais.md#rf-031--personagem-em-fila-ou-lobby-não-aceita-atualização)). Sair da fila apaga a linha.
 
+**`lobby` (#231, 2026-10-07)**: nulo enquanto busca. Quando a fila escala a entrada, ela ganha o lobby em vez de ser apagada: a conta segue com a única entrada, o personagem segue travado e quem voltar à busca mantém o `entrou_em`. Escalado não sai da fila pela rota de saída; sai recusando o lobby (#232).
+
 `elo_no_momento` é congelado na entrada: a banda de busca (±150 abrindo a ±400) precisa de referência estável, senão o alvo se move durante a própria busca. É também o valor que entra na média de cada lado no cálculo de elo ([RF-077](05-funcionais.md#rf-077--expectativa-de-elo-usa-a-média-dos-humanos-de-cada-lado)).
 
 ### OcorrenciaRecusaFila
@@ -80,6 +82,8 @@ O personagem `travado` de [Estados](02-estados.md) **não é coluna**: é deriva
 **Gap fechado em 2026-09-11.** O timeout progressivo de fila ([RF-009](05-funcionais.md#rf-009--recusar-ou-não-confirmar-gera-timeout-progressivo-de-fila): 5/15/30 min, 2 h) e o zeramento ([RF-010](05-funcionais.md#rf-010--contador-de-timeout-zera-com-12-h-limpas-ou-uma-partida-completada): 12 h limpas ou 1 partida completada) não tinham **onde** ser contados: recusa não gera evento de reputação por decisão explícita ([RF-011](05-funcionais.md#rf-011--recusar-não-altera-reputação)), e o log de elo/reputação era o único registro datado do sistema. Sem esta tabela, as duas regras eram inimplementáveis.
 
 O bloqueio corrente é **derivado**, não guardado: conta as ocorrências desde o mais recente entre (agora − 12 h) e a última partida completada, e aplica a escada. Estado derivado não dessincroniza.
+
+**Como a contagem ficou no código (#232, 2026-10-07)**: em cadeia, lendo ao pé da letra o "12 h sem recusa" do [RF-010](05-funcionais.md#rf-010--contador-de-timeout-zera-com-12-h-limpas-ou-uma-partida-completada). Cada recusa sobe um degrau quando vem menos de 12 h depois da anterior; um intervalo de 12 h ou uma partida completada recomeça do 1º. A janela móvel de 12 h da frase acima dá outro número quando as recusas vêm espaçadas: recusas a cada 6 h seguem subindo na cadeia, e na janela ficariam presas no 2º degrau. Partida completada = último evento de elo `match_result` da conta. A recusa grava o id do lobby como valor simples, porque o lobby recusado é desfeito.
 
 ### Lobby
 `estado` · `criado_em` · `fechado_em` · `encerrado_em` · `capitao_lado_a` · `capitao_lado_b` · `clube_a` · `clube_b` · `formacao_a` · `formacao_b` · `placar_a` · `placar_b` · `anulada` · `canal_texto_id` · `canal_voz_a_id` · `canal_voz_b_id`

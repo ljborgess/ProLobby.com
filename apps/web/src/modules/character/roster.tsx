@@ -16,7 +16,7 @@ export const CATEGORY_ORDER: CharacterCategory[] = [
   'striker',
 ]
 
-type SlotStatus = 'verified' | 'review' | 'rejected' | 'pending'
+export type SlotStatus = 'verified' | 'review' | 'rejected' | 'pending'
 
 /**
  * The account's squad on a tactics board — the Quadro da Fila vocabulary on
@@ -343,7 +343,7 @@ function Marker({
 const SHIRT = 'M17 7l7 3 7-3 11 6-4 9-4-2v22H14V20l-4 2-4-9z'
 
 /** A drawn shirt, in the state of its place — the Quadro da Fila marks on a kit. */
-function Shirt({ status, code }: { status: SlotStatus | 'empty'; code: string }) {
+export function Shirt({ status, code }: { status: SlotStatus | 'empty'; code: string }) {
   const body: Record<SlotStatus | 'empty', string> = {
     verified: 'fill-accent stroke-accent',
     review: 'fill-background stroke-accent',

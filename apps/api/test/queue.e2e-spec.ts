@@ -113,7 +113,12 @@ describe('queue entry (#228)', () => {
     const res = await join(cookie, characterId)
 
     expect(res.status).toBe(201)
-    expect(res.body).toEqual({ characterId, category: 'midfielder', joinedAt: expect.any(String) })
+    expect(res.body).toEqual({
+      characterId,
+      category: 'midfielder',
+      joinedAt: expect.any(String),
+      lobby: null,
+    })
     const current = await request(app.getHttpServer()).get('/api/queue').set('Cookie', cookie)
     expect(current.body.entry).toMatchObject({ characterId })
   })
@@ -221,6 +226,23 @@ describe('queue entry (#228)', () => {
 
     expect(left.status).toBe(204)
     expect((await join(cookie, characterId)).status).toBe(201)
+  })
+
+  it('shows each category as a band, never as a count (RF-008, #233)', async () => {
+    for (let i = 0; i < 16; i += 1) {
+      const { id, cookie } = await account()
+      await join(cookie, await character(id))
+    }
+    const { cookie } = await account()
+
+    const res = await request(app.getHttpServer()).get('/api/queue/movement').set('Cookie', cookie)
+
+    expect(res.status).toBe(200)
+    expect(res.body).toMatchObject({ midfielder: 'full', goalkeeper: 'low' })
+    expect(Object.keys(res.body).sort()).toEqual(
+      ['defender', 'goalkeeper', 'midfielder', 'striker', 'winger'].sort(),
+    )
+    expect(res.text).not.toMatch(/\d/)
   })
 
   it('needs a session', async () => {
