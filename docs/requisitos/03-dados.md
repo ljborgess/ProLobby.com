@@ -16,7 +16,7 @@ Quem migra de PS5 pra PC — caso que o escopo trata explicitamente, preservando
 
 **Decisão: a conta guarda um gamertag por plataforma.** O personagem aponta pra plataforma; o OCR compara contra o gamertag daquela plataforma. Casa com a identidade única ser o par, e com a troca de plataforma já prevista.
 
-- Unicidade global continua em **(plataforma, gamertag)**, e a exclusividade só nasce com a verificação — reivindicação não verificada expira em 7 dias ([Personagens](../produto/02-jogador/01-verificacao.md)).
+- Unicidade global continua em **(plataforma, gamertag)**, e a exclusividade só nasce com a verificação — reivindicação não verificada não expira, porque não bloqueia ninguém ([Personagens](../produto/02-jogador/01-verificacao.md)).
 - Troca de gamertag no console altera o valor **daquela plataforma**, via chamado de moderação, sem afetar as outras.
 
 ## Entidades
