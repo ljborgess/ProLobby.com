@@ -85,6 +85,11 @@ O bloqueio corrente é **derivado**, não guardado: conta as ocorrências desde 
 
 **Como a contagem ficou no código (#232, 2026-10-07)**: em cadeia, lendo ao pé da letra o "12 h sem recusa" do [RF-010](05-funcionais.md#rf-010--contador-de-timeout-zera-com-12-h-limpas-ou-uma-partida-completada). Cada recusa sobe um degrau quando vem menos de 12 h depois da anterior; um intervalo de 12 h ou uma partida completada recomeça do 1º. A janela móvel de 12 h da frase acima dá outro número quando as recusas vêm espaçadas: recusas a cada 6 h seguem subindo na cadeia, e na janela ficariam presas no 2º degrau. Partida completada = último evento de elo `match_result` da conta. A recusa grava o id do lobby como valor simples, porque o lobby recusado é desfeito.
 
+### RegistroAuditoria
+`acao` (papel trocado / caso resolvido) · `autor` · `rotulo_autor` (moderador, sistema ou `cli:<e-mail>`) · `conta_alvo` · `caso` · `antes` · `depois` · `criado_em`
+
+**Só acréscimo, garantido pelo banco** (#243, 2026-10-09): um trigger recusa UPDATE, DELETE e TRUNCATE pra qualquer role, e a role da API fica só com SELECT e INSERT. Por isso **não há chave estrangeira**: a exclusão em cascata de uma conta seria um UPDATE ou DELETE aqui, e o trigger travaria a própria exclusão. Os ids ficam como valor simples; depois de uma exclusão LGPD, não apontam pra ninguém. Grava hoje a troca de papel (script `set-role`) e toda resolução de caso de verificação, do moderador ou do sistema.
+
 ### Lobby
 `estado` · `criado_em` · `fechado_em` · `encerrado_em` · `capitao_lado_a` · `capitao_lado_b` · `clube_a` · `clube_b` · `formacao_a` · `formacao_b` · `placar_a` · `placar_b` · `anulada` · `canal_texto_id` · `canal_voz_a_id` · `canal_voz_b_id`
 

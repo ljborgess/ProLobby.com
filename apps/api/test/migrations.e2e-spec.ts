@@ -64,6 +64,20 @@ describe('migrations', () => {
     expect(drift.trim()).toBe('')
   }, 60_000)
 
+  it('keeps the audit trail append-only: no update, delete or truncate (#243)', async () => {
+    await orm.getMigrator().up()
+    const connection = orm.em.getConnection()
+    await connection.execute(
+      `insert into audit_entry (id, action, actor_label, created_at) values ('00000000-0000-0000-0000-000000000243', 'role_changed', 'cli:test', now())`,
+    )
+
+    await expect(
+      connection.execute(`update audit_entry set actor_label = 'rewritten'`),
+    ).rejects.toThrow(/append-only/)
+    await expect(connection.execute(`delete from audit_entry`)).rejects.toThrow(/append-only/)
+    await expect(connection.execute(`truncate audit_entry`)).rejects.toThrow(/append-only/)
+  }, 60_000)
+
   it('reverts every migration back to an empty public schema', async () => {
     const migrator = orm.getMigrator()
     await migrator.up()
