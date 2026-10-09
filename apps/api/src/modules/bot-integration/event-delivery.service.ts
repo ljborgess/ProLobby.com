@@ -23,6 +23,8 @@ export type DeliveryTarget = {
 export class EventDeliveryService implements OnModuleDestroy {
   private readonly logger = new Logger(EventDeliveryService.name)
   private readonly cancelById = new Map<string, () => void>()
+  /** Attempts in flight, awaited on shutdown so none writes to a closed pool. */
+  private readonly inFlight = new Set<Promise<void>>()
   private pendingLookups = 0
 
   constructor(
@@ -31,11 +33,12 @@ export class EventDeliveryService implements OnModuleDestroy {
     private readonly webhook: WebhookClient,
   ) {}
 
-  onModuleDestroy(): void {
+  async onModuleDestroy(): Promise<void> {
     for (const cancel of this.cancelById.values()) {
       cancel()
     }
     this.cancelById.clear()
+    await Promise.allSettled(this.inFlight)
   }
 
   /** Exposed for the "no cyclic query" proof — not a scheduler tick. */
@@ -113,15 +116,17 @@ export class EventDeliveryService implements OnModuleDestroy {
    * API that is answering requests: the row keeps its `nextAttemptAt` and the
    * next boot picks it up.
    */
-  private async attempt(id: string): Promise<void> {
-    try {
-      await this.deliver(id)
-    } catch (error) {
-      this.logger.error(
-        `delivery attempt failed for ${id}`,
-        error instanceof Error ? error.stack : undefined,
-      )
-    }
+  private attempt(id: string): Promise<void> {
+    const run: Promise<void> = this.deliver(id)
+      .catch((error: unknown) => {
+        this.logger.error(
+          `delivery attempt failed for ${id}`,
+          error instanceof Error ? error.stack : undefined,
+        )
+      })
+      .finally(() => this.inFlight.delete(run))
+    this.inFlight.add(run)
+    return run
   }
 
   private async deliver(id: string): Promise<void> {

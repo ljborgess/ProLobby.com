@@ -1,6 +1,6 @@
 import { ChangeSetType, type EventSubscriber, type FlushEventArgs } from '@mikro-orm/core'
 import { EntityManager } from '@mikro-orm/postgresql'
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common'
 import { randomUUID } from 'node:crypto'
 
 import { ModerationCase } from '../moderation/moderation-case.entity'
@@ -27,8 +27,11 @@ import { EventDeliveryService } from './event-delivery.service'
  * exist; an outbox row in the same transaction is the upgrade if that matters.
  */
 @Injectable()
-export class ModerationCaseAnnouncer implements EventSubscriber, OnModuleInit {
+export class ModerationCaseAnnouncer implements EventSubscriber, OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(ModerationCaseAnnouncer.name)
+  /** Announcements in flight, drained before the database goes away. */
+  private readonly pending = new Set<Promise<void>>()
+  private closing = false
 
   constructor(
     private readonly em: EntityManager,
@@ -37,6 +40,15 @@ export class ModerationCaseAnnouncer implements EventSubscriber, OnModuleInit {
 
   onModuleInit(): void {
     this.em.getEventManager().registerSubscriber(this)
+  }
+
+  /**
+   * Runs before the ORM closes its pool: an announcement still queuing would
+   * otherwise hit a closed connection and log after the process meant to stop.
+   */
+  async onModuleDestroy(): Promise<void> {
+    this.closing = true
+    await Promise.allSettled(this.pending)
   }
 
   afterFlush(args: FlushEventArgs): void {
@@ -49,8 +61,12 @@ export class ModerationCaseAnnouncer implements EventSubscriber, OnModuleInit {
       ) {
         continue
       }
+      if (this.closing) continue
       // Out of the flush that is still unwinding: enqueue flushes on its own.
-      setImmediate(() => void this.announce(opened.id, opened.type))
+      const done: Promise<void> = new Promise<void>((resolve) => setImmediate(resolve))
+        .then(() => this.announce(opened.id, opened.type))
+        .finally(() => this.pending.delete(done))
+      this.pending.add(done)
     }
   }
 
