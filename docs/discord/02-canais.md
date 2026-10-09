@@ -12,6 +12,7 @@ Servidor **não fragmenta por plataforma/posição no MVP** — decisão deliber
 - **#fila-status** — bot posta quando um lobby fecha (feed público, sem dado sensível).
 - **#suporte-e-denuncia** — canal de entrada pra denúncia/dúvida, integrado com a fila de moderação da plataforma (ver [Bot: permissões e integração com moderação](03-bot.md)).
 - **#log-moderacao** — privado, só Admin/Moderador. Bot posta automaticamente toda ação sensível (kick, ban, concessão/revogação de cargo Verificado) — histórico auditável sem depender de abrir o audit log nativo do Discord.
+- **#casos-moderacao** — privado, só Moderador. O bot avisa cada caso novo de moderação com o tipo do caso e o link do painel, sem dado da pessoa ([#226](https://github.com/ljborgess/ProLobby.com/issues/226)). É o que faz a meta de 24 h não depender de alguém abrir o painel. O id do canal vai em `DISCORD_MODERATION_CHANNEL_ID`.
 - **#status-sistema** — privado, só Admin/Moderador. Bot posta quando ele mesmo cai/volta, ou manutenção planejada — evita jogador achar que a plataforma travou sem explicação. Falhas de evento específico (webhook esgotado, sincronização de nickname) não vão aqui — ver [Bot: permissões e integração com moderação](03-bot.md) e [Integração técnica](04-integracao.md).
 
 ## Canais dinâmicos

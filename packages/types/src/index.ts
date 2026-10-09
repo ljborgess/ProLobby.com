@@ -2,12 +2,14 @@ export {
   accountPunishedEventSchema,
   isKnownPlatformEventType,
   lobbyClosedEventSchema,
+  moderationCaseOpenedEventSchema,
   PLATFORM_EVENT_TYPES,
   platformEventSchema,
   quotaResourceSchema,
   systemQuotaAlertEventSchema,
   type AccountPunishedEvent,
   type LobbyClosedEvent,
+  type ModerationCaseOpenedEvent,
   type PlatformEvent,
   type PlatformEventType,
   type QuotaResource,
@@ -33,5 +35,6 @@ export {
 export {
   sampleLobbyClosedEvent,
   samplePlatformEvent,
+  sampleModerationCaseOpenedEvent,
   sampleQuotaAlertEvent,
 } from './webhook-fixtures'

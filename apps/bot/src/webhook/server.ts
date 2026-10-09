@@ -7,6 +7,7 @@ import {
   isWebhookTimestampFresh,
   platformEventSchema,
   readWebhookSecret,
+  type PlatformEvent,
   verifyWebhookSignature,
 } from '@prolobby/types'
 
@@ -24,7 +25,15 @@ export type WebhookServerOptions = {
    * entrypoint (index.ts) passes `() => client.isReady()`.
    */
   isReady?: () => boolean
+  /**
+   * What to do with an accepted event (#226 is the first). Throwing answers
+   * 503, which the API treats as "try later" and retries on its own backoff.
+   */
+  onEvent?: (event: PlatformEvent) => Promise<void>
 }
+
+/** How many delivered event ids are remembered to drop a retried duplicate. */
+const SEEN_EVENTS = 500
 
 /**
  * Receives platform events (RF-058).
@@ -38,6 +47,12 @@ export function createWebhookServer(options: WebhookServerOptions): Express {
   const clock: Clock = options.clock ?? { now: () => new Date() }
   const limiter = options.limiter ?? new SlidingWindowLimiter(clock)
   const isReady = options.isReady ?? (() => true)
+  // The API retries when it does not see our 202 in time; the event id is
+  // stable across attempts, so a retry of something already handled is
+  // acknowledged without acting twice (two Discord posts for one case).
+  // ponytail: in memory, so a restart between an attempt and its retry can
+  // still repeat once; a persisted set if that ever shows up.
+  const seen = new Set<string>()
 
   const app = express()
 
@@ -59,7 +74,7 @@ export function createWebhookServer(options: WebhookServerOptions): Express {
     }),
   )
 
-  app.post('/events', (req: RequestWithRawBody, res: Response) => {
+  app.post('/events', async (req: RequestWithRawBody, res: Response) => {
     const signature = req.header(WEBHOOK_SIGNATURE_HEADER)
     const signedAt = req.header(WEBHOOK_TIMESTAMP_HEADER)
     const rawBody = req.rawBody ?? Buffer.from('')
@@ -108,8 +123,16 @@ export function createWebhookServer(options: WebhookServerOptions): Express {
       return
     }
 
-    // Handlers for RF-047..062 arrive later. Auth, size, rate limit and the
-    // contract have to exist before any of them.
+    if (options.onEvent && !seen.has(parsed.data.id)) {
+      try {
+        await options.onEvent(parsed.data)
+      } catch {
+        res.status(503).json({ error: 'handler_failed' })
+        return
+      }
+      seen.add(parsed.data.id)
+      if (seen.size > SEEN_EVENTS) seen.delete(seen.values().next().value!)
+    }
     res.status(202).json({ received: true })
   })
 

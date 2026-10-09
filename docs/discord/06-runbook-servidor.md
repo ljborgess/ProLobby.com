@@ -51,6 +51,7 @@ Sete, com as permissões de [Canais](02-canais.md):
 | `#suporte-e-denuncia` | todos | todos | mensagem aqui **abre caso na plataforma** automaticamente ([RF-061](../requisitos/05-funcionais.md)) |
 | `#log-moderacao` | **privado** — Admin e Moderador | só o bot | kick, ban, concessão/revogação de Verificado, ativação de plano |
 | `#status-sistema` | **privado** — Admin e Moderador | só o bot | bot caiu/voltou, alerta de 400+ canais |
+| `#casos-moderacao` | **privado** — Moderador | só o bot | caso novo de moderação, com o link do painel (#226); id em `DISCORD_MODERATION_CHANNEL_ID` |
 
 Canais de lobby são **temporários** e criados pelo bot em tempo de execução (3 por lobby) — não criar à mão.
 

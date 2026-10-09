@@ -3,6 +3,7 @@ import {
   WEBHOOK_SIGNATURE_HEADER,
   WEBHOOK_TIMESTAMP_HEADER,
   sampleLobbyClosedEvent,
+  sampleModerationCaseOpenedEvent,
   sampleQuotaAlertEvent,
   signWebhookPayload,
 } from '@prolobby/types'
@@ -324,5 +325,58 @@ describe('GET /health', () => {
     const res = await request(app).get('/health')
 
     expect(res.status).not.toBe(401)
+  })
+})
+
+describe('webhook server handing events on (#226)', () => {
+  const clock = { now: () => new Date('2026-10-09T12:00:00.000Z') }
+  const now = () => clock.now().toISOString()
+  const event = () => sampleModerationCaseOpenedEvent({ occurredAt: now() })
+
+  it('answers 202 only after the handler ran', async () => {
+    const onEvent = jest.fn().mockResolvedValue(undefined)
+    const app = createWebhookServer({ secret: SECRET, clock, onEvent })
+
+    const res = await send(app, event(), { signedAt: now() })
+
+    expect(res.status).toBe(202)
+    expect(onEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'moderation.case_opened' }),
+    )
+  })
+
+  it('answers 503 when the handler fails, so the API retries', async () => {
+    const app = createWebhookServer({
+      secret: SECRET,
+      clock,
+      onEvent: jest.fn().mockRejectedValue(new Error('discord down')),
+    })
+
+    const res = await send(app, event(), { signedAt: now() })
+
+    expect(res.status).toBe(503)
+    expect(res.body).toEqual({ error: 'handler_failed' })
+  })
+
+  it('acknowledges a retried event without handling it twice', async () => {
+    const onEvent = jest.fn().mockResolvedValue(undefined)
+    const app = createWebhookServer({ secret: SECRET, clock, onEvent })
+    const same = event()
+
+    expect((await send(app, same, { signedAt: now() })).status).toBe(202)
+    expect((await send(app, same, { signedAt: now() })).status).toBe(202)
+
+    expect(onEvent).toHaveBeenCalledTimes(1)
+  })
+
+  it('handles it again after a failure, since nothing was posted', async () => {
+    const onEvent = jest.fn().mockRejectedValueOnce(new Error('blip')).mockResolvedValue(undefined)
+    const app = createWebhookServer({ secret: SECRET, clock, onEvent })
+    const same = event()
+
+    expect((await send(app, same, { signedAt: now() })).status).toBe(503)
+    expect((await send(app, same, { signedAt: now() })).status).toBe(202)
+
+    expect(onEvent).toHaveBeenCalledTimes(2)
   })
 })

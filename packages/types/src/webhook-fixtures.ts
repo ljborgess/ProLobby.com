@@ -1,4 +1,9 @@
-import type { LobbyClosedEvent, PlatformEvent, SystemQuotaAlertEvent } from './webhook-event'
+import type {
+  LobbyClosedEvent,
+  ModerationCaseOpenedEvent,
+  PlatformEvent,
+  SystemQuotaAlertEvent,
+} from './webhook-event'
 
 const NIL = (n: number) => `11111111-1111-1111-1111-${n.toString().padStart(12, '0')}`
 
@@ -37,6 +42,18 @@ export function sampleQuotaAlertEvent(
       percent: 80,
       limit: '0.5GB',
     },
+    ...overrides,
+  }
+}
+
+export function sampleModerationCaseOpenedEvent(
+  overrides: Partial<ModerationCaseOpenedEvent> = {},
+): ModerationCaseOpenedEvent {
+  return {
+    id: NIL(400),
+    occurredAt: new Date().toISOString(),
+    type: 'moderation.case_opened',
+    payload: { caseId: NIL(401), caseType: 'character_verification' },
     ...overrides,
   }
 }
