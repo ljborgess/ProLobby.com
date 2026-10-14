@@ -53,6 +53,9 @@ export function createWebhookServer(options: WebhookServerOptions): Express {
   // ponytail: in memory, so a restart between an attempt and its retry can
   // still repeat once; a persisted set if that ever shows up.
   const seen = new Set<string>()
+  // A retry that lands while the first attempt is still posting (Discord
+  // slower than the API's 10 s ack timeout) waits on that same attempt.
+  const inFlight = new Map<string, Promise<void>>()
 
   const app = express()
 
@@ -123,14 +126,20 @@ export function createWebhookServer(options: WebhookServerOptions): Express {
       return
     }
 
-    if (options.onEvent && !seen.has(parsed.data.id)) {
+    const { id } = parsed.data
+    if (options.onEvent && !seen.has(id)) {
+      let run = inFlight.get(id)
+      if (!run) {
+        run = options.onEvent(parsed.data).finally(() => inFlight.delete(id))
+        inFlight.set(id, run)
+      }
       try {
-        await options.onEvent(parsed.data)
+        await run
       } catch {
         res.status(503).json({ error: 'handler_failed' })
         return
       }
-      seen.add(parsed.data.id)
+      seen.add(id)
       if (seen.size > SEEN_EVENTS) seen.delete(seen.values().next().value!)
     }
     res.status(202).json({ received: true })

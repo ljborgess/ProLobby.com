@@ -369,6 +369,24 @@ describe('webhook server handing events on (#226)', () => {
     expect(onEvent).toHaveBeenCalledTimes(1)
   })
 
+  it('runs the handler once when a retry lands while the first is still posting', async () => {
+    let release!: () => void
+    const posting = new Promise<void>((resolve) => (release = resolve))
+    const onEvent = jest.fn(() => posting)
+    const app = createWebhookServer({ secret: SECRET, clock, onEvent })
+    const same = event()
+
+    const both = Promise.all([
+      send(app, same, { signedAt: now() }).then((res) => res.status),
+      send(app, same, { signedAt: now() }).then((res) => res.status),
+    ])
+    await new Promise((resolve) => setTimeout(resolve, 200))
+    release()
+
+    expect(await both).toEqual([202, 202])
+    expect(onEvent).toHaveBeenCalledTimes(1)
+  })
+
   it('handles it again after a failure, since nothing was posted', async () => {
     const onEvent = jest.fn().mockRejectedValueOnce(new Error('blip')).mockResolvedValue(undefined)
     const app = createWebhookServer({ secret: SECRET, clock, onEvent })
