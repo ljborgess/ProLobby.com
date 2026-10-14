@@ -7,12 +7,18 @@ import { ModerationCase } from '../moderation/moderation-case.entity'
 import { BotEventsController } from './bot-events.controller'
 import { EventDelivery } from './event-delivery.entity'
 import { EventDeliveryService } from './event-delivery.service'
+import { ModerationCaseAnnouncer } from './moderation-case-announcer'
 import { WebhookClient } from './webhook-client'
 
 @Module({
   imports: [MikroOrmModule.forFeature([EventDelivery, ModerationCase]), AccountModule],
   controllers: [BotEventsController],
-  providers: [{ provide: Clock, useClass: SystemClock }, WebhookClient, EventDeliveryService],
+  providers: [
+    { provide: Clock, useClass: SystemClock },
+    WebhookClient,
+    EventDeliveryService,
+    ModerationCaseAnnouncer,
+  ],
   exports: [EventDeliveryService],
 })
 export class BotIntegrationModule {}

@@ -9,6 +9,7 @@ import {
 } from './discord/presence'
 import { readDiscordBotToken } from './discord/token'
 import { logger } from './logger'
+import { handlePlatformEvent } from './webhook/handlers'
 import { createWebhookServer, readWebhookSecret } from './webhook/server'
 
 /**
@@ -45,7 +46,25 @@ export async function main(): Promise<void> {
   // /events is never exposed by the Cloudflare tunnel and has no `ports:` in
   // production (ADR-009). HMAC (WEBHOOK_SECRET) is still required: the
   // internal Docker network is the first barrier, not the only one.
-  const app = createWebhookServer({ secret: webhookSecret, isReady: () => client.isReady() })
+  const app = createWebhookServer({
+    secret: webhookSecret,
+    isReady: () => client.isReady(),
+    onEvent: (event) =>
+      handlePlatformEvent(event, {
+        channelId: process.env.DISCORD_MODERATION_CHANNEL_ID,
+        webUrl: process.env.WEB_URL,
+        // A channel the bot cannot reach throws, and the API retries: the
+        // moderators find out from the delivery-failure case, not silence.
+        send: async (channelId, content) => {
+          const channel = await client.channels.fetch(channelId)
+          if (!channel?.isSendable()) {
+            throw new Error(`channel ${channelId} is not one the bot can post in`)
+          }
+          await channel.send({ content, allowedMentions: { parse: [] } })
+        },
+        warn: (message) => logger.warn('events', message),
+      }),
+  })
   const httpServer = app.listen(port, () => {
     logger.info('bootstrap', `webhook server listening on ${port}`)
   })

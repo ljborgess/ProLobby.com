@@ -161,6 +161,10 @@ services:
       # guild, even by mistake, would otherwise let that guild's joins/leaves
       # block or free real accounts on this one.
       DISCORD_GUILD_ID: ${DISCORD_GUILD_ID:?DISCORD_GUILD_ID is required}
+      # Private moderators channel for the new-case alert (#226). Required: in
+      # production, a missing channel would silently drop every alert.
+      DISCORD_MODERATION_CHANNEL_ID: ${DISCORD_MODERATION_CHANNEL_ID:?DISCORD_MODERATION_CHANNEL_ID is required}
+      WEB_URL: ${WEB_URL:?WEB_URL is required}
     # /health is loopback-only and unauthenticated on purpose (server.ts): it
     # reports gateway state, not business data, and only Compose calls it.
     # 503 while the gateway is down is what RF-060 needs — the bot must be

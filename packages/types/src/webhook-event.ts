@@ -60,15 +60,36 @@ export const systemQuotaAlertEventSchema = z.object({
     .strict(),
 })
 
+/**
+ * A moderation case was opened (#226): the bot tells the private moderators'
+ * channel, so the 24 h goal does not depend on someone opening the panel.
+ * Only the id and the type — no gamertag, email or print ever leaves here.
+ * The type stays a plain snake_case string: the list lives with the API's
+ * enum, and a new kind of case must not be refused at the bot's edge.
+ */
+export const moderationCaseOpenedEventSchema = z.object({
+  id: uuid,
+  occurredAt,
+  type: z.literal('moderation.case_opened'),
+  payload: z
+    .object({
+      caseId: uuid,
+      caseType: z.string().regex(/^[a-z_]{1,40}$/),
+    })
+    .strict(),
+})
+
 export const platformEventSchema = z.discriminatedUnion('type', [
   lobbyClosedEventSchema,
   accountPunishedEventSchema,
   systemQuotaAlertEventSchema,
+  moderationCaseOpenedEventSchema,
 ])
 
 export type LobbyClosedEvent = z.infer<typeof lobbyClosedEventSchema>
 export type AccountPunishedEvent = z.infer<typeof accountPunishedEventSchema>
 export type SystemQuotaAlertEvent = z.infer<typeof systemQuotaAlertEventSchema>
+export type ModerationCaseOpenedEvent = z.infer<typeof moderationCaseOpenedEventSchema>
 export type PlatformEvent = z.infer<typeof platformEventSchema>
 export type QuotaResource = z.infer<typeof quotaResourceSchema>
 
