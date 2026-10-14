@@ -5,6 +5,7 @@ import { BotIntegrationModule } from '../bot-integration/bot-integration.module'
 import { RankingModule } from '../ranking/ranking.module'
 import { CaptainCascadeService } from './captain-cascade.service'
 import { LobbyConfirmationService } from './lobby-confirmation.service'
+import { LobbyInviteService } from './lobby-invite.service'
 import { QueueEntry } from './queue-entry.entity'
 import { QueueMatchingJob } from './queue-matching.job'
 import { QueueMatchingService } from './queue-matching.service'
@@ -18,6 +19,7 @@ import { QueueService } from './queue.service'
   providers: [
     CaptainCascadeService,
     LobbyConfirmationService,
+    LobbyInviteService,
     QueueService,
     QueueMatchingService,
     QueueMatchingJob,

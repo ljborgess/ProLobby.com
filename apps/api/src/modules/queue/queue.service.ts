@@ -14,10 +14,11 @@ import { CharacterCategory } from '../character/archetype'
 import { ACTIVE_CHARACTER_STATES, Character, CharacterState } from '../character/character.entity'
 import { DeclaredClub } from '../account/declared-club.entity'
 import { CaptainOffer } from '../lobby/captain-offer.entity'
-import { LobbyParticipation } from '../lobby/lobby-participation.entity'
+import { LobbyParticipation, LobbySide } from '../lobby/lobby-participation.entity'
 import type { LobbyState } from '../lobby/lobby.entity'
 import { EloService } from '../ranking/elo.service'
 import { confirmBy } from './lobby-confirmation.service'
+import { inviteBy } from './lobby-invite.service'
 import { captainAnswerBy } from './captain-cascade.service'
 import { blockedUntilFor } from './queue-block'
 import { QueueEntry } from './queue-entry.entity'
@@ -55,6 +56,13 @@ export interface QueueEntryView {
     captainOffer: { answerBy: Date; clubName: string } | null
     /** This account confirmed as its side's captain. */
     isCaptain: boolean
+    /** End of the 5 min invite window, once both captains confirmed (#248). */
+    inviteBy: Date | null
+    /** The club of this side's captain: where the invite comes from (#248). */
+    inviteClubName: string | null
+    inviteReceived: boolean
+    /** Only a captain can: the club filled up after its last update (#248). */
+    clubFullDeclared: boolean
   } | null
 }
 
@@ -97,6 +105,11 @@ export class QueueService {
               : null,
             isCaptain:
               entry.lobby?.captainA?.id === accountId || entry.lobby?.captainB?.id === accountId,
+            inviteClubName:
+              (mine && (mine.side === LobbySide.A ? entry.lobby?.clubA : entry.lobby?.clubB)) ??
+              null,
+            inviteReceived: !!mine?.inviteReceivedAt,
+            clubFullDeclared: !!mine?.clubFullDeclaredAt,
           })
         : null,
       blockedUntil: await blockedUntilFor(em, accountId, now),
@@ -193,20 +206,21 @@ export class QueueService {
   }
 }
 
-function toView(
-  entry: QueueEntry,
-  extra: {
-    confirmed: boolean
-    captainOffer: { answerBy: Date; clubName: string } | null
-    isCaptain: boolean
-  } = { confirmed: false, captainOffer: null, isCaptain: false },
-): QueueEntryView {
+type LobbyExtra = Omit<NonNullable<QueueEntryView['lobby']>, 'state' | 'confirmBy' | 'inviteBy'>
+
+function toView(entry: QueueEntry, extra?: LobbyExtra): QueueEntryView {
   return {
     characterId: entry.character.id,
     category: entry.category,
     joinedAt: entry.joinedAt,
-    lobby: entry.lobby
-      ? { state: entry.lobby.state, confirmBy: confirmBy(entry.lobby), ...extra }
-      : null,
+    lobby:
+      entry.lobby && extra
+        ? {
+            state: entry.lobby.state,
+            confirmBy: confirmBy(entry.lobby),
+            inviteBy: inviteBy(entry.lobby),
+            ...extra,
+          }
+        : null,
   }
 }

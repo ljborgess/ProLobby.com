@@ -12,12 +12,19 @@ export enum LobbyState {
   WAITING_CAPTAIN = 'waiting_captain',
   /** Both captains confirmed (#247): the invite window runs (#248). */
   WAITING_INVITE = 'waiting_invite',
+  /** Every human got the invite (#248): the match is on. */
+  IN_PROGRESS = 'in_progress',
   /** Terminal, no penalty for anyone: the match never existed. */
   CANCELLED_NO_FAULT = 'cancelled_no_fault',
+  /** Terminal: someone never got the invite and the captain gave no reason (#248). */
+  CANCELLED_BY_CAPTAIN = 'cancelled_by_captain',
 }
 
 /** States after which the lobby holds nothing: no club, no queue. */
-export const TERMINAL_LOBBY_STATES: readonly LobbyState[] = [LobbyState.CANCELLED_NO_FAULT]
+export const TERMINAL_LOBBY_STATES: readonly LobbyState[] = [
+  LobbyState.CANCELLED_NO_FAULT,
+  LobbyState.CANCELLED_BY_CAPTAIN,
+]
 
 /**
  * Dossier counterpart: `Lobby` in docs/requisitos/03-dados.md — #231.

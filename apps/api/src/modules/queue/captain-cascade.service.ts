@@ -10,7 +10,7 @@ import { EventDeliveryService } from '../bot-integration/event-delivery.service'
 import { CaptainOffer, CaptainOfferOutcome } from '../lobby/captain-offer.entity'
 import { LobbyParticipation, LobbySide } from '../lobby/lobby-participation.entity'
 import { Lobby, LobbyState, TERMINAL_LOBBY_STATES } from '../lobby/lobby.entity'
-import { QueueEntry } from './queue-entry.entity'
+import { endLobby } from './end-lobby'
 
 /** Each candidate answers within this (docs/produto/03-partida/03-lobby.md). */
 export const CAPTAIN_ANSWER_MS = 30 * 1000
@@ -258,10 +258,7 @@ export class CaptainCascadeService {
 
   /** No penalty: no refusal recorded, no reputation event, the time kept. */
   private async cancelNoFault(em: EntityManager, lobby: Lobby, now: Date): Promise<void> {
-    lobby.state = LobbyState.CANCELLED_NO_FAULT
-    lobby.endedAt = now
-    await em.flush()
-    await em.nativeUpdate(QueueEntry, { lobby }, { lobby: null })
+    await endLobby(em, lobby, LobbyState.CANCELLED_NO_FAULT, now)
     // An offer still waiting dies with the lobby: no row stays "pending" forever.
     await em.nativeUpdate(
       CaptainOffer,

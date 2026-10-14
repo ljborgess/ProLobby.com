@@ -13,8 +13,8 @@ export enum LobbySide {
 
 /**
  * Dossier counterpart: `ParticipacaoLobby` in docs/requisitos/03-dados.md —
- * #231. One per human the queue placed; the invite confirmation and the
- * formation vote arrive with phase 3.
+ * #231. One per human the queue placed; the formation vote arrives with
+ * #249.
  */
 @Entity({ tableName: 'lobby_participation' })
 @Unique({ properties: ['lobby', 'account'] })
@@ -40,4 +40,15 @@ export class LobbyParticipation {
   /** `confirmou_entrada`: accepted within the 30 s (#232). */
   @Property({ nullable: true })
   confirmedAt?: Date
+
+  /** `confirmou_convite`: got the invite to the captain's club, within 5 min (#248). */
+  @Property({ nullable: true })
+  inviteReceivedAt?: Date
+
+  /**
+   * Only on a captain's row: said the club filled up after its last update
+   * (#248). Someone of the side left without an invite is then no fault.
+   */
+  @Property({ nullable: true })
+  clubFullDeclaredAt?: Date
 }

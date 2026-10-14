@@ -120,6 +120,8 @@ Não pesa no elo, por decisão ([Ranking](../produto/02-jogador/02-ranking.md)) 
 
 `confirmou_convite_recebido` é o que sustenta o cancelamento anti-exclusão de 5 minutos ([Lobby](../produto/03-partida/03-lobby.md)).
 
+**Como o convite ficou no código (#248, 2026-10-14)**: `confirmou_convite_recebido` é uma data, e a linha do capitão ganhou `declarou_clube_cheio_em`. A janela conta 5 min do `fechado_em`. O capitão já está no próprio clube, então nunca conta como "esperando convite". Todos os outros marcaram: `in_progress`. Passados os 5 min com alguém de um lado sem convite, o lobby termina e todos voltam a buscar na hora, com o tempo que tinham, sem recusa e sem evento de reputação. Se o capitão daquele lado declarou clube cheio, `cancelled_no_fault`; se ficou calado, `cancelled_by_captain` e um caso `captain_abuse` contra ele. Com os dois lados incompletos, só o capitão calado leva caso. O 60 min do zero-report a partir de `in_progress` é da 4.1.
+
 ### Report
 `lobby` · `conta` · `placar_a` · `placar_b` · `envio_print` · `reportou_ausencia_de` · `enviado_em`
 
