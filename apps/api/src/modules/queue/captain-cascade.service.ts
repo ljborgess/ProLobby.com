@@ -262,6 +262,12 @@ export class CaptainCascadeService {
     lobby.endedAt = now
     await em.flush()
     await em.nativeUpdate(QueueEntry, { lobby }, { lobby: null })
+    // An offer still waiting dies with the lobby: no row stays "pending" forever.
+    await em.nativeUpdate(
+      CaptainOffer,
+      { lobby, outcome: null },
+      { outcome: CaptainOfferOutcome.EXPIRED, answeredAt: now },
+    )
   }
 
   private lockedLobby(em: EntityManager, id: string): Promise<Lobby> {

@@ -242,6 +242,8 @@ describe('captain cascade (#247)', () => {
     }
     expect(await orm.em.fork().count(QueueRefusal, {})).toBe(0)
     expect(await orm.em.fork().count(ReputationEvent, {})).toBe(0)
+    // The other side's offer was still waiting: it closes with the lobby.
+    expect(await orm.em.fork().count(CaptainOffer, { lobby: lobbyId, outcome: null })).toBe(0)
   })
 
   it('cancels with no fault after 5 min without a pair of captains (RF-080)', async () => {
@@ -253,6 +255,7 @@ describe('captain cascade (#247)', () => {
 
     await cascade.tick(at(startedAt + 5 * 60 * SECOND))
     expect((await lobbyOf(lobbyId)).state).toBe(LobbyState.CANCELLED_NO_FAULT)
+    expect(await orm.em.fork().count(CaptainOffer, { lobby: lobbyId, outcome: null })).toBe(0)
   })
 
   it('a captain who withdraws hands the role on, with no penalty (RF-032)', async () => {
