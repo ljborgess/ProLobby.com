@@ -12,10 +12,13 @@ import { isUniqueViolation } from '../../common/database/postgres-error'
 import { Account } from '../account/account.entity'
 import { CharacterCategory } from '../character/archetype'
 import { ACTIVE_CHARACTER_STATES, Character, CharacterState } from '../character/character.entity'
+import { DeclaredClub } from '../account/declared-club.entity'
+import { CaptainOffer } from '../lobby/captain-offer.entity'
 import { LobbyParticipation } from '../lobby/lobby-participation.entity'
 import type { LobbyState } from '../lobby/lobby.entity'
 import { EloService } from '../ranking/elo.service'
 import { confirmBy } from './lobby-confirmation.service'
+import { captainAnswerBy } from './captain-cascade.service'
 import { blockedUntilFor } from './queue-block'
 import { QueueEntry } from './queue-entry.entity'
 
@@ -44,7 +47,15 @@ export interface QueueEntryView {
   category: CharacterCategory
   joinedAt: Date
   /** Null while searching; once placed, what the 30 s screen needs (#232). */
-  lobby: { state: LobbyState; confirmBy: Date; confirmed: boolean } | null
+  lobby: {
+    state: LobbyState
+    confirmBy: Date
+    confirmed: boolean
+    /** The captain role offered to this account right now, if it is (#247). */
+    captainOffer: { answerBy: Date; clubName: string } | null
+    /** This account confirmed as its side's captain. */
+    isCaptain: boolean
+  } | null
 }
 
 /** RF-008: what the screen shows of each category, never the count. */
@@ -73,8 +84,21 @@ export class QueueService {
     const mine =
       entry?.lobby &&
       (await em.findOne(LobbyParticipation, { lobby: entry.lobby, account: accountId }))
+    const offer =
+      entry?.lobby &&
+      (await em.findOne(CaptainOffer, { lobby: entry.lobby, account: accountId, outcome: null }))
+    const club = offer ? await em.findOne(DeclaredClub, { account: accountId }) : null
     return {
-      entry: entry ? toView(entry, mine ? !!mine.confirmedAt : false) : null,
+      entry: entry
+        ? toView(entry, {
+            confirmed: mine ? !!mine.confirmedAt : false,
+            captainOffer: offer
+              ? { answerBy: captainAnswerBy(offer), clubName: club?.clubName ?? '' }
+              : null,
+            isCaptain:
+              entry.lobby?.captainA?.id === accountId || entry.lobby?.captainB?.id === accountId,
+          })
+        : null,
       blockedUntil: await blockedUntilFor(em, accountId, now),
     }
   }
@@ -169,13 +193,20 @@ export class QueueService {
   }
 }
 
-function toView(entry: QueueEntry, confirmed = false): QueueEntryView {
+function toView(
+  entry: QueueEntry,
+  extra: {
+    confirmed: boolean
+    captainOffer: { answerBy: Date; clubName: string } | null
+    isCaptain: boolean
+  } = { confirmed: false, captainOffer: null, isCaptain: false },
+): QueueEntryView {
   return {
     characterId: entry.character.id,
     category: entry.category,
     joinedAt: entry.joinedAt,
     lobby: entry.lobby
-      ? { state: entry.lobby.state, confirmBy: confirmBy(entry.lobby), confirmed }
+      ? { state: entry.lobby.state, confirmBy: confirmBy(entry.lobby), ...extra }
       : null,
   }
 }

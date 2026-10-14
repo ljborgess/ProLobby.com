@@ -4,6 +4,7 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 
 import { LobbyParticipation } from '../lobby/lobby-participation.entity'
 import { Lobby, LobbyState } from '../lobby/lobby.entity'
+import { CaptainCascadeService } from './captain-cascade.service'
 import { QueueEntry } from './queue-entry.entity'
 import { QueueRefusal } from './queue-refusal.entity'
 
@@ -22,7 +23,10 @@ export const confirmBy = (lobby: Pick<Lobby, 'createdAt'>): Date =>
  */
 @Injectable()
 export class LobbyConfirmationService {
-  constructor(private readonly em: EntityManager) {}
+  constructor(
+    private readonly em: EntityManager,
+    private readonly cascade: CaptainCascadeService,
+  ) {}
 
   async respond(accountId: string, accept: boolean, now: Date = new Date()): Promise<void> {
     await this.em.fork().transactional(async (em) => {
@@ -50,6 +54,9 @@ export class LobbyConfirmationService {
       mine.confirmedAt ??= now
       if (participations.every((p) => p.confirmedAt)) {
         lobby.state = LobbyState.WAITING_CAPTAIN
+        // Same transaction: the first offer of each side exists the moment
+        // the lobby says it is choosing captains (#247).
+        await this.cascade.start(em, lobby, now)
       }
       await em.flush()
     })
