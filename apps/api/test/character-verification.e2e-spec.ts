@@ -19,6 +19,7 @@ import { CURRENT_TERMS_VERSION } from '../src/modules/account/terms.constants'
 import { Character, CharacterState } from '../src/modules/character/character.entity'
 import { PlatformGamertag } from '../src/modules/character/platform-gamertag.entity'
 import { PrintSubmission } from '../src/modules/character/print-submission.entity'
+import { AuditAction, AuditEntry } from '../src/modules/moderation/audit-entry.entity'
 import { BlockedIdentity } from '../src/modules/moderation/blocked-identity.entity'
 import { ModerationCase } from '../src/modules/moderation/moderation-case.entity'
 import { ModerationCaseState } from '../src/modules/moderation/moderation-case.enums'
@@ -163,6 +164,23 @@ describe('character verification by moderation (#198)', () => {
       .get('/api/characters')
       .set('Cookie', player.cookie)
     expect(list.body[0].lastPrint).toEqual({ status: 'accepted', rejection: null })
+  })
+
+  it('records the decision in the audit trail, with who decided (#243)', async () => {
+    const { caseId } = await playerWithPrint('Audit1')
+
+    await decide(caseId, { approve: false, rejection: 'unreadable' })
+
+    const [entry, ...more] = await orm.em.fork().find(AuditEntry, { caseId })
+    expect(more).toHaveLength(0)
+    const moderatorAccount = await orm.em.fork().findOneOrFail(Account, { email: moderatorEmail })
+    expect(entry).toMatchObject({
+      action: AuditAction.CASE_RESOLVED,
+      actorId: moderatorAccount.id,
+      actorLabel: 'moderator',
+      before: { state: 'open' },
+      after: { state: 'resolved', decision: 'rejected: unreadable' },
+    })
   })
 
   it('turns a different tag on the card into a rejection, never an approval', async () => {

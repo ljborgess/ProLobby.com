@@ -18,6 +18,7 @@ import { hashGamertag, readIdentityHmacSecret } from '../../common/security/iden
 import { Account } from '../account/account.entity'
 import { detectRealImageType } from '../account/evidence-image'
 import { BlockedIdentity } from '../moderation/blocked-identity.entity'
+import { AuditAction, recordAudit } from '../moderation/audit-entry.entity'
 import { ModerationCase } from '../moderation/moderation-case.entity'
 import {
   ModerationCaseOrigin,
@@ -125,6 +126,13 @@ export class CharacterVerificationService {
       moderationCase.resolvedAt = new Date()
       moderationCase.decision = 'closed: character_replaced'
       moderationCase.printSubmission!.status = PrintSubmissionStatus.REJECTED
+      recordAudit(em, {
+        action: AuditAction.CASE_RESOLVED,
+        actorLabel: 'system',
+        caseId: moderationCase.id,
+        targetAccountId: moderationCase.targetAccount?.id,
+        after: { state: moderationCase.state, decision: moderationCase.decision },
+      })
     }
   }
 
@@ -273,5 +281,14 @@ export class CharacterVerificationService {
     moderationCase.resolvedBy = em.getReference(Account, moderatorId)
     moderationCase.resolvedAt = new Date()
     moderationCase.decision = rejection ? `rejected: ${rejection}` : 'approved'
+    recordAudit(em, {
+      action: AuditAction.CASE_RESOLVED,
+      actorId: moderatorId,
+      actorLabel: 'moderator',
+      caseId: moderationCase.id,
+      targetAccountId: moderationCase.targetAccount?.id,
+      before: { state: ModerationCaseState.OPEN },
+      after: { state: moderationCase.state, decision: moderationCase.decision },
+    })
   }
 }
