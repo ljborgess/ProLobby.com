@@ -6,6 +6,21 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 
 ---
 
+## 2026-10-14 · Rafael
+
+### O que a API do lobby entrega pra #252 (#247 e #248)
+
+- **`GET /api/queue`**: o `entry.lobby` ganhou campos novos.
+  - Capitão: `captainOffer` (`{ answerBy, clubName }` enquanto o papel está oferecido a essa conta, senão `null`) e `isCaptain`.
+  - Convite: `inviteBy` (fim dos 5 min, `null` antes dos dois capitães confirmarem), `inviteClubName` (o clube do capitão do lado, de onde vem o convite), `inviteReceived` e `clubFullDeclared`.
+  - Estados novos em `state`: `waiting_invite`, `in_progress`, `cancelled_no_fault` e `cancelled_by_captain`. Num cancelamento, a `entry` volta com `lobby: null` e a pessoa está buscando de novo.
+- **`PUT /api/queue/captaincy`** com `{ answer: 'confirm' | 'decline' | 'full' }`: `204`. Depois dos 30 s, `409 captaincy_closed`; clube já em uso por outro lobby, `409 club_in_use`; sem oferta, `404 no_captaincy_offer`.
+- **`DELETE /api/queue/captaincy`**: o capitão confirmado desiste antes do outro lado confirmar. `204`; depois, `409 captaincy_closed`.
+- **`PUT /api/queue/invite`** (sem corpo): recebeu o convite. `204`; fora da janela, `409 invite_closed`; fora de lobby, `404 no_lobby`.
+- **`PUT /api/queue/club-full`** (sem corpo): só o capitão, durante a janela. `204`; quem não é capitão, `404 not_a_captain`.
+
+---
+
 ## 2026-10-09 · Rafael
 
 ### A Fase 3 (fechamento do lobby) está dividida com o Luciano

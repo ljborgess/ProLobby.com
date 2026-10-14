@@ -9,6 +9,7 @@ import { AnswerCaptaincyDto } from './dto/answer-captaincy.dto'
 import { ConfirmLobbyDto } from './dto/confirm-lobby.dto'
 import { JoinQueueDto } from './dto/join-queue.dto'
 import { LobbyConfirmationService } from './lobby-confirmation.service'
+import { LobbyInviteService } from './lobby-invite.service'
 import { QueueService, type MovementBand, type QueueEntryView } from './queue.service'
 
 /**
@@ -24,6 +25,7 @@ export class QueueController {
     private readonly queueService: QueueService,
     private readonly lobbyConfirmationService: LobbyConfirmationService,
     private readonly captainCascadeService: CaptainCascadeService,
+    private readonly lobbyInviteService: LobbyInviteService,
   ) {}
 
   @Get()
@@ -72,5 +74,19 @@ export class QueueController {
   @HttpCode(204)
   withdrawCaptaincy(@Req() request: RequestWithAccount): Promise<void> {
     return this.captainCascadeService.withdraw(request.account!.id)
+  }
+
+  /** Got the invite to the captain's club, within the 5 min (#248). */
+  @Put('invite')
+  @HttpCode(204)
+  inviteReceived(@Req() request: RequestWithAccount): Promise<void> {
+    return this.lobbyInviteService.received(request.account!.id)
+  }
+
+  /** The captain: the club filled up after its last update, no fault for a missing invite (#248). */
+  @Put('club-full')
+  @HttpCode(204)
+  declareClubFull(@Req() request: RequestWithAccount): Promise<void> {
+    return this.lobbyInviteService.declareClubFull(request.account!.id)
   }
 }
