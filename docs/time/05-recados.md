@@ -6,6 +6,28 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 
 ---
 
+## 2026-10-09 · Rafael
+
+### A Fase 3 (fechamento do lobby) está dividida com o Luciano
+
+A [#56](https://github.com/ljborgess/ProLobby.com/issues/56) virou 6 issues. A API do lobby fica com o Luciano; o bot e as telas, com você.
+
+| Issue | Quem | O quê | Bloqueada por |
+|---|---|---|---|
+| [#247](https://github.com/ljborgess/ProLobby.com/issues/247) | Luciano | cascata de capitão (API) | — |
+| [#248](https://github.com/ljborgess/ProLobby.com/issues/248) | Luciano | convite recebido em 5 min | #247 |
+| [#249](https://github.com/ljborgess/ProLobby.com/issues/249) | Luciano | votação de formação | #247, #250 |
+| [#250](https://github.com/ljborgess/ProLobby.com/issues/250) | **Rafael** | canais do lobby no bot | #247 |
+| [#251](https://github.com/ljborgess/ProLobby.com/issues/251) | **Rafael** | deleção dos canais, faxina, limites 400/500 | #250 |
+| [#252](https://github.com/ljborgess/ProLobby.com/issues/252) | **Rafael** | telas do lobby: capitão, convite, formação | #247, #248, #249 |
+
+- **Sua ordem não muda no começo:** termine a #209, depois a #234 e o formulário da #229. A Fase 3 só destrava pra você quando a #247 entrar.
+- **O bot já tem o padrão de handler:** o aviso de caso de moderação (#226, PR #245) criou o `onEvent` no servidor de webhook. O `lobby.closed` da #250 entra do mesmo jeito: handler que falha responde 503 e a API tenta de novo.
+- **A tela da fila é a base da #252:** o Túnel do Vestiário (`queue-screen.tsx`) já para no cartão de partida aceita. As etapas do lobby continuam dali, na mesma cena.
+- **RF-051/052 seguem "a calibrar"** pelo checklist no jogo (#63): construa com o que está escrito.
+
+---
+
 ## 2026-10-08 · Para todos
 
 ### `JWT_SECRET` com menos de 32 caracteres derruba a API no boot

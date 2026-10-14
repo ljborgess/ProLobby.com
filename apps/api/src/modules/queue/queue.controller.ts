@@ -4,6 +4,8 @@ import { AllowStates } from '../../common/auth/auth.decorators'
 import type { RequestWithAccount } from '../../common/auth/session.guard'
 import { AccountState } from '../account/account.enums'
 import type { CharacterCategory } from '../character/archetype'
+import { CaptainCascadeService } from './captain-cascade.service'
+import { AnswerCaptaincyDto } from './dto/answer-captaincy.dto'
 import { ConfirmLobbyDto } from './dto/confirm-lobby.dto'
 import { JoinQueueDto } from './dto/join-queue.dto'
 import { LobbyConfirmationService } from './lobby-confirmation.service'
@@ -21,6 +23,7 @@ export class QueueController {
   constructor(
     private readonly queueService: QueueService,
     private readonly lobbyConfirmationService: LobbyConfirmationService,
+    private readonly captainCascadeService: CaptainCascadeService,
   ) {}
 
   @Get()
@@ -52,5 +55,22 @@ export class QueueController {
   @HttpCode(204)
   confirm(@Req() request: RequestWithAccount, @Body() dto: ConfirmLobbyDto): Promise<void> {
     return this.lobbyConfirmationService.respond(request.account!.id, dto.accept)
+  }
+
+  /** The captain role, within its 30 s: confirm, decline, or the club filled up (#247). */
+  @Put('captaincy')
+  @HttpCode(204)
+  answerCaptaincy(
+    @Req() request: RequestWithAccount,
+    @Body() dto: AnswerCaptaincyDto,
+  ): Promise<void> {
+    return this.captainCascadeService.respond(request.account!.id, dto.answer)
+  }
+
+  /** A confirmed captain gives the role up, before the other side confirmed (RF-032). */
+  @Delete('captaincy')
+  @HttpCode(204)
+  withdrawCaptaincy(@Req() request: RequestWithAccount): Promise<void> {
+    return this.captainCascadeService.withdraw(request.account!.id)
   }
 }

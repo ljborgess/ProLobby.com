@@ -101,6 +101,13 @@ O bloqueio corrente é **derivado**, não guardado: conta as ocorrências desde 
 - **`placar_a` / `placar_b` / `anulada`** — o resultado **confirmado** não tinha casa. `Report` guarda o que cada lado enviou; o valor que vale, que alimenta elo e o histórico indefinido de [RF-018](05-funcionais.md#rf-018--histórico-de-partida-não-expira), ficava sem campo, e o rótulo de partida anulada de [RF-044](05-funcionais.md#rf-044--disputa-sem-evidência-decisiva-anula-a-partida) também.
 - **`canal_*_id`** — [RF-052](05-funcionais.md#rf-052--canais-são-apagados-pelos-três-gatilhos-e-imediatamente-em-cancelamento) e [RF-054](05-funcionais.md#rf-054--faxina-horária-apaga-canal-órfão) mandam apagar os 3 canais e varrer órfão, e o bot não tem banco — sem os ids gravados aqui, "apagar os canais daquele lobby" dependia de memória de processo.
 
+**Como a cascata de capitão ficou no código (#247, 2026-10-09)**: `espera_capitao_desde` marca o início dos 5 min do teto, contado quando os 8 confirmam a entrada. `fechado_em` é gravado quando os dois lados têm capitão confirmado, e o lobby passa a `waiting_invite`. Teto estourado sem os dois capitães leva a `cancelled_no_fault`, com `encerrado_em`. O nome do clube vai pra `clube_a`/`clube_b` na confirmação do capitão, copiado do `ClubeDeclarado` (mesmo limite de 20 caracteres).
+
+### OfertaCapitao
+`lobby` · `lado` · `conta` · `ofertada_em` · `resultado` (confirmed / declined / expired / withdrawn, nulo enquanto espera) · `respondida_em` · `declarou_cheio`
+
+Uma linha por oferta do papel de capitão (#247). A oferta em aberto é a que tem `resultado` nulo, uma por lado. Quem já recebeu oferta naquele lado não é candidato de novo, então a fila de candidatos é derivada das linhas e não precisa de coluna própria. `declarou_cheio` registra o "o clube encheu" sem penalidade, separado da recusa simples, pra auditoria de abuso futura. Desistência do capitão confirmado vira `withdrawn` e reabre a cascata naquele lado.
+
 ### EstatisticaPartida
 `participacao_lobby` · `nota` · `gols` · `assistencias` · `posicao_lida` · `extraida_de` (envio de print)
 
