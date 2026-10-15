@@ -80,10 +80,11 @@ export class Lobby {
   @Property({ length: 20, nullable: true })
   textChannelId?: string
 
-  @Property({ length: 20, nullable: true })
+  // Named by hand: the naming strategy would glue the side letter ("voice_achannel_id").
+  @Property({ length: 20, nullable: true, fieldName: 'voice_a_channel_id' })
   voiceAChannelId?: string
 
-  @Property({ length: 20, nullable: true })
+  @Property({ length: 20, nullable: true, fieldName: 'voice_b_channel_id' })
   voiceBChannelId?: string
 
   /** The bot created the channels: the 60 s formation vote counts from here (RF-034, #249). */
