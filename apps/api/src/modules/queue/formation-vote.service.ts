@@ -63,11 +63,17 @@ export class FormationVoteService {
   }
 
   /** The captain settles a tie, or picks when nobody voted. */
-  async choose(accountId: string, formation: string): Promise<void> {
+  async choose(accountId: string, formation: string, now: Date = new Date()): Promise<void> {
     await this.em.fork().transactional(async (em) => {
       const { lobby, mine } = await this.mine(em, accountId)
       if (captainOf(lobby, mine.side) !== accountId) {
         throw new NotFoundException('not_a_captain')
+      }
+      // The 60 s are over but the job has not counted yet: count here, so the
+      // captain is not told "not pending" for the few seconds in between.
+      const voteBy = formationVoteBy(lobby)
+      if (!lobby.formationVoteClosedAt && voteBy && now > voteBy) {
+        await this.count(em, lobby, now)
       }
       if (!lobby.formationVoteClosedAt || formationOf(lobby, mine.side)) {
         throw new ConflictException('formation_not_pending')
@@ -94,16 +100,21 @@ export class FormationVoteService {
         { lockMode: LockMode.PESSIMISTIC_WRITE },
       )
       for (const lobby of lobbies) {
-        for (const side of [LobbySide.A, LobbySide.B]) {
-          const top = leaders(await this.votesOf(em, lobby, side))
-          // One leader is a winner; a tie or no vote waits on the captain.
-          if (top.length === 1) setFormation(lobby, side, top[0]!)
-        }
-        lobby.formationVoteClosedAt = now
+        await this.count(em, lobby, now)
       }
       await em.flush()
       return lobbies.length
     })
+  }
+
+  /** Counts both sides of a locked lobby. */
+  private async count(em: EntityManager, lobby: Lobby, now: Date): Promise<void> {
+    for (const side of [LobbySide.A, LobbySide.B]) {
+      const top = leaders(await this.votesOf(em, lobby, side))
+      // One leader is a winner; a tie or no vote waits on the captain.
+      if (top.length === 1) setFormation(lobby, side, top[0]!)
+    }
+    lobby.formationVoteClosedAt = now
   }
 
   /** What the lobby screen shows of the vote (`GET /api/queue`). */

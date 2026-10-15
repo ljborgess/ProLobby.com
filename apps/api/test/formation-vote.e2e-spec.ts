@@ -267,14 +267,29 @@ describe('formation vote (#249)', () => {
 
   it('no vote at all: the captain picks any', async () => {
     const { lobbyId, openedAt, b } = await voting()
-    await expect(formation.choose(b.captain.accountId, '4-3-3')).rejects.toMatchObject({
-      status: 409,
-    })
+    await expect(
+      formation.choose(b.captain.accountId, '4-3-3', at(openedAt + 30 * SECOND)),
+    ).rejects.toMatchObject({ status: 409 })
     await formation.close(at(openedAt + 60 * SECOND))
 
-    await formation.choose(b.captain.accountId, '4-3-3')
+    await formation.choose(b.captain.accountId, '4-3-3', at(openedAt + 70 * SECOND))
 
     expect((await chosen(lobbyId)).b).toBe('4-3-3')
+  })
+
+  it('the captain can choose past the 60 s before the job counted', async () => {
+    const { lobbyId, openedAt, a } = await voting()
+    await formation.vote(a.others[0]!.accountId, '4-4-2', at(openedAt + SECOND))
+    await formation.vote(a.others[1]!.accountId, '4-3-3', at(openedAt + SECOND))
+
+    // No close() ran: the choice itself counts the votes first.
+    await formation.choose(a.captain.accountId, '4-3-3', at(openedAt + 62 * SECOND))
+
+    const lobby = await lobbyOf(lobbyId)
+    expect(lobby.formationA).toBe('4-3-3')
+    expect(lobby.formationVoteClosedAt).toEqual(at(openedAt + 62 * SECOND))
+    // Side B had no vote: still waits on its captain.
+    expect(lobby.formationB ?? null).toBeNull()
   })
 
   it('refuses a vote from outside the lobby', async () => {
