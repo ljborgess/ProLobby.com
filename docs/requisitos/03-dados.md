@@ -127,6 +127,8 @@ Não pesa no elo, por decisão ([Ranking](../produto/02-jogador/02-ranking.md)) 
 ### Report
 `lobby` · `conta` · `placar_a` · `placar_b` · `envio_print` · `reportou_ausencia_de` · `enviado_em`
 
+**Como o report ficou no código (4.1, fatia A, 2026-10-15)**: um por pessoa por lobby, com o `lado` copiado da participação. `envio_print` virou o hash do arquivo (único entre todos os reports, então o mesmo arquivo nunca reporta duas partidas) e o caminho do arquivo cifrado, apagado em 90 dias como o print de personagem. A checagem de imagem (tipo real e tamanho) é a mesma do print de personagem. Antes de 5 min do `fechado_em`, a API recusa e diz quanto falta (RF-045). O primeiro report aceito leva o lobby de `in_progress` pra `awaiting_confirmation` e grava `primeiro_report_em`, o marco dos 15 min. Quem reportou corrige o placar digitado, com `corrigido_em`, enquanto ninguém do outro lado reportou (RF-042); o print não muda. Sem OCR ainda (#191), o placar digitado é o que vale; `reportou_ausencia_de` fica pra fatia da ausência.
+
 ### Avaliacao
 `lobby` · `de_conta` · `para_conta` · `tipo` (joinha / negativa) · `criada_em` — só entre companheiros do mesmo lado.
 

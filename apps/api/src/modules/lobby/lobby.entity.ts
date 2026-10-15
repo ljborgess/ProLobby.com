@@ -14,6 +14,8 @@ export enum LobbyState {
   WAITING_INVITE = 'waiting_invite',
   /** Every human got the invite (#248): the match is on. */
   IN_PROGRESS = 'in_progress',
+  /** The first result print arrived (4.1): the other side has 15 min to send theirs. */
+  AWAITING_CONFIRMATION = 'awaiting_confirmation',
   /** Terminal, no penalty for anyone: the match never existed. */
   CANCELLED_NO_FAULT = 'cancelled_no_fault',
   /** Terminal: someone never got the invite and the captain gave no reason (#248). */
@@ -100,4 +102,8 @@ export class Lobby {
 
   @Property({ length: 12, nullable: true })
   formationB?: string
+
+  /** The first accepted result print: the 15 min of the other side count from here (4.1). */
+  @Property({ nullable: true })
+  firstReportAt?: Date
 }

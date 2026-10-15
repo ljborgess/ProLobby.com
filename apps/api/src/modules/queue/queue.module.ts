@@ -7,6 +7,8 @@ import { CaptainCascadeService } from './captain-cascade.service'
 import { FormationVoteService } from './formation-vote.service'
 import { LobbyConfirmationService } from './lobby-confirmation.service'
 import { LobbyInviteService } from './lobby-invite.service'
+import { MatchPrintRetentionJob } from './match-print-retention.job'
+import { MatchReportService } from './match-report.service'
 import { QueueEntry } from './queue-entry.entity'
 import { QueueMatchingJob } from './queue-matching.job'
 import { QueueMatchingService } from './queue-matching.service'
@@ -22,6 +24,8 @@ import { QueueService } from './queue.service'
     FormationVoteService,
     LobbyConfirmationService,
     LobbyInviteService,
+    MatchPrintRetentionJob,
+    MatchReportService,
     QueueService,
     QueueMatchingService,
     QueueMatchingJob,

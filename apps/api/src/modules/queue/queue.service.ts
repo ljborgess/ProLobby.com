@@ -20,6 +20,7 @@ import { EloService } from '../ranking/elo.service'
 import { confirmBy } from './lobby-confirmation.service'
 import { FormationVoteService, type FormationView } from './formation-vote.service'
 import { inviteBy } from './lobby-invite.service'
+import { MatchReportService, reportableFrom, type MatchReportView } from './match-report.service'
 import { captainAnswerBy } from './captain-cascade.service'
 import { blockedUntilFor } from './queue-block'
 import { QueueEntry } from './queue-entry.entity'
@@ -66,6 +67,10 @@ export interface QueueEntryView {
     clubFullDeclared: boolean
     /** The side's formation vote (#249); null outside a lobby's roster. */
     formation: FormationView | null
+    /** The result print is accepted from here (RF-045, 4.1); null before the lobby closed. */
+    reportableFrom: Date | null
+    /** This account's own result report, if sent. */
+    myReport: MatchReportView | null
   } | null
 }
 
@@ -85,6 +90,7 @@ export class QueueService {
     private readonly em: EntityManager,
     private readonly eloService: EloService,
     private readonly formationVoteService: FormationVoteService,
+    private readonly matchReportService: MatchReportService,
   ) {}
 
   async current(
@@ -118,6 +124,10 @@ export class QueueService {
               mine && entry.lobby
                 ? await this.formationVoteService.view(em, entry.lobby, mine)
                 : null,
+            reportableFrom: entry.lobby ? reportableFrom(entry.lobby) : null,
+            myReport: entry.lobby
+              ? await this.matchReportService.view(em, entry.lobby, accountId)
+              : null,
           })
         : null,
       blockedUntil: await blockedUntilFor(em, accountId, now),
