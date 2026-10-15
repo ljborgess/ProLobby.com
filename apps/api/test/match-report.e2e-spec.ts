@@ -23,6 +23,8 @@ import { CaptainOffer } from '../src/modules/lobby/captain-offer.entity'
 import { LobbyParticipation, LobbySide } from '../src/modules/lobby/lobby-participation.entity'
 import { Lobby, LobbyState } from '../src/modules/lobby/lobby.entity'
 import { MatchReport } from '../src/modules/lobby/match-report.entity'
+import { ModerationCase } from '../src/modules/moderation/moderation-case.entity'
+import { ModerationCaseType } from '../src/modules/moderation/moderation-case.enums'
 import { CaptainCascadeService } from '../src/modules/queue/captain-cascade.service'
 import { LobbyConfirmationService } from '../src/modules/queue/lobby-confirmation.service'
 import { LobbyInviteService } from '../src/modules/queue/lobby-invite.service'
@@ -46,8 +48,11 @@ const ARCHETYPE: Record<CharacterCategory, Archetype> = {
 
 type Player = { accountId: string; cookie: string }
 
-/** Phase 4.1, slice A: the result print and the score, before OCR — RF-042, RF-045. */
-describe('match report, first slice (4.1)', () => {
+/**
+ * Phase 4.1, slices A and B: the result print and the score before OCR, and
+ * the cross-confirmation — RF-042, RF-043, RF-045.
+ */
+describe('match report (4.1)', () => {
   let app: INestApplication
   let orm: MikroORM
   let matching: QueueMatchingService
@@ -320,6 +325,7 @@ describe('match report, first slice (4.1)', () => {
       myReport: { scoreA: 2, scoreB: 1 },
     })
     expect(shown.body.entry.lobby.reportableFrom).toEqual(expect.any(String))
+    expect(shown.body.entry.lobby.reportConfirmBy).toEqual(expect.any(String))
   })
 
   it('deletes result prints past 90 days and keeps the hash', async () => {
@@ -338,5 +344,86 @@ describe('match report, first slice (4.1)', () => {
     expect(after.filePath ?? null).toBeNull()
     expect(after.fileHash).toBe(before.fileHash)
     expect(existsSync(before.filePath!)).toBe(false)
+  })
+
+  const entriesOf = (lobbyId: string) => orm.em.fork().count(QueueEntry, { lobby: lobbyId })
+  const disputesOf = (lobbyId: string) =>
+    orm.em.fork().count(ModerationCase, { type: ModerationCaseType.SCORE_DISPUTE, lobbyId })
+
+  it('the other side with the same score finishes the match and frees everyone (6 to 8)', async () => {
+    const { lobbyId, closedAt, a, b } = await playing()
+    await reports.submit(a.others[0]!.accountId, score(2, 1), png(), at(closedAt + 20 * MINUTE))
+    expect(await entriesOf(lobbyId)).toBe(8)
+
+    const when = at(closedAt + 30 * MINUTE)
+    await reports.submit(b.captain.accountId, score(2, 1), png(), when)
+
+    const lobby = await lobbyOf(lobbyId)
+    expect(lobby).toMatchObject({ state: LobbyState.FINISHED, scoreA: 2, scoreB: 1, endedAt: when })
+    expect(await entriesOf(lobbyId)).toBe(0)
+    expect(await disputesOf(lobbyId)).toBe(0)
+    // Settled: anyone else is told it closed.
+    await expect(
+      reports.submit(b.others[0]!.accountId, score(2, 1), png(), at(closedAt + 31 * MINUTE)),
+    ).rejects.toMatchObject({ status: 409, message: 'report_closed' })
+  })
+
+  it('a different score opens a score dispute and keeps the queue held (6 to 9)', async () => {
+    const { lobbyId, closedAt, a, b } = await playing()
+    await reports.submit(a.others[0]!.accountId, score(2, 1), png(), at(closedAt + 20 * MINUTE))
+
+    await reports.submit(b.others[0]!.accountId, score(1, 2), png(), at(closedAt + 25 * MINUTE))
+
+    const lobby = await lobbyOf(lobbyId)
+    expect(lobby.state).toBe(LobbyState.IN_DISPUTE)
+    expect(lobby.scoreA ?? null).toBeNull()
+    expect(await disputesOf(lobbyId)).toBe(1)
+    expect(await entriesOf(lobbyId)).toBe(8)
+  })
+
+  it('teammates who disagree among themselves end in dispute too', async () => {
+    const { lobbyId, closedAt, a, b } = await playing()
+    await reports.submit(a.others[0]!.accountId, score(2, 1), png(), at(closedAt + 20 * MINUTE))
+    await reports.submit(a.others[1]!.accountId, score(3, 1), png(), at(closedAt + 21 * MINUTE))
+
+    await reports.submit(b.others[0]!.accountId, score(2, 1), png(), at(closedAt + 22 * MINUTE))
+
+    expect((await lobbyOf(lobbyId)).state).toBe(LobbyState.IN_DISPUTE)
+  })
+
+  it('15 min with one side only: not_confirmed and free; 48 h later, finished (6 to 7 to 8)', async () => {
+    const { lobbyId, closedAt, a, b } = await playing()
+    const first = closedAt + 20 * MINUTE
+    await reports.submit(a.others[0]!.accountId, score(0, 4), png(), at(first))
+
+    // Late, before the job ran: closed all the same, and so is the correction.
+    await expect(
+      reports.submit(b.others[0]!.accountId, score(0, 4), png(), at(first + 15 * MINUTE)),
+    ).rejects.toMatchObject({ status: 409, message: 'report_closed' })
+    await expect(
+      reports.correct(a.others[0]!.accountId, score(1, 4), at(first + 15 * MINUTE)),
+    ).rejects.toMatchObject({ status: 409, message: 'report_closed' })
+
+    expect(await reports.expire(at(first + 15 * MINUTE - 1))).toBe(0)
+    expect(await reports.expire(at(first + 15 * MINUTE))).toBe(1)
+    const unconfirmed = await lobbyOf(lobbyId)
+    expect(unconfirmed).toMatchObject({
+      state: LobbyState.NOT_CONFIRMED,
+      scoreA: 0,
+      scoreB: 4,
+      unconfirmedAt: at(first + 15 * MINUTE),
+    })
+    expect(unconfirmed.endedAt ?? null).toBeNull()
+    expect(await entriesOf(lobbyId)).toBe(0)
+
+    const contestEnds = first + 15 * MINUTE + 48 * 60 * MINUTE
+    expect(await reports.expire(at(contestEnds - 1))).toBe(0)
+    expect(await reports.expire(at(contestEnds))).toBe(1)
+    expect(await lobbyOf(lobbyId)).toMatchObject({
+      state: LobbyState.FINISHED,
+      scoreA: 0,
+      scoreB: 4,
+      endedAt: at(contestEnds),
+    })
   })
 })

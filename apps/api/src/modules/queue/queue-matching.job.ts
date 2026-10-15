@@ -5,6 +5,7 @@ import { CaptainCascadeService } from './captain-cascade.service'
 import { FormationVoteService } from './formation-vote.service'
 import { LobbyConfirmationService } from './lobby-confirmation.service'
 import { LobbyInviteService } from './lobby-invite.service'
+import { MatchReportService } from './match-report.service'
 import { QueueMatchingService } from './queue-matching.service'
 
 /**
@@ -22,6 +23,7 @@ export class QueueMatchingJob {
     private readonly captainCascadeService: CaptainCascadeService,
     private readonly lobbyInviteService: LobbyInviteService,
     private readonly formationVoteService: FormationVoteService,
+    private readonly matchReportService: MatchReportService,
     private readonly queueMatchingService: QueueMatchingService,
   ) {}
 
@@ -41,6 +43,8 @@ export class QueueMatchingJob {
       if (invites > 0) this.logger.log(`ended ${invites} invite window(s)`)
       const votes = await this.formationVoteService.close()
       if (votes > 0) this.logger.log(`counted ${votes} formation vote(s)`)
+      const results = await this.matchReportService.expire()
+      if (results > 0) this.logger.log(`moved ${results} result(s) past their window`)
       const lobbies = await this.queueMatchingService.closeMatches()
       if (lobbies > 0) this.logger.log(`created ${lobbies} lobby(ies)`)
     } catch (error) {

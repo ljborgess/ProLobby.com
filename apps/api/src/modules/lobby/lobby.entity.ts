@@ -16,14 +16,25 @@ export enum LobbyState {
   IN_PROGRESS = 'in_progress',
   /** The first result print arrived (4.1): the other side has 15 min to send theirs. */
   AWAITING_CONFIRMATION = 'awaiting_confirmation',
+  /** 15 min with one side only (RF-043): the queue is free, contesting is open for 48 h. */
+  NOT_CONFIRMED = 'not_confirmed',
+  /** Terminal: the score is settled, from both sides or after the 48 h. */
+  FINISHED = 'finished',
+  /** The sides diverged: a score-dispute case decides, the queue stays held. */
+  IN_DISPUTE = 'in_dispute',
   /** Terminal, no penalty for anyone: the match never existed. */
   CANCELLED_NO_FAULT = 'cancelled_no_fault',
   /** Terminal: someone never got the invite and the captain gave no reason (#248). */
   CANCELLED_BY_CAPTAIN = 'cancelled_by_captain',
 }
 
-/** States after which the lobby holds nothing: no club, no queue. */
+/**
+ * States after which the lobby holds nothing: no club, no queue. `not_confirmed`
+ * is not terminal (a contest reopens it) but frees the queue all the same.
+ */
 export const TERMINAL_LOBBY_STATES: readonly LobbyState[] = [
+  LobbyState.NOT_CONFIRMED,
+  LobbyState.FINISHED,
   LobbyState.CANCELLED_NO_FAULT,
   LobbyState.CANCELLED_BY_CAPTAIN,
 ]
@@ -106,4 +117,15 @@ export class Lobby {
   /** The first accepted result print: the 15 min of the other side count from here (4.1). */
   @Property({ nullable: true })
   firstReportAt?: Date
+
+  /** `nao_confirmado_em`: the 48 h of contesting count from here (RF-043). */
+  @Property({ nullable: true })
+  unconfirmedAt?: Date
+
+  /** `placar_a` / `placar_b`: the score that counts, empty while disputed. */
+  @Property({ type: 'smallint', nullable: true })
+  scoreA?: number
+
+  @Property({ type: 'smallint', nullable: true })
+  scoreB?: number
 }

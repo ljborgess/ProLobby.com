@@ -1,4 +1,4 @@
-import { Entity, Enum, ManyToOne, Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core'
+import { Entity, Enum, Index, ManyToOne, Opt, PrimaryKey, Property, Unique } from '@mikro-orm/core'
 import { randomUUID } from 'node:crypto'
 
 import { Account } from '../account/account.entity'
@@ -18,6 +18,8 @@ export enum LobbySide {
  */
 @Entity({ tableName: 'lobby_participation' })
 @Unique({ properties: ['lobby', 'account'] })
+// An account's latest lobby (the result report looks it up by account).
+@Index({ properties: ['account'] })
 export class LobbyParticipation {
   @PrimaryKey({ type: 'uuid' })
   id: string & Opt = randomUUID()

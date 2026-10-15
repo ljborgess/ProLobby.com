@@ -18,6 +18,15 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 - **`GET /api/queue`**: `entry.lobby` ganhou `reportableFrom` (quando o envio libera) e `myReport`. O estado novo `awaiting_confirmation` aparece depois do primeiro report.
 - Ainda não tem a confirmação cruzada (15 min) nem contestação; vêm nas próximas fatias.
 
+### A confirmação cruzada do placar existe na API (4.1, fatia B)
+
+- **O primeiro report do outro lado decide.** Placar igual a todos os já enviados: `finished`. Qualquer diferença, inclusive entre colegas do mesmo lado: `in_dispute`, com caso `score_dispute` pra moderação, e a fila continua presa.
+- **15 min sem o outro lado:** `not_confirmed` com o placar do primeiro report, e a fila fica livre. Passadas 48 h sem contestação, `finished`.
+- **Report ou correção depois dos 15 min:** `409 report_closed`, mesmo antes do job rodar.
+- **Em `finished` e `not_confirmed` a entrada da fila some** (a conta sai da fila e o personagem destrava), então o `GET /api/queue` volta com `entry: null`. A tela de resultado depois disso é da fatia E.
+- **`GET /api/queue`:** `entry.lobby.reportConfirmBy` diz até quando o outro lado reporta (`null` antes do primeiro report).
+- **Elo não é aplicado aqui:** é a #209. O ponto de encaixe é a passagem pra `finished` em `match-report.service.ts` (`settle` e o `expire`); `lobby.scoreA`/`scoreB` guardam o placar que vale.
+
 
 ### A #250 fecha mandando `lobby.channels_created` pra API (#249)
 

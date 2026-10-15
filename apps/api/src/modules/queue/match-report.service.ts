@@ -20,15 +20,24 @@ import { checkPrintImage, printsDir, sha256 } from '../character/print-submissio
 import { LobbyParticipation, LobbySide } from '../lobby/lobby-participation.entity'
 import { Lobby, LobbyState } from '../lobby/lobby.entity'
 import { MatchReport } from '../lobby/match-report.entity'
+import { ModerationCase } from '../moderation/moderation-case.entity'
+import { ModerationCaseOrigin, ModerationCaseType } from '../moderation/moderation-case.enums'
 import { QueueEntry } from './queue-entry.entity'
 
 /** RF-045: no print before this, counted from `closed_at`. */
 export const REPORT_FLOOR_MS = 5 * 60 * 1000
+/** RF-043: the other side's window, counted from the first accepted report. */
+export const CONFIRMATION_WINDOW_MS = 15 * 60 * 1000
+/** RF-043: a one-sided result is open to contest this long, then it is final. */
+export const CONTEST_WINDOW_MS = 48 * 60 * 60 * 1000
 /** Same as the character prints (LGPD policy): the file goes, the hash stays. */
 const RETENTION_MS = 90 * 24 * 60 * 60 * 1000
 
 export const reportableFrom = (lobby: Pick<Lobby, 'closedAt'>): Date | null =>
   lobby.closedAt ? new Date(lobby.closedAt.getTime() + REPORT_FLOOR_MS) : null
+
+export const reportConfirmBy = (lobby: Pick<Lobby, 'firstReportAt'>): Date | null =>
+  lobby.firstReportAt ? new Date(lobby.firstReportAt.getTime() + CONFIRMATION_WINDOW_MS) : null
 
 export type ReportScore = { scoreA: number; scoreB: number }
 
@@ -40,8 +49,10 @@ export type MatchReportView = ReportScore & { id: string; side: LobbySide }
  * A print of the final screen plus the score typed next to it. Until OCR
  * joins (#191), the typed score is what gets compared; the print is the
  * evidence moderation looks at. The first accepted report moves the lobby to
- * `awaiting_confirmation` and starts the other side's 15 min (counted by the
- * next slice). The print itself is checked like a character print: real
+ * `awaiting_confirmation` and starts the other side's 15 min. The other side's
+ * first report settles it: the same score finishes the match, a different one
+ * opens a score dispute. Nobody from the other side in 15 min: `not_confirmed`,
+ * final after 48 h without a contest. The print itself is checked like a character print: real
  * image type and size first, then the hash, so the same file never reports a
  * second match.
  */
@@ -70,10 +81,7 @@ export class MatchReportService {
     try {
       return await this.em.fork().transactional(async (em) => {
         const { lobby, mine } = await this.mine(em, accountId)
-        if (
-          lobby.state !== LobbyState.IN_PROGRESS &&
-          lobby.state !== LobbyState.AWAITING_CONFIRMATION
-        ) {
+        if (!open(lobby, now)) {
           throw new ConflictException('report_closed')
         }
         const from = reportableFrom(lobby)!
@@ -87,7 +95,8 @@ export class MatchReportService {
             HttpStatus.CONFLICT,
           )
         }
-        if (await em.count(MatchReport, { lobby, account: accountId })) {
+        const earlier = await em.find(MatchReport, { lobby }, { orderBy: { submittedAt: 'asc' } })
+        if (earlier.some((r) => r.account?.id === accountId)) {
           throw new ConflictException('report_exists')
         }
         if (await em.count(MatchReport, { fileHash })) {
@@ -108,6 +117,19 @@ export class MatchReportService {
         if (lobby.state === LobbyState.IN_PROGRESS) {
           lobby.state = LobbyState.AWAITING_CONFIRMATION
           lobby.firstReportAt = now
+        } else if (earlier[0]!.side !== mine.side) {
+          // The other side answered. Same-side extras before it count too: any
+          // mismatch is a divergence.
+          if (earlier.every((r) => r.scoreA === score.scoreA && r.scoreB === score.scoreB)) {
+            await settle(em, lobby, LobbyState.FINISHED, now, score)
+          } else {
+            em.create(ModerationCase, {
+              type: ModerationCaseType.SCORE_DISPUTE,
+              origin: ModerationCaseOrigin.SYSTEM,
+              lobbyId: lobby.id,
+            })
+            lobby.state = LobbyState.IN_DISPUTE
+          }
         }
         await em.flush()
         return toView(report)
@@ -139,7 +161,7 @@ export class MatchReportService {
         lobby,
         side: mine.side === LobbySide.A ? LobbySide.B : LobbySide.A,
       })
-      if (lobby.state !== LobbyState.AWAITING_CONFIRMATION || answered > 0) {
+      if (lobby.state !== LobbyState.AWAITING_CONFIRMATION || !open(lobby, now) || answered > 0) {
         throw new ConflictException('report_closed')
       }
       report.scoreA = score.scoreA
@@ -147,6 +169,48 @@ export class MatchReportService {
       report.correctedAt = now
       await em.flush()
       return toView(report)
+    })
+  }
+
+  /**
+   * The clock's part, run by the queue job: 15 min with one side only become
+   * `not_confirmed` and free the queue; 48 h of that become `finished`.
+   * Returns how many lobbies it moved.
+   */
+  async expire(now: Date = new Date()): Promise<number> {
+    return this.em.fork().transactional(async (em) => {
+      const unconfirmed = await em.find(
+        Lobby,
+        {
+          state: LobbyState.AWAITING_CONFIRMATION,
+          firstReportAt: { $lte: new Date(now.getTime() - CONFIRMATION_WINDOW_MS) },
+        },
+        { lockMode: LockMode.PESSIMISTIC_WRITE },
+      )
+      for (const lobby of unconfirmed) {
+        // ponytail: two reports of the same side that disagree still take the
+        // first one; a contest (RF-012) is the way to fix it.
+        const first = await em.findOneOrFail(
+          MatchReport,
+          { lobby },
+          { orderBy: { submittedAt: 'asc' } },
+        )
+        await settle(em, lobby, LobbyState.NOT_CONFIRMED, now, first)
+      }
+      const final = await em.find(
+        Lobby,
+        {
+          state: LobbyState.NOT_CONFIRMED,
+          unconfirmedAt: { $lte: new Date(now.getTime() - CONTEST_WINDOW_MS) },
+        },
+        { lockMode: LockMode.PESSIMISTIC_WRITE },
+      )
+      for (const lobby of final) {
+        lobby.state = LobbyState.FINISHED
+        lobby.endedAt = now
+      }
+      await em.flush()
+      return unconfirmed.length + final.length
     })
   }
 
@@ -182,19 +246,51 @@ export class MatchReportService {
   }
 
   private async mine(em: EntityManager, accountId: string) {
-    const entry = await em.findOne(QueueEntry, { account: accountId, lobby: { $ne: null } })
-    if (!entry?.lobby) {
+    // The latest lobby, not the queue entry: a settled match has none left,
+    // and its reporters should hear "closed", not "no lobby".
+    const mine = await em.findOne(
+      LobbyParticipation,
+      { account: accountId },
+      { orderBy: { lobby: { createdAt: 'desc' } } },
+    )
+    if (!mine) {
       throw new NotFoundException('no_lobby')
     }
     // The lobby row serializes the reports of everyone in it.
     const lobby = await em.findOneOrFail(
       Lobby,
-      { id: entry.lobby.id },
+      { id: mine.lobby.id },
       { lockMode: LockMode.PESSIMISTIC_WRITE },
     )
-    const mine = await em.findOneOrFail(LobbyParticipation, { lobby, account: accountId })
     return { lobby, mine }
   }
+}
+
+/** Reports are taken while the match runs and inside the other side's 15 min. */
+function open(lobby: Lobby, now: Date): boolean {
+  if (lobby.state === LobbyState.IN_PROGRESS) return true
+  // Past the 15 min the job has not run yet: closed all the same.
+  return lobby.state === LobbyState.AWAITING_CONFIRMATION && now < reportConfirmBy(lobby)!
+}
+
+/**
+ * The score is set and nobody holds the lobby any more: the queue entries go
+ * (the account is out of the queue, the character unlocked). Elo is #209's.
+ */
+async function settle(
+  em: EntityManager,
+  lobby: Lobby,
+  state: LobbyState.FINISHED | LobbyState.NOT_CONFIRMED,
+  now: Date,
+  score: ReportScore,
+): Promise<void> {
+  lobby.state = state
+  lobby.scoreA = score.scoreA
+  lobby.scoreB = score.scoreB
+  if (state === LobbyState.FINISHED) lobby.endedAt = now
+  else lobby.unconfirmedAt = now
+  await em.flush()
+  await em.nativeDelete(QueueEntry, { lobby })
 }
 
 function toView(report: MatchReport): MatchReportView {

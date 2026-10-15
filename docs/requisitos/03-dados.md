@@ -129,6 +129,8 @@ Não pesa no elo, por decisão ([Ranking](../produto/02-jogador/02-ranking.md)) 
 
 **Como o report ficou no código (4.1, fatia A, 2026-10-15)**: um por pessoa por lobby, com o `lado` copiado da participação. `envio_print` virou o hash do arquivo (único entre todos os reports, então o mesmo arquivo nunca reporta duas partidas) e o caminho do arquivo cifrado, apagado em 90 dias como o print de personagem. A checagem de imagem (tipo real e tamanho) é a mesma do print de personagem. Antes de 5 min do `fechado_em`, a API recusa e diz quanto falta (RF-045). O primeiro report aceito leva o lobby de `in_progress` pra `awaiting_confirmation` e grava `primeiro_report_em`, o marco dos 15 min. Quem reportou corrige o placar digitado, com `corrigido_em`, enquanto ninguém do outro lado reportou (RF-042); o print não muda. Sem OCR ainda (#191), o placar digitado é o que vale; `reportou_ausencia_de` fica pra fatia da ausência.
 
+**Como a confirmação cruzada ficou no código (4.1, fatia B, 2026-10-15)**: o primeiro report do outro lado, dentro de 15 min do `primeiro_report_em`, decide. Igual a todos os reports já enviados, o lobby vai pra `finished` com `placar_a`/`placar_b` e `encerrado_em`. Qualquer diferença, inclusive entre colegas do mesmo lado, vai pra `in_dispute` com um caso `score_dispute` e a fila continua presa. Sem o outro lado em 15 min, `not_confirmed` com o placar do primeiro report e `nao_confirmado_em`, que vira `finished` depois de 48 h. Em `finished` e `not_confirmed` as entradas da fila são apagadas: a conta sai da fila e o personagem destrava. O elo da partida fica pra #209.
+
 ### Avaliacao
 `lobby` · `de_conta` · `para_conta` · `tipo` (joinha / negativa) · `criada_em` — só entre companheiros do mesmo lado.
 
