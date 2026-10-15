@@ -22,6 +22,7 @@ import type { Request } from 'express'
 import { Public } from '../../common/auth/auth.decorators'
 import { BOT_EVENT_THROTTLE } from '../../common/security/throttler.config'
 import { DiscordPresenceService } from '../account/discord-presence.service'
+import { LobbyChannelsService } from './lobby-channels.service'
 
 type RequestWithRawBody = Request & { rawBody?: Buffer }
 
@@ -39,7 +40,10 @@ export class BotEventsController {
   // turn every event into a 500 that the bot dutifully retries.
   private readonly secret = readWebhookSecret()
 
-  constructor(private readonly presence: DiscordPresenceService) {}
+  constructor(
+    private readonly presence: DiscordPresenceService,
+    private readonly lobbyChannels: LobbyChannelsService,
+  ) {}
 
   @Public()
   @Post()
@@ -68,6 +72,10 @@ export class BotEventsController {
       throw new BadRequestException('invalid_event')
     }
 
+    if (parsed.data.type === 'lobby.channels_created') {
+      await this.lobbyChannels.apply(parsed.data)
+      return
+    }
     // 204 whether or not the Discord belongs to an account: the answer must not
     // say who is on the platform.
     await this.presence.apply(parsed.data)

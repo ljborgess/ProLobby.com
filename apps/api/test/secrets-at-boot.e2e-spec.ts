@@ -10,6 +10,7 @@ import { AccountRecoveryService } from '../src/modules/account/account-recovery.
 import { DiscordLinkService } from '../src/modules/account/discord-link.service'
 import { DiscordPresenceService } from '../src/modules/account/discord-presence.service'
 import { BotEventsController } from '../src/modules/bot-integration/bot-events.controller'
+import { LobbyChannelsService } from '../src/modules/bot-integration/lobby-channels.service'
 import { DiscordOAuth, createDiscordOAuth } from '../src/modules/account/discord-oauth'
 import { ConsoleMailSender } from '../src/common/mail/console-mail.sender'
 import { MailModule } from '../src/common/mail/mail.module'
@@ -234,7 +235,10 @@ describe('the bot events channel is validated at boot', () => {
   const bootController = () =>
     Test.createTestingModule({
       controllers: [BotEventsController],
-      providers: [{ provide: DiscordPresenceService, useValue: {} }],
+      providers: [
+        { provide: DiscordPresenceService, useValue: {} },
+        { provide: LobbyChannelsService, useValue: {} },
+      ],
     }).compile()
 
   it('refuses to start without WEBHOOK_SECRET, because it authenticates the bot', async () => {

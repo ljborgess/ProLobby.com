@@ -75,4 +75,29 @@ export class Lobby {
 
   @Property({ length: 20, nullable: true })
   clubB?: string
+
+  /** `canal_texto_id`, `canal_voz_a_id`, `canal_voz_b_id`: told by the bot (#250). */
+  @Property({ length: 20, nullable: true })
+  textChannelId?: string
+
+  // Named by hand: the naming strategy would glue the side letter ("voice_achannel_id").
+  @Property({ length: 20, nullable: true, fieldName: 'voice_a_channel_id' })
+  voiceAChannelId?: string
+
+  @Property({ length: 20, nullable: true, fieldName: 'voice_b_channel_id' })
+  voiceBChannelId?: string
+
+  /** The bot created the channels: the 60 s formation vote counts from here (RF-034, #249). */
+  @Property({ nullable: true })
+  formationVoteStartedAt?: Date
+
+  /** The 60 s were counted; a side still without a formation waits on its captain. */
+  @Property({ nullable: true })
+  formationVoteClosedAt?: Date
+
+  @Property({ length: 12, nullable: true })
+  formationA?: string
+
+  @Property({ length: 12, nullable: true })
+  formationB?: string
 }

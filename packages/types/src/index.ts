@@ -19,9 +19,11 @@ export {
   botEventSchema,
   discordMemberJoinedEventSchema,
   discordMemberLeftEventSchema,
+  lobbyChannelsCreatedEventSchema,
   type BotEvent,
   type DiscordMemberJoinedEvent,
   type DiscordMemberLeftEvent,
+  type LobbyChannelsCreatedEvent,
 } from './bot-event'
 export {
   WEBHOOK_MAX_SKEW_MS,
