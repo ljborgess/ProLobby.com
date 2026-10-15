@@ -6,6 +6,17 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 
 ---
 
+## 2026-10-15 · Rafael
+
+### A #250 fecha mandando `lobby.channels_created` pra API (#249)
+
+- **O que mudou:** a votação de formação (#249) abre quando a API sabe que os canais existem. O evento bot → API já está em `@prolobby/types` (`lobbyChannelsCreatedEventSchema`): `{ lobbyId, textChannelId, voiceAChannelId, voiceBChannelId }`, assinado como os `discord.*`, pro mesmo `POST /api/bot-events`.
+- **O que fazer na #250:** depois de criar os 3 canais do `lobby.closed`, mande esse evento. A API guarda os ids (a #251 apaga por eles) e abre os 60 s. Repetir o evento não muda nada; pode reenviar sem medo.
+- **Pra #252, no `GET /api/queue`:** `entry.lobby.formation` traz `options`, `voteBy` (`null` até os canais existirem), `myVote`, `chosen` (a do lado, quando decidida) e `captainChoices` (só pro capitão, quando o lado empatou ou ninguém votou).
+- **Rotas:** `PUT /api/queue/formation-vote` com `{ formation }` vota ou troca o voto dentro dos 60 s (`409 formation_vote_closed` fora do prazo). `PUT /api/queue/formation` com `{ formation }` é a escolha do capitão: `404 not_a_captain`, `409 formation_not_pending`, `400 formation_not_allowed` se não estiver entre as empatadas.
+
+---
+
 ## 2026-10-14 · Rafael
 
 ### O que a API do lobby entrega pra #252 (#247 e #248)

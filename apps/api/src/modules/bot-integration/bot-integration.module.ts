@@ -7,6 +7,7 @@ import { ModerationCase } from '../moderation/moderation-case.entity'
 import { BotEventsController } from './bot-events.controller'
 import { EventDelivery } from './event-delivery.entity'
 import { EventDeliveryService } from './event-delivery.service'
+import { LobbyChannelsService } from './lobby-channels.service'
 import { ModerationCaseAnnouncer } from './moderation-case-announcer'
 import { WebhookClient } from './webhook-client'
 
@@ -17,6 +18,7 @@ import { WebhookClient } from './webhook-client'
     { provide: Clock, useClass: SystemClock },
     WebhookClient,
     EventDeliveryService,
+    LobbyChannelsService,
     ModerationCaseAnnouncer,
   ],
   exports: [EventDeliveryService],

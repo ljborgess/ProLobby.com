@@ -4,6 +4,7 @@ import { Module } from '@nestjs/common'
 import { BotIntegrationModule } from '../bot-integration/bot-integration.module'
 import { RankingModule } from '../ranking/ranking.module'
 import { CaptainCascadeService } from './captain-cascade.service'
+import { FormationVoteService } from './formation-vote.service'
 import { LobbyConfirmationService } from './lobby-confirmation.service'
 import { LobbyInviteService } from './lobby-invite.service'
 import { QueueEntry } from './queue-entry.entity'
@@ -18,6 +19,7 @@ import { QueueService } from './queue.service'
   controllers: [QueueController],
   providers: [
     CaptainCascadeService,
+    FormationVoteService,
     LobbyConfirmationService,
     LobbyInviteService,
     QueueService,

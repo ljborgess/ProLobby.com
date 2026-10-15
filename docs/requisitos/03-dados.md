@@ -122,6 +122,8 @@ Não pesa no elo, por decisão ([Ranking](../produto/02-jogador/02-ranking.md)) 
 
 **Como o convite ficou no código (#248, 2026-10-14)**: `confirmou_convite_recebido` é uma data, e a linha do capitão ganhou `declarou_clube_cheio_em`. A janela conta 5 min do `fechado_em`. O capitão já está no próprio clube, então nunca conta como "esperando convite". Todos os outros marcaram: `in_progress`. Passados os 5 min com alguém de um lado sem convite, o lobby termina e todos voltam a buscar na hora, com o tempo que tinham, sem recusa e sem evento de reputação. Se o capitão daquele lado declarou clube cheio, `cancelled_no_fault`; se ficou calado, `cancelled_by_captain` e um caso `captain_abuse` contra ele. Com os dois lados incompletos, só o capitão calado leva caso. O 60 min do zero-report a partir de `in_progress` é da 4.1.
 
+**Como a votação de formação ficou no código (#249, 2026-10-15)**: `voto_formacao` virou tabela própria, `VotoFormacao` (`lobby` · `conta` · `formacao` · `votado_em`, um por pessoa, trocado no lugar até o fim do prazo). O lado sai da participação de quem votou, nunca do pedido. Os 60 s contam de `votacao_formacao_aberta_em`, gravado quando o bot avisa que criou os canais (evento `lobby.channels_created`, que também traz os três ids de canal); conta a hora em que a API recebe o aviso, não a do bot. Fim do prazo: a mais votada vai pra `formacao_a`/`formacao_b`; empate ou zero voto deixa a formação vazia até o capitão escolher (entre as empatadas, ou qualquer uma). O conjunto começa com as três formações que o dossiê cita (4-3-3, 4-4-2, 4-2-3-1).
+
 ### Report
 `lobby` · `conta` · `placar_a` · `placar_b` · `envio_print` · `reportou_ausencia_de` · `enviado_em`
 

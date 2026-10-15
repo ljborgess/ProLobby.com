@@ -18,6 +18,7 @@ import { LobbyParticipation, LobbySide } from '../lobby/lobby-participation.enti
 import type { LobbyState } from '../lobby/lobby.entity'
 import { EloService } from '../ranking/elo.service'
 import { confirmBy } from './lobby-confirmation.service'
+import { FormationVoteService, type FormationView } from './formation-vote.service'
 import { inviteBy } from './lobby-invite.service'
 import { captainAnswerBy } from './captain-cascade.service'
 import { blockedUntilFor } from './queue-block'
@@ -63,6 +64,8 @@ export interface QueueEntryView {
     inviteReceived: boolean
     /** Only a captain can: the club filled up after its last update (#248). */
     clubFullDeclared: boolean
+    /** The side's formation vote (#249); null outside a lobby's roster. */
+    formation: FormationView | null
   } | null
 }
 
@@ -81,6 +84,7 @@ export class QueueService {
   constructor(
     private readonly em: EntityManager,
     private readonly eloService: EloService,
+    private readonly formationVoteService: FormationVoteService,
   ) {}
 
   async current(
@@ -110,6 +114,10 @@ export class QueueService {
               null,
             inviteReceived: !!mine?.inviteReceivedAt,
             clubFullDeclared: !!mine?.clubFullDeclaredAt,
+            formation:
+              mine && entry.lobby
+                ? await this.formationVoteService.view(em, entry.lobby, mine)
+                : null,
           })
         : null,
       blockedUntil: await blockedUntilFor(em, accountId, now),

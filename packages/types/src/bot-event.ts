@@ -48,13 +48,34 @@ export const discordPresenceSnapshotEventSchema = z.object({
   payload: z.object({ discordIds: z.array(snowflake) }).strict(),
 })
 
+/**
+ * The bot created the three channels of a lobby (#250) after `lobby.closed`.
+ * The API keeps the ids (the deletion in #251 needs them) and opens the 60 s
+ * formation vote (RF-034, #249), which counts from this moment.
+ */
+export const lobbyChannelsCreatedEventSchema = z.object({
+  id: uuid,
+  occurredAt,
+  type: z.literal('lobby.channels_created'),
+  payload: z
+    .object({
+      lobbyId: uuid,
+      textChannelId: snowflake,
+      voiceAChannelId: snowflake,
+      voiceBChannelId: snowflake,
+    })
+    .strict(),
+})
+
 export const botEventSchema = z.discriminatedUnion('type', [
   discordMemberLeftEventSchema,
   discordMemberJoinedEventSchema,
   discordPresenceSnapshotEventSchema,
+  lobbyChannelsCreatedEventSchema,
 ])
 
 export type DiscordMemberLeftEvent = z.infer<typeof discordMemberLeftEventSchema>
 export type DiscordMemberJoinedEvent = z.infer<typeof discordMemberJoinedEventSchema>
 export type DiscordPresenceSnapshotEvent = z.infer<typeof discordPresenceSnapshotEventSchema>
+export type LobbyChannelsCreatedEvent = z.infer<typeof lobbyChannelsCreatedEventSchema>
 export type BotEvent = z.infer<typeof botEventSchema>

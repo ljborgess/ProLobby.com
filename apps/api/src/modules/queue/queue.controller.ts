@@ -5,8 +5,10 @@ import type { RequestWithAccount } from '../../common/auth/session.guard'
 import { AccountState } from '../account/account.enums'
 import type { CharacterCategory } from '../character/archetype'
 import { CaptainCascadeService } from './captain-cascade.service'
+import { FormationVoteService } from './formation-vote.service'
 import { AnswerCaptaincyDto } from './dto/answer-captaincy.dto'
 import { ConfirmLobbyDto } from './dto/confirm-lobby.dto'
+import { FormationDto } from './dto/formation.dto'
 import { JoinQueueDto } from './dto/join-queue.dto'
 import { LobbyConfirmationService } from './lobby-confirmation.service'
 import { LobbyInviteService } from './lobby-invite.service'
@@ -26,6 +28,7 @@ export class QueueController {
     private readonly lobbyConfirmationService: LobbyConfirmationService,
     private readonly captainCascadeService: CaptainCascadeService,
     private readonly lobbyInviteService: LobbyInviteService,
+    private readonly formationVoteService: FormationVoteService,
   ) {}
 
   @Get()
@@ -88,5 +91,19 @@ export class QueueController {
   @HttpCode(204)
   declareClubFull(@Req() request: RequestWithAccount): Promise<void> {
     return this.lobbyInviteService.declareClubFull(request.account!.id)
+  }
+
+  /** A vote in the own side's formation, within the 60 s; changeable until then (#249). */
+  @Put('formation-vote')
+  @HttpCode(204)
+  voteFormation(@Req() request: RequestWithAccount, @Body() dto: FormationDto): Promise<void> {
+    return this.formationVoteService.vote(request.account!.id, dto.formation)
+  }
+
+  /** The captain settles a tie, or picks when nobody voted (#249). */
+  @Put('formation')
+  @HttpCode(204)
+  chooseFormation(@Req() request: RequestWithAccount, @Body() dto: FormationDto): Promise<void> {
+    return this.formationVoteService.choose(request.account!.id, dto.formation)
   }
 }
