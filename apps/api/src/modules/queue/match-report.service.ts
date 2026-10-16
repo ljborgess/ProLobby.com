@@ -221,6 +221,58 @@ export class MatchReportService {
     })
   }
 
+  /**
+   * RF-012, RF-013: any human of the match contests a one-sided result within
+   * its 48 h, once. The lobby goes to `in_dispute` with a score-dispute case,
+   * and everyone in it is held again: out of the search, no new queue until
+   * moderation decides.
+   */
+  async contest(accountId: string, lobbyId: string, now: Date = new Date()): Promise<void> {
+    await this.em.fork().transactional(async (em) => {
+      // The lobby row serializes contests and the 48 h job.
+      const lobby = await em.findOne(
+        Lobby,
+        { id: lobbyId },
+        { lockMode: LockMode.PESSIMISTIC_WRITE },
+      )
+      if (!lobby || !(await em.count(LobbyParticipation, { lobby, account: accountId }))) {
+        throw new NotFoundException('no_lobby')
+      }
+      if (
+        await em.count(ModerationCase, {
+          type: ModerationCaseType.SCORE_DISPUTE,
+          lobbyId,
+          openedBy: accountId,
+        })
+      ) {
+        throw new ConflictException('contest_exists')
+      }
+      if (
+        lobby.state !== LobbyState.NOT_CONFIRMED ||
+        now.getTime() >= lobby.unconfirmedAt!.getTime() + CONTEST_WINDOW_MS
+      ) {
+        throw new ConflictException('contest_closed')
+      }
+      em.create(ModerationCase, {
+        type: ModerationCaseType.SCORE_DISPUTE,
+        origin: ModerationCaseOrigin.USER,
+        lobbyId,
+        openedBy: em.getReference(Account, accountId),
+      })
+      lobby.state = LobbyState.IN_DISPUTE
+      lobby.scoreA = undefined
+      lobby.scoreB = undefined
+      await em.flush()
+      // Searching again since the 15 min: back out. Whoever was placed in a
+      // new lobby stays there; seven other people count on that roster.
+      const accounts = await em.find(LobbyParticipation, { lobby }, { fields: ['account'] })
+      await em.nativeDelete(QueueEntry, {
+        account: { $in: accounts.map((p) => p.account.id) },
+        lobby: null,
+      })
+    })
+  }
+
   /** What the lobby screen shows of this account's report (`GET /api/queue`). */
   async view(em: EntityManager, lobby: Lobby, accountId: string): Promise<MatchReportView | null> {
     const report = await em.findOne(MatchReport, { lobby, account: accountId })

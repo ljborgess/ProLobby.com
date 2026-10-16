@@ -25,6 +25,8 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 - **Report ou correção depois dos 15 min:** `409 report_closed`, mesmo antes do job rodar.
 - **Em `finished` e `not_confirmed` a entrada da fila some** (a conta sai da fila e o personagem destrava), então o `GET /api/queue` volta com `entry: null`. A tela de resultado depois disso é da fatia E.
 - **`GET /api/queue`:** `entry.lobby.reportConfirmBy` diz até quando o outro lado reporta (`null` antes do primeiro report).
+- **Contestação (fatia C):** `POST /api/queue/contest` com `{ lobbyId }` (o lobby vai no corpo porque, nas 48 h, a pessoa pode já estar em outra partida). `204`; leva o lobby pra `in_dispute` com caso `score_dispute` aberto por quem contestou. Erros: `404 no_lobby` (não jogou essa partida), `409 contest_exists` (já contestou essa), `409 contest_closed` (fora das 48 h, partida confirmada pelos dois lados ou já em disputa).
+- **Partida em disputa prende a fila de todos dela:** `POST /api/queue` responde `409 match_in_dispute`, e quem estava buscando de novo sai da busca. Quem já caiu num lobby novo continua nele.
 - **Reputação sim, elo não:** ao virar `finished` (pelos dois caminhos), cada humano ganha o +1 de partida limpa, até 70. O elo é a #209. O ponto de encaixe é a passagem pra `finished` em `match-report.service.ts` (`settle` e o `expire`); `lobby.scoreA`/`scoreB` guardam o placar que vale.
 
 

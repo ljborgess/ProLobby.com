@@ -25,6 +25,7 @@ import { CaptainCascadeService } from './captain-cascade.service'
 import { FormationVoteService } from './formation-vote.service'
 import { AnswerCaptaincyDto } from './dto/answer-captaincy.dto'
 import { ConfirmLobbyDto } from './dto/confirm-lobby.dto'
+import { ContestResultDto } from './dto/contest-result.dto'
 import { FormationDto } from './dto/formation.dto'
 import { JoinQueueDto } from './dto/join-queue.dto'
 import { ReportScoreDto } from './dto/report-score.dto'
@@ -151,5 +152,12 @@ export class QueueController {
     @Body() dto: ReportScoreDto,
   ): Promise<MatchReportView> {
     return this.matchReportService.correct(request.account!.id, dto)
+  }
+
+  /** A one-sided result is wrong: opens a dispute, once per person, within 48 h (RF-012). */
+  @Post('contest')
+  @HttpCode(204)
+  contest(@Req() request: RequestWithAccount, @Body() dto: ContestResultDto): Promise<void> {
+    return this.matchReportService.contest(request.account!.id, dto.lobbyId)
   }
 }

@@ -15,7 +15,7 @@ import { ACTIVE_CHARACTER_STATES, Character, CharacterState } from '../character
 import { DeclaredClub } from '../account/declared-club.entity'
 import { CaptainOffer } from '../lobby/captain-offer.entity'
 import { LobbyParticipation, LobbySide } from '../lobby/lobby-participation.entity'
-import type { LobbyState } from '../lobby/lobby.entity'
+import { LobbyState } from '../lobby/lobby.entity'
 import { EloService } from '../ranking/elo.service'
 import { confirmBy } from './lobby-confirmation.service'
 import { FormationVoteService, type FormationView } from './formation-vote.service'
@@ -171,6 +171,15 @@ export class QueueService {
         )
         if (await em.count(QueueEntry, { account: accountId })) {
           throw new ConflictException('already_in_queue')
+        }
+        // RF-013: a match in dispute holds everyone in it until moderation decides.
+        if (
+          await em.count(LobbyParticipation, {
+            account: accountId,
+            lobby: { state: LobbyState.IN_DISPUTE },
+          })
+        ) {
+          throw new ConflictException('match_in_dispute')
         }
         // RF-009: the message carries the time left.
         const now = new Date()
