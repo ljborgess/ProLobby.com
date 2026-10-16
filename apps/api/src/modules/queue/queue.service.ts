@@ -24,6 +24,7 @@ import {
   reportConfirmBy,
   MatchReportService,
   reportableFrom,
+  type LastMatchView,
   type MatchReportView,
 } from './match-report.service'
 import { captainAnswerBy } from './captain-cascade.service'
@@ -103,7 +104,11 @@ export class QueueService {
   async current(
     accountId: string,
     now: Date = new Date(),
-  ): Promise<{ entry: QueueEntryView | null; blockedUntil: Date | null }> {
+  ): Promise<{
+    entry: QueueEntryView | null
+    blockedUntil: Date | null
+    lastMatch: LastMatchView | null
+  }> {
     const em = this.em.fork()
     const entry = await em.findOne(QueueEntry, { account: accountId }, { populate: ['lobby'] })
     const mine =
@@ -139,6 +144,7 @@ export class QueueService {
           })
         : null,
       blockedUntil: await blockedUntilFor(em, accountId, now),
+      lastMatch: await this.matchReportService.lastMatch(em, accountId),
     }
   }
 

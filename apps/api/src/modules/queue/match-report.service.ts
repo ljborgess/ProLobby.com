@@ -45,6 +45,27 @@ export type ReportScore = { scoreA: number; scoreB: number }
 
 export type MatchReportView = ReportScore & { id: string; side: LobbySide }
 
+/** States a match ends up in once it has a result, or lacks one for good. */
+const RESULT_STATES: readonly LobbyState[] = [
+  LobbyState.NOT_CONFIRMED,
+  LobbyState.FINISHED,
+  LobbyState.IN_DISPUTE,
+]
+
+/**
+ * The account's latest match with a result (`GET /api/queue`): after it
+ * settles the queue entry is gone, and this is where the screen finds the
+ * lobby to contest.
+ */
+export type LastMatchView = {
+  lobbyId: string
+  state: LobbyState
+  scoreA: number | null
+  scoreB: number | null
+  /** Set while this account can still contest (RF-012); null otherwise. */
+  contestUntil: Date | null
+}
+
 /**
  * The result of a match, reported by any human of it — phase 4.1, first slice.
  *
@@ -271,6 +292,30 @@ export class MatchReportService {
         lobby: null,
       })
     })
+  }
+
+  async lastMatch(em: EntityManager, accountId: string): Promise<LastMatchView | null> {
+    const mine = await em.findOne(
+      LobbyParticipation,
+      { account: accountId, lobby: { state: { $in: [...RESULT_STATES] } } },
+      { orderBy: { lobby: { createdAt: 'desc' } }, populate: ['lobby'] },
+    )
+    if (!mine) return null
+    const lobby = mine.lobby
+    const open =
+      lobby.state === LobbyState.NOT_CONFIRMED &&
+      !(await em.count(ModerationCase, {
+        type: ModerationCaseType.SCORE_DISPUTE,
+        lobbyId: lobby.id,
+        openedBy: accountId,
+      }))
+    return {
+      lobbyId: lobby.id,
+      state: lobby.state,
+      scoreA: lobby.scoreA ?? null,
+      scoreB: lobby.scoreB ?? null,
+      contestUntil: open ? new Date(lobby.unconfirmedAt!.getTime() + CONTEST_WINDOW_MS) : null,
+    }
   }
 
   /** What the lobby screen shows of this account's report (`GET /api/queue`). */

@@ -529,12 +529,34 @@ describe('match report (4.1)', () => {
     })
     await em.flush()
 
+    // The entry is gone; the screen finds the lobby to contest here.
+    const before = await request(app.getHttpServer())
+      .get('/api/queue')
+      .set('Cookie', a.others[0]!.cookie)
+    expect(before.body.entry).toBeNull()
+    expect(before.body.lastMatch).toMatchObject({
+      lobbyId,
+      state: LobbyState.NOT_CONFIRMED,
+      scoreA: 0,
+      scoreB: 4,
+      contestUntil: expect.any(String),
+    })
+
     const contested = await request(app.getHttpServer())
       .post('/api/queue/contest')
       .set('Cookie', a.others[0]!.cookie)
       .send({ lobbyId })
     expect(contested.status).toBe(204)
     expect(await orm.em.fork().count(QueueEntry, { account: b.captain.accountId })).toBe(0)
+    const after = await request(app.getHttpServer())
+      .get('/api/queue')
+      .set('Cookie', a.others[0]!.cookie)
+    expect(after.body.lastMatch).toMatchObject({
+      lobbyId,
+      state: LobbyState.IN_DISPUTE,
+      scoreA: null,
+      contestUntil: null,
+    })
 
     const joined = await request(app.getHttpServer())
       .post('/api/queue')

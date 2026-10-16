@@ -53,9 +53,7 @@ export class QueueController {
   ) {}
 
   @Get()
-  current(
-    @Req() request: RequestWithAccount,
-  ): Promise<{ entry: QueueEntryView | null; blockedUntil: Date | null }> {
+  current(@Req() request: RequestWithAccount): ReturnType<QueueService['current']> {
     return this.queueService.current(request.account!.id)
   }
 
