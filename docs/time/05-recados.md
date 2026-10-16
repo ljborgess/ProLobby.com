@@ -25,7 +25,7 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 - **Report ou correção depois dos 15 min:** `409 report_closed`, mesmo antes do job rodar.
 - **Em `finished` e `not_confirmed` a entrada da fila some** (a conta sai da fila e o personagem destrava), então o `GET /api/queue` volta com `entry: null`. A tela de resultado depois disso é da fatia E.
 - **`GET /api/queue`:** `entry.lobby.reportConfirmBy` diz até quando o outro lado reporta (`null` antes do primeiro report).
-- **Elo não é aplicado aqui:** é a #209. O ponto de encaixe é a passagem pra `finished` em `match-report.service.ts` (`settle` e o `expire`); `lobby.scoreA`/`scoreB` guardam o placar que vale.
+- **Reputação sim, elo não:** ao virar `finished` (pelos dois caminhos), cada humano ganha o +1 de partida limpa, até 70. O elo é a #209. O ponto de encaixe é a passagem pra `finished` em `match-report.service.ts` (`settle` e o `expire`); `lobby.scoreA`/`scoreB` guardam o placar que vale.
 
 
 ### A #250 fecha mandando `lobby.channels_created` pra API (#249)

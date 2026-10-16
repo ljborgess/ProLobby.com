@@ -22,6 +22,8 @@ import { Lobby, LobbyState } from '../lobby/lobby.entity'
 import { MatchReport } from '../lobby/match-report.entity'
 import { ModerationCase } from '../moderation/moderation-case.entity'
 import { ModerationCaseOrigin, ModerationCaseType } from '../moderation/moderation-case.enums'
+import { ReputationEventReason } from '../ranking/ranking-event.enums'
+import { ReputationService } from '../ranking/reputation.service'
 import { QueueEntry } from './queue-entry.entity'
 
 /** RF-045: no print before this, counted from `closed_at`. */
@@ -61,7 +63,10 @@ export class MatchReportService {
   private readonly logger = new Logger(MatchReportService.name)
   private readonly encryptionKey = readEvidenceEncryptionKey()
 
-  constructor(private readonly em: EntityManager) {}
+  constructor(
+    private readonly em: EntityManager,
+    private readonly reputationService: ReputationService,
+  ) {}
 
   async submit(
     accountId: string,
@@ -122,6 +127,7 @@ export class MatchReportService {
           // mismatch is a divergence.
           if (earlier.every((r) => r.scoreA === score.scoreA && r.scoreB === score.scoreB)) {
             await settle(em, lobby, LobbyState.FINISHED, now, score)
+            await this.cleanMatch(em, lobby)
           } else {
             em.create(ModerationCase, {
               type: ModerationCaseType.SCORE_DISPUTE,
@@ -208,6 +214,7 @@ export class MatchReportService {
       for (const lobby of final) {
         lobby.state = LobbyState.FINISHED
         lobby.endedAt = now
+        await this.cleanMatch(em, lobby)
       }
       await em.flush()
       return unconfirmed.length + final.length
@@ -243,6 +250,24 @@ export class MatchReportService {
     }
     if (deleted > 0) await em.flush()
     return deleted
+  }
+
+  /**
+   * A finished match is a clean one for every human of it: +1 reputation, up
+   * to 70 (#208). Disconnects and upheld reports come with their own slices
+   * and reverse it then.
+   */
+  private async cleanMatch(em: EntityManager, lobby: Lobby): Promise<void> {
+    const participations = await em.find(LobbyParticipation, { lobby })
+    // The reputation writer's lock, taken in id order so two runs never deadlock.
+    const accounts = await em.find(
+      Account,
+      { id: { $in: participations.map((p) => p.account.id) } },
+      { lockMode: LockMode.PESSIMISTIC_WRITE, orderBy: { id: 'asc' } },
+    )
+    for (const account of accounts) {
+      this.reputationService.applyIn(em, account, ReputationEventReason.CLEAN_MATCH, lobby.id)
+    }
   }
 
   private async mine(em: EntityManager, accountId: string) {

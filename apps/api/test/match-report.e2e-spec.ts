@@ -25,6 +25,8 @@ import { Lobby, LobbyState } from '../src/modules/lobby/lobby.entity'
 import { MatchReport } from '../src/modules/lobby/match-report.entity'
 import { ModerationCase } from '../src/modules/moderation/moderation-case.entity'
 import { ModerationCaseType } from '../src/modules/moderation/moderation-case.enums'
+import { ReputationEventReason } from '../src/modules/ranking/ranking-event.enums'
+import { ReputationEvent } from '../src/modules/ranking/reputation-event.entity'
 import { CaptainCascadeService } from '../src/modules/queue/captain-cascade.service'
 import { LobbyConfirmationService } from '../src/modules/queue/lobby-confirmation.service'
 import { LobbyInviteService } from '../src/modules/queue/lobby-invite.service'
@@ -347,6 +349,8 @@ describe('match report (4.1)', () => {
   })
 
   const entriesOf = (lobbyId: string) => orm.em.fork().count(QueueEntry, { lobby: lobbyId })
+  const cleanMatchesOf = (lobbyId: string) =>
+    orm.em.fork().count(ReputationEvent, { lobbyId, reason: ReputationEventReason.CLEAN_MATCH })
   const disputesOf = (lobbyId: string) =>
     orm.em.fork().count(ModerationCase, { type: ModerationCaseType.SCORE_DISPUTE, lobbyId })
 
@@ -354,6 +358,10 @@ describe('match report (4.1)', () => {
     const { lobbyId, closedAt, a, b } = await playing()
     await reports.submit(a.others[0]!.accountId, score(2, 1), png(), at(closedAt + 20 * MINUTE))
     expect(await entriesOf(lobbyId)).toBe(8)
+    const em = orm.em.fork()
+    const below = await em.findOneOrFail(Account, { id: a.captain.accountId })
+    below.reputation = 60
+    await em.flush()
 
     const when = at(closedAt + 30 * MINUTE)
     await reports.submit(b.captain.accountId, score(2, 1), png(), when)
@@ -362,6 +370,11 @@ describe('match report (4.1)', () => {
     expect(lobby).toMatchObject({ state: LobbyState.FINISHED, scoreA: 2, scoreB: 1, endedAt: when })
     expect(await entriesOf(lobbyId)).toBe(0)
     expect(await disputesOf(lobbyId)).toBe(0)
+    // A clean match for all eight: +1, capped at 70 (#208).
+    expect(await cleanMatchesOf(lobbyId)).toBe(8)
+    expect(
+      (await orm.em.fork().findOneOrFail(Account, { id: a.captain.accountId })).reputation,
+    ).toBe(61)
     // Settled: anyone else is told it closed.
     await expect(
       reports.submit(b.others[0]!.accountId, score(2, 1), png(), at(closedAt + 31 * MINUTE)),
@@ -415,6 +428,7 @@ describe('match report (4.1)', () => {
     })
     expect(unconfirmed.endedAt ?? null).toBeNull()
     expect(await entriesOf(lobbyId)).toBe(0)
+    expect(await cleanMatchesOf(lobbyId)).toBe(0)
 
     const contestEnds = first + 15 * MINUTE + 48 * 60 * MINUTE
     expect(await reports.expire(at(contestEnds - 1))).toBe(0)
@@ -425,5 +439,6 @@ describe('match report (4.1)', () => {
       scoreB: 4,
       endedAt: at(contestEnds),
     })
+    expect(await cleanMatchesOf(lobbyId)).toBe(8)
   })
 })
