@@ -571,4 +571,60 @@ describe('match report (4.1)', () => {
       .send({ lobbyId: 'not-a-uuid' })
     expect(bad.status).toBe(400)
   })
+
+  it('60 min of the match without a print: expired, −3 for every human, queue free (5 to 12)', async () => {
+    const { lobbyId, closedAt, a } = await playing()
+    const deadline = closedAt + 60 * MINUTE
+
+    // Past the 60 min, before the job: refused all the same.
+    await expect(
+      reports.submit(a.others[0]!.accountId, score(1, 0), png(), at(deadline)),
+    ).rejects.toMatchObject({ status: 409, message: 'report_closed' })
+
+    expect(await reports.expire(at(deadline - 1))).toBe(0)
+    expect(await reports.expire(at(deadline))).toBe(1)
+
+    expect(await lobbyOf(lobbyId)).toMatchObject({
+      state: LobbyState.EXPIRED_NO_REPORT,
+      endedAt: at(deadline),
+    })
+    expect(await entriesOf(lobbyId)).toBe(0)
+    const events = await orm.em
+      .fork()
+      .find(ReputationEvent, { lobbyId, reason: ReputationEventReason.ZERO_REPORT })
+    expect(events).toHaveLength(8)
+    expect(events.every((e) => e.delta === -3)).toBe(true)
+    const account = await orm.em.fork().findOneOrFail(Account, { id: a.captain.accountId })
+    expect(account.reputation).toBe(67)
+  })
+
+  it('a lobby that never started does not expire by zero-report', async () => {
+    const { lobbyId, closedAt } = await closedLobby()
+    // Still waiting on invites: that window's own job cancels it, without penalty.
+    await reports.expire(at(closedAt + 61 * MINUTE))
+    expect((await lobbyOf(lobbyId)).state).toBe(LobbyState.WAITING_INVITE)
+  })
+
+  it('the third zero-report in 30 days costs 6; one older than 30 days does not count (RF-071)', async () => {
+    const { lobbyId, closedAt, a } = await playing()
+    const who = a.captain.accountId
+    const em = orm.em.fork()
+    const account = await em.findOneOrFail(Account, { id: who })
+    const day = 24 * 60 * MINUTE
+    // Two earlier zero-reports inside the window, one just outside it.
+    for (const ago of [31 * day, 20 * day, 2 * day]) {
+      em.create(ReputationEvent, {
+        account,
+        delta: -3,
+        reason: ReputationEventReason.ZERO_REPORT,
+        createdAt: at(closedAt - ago),
+      })
+    }
+    await em.flush()
+
+    await reports.expire(at(closedAt + 60 * MINUTE))
+
+    const mine = await orm.em.fork().findOneOrFail(ReputationEvent, { lobbyId, account: who })
+    expect(mine.delta).toBe(-6)
+  })
 })

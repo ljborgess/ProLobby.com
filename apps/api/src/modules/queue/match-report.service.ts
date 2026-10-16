@@ -28,6 +28,8 @@ import { QueueEntry } from './queue-entry.entity'
 
 /** RF-045: no print before this, counted from `closed_at`. */
 export const REPORT_FLOOR_MS = 5 * 60 * 1000
+/** RF-043: no print at all this long after `closed_at` and the match expires, with penalty. */
+export const ZERO_REPORT_MS = 60 * 60 * 1000
 /** RF-043: the other side's window, counted from the first accepted report. */
 export const CONFIRMATION_WINDOW_MS = 15 * 60 * 1000
 /** RF-043: a one-sided result is open to contest this long, then it is final. */
@@ -50,6 +52,7 @@ const RESULT_STATES: readonly LobbyState[] = [
   LobbyState.NOT_CONFIRMED,
   LobbyState.FINISHED,
   LobbyState.IN_DISPUTE,
+  LobbyState.EXPIRED_NO_REPORT,
 ]
 
 /**
@@ -200,12 +203,32 @@ export class MatchReportService {
   }
 
   /**
-   * The clock's part, run by the queue job: 15 min with one side only become
+   * The clock's part, run by the queue job: 60 min without a single print
+   * expire the match (−3 each, RF-071); 15 min with one side only become
    * `not_confirmed` and free the queue; 48 h of that become `finished`.
    * Returns how many lobbies it moved.
    */
   async expire(now: Date = new Date()): Promise<number> {
     return this.em.fork().transactional(async (em) => {
+      // Only from in_progress: every invite arrived, so the match happened
+      // and reporting was the group's duty (02-estados.md, state 12).
+      const silent = await em.find(
+        Lobby,
+        {
+          state: LobbyState.IN_PROGRESS,
+          closedAt: { $lte: new Date(now.getTime() - ZERO_REPORT_MS) },
+        },
+        { lockMode: LockMode.PESSIMISTIC_WRITE },
+      )
+      for (const lobby of silent) {
+        for (const account of await lockHumans(em, lobby)) {
+          await this.reputationService.zeroReportIn(em, account, lobby.id, now)
+        }
+        lobby.state = LobbyState.EXPIRED_NO_REPORT
+        lobby.endedAt = now
+        await em.flush()
+        await em.nativeDelete(QueueEntry, { lobby })
+      }
       const unconfirmed = await em.find(
         Lobby,
         {
@@ -238,7 +261,7 @@ export class MatchReportService {
         await this.cleanMatch(em, lobby)
       }
       await em.flush()
-      return unconfirmed.length + final.length
+      return silent.length + unconfirmed.length + final.length
     })
   }
 
@@ -355,14 +378,7 @@ export class MatchReportService {
    * and reverse it then.
    */
   private async cleanMatch(em: EntityManager, lobby: Lobby): Promise<void> {
-    const participations = await em.find(LobbyParticipation, { lobby })
-    // The reputation writer's lock, taken in id order so two runs never deadlock.
-    const accounts = await em.find(
-      Account,
-      { id: { $in: participations.map((p) => p.account.id) } },
-      { lockMode: LockMode.PESSIMISTIC_WRITE, orderBy: { id: 'asc' } },
-    )
-    for (const account of accounts) {
+    for (const account of await lockHumans(em, lobby)) {
       this.reputationService.applyIn(em, account, ReputationEventReason.CLEAN_MATCH, lobby.id)
     }
   }
@@ -388,10 +404,22 @@ export class MatchReportService {
   }
 }
 
+/** Every human of the lobby, under the reputation writer's lock, in id order so two runs never deadlock. */
+async function lockHumans(em: EntityManager, lobby: Lobby): Promise<Account[]> {
+  const participations = await em.find(LobbyParticipation, { lobby })
+  return em.find(
+    Account,
+    { id: { $in: participations.map((p) => p.account.id) } },
+    { lockMode: LockMode.PESSIMISTIC_WRITE, orderBy: { id: 'asc' } },
+  )
+}
+
 /** Reports are taken while the match runs and inside the other side's 15 min. */
 function open(lobby: Lobby, now: Date): boolean {
-  if (lobby.state === LobbyState.IN_PROGRESS) return true
-  // Past the 15 min the job has not run yet: closed all the same.
+  // Past a deadline the job has not reached yet: closed all the same.
+  if (lobby.state === LobbyState.IN_PROGRESS) {
+    return now.getTime() < lobby.closedAt!.getTime() + ZERO_REPORT_MS
+  }
   return lobby.state === LobbyState.AWAITING_CONFIRMATION && now < reportConfirmBy(lobby)!
 }
 

@@ -22,6 +22,8 @@ export enum LobbyState {
   FINISHED = 'finished',
   /** The sides diverged: a score-dispute case decides, the queue stays held. */
   IN_DISPUTE = 'in_dispute',
+  /** Terminal: 60 min of the match and not one print — −3 each (RF-071). */
+  EXPIRED_NO_REPORT = 'expired_no_report',
   /** Terminal, no penalty for anyone: the match never existed. */
   CANCELLED_NO_FAULT = 'cancelled_no_fault',
   /** Terminal: someone never got the invite and the captain gave no reason (#248). */
@@ -35,6 +37,7 @@ export enum LobbyState {
 export const TERMINAL_LOBBY_STATES: readonly LobbyState[] = [
   LobbyState.NOT_CONFIRMED,
   LobbyState.FINISHED,
+  LobbyState.EXPIRED_NO_REPORT,
   LobbyState.CANCELLED_NO_FAULT,
   LobbyState.CANCELLED_BY_CAPTAIN,
 ]

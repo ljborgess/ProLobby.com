@@ -133,6 +133,8 @@ Não pesa no elo, por decisão ([Ranking](../produto/02-jogador/02-ranking.md)) 
 
 **Como a contestação ficou no código (4.1, fatia C, 2026-10-16)**: é um `CasoModeracao` do tipo `score_dispute` com `aberto_por` preenchido, e é esse campo que barra a segunda contestação da mesma pessoa na mesma partida (RF-012). Só vale em `not_confirmed` dentro das 48 h do `nao_confirmado_em`; leva o lobby pra `in_dispute` e esvazia `placar_a`/`placar_b`. Partida em `in_dispute` barra a entrada na fila de todos os participantes, e quem estava buscando sai da busca; quem já foi colocado em lobby novo fica nele (RF-013). Disputa prende a fila, não o clube: o capitão de uma partida em disputa pode capitanear outra.
 
+**Como o zero-report ficou no código (4.1, fatia D, 2026-10-16)**: só sai de `in_progress`, ou seja, com todos os convites confirmados. Passados 60 min do `fechado_em` sem nenhum print, o lobby vai pra `expired_no_report` com `encerrado_em`, as entradas da fila são apagadas e cada humano ganha um `EventoReputacao` `zero_report` com o lobby. O valor segue a RF-071: conta os `zero_report` não revertidos da conta nos 30 dias anteriores; 1ª e 2ª vez −3, depois −6, −9 e assim por diante, nunca abaixo de zero. O valor fica gravado no evento e um recálculo (#210) não o refaz, porque a escala depende de datas, não do valor anterior.
+
 ### Avaliacao
 `lobby` · `de_conta` · `para_conta` · `tipo` (joinha / negativa) · `criada_em` — só entre companheiros do mesmo lado.
 
