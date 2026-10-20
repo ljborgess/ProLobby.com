@@ -41,11 +41,13 @@ export function reputationBand(reputation: number): ReputationBand {
 /** The reasons this service applies on its own; the rest arrive with phase 4.2. */
 export type AutomaticReputationReason =
   | ReputationEventReason.CLEAN_MATCH
+  | ReputationEventReason.PEER_THUMBS_UP
   | ReputationEventReason.DISCONNECT
   | ReputationEventReason.SUSPENSION_SERVED
 
 const AUTOMATIC_REASONS: ReadonlySet<ReputationEventReason> = new Set([
   ReputationEventReason.CLEAN_MATCH,
+  ReputationEventReason.PEER_THUMBS_UP,
   ReputationEventReason.DISCONNECT,
   ReputationEventReason.SUSPENSION_SERVED,
 ])
@@ -60,6 +62,9 @@ export function reputationDelta(reason: AutomaticReputationReason, current: numb
     case ReputationEventReason.CLEAN_MATCH:
       // Playing only recovers up to 70; above it, only a thumbs-up counts.
       return current < CLEAN_MATCH_CAP ? 1 : 0
+    case ReputationEventReason.PEER_THUMBS_UP:
+      // The only way above 70, up to the top of the scale.
+      return current < 100 ? 1 : 0
     case ReputationEventReason.DISCONNECT:
       return Math.max(DISCONNECT_DELTA, 0 - current)
     case ReputationEventReason.SUSPENSION_SERVED:

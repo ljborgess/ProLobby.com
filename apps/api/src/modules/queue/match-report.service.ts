@@ -24,6 +24,7 @@ import { ModerationCase } from '../moderation/moderation-case.entity'
 import { ModerationCaseOrigin, ModerationCaseType } from '../moderation/moderation-case.enums'
 import { ReputationEventReason } from '../ranking/ranking-event.enums'
 import { ReputationService } from '../ranking/reputation.service'
+import { PeerRatingService, type TeammateView } from './peer-rating.service'
 import { QueueEntry } from './queue-entry.entity'
 
 /** RF-045: no print before this, counted from `closed_at`. */
@@ -67,6 +68,8 @@ export type LastMatchView = {
   scoreB: number | null
   /** Set while this account can still contest (RF-012); null otherwise. */
   contestUntil: Date | null
+  /** Finished matches only: the side's other humans, to rate (4.2). */
+  teammates: TeammateView[]
 }
 
 /**
@@ -90,6 +93,7 @@ export class MatchReportService {
   constructor(
     private readonly em: EntityManager,
     private readonly reputationService: ReputationService,
+    private readonly peerRatingService: PeerRatingService,
   ) {}
 
   async submit(
@@ -338,6 +342,10 @@ export class MatchReportService {
       scoreA: lobby.scoreA ?? null,
       scoreB: lobby.scoreB ?? null,
       contestUntil: open ? new Date(lobby.unconfirmedAt!.getTime() + CONTEST_WINDOW_MS) : null,
+      teammates:
+        lobby.state === LobbyState.FINISHED
+          ? await this.peerRatingService.teammates(em, lobby, accountId)
+          : [],
     }
   }
 
