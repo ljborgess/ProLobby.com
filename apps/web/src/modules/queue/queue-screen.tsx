@@ -169,8 +169,10 @@ export function QueueScreen({
   const [busy, setBusy] = useState(false)
   const [refusal, setRefusal] = useState<Refusal | null>(null)
   const [notice, setNotice] = useState<Notice | null>(() => cancelNotice(initial.entry))
-  const lastLobby = useRef(initial.entry?.lobby?.state ?? null)
-  const dismissed = useRef<string | null>(null)
+  const lastLobby = useRef(initial.entry?.lobby ?? null)
+  // Each cancellation is told once: the entry keeps saying it while searching,
+  // and an older one must not stand in for a lobby undone later.
+  const toldCancel = useRef(initial.entry?.cancelledLobby?.endedAt ?? null)
 
   /**
    * Every new queue state goes through here, to tell why the search started
@@ -179,15 +181,26 @@ export function QueueScreen({
    */
   function apply(next: QueueState) {
     const before = lastLobby.current
-    lastLobby.current = next.entry?.lobby?.state ?? null
+    lastLobby.current = next.entry?.lobby ?? null
     if (!next.entry) {
       setNotice(null)
     } else if (!next.entry.lobby) {
       const cancelled = cancelNotice(next.entry)
-      if (cancelled && next.entry.cancelledLobby?.endedAt !== dismissed.current) {
+      const endedAt = next.entry.cancelledLobby?.endedAt ?? null
+      // The lobby we were in started 30 s before its confirmBy: a cancellation
+      // from before that is an old one, and that lobby was undone in the 30 s.
+      const startedAt = before ? new Date(before.confirmBy).getTime() - 30_000 : null
+      const ours =
+        endedAt !== null && (startedAt === null || new Date(endedAt).getTime() >= startedAt)
+      if (cancelled && ours && endedAt !== toldCancel.current) {
+        toldCancel.current = endedAt
         setNotice(cancelled)
-      } else if (before === 'waiting_players') {
+      } else if (before?.state === 'waiting_players') {
+        toldCancel.current = endedAt
         setNotice('undone')
+      } else if (cancelled && endedAt !== toldCancel.current) {
+        toldCancel.current = endedAt
+        setNotice(cancelled)
       }
     } else {
       setNotice(null)
@@ -382,10 +395,7 @@ export function QueueScreen({
               <p className="max-w-xl text-sm text-foreground">{content.notice[notice]}</p>
               <button
                 type="button"
-                onClick={() => {
-                  dismissed.current = state.entry?.cancelledLobby?.endedAt ?? null
-                  setNotice(null)
-                }}
+                onClick={() => setNotice(null)}
                 className="landing-focus text-sm text-accent underline-offset-4 hover:underline"
               >
                 {content.notice.dismiss}

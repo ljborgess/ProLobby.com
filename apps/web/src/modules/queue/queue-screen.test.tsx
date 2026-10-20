@@ -418,6 +418,43 @@ describe('QueueScreen (#233)', () => {
       expect(screen.getByRole('button', { name: pt.leave })).toBeInTheDocument()
     })
 
+    it('an older cancellation never stands in for a lobby undone later', async () => {
+      const old = {
+        state: 'cancelled_by_captain',
+        endedAt: new Date(Date.now() - 60_000).toISOString(),
+      } as const
+      const again = searchingAgain(old)
+      // In a lobby the API sends no cancellation; the old one comes back with the search.
+      const next = inLobby({})
+      vi.mocked(fetch)
+        .mockResolvedValueOnce(answer(204, {}))
+        .mockResolvedValueOnce(answer(200, again))
+      // Back from that cancellation, now in a new lobby's 30 s, notice never dismissed.
+      renderScreen(next)
+
+      fireEvent.click(screen.getByRole('button', { name: pt.accept }))
+
+      expect(await screen.findByText(pt.notice.undone)).toBeInTheDocument()
+      expect(screen.queryByText(pt.notice.byCaptain)).toBeNull()
+    })
+
+    it('a lobby cancelled between two polls still says why, not "did not confirm"', async () => {
+      vi.mocked(fetch)
+        .mockResolvedValueOnce(answer(204, {}))
+        .mockResolvedValueOnce(
+          answer(
+            200,
+            searchingAgain({ state: 'cancelled_no_fault', endedAt: new Date().toISOString() }),
+          ),
+        )
+      renderScreen(inLobby({}))
+
+      fireEvent.click(screen.getByRole('button', { name: pt.accept }))
+
+      expect(await screen.findByText(pt.notice.noFault)).toBeInTheDocument()
+      expect(screen.queryByText(pt.notice.undone)).toBeNull()
+    })
+
     it.each([
       ['cancelled_by_captain', pt.notice.byCaptain],
       ['cancelled_no_fault', pt.notice.noFault],
