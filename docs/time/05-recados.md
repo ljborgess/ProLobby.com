@@ -8,11 +8,12 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 
 ## 2026-10-20 · Rafael
 
-### A escada de punição existe na API (Fase 4.2)
+### A escada de punição e a avaliação por pares existem na API (Fase 4.2)
 
 - **Suspensão e banimento agora acontecem de verdade.** A reputação cruzando 40 pra baixo suspende por 7 dias (a 2ª em 180 dias bane); cruzando 25, bane. Fim dos 7 dias: conta `active` de novo, com reputação 45.
 - **Pras telas:** a conta suspensa ou banida para no guard das rotas da fila, como já parava. `GET /api/accounts/me/punishment` já diz `state`, `reason` e `endsAt` (suspensão).
 - **Apelação de suspensão (#160):** `POST /api/accounts/me/punishment/appeals` com `{ message }` passou a aceitar conta `suspended`, além de `banned`. Uma por punição: a segunda é `409 appeal_already_filed`.
+- **Avaliação por pares:** em partida `finished`, `GET /api/queue` traz `lastMatch.teammates`: `[{ participationId, gamertag, category, myRating }]`, os outros humanos do mesmo lado (`gamertag` pode vir `null`). `POST /api/queue/ratings` com `{ lobbyId, participationId, kind: 'thumbs_up' | 'negative' }` responde `204`. Erros: `404 no_lobby`, `404 not_a_teammate` (outro lado ou a própria pessoa), `409 rating_closed` (partida não encerrada), `409 rating_exists` (já avaliou essa pessoa nessa partida). Avaliar é opcional, e a tela nunca mostra quem avaliou quem.
 - **Bot (RF-055):** a API ainda **não** manda `account.punished`, porque o bot ainda não trata esse evento. Quando você pegar a revogação do cargo Verificado, me avise que eu ligo o envio dos dois lados (punição e fim de suspensão).
 
 ---

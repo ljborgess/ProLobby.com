@@ -26,12 +26,14 @@ import { FormationVoteService } from './formation-vote.service'
 import { AnswerCaptaincyDto } from './dto/answer-captaincy.dto'
 import { ConfirmLobbyDto } from './dto/confirm-lobby.dto'
 import { ContestResultDto } from './dto/contest-result.dto'
+import { RateTeammateDto } from './dto/rate-teammate.dto'
 import { FormationDto } from './dto/formation.dto'
 import { JoinQueueDto } from './dto/join-queue.dto'
 import { ReportScoreDto } from './dto/report-score.dto'
 import { LobbyConfirmationService } from './lobby-confirmation.service'
 import { LobbyInviteService } from './lobby-invite.service'
 import { MatchReportService, type MatchReportView } from './match-report.service'
+import { PeerRatingService } from './peer-rating.service'
 import { QueueService, type MovementBand, type QueueEntryView } from './queue.service'
 
 /**
@@ -50,6 +52,7 @@ export class QueueController {
     private readonly lobbyInviteService: LobbyInviteService,
     private readonly formationVoteService: FormationVoteService,
     private readonly matchReportService: MatchReportService,
+    private readonly peerRatingService: PeerRatingService,
   ) {}
 
   @Get()
@@ -157,5 +160,17 @@ export class QueueController {
   @HttpCode(204)
   contest(@Req() request: RequestWithAccount, @Body() dto: ContestResultDto): Promise<void> {
     return this.matchReportService.contest(request.account!.id, dto.lobbyId)
+  }
+
+  /** A teammate of the same side, after a finished match: once each, optional (4.2). */
+  @Post('ratings')
+  @HttpCode(204)
+  rate(@Req() request: RequestWithAccount, @Body() dto: RateTeammateDto): Promise<void> {
+    return this.peerRatingService.rate(
+      request.account!.id,
+      dto.lobbyId,
+      dto.participationId,
+      dto.kind,
+    )
   }
 }

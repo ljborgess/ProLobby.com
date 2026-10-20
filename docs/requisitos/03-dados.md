@@ -140,6 +140,8 @@ Não pesa no elo, por decisão ([Ranking](../produto/02-jogador/02-ranking.md)) 
 
 Ao excluir a conta de quem avaliou, `de_conta` é anonimizado e a joinha continua contando pro outro ([LGPD](../produto/04-governanca/02-lgpd.md)).
 
+**Como a avaliação ficou no código (Fase 4.2, 2026-10-20)**: a tabela é `peer_rating`, com uma avaliação por par por partida e só em lobby `finished`. Não existe prazo pra avaliar, porque o dossiê não define um. Joinha gera o `EventoReputacao` `peer_thumbs_up` (+1 até 100) na hora. Negativa não mexe em nada; abre caso `negative_rating_threshold` quando há 5 pessoas diferentes **e** 5 partidas diferentes entre as negativas dos últimos 30 dias que vieram depois do último caso desse tipo, e esse corte evita abrir dois casos pela mesma leva. As duas contagens são separadas, uma aproximação do "pessoas diferentes em partidas diferentes": o moderador que lê o caso vê os detalhes. O autor da avaliação nunca sai da API ([RF-036](05-funcionais.md#rf-036--denunciado-nunca-vê-quem-denunciou)).
+
 ### EventoReputacao e EventoElo — as entidades que o rollback exige
 
 **Implicação que estava implícita e não podia ficar.** O dossiê decidiu **rollback retroativo** de elo, reputação e contadores de reincidência quando a moderação reverte uma disputa ([Ranking](../produto/02-jogador/02-ranking.md)). Guardar só o valor atual **torna isso impossível** — não há como desfazer o que não foi registrado.
