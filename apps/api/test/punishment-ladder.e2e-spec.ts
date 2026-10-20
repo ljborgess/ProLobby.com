@@ -233,4 +233,22 @@ describe('punishment ladder (4.2)', () => {
       .send({ message })
     expect(second.status).toBe(409)
   })
+
+  it('crossing 40 again while still suspended is no second suspension, but 25 still bans', async () => {
+    const { id } = await account(42)
+    await reputation.apply(id, ReputationEventReason.DISCONNECT)
+    // A rise inside the 7 days lifts it over 40 (34 + 7 = 41)…
+    for (let i = 0; i < 7; i++) await reputation.apply(id, ReputationEventReason.CLEAN_MATCH)
+    // …and a drop brings it back under.
+    await reputation.apply(id, ReputationEventReason.DISCONNECT)
+
+    expect((await reload(id)).state).toBe(AccountState.SUSPENDED)
+    expect(await casesOf(id, ModerationCaseType.SUSPENSION)).toHaveLength(1)
+    expect(await casesOf(id, ModerationCaseType.BAN)).toHaveLength(0)
+
+    // 33, 25, 17: under 25 bans, suspended or not.
+    await reputation.apply(id, ReputationEventReason.DISCONNECT)
+    await reputation.apply(id, ReputationEventReason.DISCONNECT)
+    expect((await reload(id)).state).toBe(AccountState.BANNED)
+  })
 })

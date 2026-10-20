@@ -48,6 +48,8 @@ export async function punishIn(
   }
   // Into the suspension band from above it; coming up from the ban band is no crossing down.
   if (crossed.to !== 'suspension' || crossed.from === 'ban') return
+  // Already serving one: a thumbs-up and a drop inside the 7 days are no second suspension.
+  if (account.state === AccountState.SUSPENDED) return
 
   const standing = await em.count(ModerationCase, {
     type: ModerationCaseType.SUSPENSION,
@@ -67,6 +69,10 @@ export async function punishIn(
   )
   account.state = AccountState.SUSPENDED
   account.suspensionEndsAt = new Date(now.getTime() + SUSPENSION_MS)
+  // ponytail: account lock, then the searching entry — the matcher takes the
+  // entry, then the account (the participation's foreign key). Today nobody
+  // searching gets punished (zero-report hits a lobby, thumbs-up goes up);
+  // the disconnect slice must punish before the account can search again.
   await em.nativeDelete(QueueEntry, { account, lobby: null })
 }
 
