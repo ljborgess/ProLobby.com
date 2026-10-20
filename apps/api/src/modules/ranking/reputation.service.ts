@@ -3,6 +3,8 @@ import { EntityManager } from '@mikro-orm/postgresql'
 import { Injectable } from '@nestjs/common'
 
 import { Account } from '../account/account.entity'
+import { AccountState } from '../account/account.enums'
+import { punishIn } from './punishment'
 import { ReputationEventReason } from './ranking-event.enums'
 import { ReputationEvent } from './reputation-event.entity'
 
@@ -111,7 +113,7 @@ export class ReputationService {
         { id: accountId },
         { lockMode: LockMode.PESSIMISTIC_WRITE },
       )
-      const change = this.applyIn(em, account, reason, lobbyId)
+      const change = await this.applyIn(em, account, reason, lobbyId)
       await em.flush()
       return change
     })
@@ -127,7 +129,7 @@ export class ReputationService {
     account: Account,
     reason: AutomaticReputationReason,
     lobbyId?: string,
-  ): ReputationChange {
+  ): Promise<ReputationChange> {
     return this.record(em, account, reputationDelta(reason, account.reputation), reason, lobbyId)
   }
 
@@ -159,25 +161,52 @@ export class ReputationService {
     )
   }
 
-  private record(
+  /**
+   * RF-074: the served suspensions, run by a job. The account is back, at 45;
+   * coming back up crosses nothing down, so nothing punishes it again.
+   */
+  async endSuspensions(now: Date = new Date()): Promise<number> {
+    return this.em.fork().transactional(async (em) => {
+      const served = await em.find(
+        Account,
+        { state: AccountState.SUSPENDED, suspensionEndsAt: { $lte: now } },
+        { lockMode: LockMode.PESSIMISTIC_WRITE, orderBy: { id: 'asc' } },
+      )
+      for (const account of served) {
+        account.state = account.emailVerified ? AccountState.ACTIVE : AccountState.UNVERIFIED
+        account.suspensionEndsAt = undefined
+        await this.record(
+          em,
+          account,
+          reputationDelta(ReputationEventReason.SUSPENSION_SERVED, account.reputation),
+          ReputationEventReason.SUSPENSION_SERVED,
+          undefined,
+          now,
+        )
+      }
+      await em.flush()
+      return served.length
+    })
+  }
+
+  /** Every change goes through here, and so does the punishment ladder it may cross. */
+  private async record(
     em: EntityManager,
     account: Account,
     delta: number,
     reason: ReputationEventReason,
     lobbyId: string | undefined,
     now: Date = new Date(),
-  ): ReputationChange {
+  ): Promise<ReputationChange> {
     const before = account.reputation
     em.create(ReputationEvent, { account, delta, reason, lobbyId, createdAt: now })
     account.reputation = before + delta
 
     const from = reputationBand(before)
     const to = reputationBand(account.reputation)
-    return {
-      reputation: account.reputation,
-      band: to,
-      crossed: from === to ? null : { from, to },
-    }
+    const crossed = from === to ? null : { from, to }
+    await punishIn(em, account, crossed, now)
+    return { reputation: account.reputation, band: to, crossed }
   }
 
   /**

@@ -379,11 +379,11 @@ export class AccountController {
    * account is already known — so a real 400/409 on failure is the honest
    * answer, not a fixed 202.
    *
-   * Scoped to BANNED only for now (see PunishmentAppealService for why).
+   * Suspended or banned: one appeal per punishment (RF-037, #160).
    */
   @Post('me/punishment/appeals')
   @HttpCode(HttpStatus.CREATED)
-  @AllowStates(AccountState.BANNED)
+  @AllowStates(AccountState.SUSPENDED, AccountState.BANNED)
   // The login bucket: filing an appeal is a rare, deliberate action for a
   // real account, the same profile as password reset or sign-in.
   @Throttle(LOGIN_THROTTLE)

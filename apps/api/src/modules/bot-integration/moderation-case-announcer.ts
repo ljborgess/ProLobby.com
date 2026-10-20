@@ -4,7 +4,7 @@ import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/commo
 import { randomUUID } from 'node:crypto'
 
 import { ModerationCase } from '../moderation/moderation-case.entity'
-import { ModerationCaseType } from '../moderation/moderation-case.enums'
+import { ModerationCaseState, ModerationCaseType } from '../moderation/moderation-case.enums'
 import { EventDeliveryTargetKind } from './event-delivery.enums'
 import { EventDeliveryService } from './event-delivery.service'
 
@@ -57,7 +57,9 @@ export class ModerationCaseAnnouncer implements EventSubscriber, OnModuleInit, O
       if (
         changeSet.type !== ChangeSetType.CREATE ||
         !(opened instanceof ModerationCase) ||
-        opened.type === ModerationCaseType.BOT_DELIVERY_FAILURE
+        opened.type === ModerationCaseType.BOT_DELIVERY_FAILURE ||
+        // Born resolved (an automatic suspension or ban): nobody has to act.
+        opened.state !== ModerationCaseState.OPEN
       ) {
         continue
       }
