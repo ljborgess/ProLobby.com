@@ -24,7 +24,7 @@ import { ModerationCase } from '../moderation/moderation-case.entity'
 import { ModerationCaseOrigin, ModerationCaseType } from '../moderation/moderation-case.enums'
 import { ReputationEventReason } from '../ranking/ranking-event.enums'
 import { ReputationService } from '../ranking/reputation.service'
-import { PeerRatingService, type TeammateView } from './peer-rating.service'
+import { PeerRatingService, rateUntil, type TeammateView } from './peer-rating.service'
 import { QueueEntry } from './queue-entry.entity'
 
 /** RF-045: no print before this, counted from `closed_at`. */
@@ -72,6 +72,8 @@ export type LastMatchView = {
   teammates: TeammateView[]
   /** The other side's humans, to report (4.2). */
   opponents: TeammateView[]
+  /** Teammates can be rated until here: 48 h after a `finished` match; null otherwise. */
+  rateUntil: Date | null
 }
 
 /**
@@ -345,6 +347,7 @@ export class MatchReportService {
       scoreB: lobby.scoreB ?? null,
       contestUntil: open ? new Date(lobby.unconfirmedAt!.getTime() + CONTEST_WINDOW_MS) : null,
       ...(await this.peerRatingService.players(em, lobby, accountId)),
+      rateUntil: rateUntil(lobby),
     }
   }
 

@@ -920,4 +920,27 @@ describe('match report (4.1)', () => {
     expect(ok.status).toBe(201)
     expect(ok.body).toEqual({ caseId: expect.any(String) })
   })
+
+  it('rating closes 48 h after the match finished (4.2)', async () => {
+    const { lobbyId, a } = await finished()
+    const ended = (await lobbyOf(lobbyId)).endedAt!.getTime()
+    const to = await participationOf(lobbyId, a.captain.accountId)
+    const from = a.others[0]!.accountId
+
+    await expect(
+      ratings.rate(from, lobbyId, to.id, PeerRatingKind.THUMBS_UP, at(ended + 48 * 60 * MINUTE)),
+    ).rejects.toMatchObject({ status: 409, message: 'rating_closed' })
+    await ratings.rate(
+      from,
+      lobbyId,
+      to.id,
+      PeerRatingKind.THUMBS_UP,
+      at(ended + 48 * 60 * MINUTE - 1),
+    )
+
+    const shown = await request(app.getHttpServer())
+      .get('/api/queue')
+      .set('Cookie', a.others[1]!.cookie)
+    expect(new Date(shown.body.lastMatch.rateUntil).getTime()).toBe(ended + 48 * 60 * MINUTE)
+  })
 })

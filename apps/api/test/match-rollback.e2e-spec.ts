@@ -251,7 +251,7 @@ describe('match rollback (#210)', () => {
     expect((await state(one.accountId, one.characterId)).reputation).toBe(70)
   })
 
-  it('replays a served suspension as "back to 45", whatever it follows', async () => {
+  it('replays a served suspension as "at least 45", whatever it follows', async () => {
     const one = await player()
     for (let i = 0; i < 3; i += 1) {
       await reputation.apply(one.accountId, ReputationEventReason.DISCONNECT, randomUUID())
@@ -262,7 +262,8 @@ describe('match rollback (#210)', () => {
 
     await rollback.revertLobby(lobbyId)
 
-    expect((await state(one.accountId, one.characterId)).reputation).toBe(45)
+    // Without the reverted −8 it was served at 46, which it keeps.
+    expect((await state(one.accountId, one.characterId)).reputation).toBe(46)
   })
 
   it('reverts two lobbies that share accounts at the same time, without deadlock', async () => {

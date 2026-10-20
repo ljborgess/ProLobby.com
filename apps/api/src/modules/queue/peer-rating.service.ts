@@ -21,6 +21,13 @@ import { ReputationService } from '../ranking/reputation.service'
 /** docs/produto/parametros.md: 5 negatives in 30 days, from different people in different matches. */
 export const NEGATIVE_THRESHOLD = 5
 export const NEGATIVE_WINDOW_MS = 30 * 24 * 60 * 60 * 1000
+/** docs/produto/parametros.md: rating stays open this long after the match finished. */
+export const RATING_WINDOW_MS = 48 * 60 * 60 * 1000
+
+export const rateUntil = (lobby: Pick<Lobby, 'state' | 'endedAt'>): Date | null =>
+  lobby.state === LobbyState.FINISHED && lobby.endedAt
+    ? new Date(lobby.endedAt.getTime() + RATING_WINDOW_MS)
+    : null
 
 export type TeammateView = {
   participationId: string
@@ -72,7 +79,8 @@ export class PeerRatingService {
         if (!theirs || theirs.side !== mine.side || theirs.id === mine.id) {
           throw new NotFoundException('not_a_teammate')
         }
-        if (mine.lobby.state !== LobbyState.FINISHED) {
+        const until = rateUntil(mine.lobby)
+        if (!until || now >= until) {
           throw new ConflictException('rating_closed')
         }
         // The reputation writer's lock; it also serializes the threshold count below.

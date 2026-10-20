@@ -92,6 +92,7 @@ Todos os números do produto num lugar só. **Este arquivo não decide nada** �
 | Janela de report do 2º lado | 15 min a partir do 1º print aceito | [Resultado](03-partida/04-resultado.md) |
 | Placar válido | inteiro, 0–20 por lado | [Resultado](03-partida/04-resultado.md) |
 | Janela de contestação | 48 h | [Resultado](03-partida/04-resultado.md) |
+| Janela de avaliação de companheiro | 48 h desde a partida encerrada (decidido em 2026-10-20, mesmo número da contestação) | [Ranking](02-jogador/02-ranking.md) |
 | Quem pode contestar | qualquer humano da partida, 1 vez cada | [Resultado](03-partida/04-resultado.md) |
 | Assinatura do bug de perda de controle | nota individual 0.0 | [Resultado](03-partida/04-resultado.md) |
 
