@@ -27,7 +27,11 @@ import { PeerRating, PeerRatingKind } from '../src/modules/lobby/peer-rating.ent
 import { PlatformGamertag } from '../src/modules/character/platform-gamertag.entity'
 import { encryptAtRest } from '../src/common/security/evidence-encryption'
 import { ModerationCase } from '../src/modules/moderation/moderation-case.entity'
-import { ModerationCaseType } from '../src/modules/moderation/moderation-case.enums'
+import {
+  ModerationCaseState,
+  ModerationCaseType,
+  UserReportReason,
+} from '../src/modules/moderation/moderation-case.enums'
 import { ReputationEventReason } from '../src/modules/ranking/ranking-event.enums'
 import { ReputationEvent } from '../src/modules/ranking/reputation-event.entity'
 import { CaptainCascadeService } from '../src/modules/queue/captain-cascade.service'
@@ -35,6 +39,7 @@ import { LobbyConfirmationService } from '../src/modules/queue/lobby-confirmatio
 import { LobbyInviteService } from '../src/modules/queue/lobby-invite.service'
 import { MatchReportService } from '../src/modules/queue/match-report.service'
 import { PeerRatingService } from '../src/modules/queue/peer-rating.service'
+import { UserReportService } from '../src/modules/queue/user-report.service'
 import { QueueEntry } from '../src/modules/queue/queue-entry.entity'
 import { QueueMatchingService } from '../src/modules/queue/queue-matching.service'
 import { CapturingMailSender } from './support/capturing-mail-sender'
@@ -67,6 +72,7 @@ describe('match report (4.1)', () => {
   let invite: LobbyInviteService
   let reports: MatchReportService
   let ratings: PeerRatingService
+  let userReports: UserReportService
   let counter = 0
 
   const cookieOf = (res: request.Response): string => {
@@ -191,6 +197,7 @@ describe('match report (4.1)', () => {
     invite = moduleRef.get(LobbyInviteService)
     reports = moduleRef.get(MatchReportService)
     ratings = moduleRef.get(PeerRatingService)
+    userReports = moduleRef.get(UserReportService)
   }, 60_000)
 
   beforeEach(async () => {
@@ -679,6 +686,8 @@ describe('match report (4.1)', () => {
 
     const teammates = shown.body.lastMatch.teammates
     expect(teammates).toHaveLength(3)
+    // The other side too, to report: no rating there.
+    expect(shown.body.lastMatch.opponents).toHaveLength(4)
     const row = await participationOf(lobbyId, rated.accountId)
     expect(teammates).toContainEqual(
       expect.objectContaining({
@@ -789,5 +798,126 @@ describe('match report (4.1)', () => {
       .set('Cookie', a.others[0]!.cookie)
       .send({ lobbyId, participationId: to.id, kind: 'stars' })
     expect(bad.status).toBe(400)
+  })
+
+  const WHY = 'Saiu no meio da partida e voltou rindo no canal.'
+
+  it('reports someone of the match, either side, with the author kept for moderation only (4.2)', async () => {
+    const { lobbyId, a, b } = await finished()
+    const rival = await participationOf(lobbyId, b.captain.accountId)
+
+    const { caseId } = await userReports.open(
+      a.others[0]!.accountId,
+      lobbyId,
+      rival.id,
+      UserReportReason.DISCONNECT,
+      WHY,
+    )
+
+    const opened = await orm.em.fork().findOneOrFail(ModerationCase, { id: caseId })
+    expect(opened).toMatchObject({
+      type: ModerationCaseType.USER_REPORT,
+      state: ModerationCaseState.OPEN,
+      lobbyId,
+      reportReason: UserReportReason.DISCONNECT,
+      reportMessage: WHY,
+    })
+    expect(opened.targetAccount!.id).toBe(b.captain.accountId)
+    expect(opened.openedBy!.id).toBe(a.others[0]!.accountId)
+  })
+
+  it('refuses a 4th open report until one is resolved (RF-068)', async () => {
+    const { lobbyId, a, b } = await finished()
+    const from = a.others[0]!.accountId
+    const targets = [b.captain, ...b.others].map((p) => participationOf(lobbyId, p.accountId))
+    const rows = await Promise.all(targets)
+    for (const row of rows.slice(0, 3)) {
+      await userReports.open(from, lobbyId, row.id, UserReportReason.BEHAVIOR, WHY)
+    }
+    await expect(
+      userReports.open(from, lobbyId, rows[3]!.id, UserReportReason.BEHAVIOR, WHY),
+    ).rejects.toMatchObject({ status: 409, message: 'too_many_open_reports' })
+
+    const em = orm.em.fork()
+    const [one] = await em.find(ModerationCase, {
+      openedBy: from,
+      type: ModerationCaseType.USER_REPORT,
+    })
+    one!.state = ModerationCaseState.RESOLVED
+    await em.flush()
+    await userReports.open(from, lobbyId, rows[3]!.id, UserReportReason.BEHAVIOR, WHY)
+  })
+
+  it('only someone met in a match, never oneself or a stranger (4.2)', async () => {
+    const first = await finished()
+    const second = await finished()
+    const from = first.a.others[0]!.accountId
+    const self = await participationOf(first.lobbyId, from)
+    const elsewhere = await participationOf(second.lobbyId, second.a.captain.accountId)
+
+    await expect(
+      userReports.open(from, first.lobbyId, self.id, UserReportReason.FRAUD, WHY),
+    ).rejects.toMatchObject({ status: 404, message: 'not_in_match' })
+    await expect(
+      userReports.open(from, first.lobbyId, elsewhere.id, UserReportReason.FRAUD, WHY),
+    ).rejects.toMatchObject({ status: 404, message: 'not_in_match' })
+    await expect(
+      userReports.open(from, second.lobbyId, elsewhere.id, UserReportReason.FRAUD, WHY),
+    ).rejects.toMatchObject({ status: 404, message: 'no_lobby' })
+  })
+
+  it('3 reports dismissed in 30 days make a conduct case about the reporter, once (RF-069)', async () => {
+    const { lobbyId, a, b } = await finished()
+    const from = a.others[0]!.accountId
+    const rows = await Promise.all(
+      [b.captain, ...b.others].map((p) => participationOf(lobbyId, p.accountId)),
+    )
+    const conduct = () =>
+      orm.em.fork().count(ModerationCase, {
+        type: ModerationCaseType.BASELESS_REPORTS,
+        targetAccount: from,
+      })
+    // What the panel will do (phase 5): dismiss, then tell the service.
+    const dismiss = async (participationId: string, at: Date) => {
+      const { caseId } = await userReports.open(
+        from,
+        lobbyId,
+        participationId,
+        UserReportReason.BEHAVIOR,
+        WHY,
+      )
+      await orm.em.fork().transactional(async (em) => {
+        const report = await em.findOneOrFail(ModerationCase, { id: caseId })
+        report.state = ModerationCaseState.DISMISSED
+        report.resolvedAt = at
+        await em.flush()
+        await userReports.afterDismissal(em, report, at)
+      })
+    }
+    const now = Date.now()
+    // One older than 30 days does not count.
+    await dismiss(rows[0]!.id, new Date(now - 31 * 24 * 60 * MINUTE))
+    await dismiss(rows[1]!.id, new Date(now - 2 * MINUTE))
+    await dismiss(rows[2]!.id, new Date(now - MINUTE))
+    expect(await conduct()).toBe(0)
+
+    await dismiss(rows[3]!.id, new Date(now))
+    expect(await conduct()).toBe(1)
+  })
+
+  it('opens a report over HTTP with a validated body (4.2)', async () => {
+    const { lobbyId, a, b } = await finished()
+    const rival = await participationOf(lobbyId, b.captain.accountId)
+    const send = (body: object) =>
+      request(app.getHttpServer())
+        .post('/api/queue/user-reports')
+        .set('Cookie', a.others[0]!.cookie)
+        .send({ lobbyId, participationId: rival.id, reason: 'behavior', ...body })
+
+    expect((await send({ message: 'curto' })).status).toBe(400)
+    expect((await send({ message: WHY, reason: 'spam' })).status).toBe(400)
+    const ok = await send({ message: WHY })
+    expect(ok.status).toBe(201)
+    expect(ok.body).toEqual({ caseId: expect.any(String) })
   })
 })

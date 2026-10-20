@@ -37,6 +37,15 @@ export enum ModerationCaseType {
    */
   SUSPENSION = 'suspension',
   BAN = 'ban',
+  /** RF-069: 3 reports dismissed as baseless in 30 days — a case about the reporter. */
+  BASELESS_REPORTS = 'baseless_reports',
+}
+
+/** What a user report is about — docs/produto/04-governanca/01-moderacao.md. */
+export enum UserReportReason {
+  FRAUD = 'fraud',
+  DISCONNECT = 'disconnect',
+  BEHAVIOR = 'behavior',
 }
 
 export enum ModerationCaseState {

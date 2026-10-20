@@ -68,8 +68,10 @@ export type LastMatchView = {
   scoreB: number | null
   /** Set while this account can still contest (RF-012); null otherwise. */
   contestUntil: Date | null
-  /** Finished matches only: the side's other humans, to rate (4.2). */
+  /** The side's other humans: rated once the match is `finished` (4.2). */
   teammates: TeammateView[]
+  /** The other side's humans, to report (4.2). */
+  opponents: TeammateView[]
 }
 
 /**
@@ -342,10 +344,7 @@ export class MatchReportService {
       scoreA: lobby.scoreA ?? null,
       scoreB: lobby.scoreB ?? null,
       contestUntil: open ? new Date(lobby.unconfirmedAt!.getTime() + CONTEST_WINDOW_MS) : null,
-      teammates:
-        lobby.state === LobbyState.FINISHED
-          ? await this.peerRatingService.teammates(em, lobby, accountId)
-          : [],
+      ...(await this.peerRatingService.players(em, lobby, accountId)),
     }
   }
 
