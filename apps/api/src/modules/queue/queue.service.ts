@@ -20,7 +20,12 @@ import { EloService } from '../ranking/elo.service'
 import { confirmBy } from './lobby-confirmation.service'
 import { FormationVoteService, type FormationView } from './formation-vote.service'
 import { inviteBy } from './lobby-invite.service'
-import { MatchReportService, reportableFrom, type MatchReportView } from './match-report.service'
+import {
+  reportConfirmBy,
+  MatchReportService,
+  reportableFrom,
+  type MatchReportView,
+} from './match-report.service'
 import { captainAnswerBy } from './captain-cascade.service'
 import { blockedUntilFor } from './queue-block'
 import { QueueEntry } from './queue-entry.entity'
@@ -71,6 +76,8 @@ export interface QueueEntryView {
     reportableFrom: Date | null
     /** This account's own result report, if sent. */
     myReport: MatchReportView | null
+    /** After the first report: the other side reports until here (RF-043). */
+    reportConfirmBy: Date | null
   } | null
 }
 
@@ -128,6 +135,7 @@ export class QueueService {
             myReport: entry.lobby
               ? await this.matchReportService.view(em, entry.lobby, accountId)
               : null,
+            reportConfirmBy: entry.lobby ? reportConfirmBy(entry.lobby) : null,
           })
         : null,
       blockedUntil: await blockedUntilFor(em, accountId, now),
