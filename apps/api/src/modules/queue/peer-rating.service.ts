@@ -26,7 +26,7 @@ export type TeammateView = {
   participationId: string
   gamertag: string | null
   category: LobbyParticipation['category']
-  /** What this account gave them, if anything. */
+  /** What this account gave them, if anything; always null for an opponent. */
   myRating: PeerRatingKind | null
 }
 
@@ -114,17 +114,24 @@ export class PeerRatingService {
     }
   }
 
-  /** The other humans of this account's side, for the rating screen (`lastMatch`). */
-  async teammates(em: EntityManager, lobby: Lobby, accountId: string): Promise<TeammateView[]> {
+  /**
+   * The other humans of the match, for the rating and report screens
+   * (`lastMatch`): the own side to rate, everyone to report.
+   */
+  async players(
+    em: EntityManager,
+    lobby: Lobby,
+    accountId: string,
+  ): Promise<{ teammates: TeammateView[]; opponents: TeammateView[] }> {
     const rows = await em.find(LobbyParticipation, { lobby }, { populate: ['character'] })
     const mine = rows.find((p) => p.account.id === accountId)
-    if (!mine) return []
-    const others = rows.filter((p) => p.side === mine.side && p.id !== mine.id)
+    if (!mine) return { teammates: [], opponents: [] }
+    const others = rows.filter((p) => p.id !== mine.id)
     const [tags, given] = await Promise.all([
       em.find(PlatformGamertag, { account: { $in: others.map((p) => p.account.id) } }),
       em.find(PeerRating, { lobby, fromAccount: accountId }),
     ])
-    return others.map((p) => {
+    const view = (p: LobbyParticipation): TeammateView => {
       // Shown inside the match's own history, as the profile rules allow.
       const tag = tags.find(
         (t) => t.account.id === p.account.id && t.platform === p.character.platform,
@@ -135,7 +142,11 @@ export class PeerRatingService {
         category: p.category,
         myRating: given.find((r) => r.toAccount.id === p.account.id)?.kind ?? null,
       }
-    })
+    }
+    return {
+      teammates: others.filter((p) => p.side === mine.side).map(view),
+      opponents: others.filter((p) => p.side !== mine.side).map(view),
+    }
   }
 
   /**

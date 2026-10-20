@@ -17,7 +17,7 @@ import { memoryStorage } from 'multer'
 
 import { AllowStates } from '../../common/auth/auth.decorators'
 import type { RequestWithAccount } from '../../common/auth/session.guard'
-import { UPLOAD_THROTTLE } from '../../common/security/throttler.config'
+import { LOGIN_THROTTLE, UPLOAD_THROTTLE } from '../../common/security/throttler.config'
 import { AccountState } from '../account/account.enums'
 import type { CharacterCategory } from '../character/archetype'
 import { PRINT_MAX_BYTES } from '../character/print-submission.service'
@@ -26,6 +26,7 @@ import { FormationVoteService } from './formation-vote.service'
 import { AnswerCaptaincyDto } from './dto/answer-captaincy.dto'
 import { ConfirmLobbyDto } from './dto/confirm-lobby.dto'
 import { ContestResultDto } from './dto/contest-result.dto'
+import { OpenUserReportDto } from './dto/open-user-report.dto'
 import { RateTeammateDto } from './dto/rate-teammate.dto'
 import { FormationDto } from './dto/formation.dto'
 import { JoinQueueDto } from './dto/join-queue.dto'
@@ -34,6 +35,7 @@ import { LobbyConfirmationService } from './lobby-confirmation.service'
 import { LobbyInviteService } from './lobby-invite.service'
 import { MatchReportService, type MatchReportView } from './match-report.service'
 import { PeerRatingService } from './peer-rating.service'
+import { UserReportService } from './user-report.service'
 import { QueueService, type MovementBand, type QueueEntryView } from './queue.service'
 
 /**
@@ -53,6 +55,7 @@ export class QueueController {
     private readonly formationVoteService: FormationVoteService,
     private readonly matchReportService: MatchReportService,
     private readonly peerRatingService: PeerRatingService,
+    private readonly userReportService: UserReportService,
   ) {}
 
   @Get()
@@ -171,6 +174,27 @@ export class QueueController {
       dto.lobbyId,
       dto.participationId,
       dto.kind,
+    )
+  }
+
+  /**
+   * Reports someone met in a match (4.2). At most 3 open at a time (RF-068);
+   * the reported person never sees who (RF-036).
+   */
+  @Post('user-reports')
+  @HttpCode(201)
+  // A rare, deliberate action: the same bucket as an appeal.
+  @Throttle(LOGIN_THROTTLE)
+  openUserReport(
+    @Req() request: RequestWithAccount,
+    @Body() dto: OpenUserReportDto,
+  ): Promise<{ caseId: string }> {
+    return this.userReportService.open(
+      request.account!.id,
+      dto.lobbyId,
+      dto.participationId,
+      dto.reason,
+      dto.message,
     )
   }
 }
