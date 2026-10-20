@@ -22,6 +22,9 @@ import { ACTIVE_CHARACTER_STATES, Character } from './character.entity'
 import { CharacterVerificationService } from './character-verification.service'
 import { PrintRejection, PrintSubmission, PrintSubmissionStatus } from './print-submission.entity'
 
+/** Item 16 of the security checklist: 10 MB, enforced before the body is read. */
+export const PRINT_MAX_BYTES = 10 * 1024 * 1024
+
 /** RF-065: attempts per account per hour, accepted or not. */
 export const PRINT_UPLOADS_PER_HOUR = 10
 const HOUR_MS = 60 * 60 * 1000
@@ -45,7 +48,7 @@ const RETENTION_MS = 90 * 24 * HOUR_MS
  * Inside `uploads/`, which production mounts as a persistent volume. Every
  * file here is encrypted — item 5 of the security checklist.
  */
-function printsDir(): string {
+export function printsDir(): string {
   return process.env.PRINTS_DIR ?? join(process.cwd(), 'uploads', 'character-prints')
 }
 
@@ -168,7 +171,7 @@ export class PrintSubmissionService implements OnModuleInit {
       )
     }
 
-    const rejection = this.precheck(file) ?? (await this.alreadyUsed(em, file))
+    const rejection = checkPrintImage(file) ?? (await this.alreadyUsed(em, file))
     if (rejection) {
       return this.record(em, accountId, character, { rejection })
     }
@@ -216,24 +219,6 @@ export class PrintSubmissionService implements OnModuleInit {
     return deleted
   }
 
-  private precheck(file: Buffer): PrintRejection | null {
-    const type = detectRealImageType(file)
-    if (!type) {
-      return PrintRejection.INVALID_FORMAT
-    }
-    const size = readImageSize(file, type)
-    if (!size) {
-      return PrintRejection.INVALID_FORMAT
-    }
-    if (size.width > MAX_PRINT_SIDE || size.height > MAX_PRINT_SIDE) {
-      return PrintRejection.INVALID_FORMAT
-    }
-    if (size.width < MIN_PRINT_WIDTH || size.height < MIN_PRINT_HEIGHT) {
-      return PrintRejection.IMAGE_TOO_SMALL
-    }
-    return null
-  }
-
   private async alreadyUsed(em: EntityManager, file: Buffer): Promise<PrintRejection | null> {
     const used = await em.count(PrintSubmission, { fileHash: sha256(file) })
     return used > 0 ? PrintRejection.PRINT_ALREADY_USED : null
@@ -263,6 +248,25 @@ export class PrintSubmissionService implements OnModuleInit {
   }
 }
 
-function sha256(file: Buffer): string {
+/** The real type and size of the image (RF-064); shared with the match result print. */
+export function checkPrintImage(file: Buffer): PrintRejection | null {
+  const type = detectRealImageType(file)
+  if (!type) {
+    return PrintRejection.INVALID_FORMAT
+  }
+  const size = readImageSize(file, type)
+  if (!size) {
+    return PrintRejection.INVALID_FORMAT
+  }
+  if (size.width > MAX_PRINT_SIDE || size.height > MAX_PRINT_SIDE) {
+    return PrintRejection.INVALID_FORMAT
+  }
+  if (size.width < MIN_PRINT_WIDTH || size.height < MIN_PRINT_HEIGHT) {
+    return PrintRejection.IMAGE_TOO_SMALL
+  }
+  return null
+}
+
+export function sha256(file: Buffer): string {
   return createHash('sha256').update(file).digest('hex')
 }

@@ -23,10 +23,11 @@ import { archetypeOptions, type ArchetypeOption } from './archetype'
 import { CharacterService, type CharacterListItem, type CharacterView } from './character.service'
 import { ChangeCategoryDto } from './dto/change-category.dto'
 import { CreateCharacterDto } from './dto/create-character.dto'
-import { PrintSubmissionService, type PrintSubmissionView } from './print-submission.service'
-
-/** Item 16 of the security checklist: 10 MB, enforced before the body is read. */
-const PRINT_MAX_BYTES = 10 * 1024 * 1024
+import {
+  PRINT_MAX_BYTES,
+  PrintSubmissionService,
+  type PrintSubmissionView,
+} from './print-submission.service'
 
 /**
  * Characters of the logged-in account — phase 2.2, issues #194 and #195.

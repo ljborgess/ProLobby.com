@@ -8,6 +8,17 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 
 ## 2026-10-15 · Rafael
 
+### O report de placar existe na API (4.1, primeira fatia)
+
+- **`POST /api/queue/report`**, multipart: arquivo em `print` (até 10 MB), `scoreA` e `scoreB` (inteiros de 0 a 20). `201` com `{ id, side, scoreA, scoreB }`.
+  - Antes dos 5 min do lobby fechar: `409 report_too_early` com `retryAfterSeconds`.
+  - Imagem ruim: `400 invalid_format` ou `400 image_too_small` (as mesmas do print de personagem).
+  - Arquivo já usado: `409 print_already_used`. Segundo report da mesma pessoa: `409 report_exists`. Partida ainda não começou: `409 report_closed`.
+- **`PUT /api/queue/report`** com `{ scoreA, scoreB }`: corrige o placar enquanto ninguém do outro lado reportou. Depois, `409 report_closed`.
+- **`GET /api/queue`**: `entry.lobby` ganhou `reportableFrom` (quando o envio libera) e `myReport`. O estado novo `awaiting_confirmation` aparece depois do primeiro report.
+- Ainda não tem a confirmação cruzada (15 min) nem contestação; vêm nas próximas fatias.
+
+
 ### A #250 fecha mandando `lobby.channels_created` pra API (#249)
 
 - **O que mudou:** a votação de formação (#249) abre quando a API sabe que os canais existem. O evento bot → API já está em `@prolobby/types` (`lobbyChannelsCreatedEventSchema`): `{ lobbyId, textChannelId, voiceAChannelId, voiceBChannelId }`, assinado como os `discord.*`, pro mesmo `POST /api/bot-events`.
