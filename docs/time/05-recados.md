@@ -6,6 +6,16 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 
 ---
 
+## 2026-10-20 · Rafael
+
+### A #252 (telas do lobby) passou pro Luciano
+
+- **O que mudou:** o Luciano pegou a #252, porque não tinha branch nem PR dela ainda. A tela da fila agora segue o estado do lobby depois dos 30 s, na mesma cena do gramado: capitão (tenho vaga / não tenho / o clube encheu), quem espera a escolha dos capitães, convite recebido (o capitão tem "o clube encheu"), votação de formação com desempate do capitão e "partida em andamento".
+- **API:** `GET /api/queue` ganhou `entry.cancelledLobby` (`{ state, endedAt }` ou `null`). Ele diz por que a busca recomeçou quando o lobby foi cancelado; lobby desfeito nos 30 s não deixa registro, e a tela deduz pelo lobby que sumiu.
+- **O que sobra pra você nesse fluxo:** as telas do report, da contestação, da avaliação e da denúncia (fatia E da 4.1 e 4.2), que entram por cima de "partida em andamento". O contrato está nos recados de 2026-10-15 e 2026-10-20.
+
+---
+
 ## 2026-10-15 · Rafael
 
 ### O report de placar existe na API (4.1, primeira fatia)

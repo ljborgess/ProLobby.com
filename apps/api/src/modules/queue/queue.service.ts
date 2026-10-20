@@ -15,7 +15,7 @@ import { ACTIVE_CHARACTER_STATES, Character, CharacterState } from '../character
 import { DeclaredClub } from '../account/declared-club.entity'
 import { CaptainOffer } from '../lobby/captain-offer.entity'
 import { LobbyParticipation, LobbySide } from '../lobby/lobby-participation.entity'
-import { LobbyState } from '../lobby/lobby.entity'
+import { type Lobby, LobbyState } from '../lobby/lobby.entity'
 import { EloService } from '../ranking/elo.service'
 import { confirmBy } from './lobby-confirmation.service'
 import { FormationVoteService, type FormationView } from './formation-vote.service'
@@ -55,6 +55,15 @@ export interface QueueEntryView {
   characterId: string
   category: CharacterCategory
   joinedAt: Date
+  /**
+   * Searching again because a lobby of this entry was cancelled (#247, #248):
+   * why, for the screen to say it (#252). A lobby undone in the 30 s leaves no
+   * row, so that case never shows here.
+   */
+  cancelledLobby: {
+    state: LobbyState.CANCELLED_NO_FAULT | LobbyState.CANCELLED_BY_CAPTAIN
+    endedAt: Date
+  } | null
   /** Null while searching; once placed, what the 30 s screen needs (#232). */
   lobby: {
     state: LobbyState
@@ -118,9 +127,25 @@ export class QueueService {
       entry?.lobby &&
       (await em.findOne(CaptainOffer, { lobby: entry.lobby, account: accountId, outcome: null }))
     const club = offer ? await em.findOne(DeclaredClub, { account: accountId }) : null
+    // The entry keeps its joinedAt through a cancellation, so a lobby that
+    // ended after it is one this search came back from.
+    const cancelled =
+      entry && !entry.lobby
+        ? await em.findOne(
+            LobbyParticipation,
+            {
+              account: accountId,
+              lobby: {
+                state: { $in: [LobbyState.CANCELLED_NO_FAULT, LobbyState.CANCELLED_BY_CAPTAIN] },
+                endedAt: { $gte: entry.joinedAt },
+              },
+            },
+            { orderBy: { lobby: { endedAt: 'desc' } }, populate: ['lobby'] },
+          )
+        : null
     return {
       entry: entry
-        ? toView(entry, {
+        ? toView(entry, cancelled?.lobby, {
             confirmed: mine ? !!mine.confirmedAt : false,
             captainOffer: offer
               ? { answerBy: captainAnswerBy(offer), clubName: club?.clubName ?? '' }
@@ -249,11 +274,17 @@ export class QueueService {
 
 type LobbyExtra = Omit<NonNullable<QueueEntryView['lobby']>, 'state' | 'confirmBy' | 'inviteBy'>
 
-function toView(entry: QueueEntry, extra?: LobbyExtra): QueueEntryView {
+function toView(entry: QueueEntry, cancelled?: Lobby, extra?: LobbyExtra): QueueEntryView {
   return {
     characterId: entry.character.id,
     category: entry.category,
     joinedAt: entry.joinedAt,
+    cancelledLobby: cancelled
+      ? {
+          state: cancelled.state as NonNullable<QueueEntryView['cancelledLobby']>['state'],
+          endedAt: cancelled.endedAt!,
+        }
+      : null,
     lobby:
       entry.lobby && extra
         ? {

@@ -224,6 +224,15 @@ describe('lobby invite window (#248)', () => {
     expect((await lobbyOf(lobbyId)).state).toBe(LobbyState.CANCELLED_NO_FAULT)
     expect(await orm.em.fork().count(ModerationCase, { lobbyId })).toBe(0)
     expect(await orm.em.fork().count(QueueEntry, { lobby: null })).toBe(8)
+
+    // The screen says why it is searching again (#252).
+    const shown = await request(app.getHttpServer())
+      .get('/api/queue')
+      .set('Cookie', b.captain.cookie)
+    expect(shown.body.entry).toMatchObject({
+      lobby: null,
+      cancelledLobby: { state: LobbyState.CANCELLED_NO_FAULT },
+    })
   })
 
   it('both sides short, only one captain declared: the silent one alone gets the case', async () => {

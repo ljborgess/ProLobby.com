@@ -3,6 +3,7 @@ import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { renderWithLocale } from '@/test-utils'
 import { QUEUE_CONTENT } from '@/content/queue'
 import type { CharacterView } from '@/modules/character/types'
+import type { LobbyView } from './lobby-stages'
 import { QueueScreen, type QueueState } from './queue-screen'
 
 const pt = QUEUE_CONTENT.pt
@@ -39,6 +40,47 @@ function renderScreen(initial: QueueState = { entry: null, blockedUntil: null },
 
 const answer = (status: number, body: unknown) =>
   ({ ok: status < 300, status, json: async () => body }) as Response
+
+const inSeconds = (seconds: number) => new Date(Date.now() + seconds * 1000).toISOString()
+
+/** The queue state with a lobby at some step (#252). */
+function inLobby(lobby: Partial<LobbyView>): QueueState {
+  return {
+    entry: {
+      characterId: 'c1',
+      category: 'midfielder',
+      joinedAt: new Date().toISOString(),
+      cancelledLobby: null,
+      lobby: {
+        state: 'waiting_players',
+        confirmBy: inSeconds(25),
+        confirmed: false,
+        captainOffer: null,
+        isCaptain: false,
+        inviteBy: null,
+        inviteClubName: null,
+        inviteReceived: false,
+        clubFullDeclared: false,
+        formation: null,
+        ...lobby,
+      },
+    },
+    blockedUntil: null,
+  }
+}
+
+const searchingAgain = (
+  cancelled: NonNullable<QueueState['entry']>['cancelledLobby'],
+): QueueState => ({
+  entry: {
+    characterId: 'c1',
+    category: 'midfielder',
+    joinedAt: new Date().toISOString(),
+    cancelledLobby: cancelled,
+    lobby: null,
+  },
+  blockedUntil: null,
+})
 
 describe('QueueScreen (#233)', () => {
   beforeEach(() => {
@@ -137,19 +179,7 @@ describe('QueueScreen (#233)', () => {
   })
 
   describe('match found (#232)', () => {
-    const found = (confirmed = false): QueueState => ({
-      entry: {
-        characterId: 'c1',
-        category: 'midfielder',
-        joinedAt: new Date().toISOString(),
-        lobby: {
-          state: 'waiting_players',
-          confirmBy: new Date(Date.now() + 25_000).toISOString(),
-          confirmed,
-        },
-      },
-      blockedUntil: null,
-    })
+    const found = (confirmed = false): QueueState => inLobby({ confirmed })
 
     it('accepts, then shows the card confirmed', async () => {
       vi.mocked(fetch)
@@ -213,6 +243,208 @@ describe('QueueScreen (#233)', () => {
       fireEvent.keyDown(dialog, { key: 'Tab', shiftKey: true })
       expect(document.activeElement).toBe(last)
     })
+  })
+
+  describe('lobby steps (#252)', () => {
+    const FORMATIONS = ['4-3-3', '4-4-2', '4-2-3-1']
+
+    it('the captain called sees the club and answers: room, none, or the club filled up', async () => {
+      vi.mocked(fetch)
+        .mockResolvedValueOnce(answer(204, {}))
+        .mockResolvedValueOnce(answer(200, inLobby({ state: 'waiting_captain', isCaptain: true })))
+      renderScreen(
+        inLobby({
+          state: 'waiting_captain',
+          captainOffer: { answerBy: inSeconds(20), clubName: 'Clube Azul' },
+        }),
+      )
+
+      const dialog = screen.getByRole('dialog', { name: pt.lobby.captainTitle })
+      expect(within(dialog).getByText(pt.lobby.captainBody('Clube Azul'))).toBeInTheDocument()
+      expect(within(dialog).getByRole('button', { name: pt.lobby.captainNo })).toBeInTheDocument()
+      expect(within(dialog).getByRole('button', { name: pt.lobby.captainFull })).toBeInTheDocument()
+      fireEvent.click(within(dialog).getByRole('button', { name: pt.lobby.captainYes }))
+
+      expect(await screen.findByText(pt.lobby.captainConfirmed)).toBeInTheDocument()
+      expect(fetch).toHaveBeenNthCalledWith(
+        1,
+        '/bff/queue/captaincy',
+        expect.objectContaining({ method: 'PUT', body: JSON.stringify({ answer: 'confirm' }) }),
+      )
+    })
+
+    it('everyone else waits while the captains are chosen', () => {
+      renderScreen(inLobby({ state: 'waiting_captain' }))
+
+      expect(screen.getByRole('dialog', { name: pt.lobby.choosingTitle })).toBeInTheDocument()
+      expect(screen.getByText(pt.lobby.choosingHint)).toBeInTheDocument()
+    })
+
+    it('a player marks the invite received, with no body, and then waits', async () => {
+      const step = {
+        state: 'waiting_invite',
+        inviteBy: inSeconds(240),
+        inviteClubName: 'Clube Azul',
+      }
+      vi.mocked(fetch)
+        .mockResolvedValueOnce(answer(204, {}))
+        .mockResolvedValueOnce(answer(200, inLobby({ ...step, inviteReceived: true })))
+      renderScreen(inLobby(step))
+
+      expect(screen.getByText(pt.lobby.inviteBody('Clube Azul'))).toBeInTheDocument()
+      fireEvent.click(screen.getByRole('button', { name: pt.lobby.inviteReceived }))
+
+      expect(await screen.findByText(pt.lobby.inviteDone)).toBeInTheDocument()
+      expect(fetch).toHaveBeenNthCalledWith(1, '/bff/queue/invite', { method: 'PUT' })
+    })
+
+    it('the captain sends the invites and can say the club filled up', async () => {
+      const step = {
+        state: 'waiting_invite',
+        inviteBy: inSeconds(240),
+        inviteClubName: 'Clube Azul',
+        isCaptain: true,
+      }
+      vi.mocked(fetch)
+        .mockResolvedValueOnce(answer(204, {}))
+        .mockResolvedValueOnce(answer(200, inLobby({ ...step, clubFullDeclared: true })))
+      renderScreen(inLobby(step))
+
+      expect(screen.getByText(pt.lobby.captainInviteBody('Clube Azul'))).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: pt.lobby.inviteReceived })).toBeNull()
+      fireEvent.click(screen.getByRole('button', { name: pt.lobby.clubFull }))
+
+      expect(await screen.findByText(pt.lobby.clubFullDone)).toBeInTheDocument()
+      expect(fetch).toHaveBeenNthCalledWith(1, '/bff/queue/club-full', { method: 'PUT' })
+    })
+
+    it('votes a formation, the vote shows pressed and can change', async () => {
+      const formation = {
+        options: FORMATIONS,
+        voteBy: inSeconds(50),
+        myVote: null,
+        chosen: null,
+        captainChoices: null,
+      }
+      const step = { state: 'waiting_invite', inviteBy: inSeconds(240), inviteReceived: true }
+      vi.mocked(fetch)
+        .mockResolvedValueOnce(answer(204, {}))
+        .mockResolvedValueOnce(
+          answer(200, inLobby({ ...step, formation: { ...formation, myVote: '4-4-2' } })),
+        )
+      renderScreen(inLobby({ ...step, formation }))
+
+      const vote = screen.getByRole('region', { name: pt.lobby.formationTitle })
+      fireEvent.click(within(vote).getByRole('button', { name: '4-4-2' }))
+
+      expect(
+        await within(vote).findByRole('button', {
+          name: `4-4-2 ${pt.lobby.formationMine}`,
+          pressed: true,
+        }),
+      ).toBeInTheDocument()
+      expect(
+        within(vote).getByRole('button', { name: '4-3-3', pressed: false }),
+      ).toBeInTheDocument()
+      expect(fetch).toHaveBeenNthCalledWith(
+        1,
+        '/bff/queue/formation-vote',
+        expect.objectContaining({ body: JSON.stringify({ formation: '4-4-2' }) }),
+      )
+    })
+
+    it('a tie: the captain picks among the tied ones; the side then shows its formation', async () => {
+      const step = { state: 'in_progress', isCaptain: true }
+      const tied = {
+        options: FORMATIONS,
+        voteBy: inSeconds(-5),
+        myVote: '4-3-3',
+        chosen: null,
+        captainChoices: ['4-3-3', '4-4-2'],
+      }
+      vi.mocked(fetch)
+        .mockResolvedValueOnce(answer(204, {}))
+        .mockResolvedValueOnce(
+          answer(
+            200,
+            inLobby({ ...step, formation: { ...tied, chosen: '4-4-2', captainChoices: null } }),
+          ),
+        )
+      renderScreen(inLobby({ ...step, formation: tied }))
+
+      expect(screen.getByRole('dialog', { name: pt.lobby.matchTitle })).toBeInTheDocument()
+      expect(screen.getByText(pt.lobby.formationCaptainPick)).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: '4-2-3-1' })).toBeNull()
+      fireEvent.click(screen.getByRole('button', { name: '4-4-2' }))
+
+      expect(await screen.findByText(pt.lobby.formationChosen('4-4-2'))).toBeInTheDocument()
+      expect(fetch).toHaveBeenNthCalledWith(
+        1,
+        '/bff/queue/formation',
+        expect.objectContaining({ body: JSON.stringify({ formation: '4-4-2' }) }),
+      )
+    })
+
+    it('says the vote opens with the channels, before the bot made them', () => {
+      renderScreen(
+        inLobby({
+          state: 'waiting_invite',
+          inviteBy: inSeconds(240),
+          formation: {
+            options: FORMATIONS,
+            voteBy: null,
+            myVote: null,
+            chosen: null,
+            captainChoices: null,
+          },
+        }),
+      )
+
+      expect(screen.getByText(pt.lobby.formationNotOpen)).toBeInTheDocument()
+    })
+  })
+
+  describe('back to searching, and why (#252)', () => {
+    it('someone did not confirm: the lobby vanishes and the search says so', async () => {
+      vi.mocked(fetch)
+        .mockResolvedValueOnce(answer(204, {}))
+        .mockResolvedValueOnce(answer(200, searchingAgain(null)))
+      renderScreen(inLobby({}))
+
+      fireEvent.click(screen.getByRole('button', { name: pt.accept }))
+
+      expect(await screen.findByText(pt.notice.undone)).toBeInTheDocument()
+      expect(screen.queryByRole('dialog')).toBeNull()
+      expect(screen.getByRole('button', { name: pt.leave })).toBeInTheDocument()
+    })
+
+    it.each([
+      ['cancelled_by_captain', pt.notice.byCaptain],
+      ['cancelled_no_fault', pt.notice.noFault],
+    ] as const)('a %s lobby says why, until dismissed', (state, text) => {
+      renderScreen(searchingAgain({ state, endedAt: new Date().toISOString() }))
+
+      expect(screen.getByText(text)).toBeInTheDocument()
+      fireEvent.click(screen.getByRole('button', { name: pt.notice.dismiss }))
+      expect(screen.queryByText(text)).toBeNull()
+    })
+  })
+
+  it('speaks Spanish in the lobby too', () => {
+    renderScreen(
+      inLobby({
+        state: 'waiting_captain',
+        captainOffer: { answerBy: inSeconds(20), clubName: 'Club Rojo' },
+      }),
+      'es',
+    )
+
+    expect(
+      screen.getByRole('dialog', { name: QUEUE_CONTENT.es.lobby.captainTitle }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: QUEUE_CONTENT.es.lobby.captainYes }),
+    ).toBeInTheDocument()
   })
 
   it('speaks Spanish', () => {

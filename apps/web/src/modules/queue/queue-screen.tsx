@@ -7,20 +7,23 @@ import { BackAction } from '@/common/ui/back-action'
 import { LanguageSwitcher } from '@/common/ui/language-switcher'
 import { DISCORD_BLURPLE, DiscordMark, MailMark, PlayerCardMark } from '@/common/ui/icons'
 import type { CharacterCategory } from '@/content/character'
-import type { MissingPrerequisite, MovementBand } from '@/content/queue'
+import type { MissingPrerequisite, MovementBand, QueueContent } from '@/content/queue'
 import { useCharacterContent } from '@/hooks/use-character-content'
 import { useQueueContent } from '@/hooks/use-queue-content'
 import { ReputationGauge, type ReputationBand } from '@/modules/account/reputation-gauge'
-import { Brackets } from '@/modules/character/pitch-art'
 import { CATEGORY_ORDER, Shirt } from '@/modules/character/roster'
 import { archetypeLabel, type CharacterView } from '@/modules/character/types'
+import { LobbyOverlay, type LobbyView } from './lobby-stages'
+import { clockOf, PRIMARY } from './queue-ui'
 
-/** `GET /queue` → `entry` (#228, #232). */
+/** `GET /queue` → `entry` (#228, #232, #252). */
 export interface QueueEntryView {
   characterId: string
   category: CharacterCategory
   joinedAt: string
-  lobby: { state: string; confirmBy: string; confirmed: boolean } | null
+  /** Searching again because a lobby of this entry was cancelled, and why. */
+  cancelledLobby: { state: 'cancelled_no_fault' | 'cancelled_by_captain'; endedAt: string } | null
+  lobby: LobbyView | null
 }
 
 export interface QueueState {
@@ -29,6 +32,8 @@ export interface QueueState {
 }
 
 const POLL_MS = 5000
+/** Inside a lobby the steps count in seconds: ask more often. */
+const LOBBY_POLL_MS = 2000
 const BAND_LEVEL: Record<MovementBand, number> = { low: 1, busy: 2, full: 3 }
 const ARCHES = Array.from({ length: 9 }, (_, index) => index)
 
@@ -37,14 +42,20 @@ function bandAt(waitedMs: number): number {
   return Math.min(150 + 50 * Math.floor(waitedMs / 120_000), 400)
 }
 
-const PRIMARY =
-  'landing-focus landing-sheen inline-flex items-center justify-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-background shadow-[0_8px_20px_rgb(0_0_0/25%)] transition-transform duration-200 hover:scale-[1.04] active:scale-95 disabled:opacity-50 disabled:hover:scale-100'
-
 const MISSING: Record<MissingPrerequisite, { href: string; icon: React.ReactNode }> = {
   email: { href: '/verifications', icon: <MailMark className="size-4" /> },
   character: { href: '/account/character', icon: <PlayerCardMark className="size-4" /> },
   discord: { href: '/account/discord', icon: <DiscordMark className="size-4" /> },
   discord_server: { href: DISCORD_INVITE_URL, icon: <DiscordMark className="size-4" /> },
+}
+
+type Notice = keyof Omit<QueueContent['notice'], 'dismiss'>
+
+/** Why a search started over, when the entry says (#252). */
+function cancelNotice(entry: QueueEntryView | null): Notice | null {
+  const cancelled = entry?.lobby ? null : entry?.cancelledLobby
+  if (!cancelled) return null
+  return cancelled.state === 'cancelled_by_captain' ? 'byCaptain' : 'noFault'
 }
 
 type Refusal =
@@ -113,11 +124,6 @@ function deadlineIn(seconds: number): string {
   return new Date(Date.now() + seconds * 1000).toISOString()
 }
 
-const clockOf = (ms: number) => {
-  const seconds = Math.max(0, Math.floor(ms / 1000))
-  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
-}
-
 /**
  * The queue — issue #233 — as a walk from the dressing room to the pitch.
  *
@@ -162,6 +168,37 @@ export function QueueScreen({
   })
   const [busy, setBusy] = useState(false)
   const [refusal, setRefusal] = useState<Refusal | null>(null)
+  const [notice, setNotice] = useState<Notice | null>(() => cancelNotice(initial.entry))
+  const lastLobby = useRef(initial.entry?.lobby?.state ?? null)
+  const dismissed = useRef<string | null>(null)
+
+  /**
+   * Every new queue state goes through here, to tell why the search started
+   * over: a cancelled lobby says so in the entry; one undone in the 30 s
+   * leaves no trace, so it is the lobby vanishing from under the 30 s card.
+   */
+  function apply(next: QueueState) {
+    const before = lastLobby.current
+    lastLobby.current = next.entry?.lobby?.state ?? null
+    if (!next.entry) {
+      setNotice(null)
+    } else if (!next.entry.lobby) {
+      const cancelled = cancelNotice(next.entry)
+      if (cancelled && next.entry.cancelledLobby?.endedAt !== dismissed.current) {
+        setNotice(cancelled)
+      } else if (before === 'waiting_players') {
+        setNotice('undone')
+      }
+    } else {
+      setNotice(null)
+    }
+    setState(next)
+  }
+
+  async function reload() {
+    const response = await fetch('/bff/queue')
+    if (response.ok) apply((await response.json()) as QueueState)
+  }
   const now = useNow(state.entry !== null || state.blockedUntil !== null)
 
   const focus = (((Math.round(-spin / 72) % 5) + 5) % 5) as number
@@ -180,18 +217,23 @@ export function QueueScreen({
 
   // While in the queue, ask again every few seconds: the lobby arrives on its own.
   const inQueue = state.entry !== null
+  const inLobby = state.entry?.lobby != null
   useEffect(() => {
     if (!inQueue) return
-    const timer = setInterval(async () => {
-      try {
-        const response = await fetch('/bff/queue')
-        if (response.ok) setState((await response.json()) as QueueState)
-      } catch {
-        // A missed poll is not news; the next one tries again.
-      }
-    }, POLL_MS)
+    const timer = setInterval(
+      async () => {
+        try {
+          await reload()
+        } catch {
+          // A missed poll is not news; the next one tries again.
+        }
+      },
+      inLobby ? LOBBY_POLL_MS : POLL_MS,
+    )
     return () => clearInterval(timer)
-  }, [inQueue])
+    // reload only reads refs and setters; the interval restarts on the two flags.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inQueue, inLobby])
 
   async function join() {
     setBusy(true)
@@ -209,7 +251,7 @@ export function QueueScreen({
         retryAfterSeconds?: number
       }
       if (response.ok) {
-        setState({ entry: body as unknown as QueueEntryView, blockedUntil: null })
+        apply({ entry: body as unknown as QueueEntryView, blockedUntil: null })
       } else if (body.message === 'queue_prerequisites_missing' && body.missing) {
         setRefusal({ kind: 'missing', missing: body.missing })
       } else if (body.message === 'queue_blocked') {
@@ -231,7 +273,7 @@ export function QueueScreen({
     try {
       const response = await fetch('/bff/queue', { method: 'DELETE' })
       if (response.ok) {
-        setState((current) => ({ ...current, entry: null }))
+        apply({ ...state, entry: null })
       } else {
         setRefusal({ kind: response.status === 409 ? 'inLobby' : 'error' })
       }
@@ -332,6 +374,24 @@ export function QueueScreen({
               </div>
             ))}
 
+          {scene === 'searching' && notice && (
+            <div
+              role="status"
+              className="mb-3 flex flex-wrap items-center justify-between gap-3 border-l-2 border-accent pl-3"
+            >
+              <p className="max-w-xl text-sm text-foreground">{content.notice[notice]}</p>
+              <button
+                type="button"
+                onClick={() => {
+                  dismissed.current = state.entry?.cancelledLobby?.endedAt ?? null
+                  setNotice(null)
+                }}
+                className="landing-focus text-sm text-accent underline-offset-4 hover:underline"
+              >
+                {content.notice.dismiss}
+              </button>
+            </div>
+          )}
           {scene === 'searching' && (
             <BackAction kind="cancel" onClick={leave} label={content.leave} />
           )}
@@ -348,11 +408,11 @@ export function QueueScreen({
       </footer>
 
       {state.entry?.lobby && (
-        <MatchFound
+        <LobbyOverlay
           lobby={state.entry.lobby}
           now={now}
           code={codes[state.entry.category]}
-          onAnswered={(next) => setState(next)}
+          onChanged={reload}
         />
       )}
     </div>
@@ -823,219 +883,6 @@ function Tunnel({
           {content.bandWidens}
         </span>
         <span className="sr-only">{content.waited(clockOf(waited))}</span>
-      </div>
-    </div>
-  )
-}
-
-/** The floodlights over the pitch: four beams from the stand roofs. */
-const BEAMS = [
-  { left: '6%', from: '-26deg', to: '-14deg', delay: '0s' },
-  { left: '30%', from: '-10deg', to: '-2deg', delay: '0.12s' },
-  { left: '70%', from: '10deg', to: '2deg', delay: '0.24s' },
-  { left: '94%', from: '26deg', to: '14deg', delay: '0.36s' },
-]
-
-/**
- * Match found — out of the tunnel and onto the pitch. Over everything: the
- * floodlights come on one after another, the pitch glows under them, and the
- * card rises with the 30 s ring draining around the seconds and the two
- * answers (#232's `PUT /queue/confirmation`). Accepting keeps the card up,
- * confirmed; refusing reloads the queue state, which now carries the block.
- */
-/**
- * Keeps Tab inside a modal: from the last control back to the first, and
- * the other way with Shift. With nothing to focus (the card after accepting),
- * focus stays on the dialog itself.
- */
-function trapFocus(event: React.KeyboardEvent<HTMLElement>) {
-  if (event.key !== 'Tab') return
-  const controls = Array.from(
-    event.currentTarget.querySelectorAll<HTMLElement>('button:not([disabled]), a[href]'),
-  )
-  const first = controls[0]
-  const last = controls.at(-1)
-  if (!first || !last) {
-    event.preventDefault()
-    return
-  }
-  if (event.shiftKey && document.activeElement === first) {
-    event.preventDefault()
-    last.focus()
-  } else if (!event.shiftKey && document.activeElement === last) {
-    event.preventDefault()
-    first.focus()
-  }
-}
-
-function MatchFound({
-  lobby,
-  now,
-  code,
-  onAnswered,
-}: {
-  lobby: NonNullable<QueueEntryView['lobby']>
-  now: number
-  code: string
-  onAnswered: (state: QueueState) => void
-}) {
-  const content = useQueueContent()
-  const [sending, setSending] = useState(false)
-  const [failed, setFailed] = useState<string | null>(null)
-  const left = Math.max(0, Math.ceil((new Date(lobby.confirmBy).getTime() - now) / 1000))
-  const share = Math.min(1, left / 30)
-  const closed = left === 0
-
-  async function answer(accept: boolean) {
-    setSending(true)
-    setFailed(null)
-    try {
-      const response = await fetch('/bff/queue/confirmation', {
-        method: 'PUT',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ accept }),
-      })
-      if (!response.ok) {
-        setFailed(response.status === 409 ? content.answerClosed : content.error)
-        return
-      }
-      const state = await fetch('/bff/queue')
-      if (state.ok) onAnswered((await state.json()) as QueueState)
-    } catch {
-      setFailed(content.error)
-    } finally {
-      setSending(false)
-    }
-  }
-
-  return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="match-found"
-      tabIndex={-1}
-      onKeyDown={trapFocus}
-      className="queue-overlay fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-background/85 px-4 backdrop-blur-sm"
-    >
-      {/* The stadium: the pitch glowing under the lights, and the beams. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-[radial-gradient(ellipse_80%_70%_at_50%_100%,color-mix(in_srgb,var(--color-accent-strong)_45%,transparent),transparent_70%)]"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-[38%] bg-[repeating-linear-gradient(90deg,rgb(255_255_255/3%)_0_8%,transparent_8%_16%)] [mask-image:linear-gradient(to_top,black,transparent)]"
-      />
-      {BEAMS.map((beam) => (
-        <span
-          key={beam.left}
-          aria-hidden
-          className="queue-beam pointer-events-none absolute -top-4 h-[85vh] w-[22vw] max-w-72 -translate-x-1/2 bg-[linear-gradient(to_bottom,rgb(255_255_255/38%),transparent_85%)] [clip-path:polygon(44%_0,56%_0,100%_100%,0_100%)]"
-          style={
-            {
-              left: beam.left,
-              '--beam-from': beam.from,
-              '--beam-to': beam.to,
-              animationDelay: `${beam.delay}, calc(1.6s + ${beam.delay})`,
-            } as CSSProperties
-          }
-        />
-      ))}
-
-      <div className="queue-card-rise relative w-full max-w-sm">
-        <div>
-          <div className="relative flex flex-col items-center gap-5 px-6 pb-6 pt-8 text-center">
-            <Brackets lit />
-            <h2
-              id="match-found"
-              className="font-display text-[clamp(1.65rem,1.1rem+1.7vw,2.4rem)] font-light leading-tight tracking-[-0.028em] text-foreground"
-            >
-              {content.placedTitle}
-            </h2>
-
-            <div className="relative size-36">
-              <svg
-                viewBox="0 0 120 120"
-                aria-hidden
-                className="absolute inset-0 size-full -rotate-90"
-              >
-                <circle
-                  cx="60"
-                  cy="60"
-                  r="52"
-                  fill="none"
-                  stroke="rgb(255 255 255 / 8%)"
-                  strokeWidth={5}
-                />
-                <circle
-                  cx="60"
-                  cy="60"
-                  r="52"
-                  fill="none"
-                  stroke="var(--color-accent)"
-                  strokeWidth={5}
-                  strokeLinecap="round"
-                  pathLength={100}
-                  strokeDasharray={`${share * 100} 100`}
-                  className="transition-[stroke-dasharray] duration-1000 ease-linear"
-                />
-              </svg>
-              <svg
-                viewBox="0 0 120 120"
-                aria-hidden
-                className="queue-ring-3d absolute inset-0 size-full"
-              >
-                <circle
-                  cx="60"
-                  cy="60"
-                  r="44"
-                  fill="none"
-                  stroke="rgb(255 255 255 / 18%)"
-                  strokeWidth={0.8}
-                  strokeDasharray="2 6"
-                />
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="font-display text-5xl font-light leading-none tracking-[-0.03em] text-foreground tabular-nums">
-                  {left}
-                </span>
-                <span className="mt-1 text-xs text-foreground-soft">{content.secondsLeft}</span>
-              </div>
-            </div>
-
-            <p className="flex items-center gap-2 text-sm text-foreground-soft">
-              <span className="text-xs font-semibold tracking-[0.15em] text-accent">{code}</span>
-              {lobby.confirmed ? content.confirmed : content.placedHint}
-            </p>
-
-            {!lobby.confirmed && (
-              <div className="flex w-full flex-col gap-3 sm:flex-row-reverse">
-                <button
-                  type="button"
-                  autoFocus
-                  onClick={() => answer(true)}
-                  disabled={sending || closed}
-                  className={`${PRIMARY} flex-1 py-3 text-base`}
-                >
-                  {content.accept}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => answer(false)}
-                  disabled={sending || closed}
-                  className="landing-focus flex-1 rounded-full border border-white/15 px-5 py-3 text-base text-foreground-soft transition-colors hover:border-white/35 hover:text-foreground disabled:opacity-50"
-                >
-                  {content.refuse}
-                </button>
-              </div>
-            )}
-            {failed && (
-              <p role="alert" className="text-sm text-danger">
-                {failed}
-              </p>
-            )}
-          </div>
-        </div>
       </div>
     </div>
   )
