@@ -11,6 +11,9 @@ export const REPUTATION_START = 70
 export const CLEAN_MATCH_CAP = 70
 export const SUSPENSION_RESTORE = 45
 const DISCONNECT_DELTA = -8
+const ZERO_REPORT_BASE = -3
+/** RF-071: the rolling window that counts repeat zero-reports. */
+export const ZERO_REPORT_WINDOW_MS = 30 * 24 * 60 * 60 * 1000
 
 /**
  * What the account's reputation means for the queue and the punishment
@@ -61,6 +64,15 @@ export function reputationDelta(reason: AutomaticReputationReason, current: numb
       // RF-074: back to 45 wherever it was, not +N.
       return SUSPENSION_RESTORE - current
   }
+}
+
+/**
+ * RF-071, per account: −3 the 1st and 2nd time in 30 days, then 3 more each
+ * time (3rd −6, 4th −9, 5th −12). Never below zero, like every other loss.
+ */
+export function zeroReportDelta(earlierInWindow: number, current: number): number {
+  const occurrence = earlierInWindow + 1
+  return Math.max(ZERO_REPORT_BASE * Math.max(1, occurrence - 1), 0 - current)
 }
 
 export type ReputationChange = {
@@ -116,9 +128,47 @@ export class ReputationService {
     reason: AutomaticReputationReason,
     lobbyId?: string,
   ): ReputationChange {
+    return this.record(em, account, reputationDelta(reason, account.reputation), reason, lobbyId)
+  }
+
+  /**
+   * A match expired with no report (4.1, RF-071): the escalation counts this
+   * account's zero-reports of the last 30 days. Same contract as `applyIn`.
+   * The delta is stored and kept on a recompute: the escalation depends on
+   * dates, not on the value before it.
+   */
+  async zeroReportIn(
+    em: EntityManager,
+    account: Account,
+    lobbyId: string,
+    now: Date,
+  ): Promise<ReputationChange> {
+    const earlier = await em.count(ReputationEvent, {
+      account,
+      reason: ReputationEventReason.ZERO_REPORT,
+      revertedAt: null,
+      createdAt: { $gt: new Date(now.getTime() - ZERO_REPORT_WINDOW_MS), $lte: now },
+    })
+    return this.record(
+      em,
+      account,
+      zeroReportDelta(earlier, account.reputation),
+      ReputationEventReason.ZERO_REPORT,
+      lobbyId,
+      now,
+    )
+  }
+
+  private record(
+    em: EntityManager,
+    account: Account,
+    delta: number,
+    reason: ReputationEventReason,
+    lobbyId: string | undefined,
+    now: Date = new Date(),
+  ): ReputationChange {
     const before = account.reputation
-    const delta = reputationDelta(reason, before)
-    em.create(ReputationEvent, { account, delta, reason, lobbyId })
+    em.create(ReputationEvent, { account, delta, reason, lobbyId, createdAt: now })
     account.reputation = before + delta
 
     const from = reputationBand(before)

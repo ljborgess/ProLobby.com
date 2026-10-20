@@ -1,5 +1,5 @@
 import { ReputationEventReason } from './ranking-event.enums'
-import { reputationBand, reputationDelta } from './reputation.service'
+import { reputationBand, reputationDelta, zeroReportDelta } from './reputation.service'
 
 describe('reputationDelta', () => {
   it('adds 1 for a clean match only below 70', () => {
@@ -33,5 +33,18 @@ describe('reputationBand', () => {
     [0, 'ban'],
   ])('reads %i as %s', (reputation, band) => {
     expect(reputationBand(reputation)).toBe(band)
+  })
+})
+
+describe('zeroReportDelta (RF-071)', () => {
+  it('takes 3 the first and second time, then 3 more each time', () => {
+    expect([0, 1, 2, 3, 4].map((earlier) => zeroReportDelta(earlier, 70))).toEqual([
+      -3, -3, -6, -9, -12,
+    ])
+  })
+
+  it('never goes below zero', () => {
+    expect(zeroReportDelta(3, 5)).toBe(-5)
+    expect(zeroReportDelta(0, 0)).toBe(0)
   })
 })
