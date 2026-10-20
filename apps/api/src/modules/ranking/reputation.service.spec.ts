@@ -14,10 +14,11 @@ describe('reputationDelta', () => {
     expect(reputationDelta(ReputationEventReason.DISCONNECT, 0)).toBe(0)
   })
 
-  it('brings a served suspension back to 45 from wherever it was (RF-074)', () => {
+  it('brings a served suspension up to 45, never down (RF-074)', () => {
     expect(reputationDelta(ReputationEventReason.SUSPENSION_SERVED, 38)).toBe(7)
     expect(reputationDelta(ReputationEventReason.SUSPENSION_SERVED, 12)).toBe(33)
     expect(reputationDelta(ReputationEventReason.SUSPENSION_SERVED, 45)).toBe(0)
+    expect(reputationDelta(ReputationEventReason.SUSPENSION_SERVED, 52)).toBe(0)
   })
 })
 

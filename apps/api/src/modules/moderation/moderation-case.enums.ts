@@ -30,6 +30,22 @@ export enum ModerationCaseType {
    * failures do.
    */
   CHARACTER_VERIFICATION = 'character_verification',
+  /**
+   * The punishment ladder (phase 4.2): born resolved by the system, kept so
+   * an appeal has a case to point at (RF-037, #160) and RF-038 has
+   * suspensions to count.
+   */
+  SUSPENSION = 'suspension',
+  BAN = 'ban',
+  /** RF-069: 3 reports dismissed as baseless in 30 days — a case about the reporter. */
+  BASELESS_REPORTS = 'baseless_reports',
+}
+
+/** What a user report is about — docs/produto/04-governanca/01-moderacao.md. */
+export enum UserReportReason {
+  FRAUD = 'fraud',
+  DISCONNECT = 'disconnect',
+  BEHAVIOR = 'behavior',
 }
 
 export enum ModerationCaseState {

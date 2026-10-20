@@ -9,14 +9,13 @@ import {
   ModerationCaseType,
 } from '../moderation/moderation-case.enums'
 import { Account } from './account.entity'
+import { AccountState } from './account.enums'
 
 /**
  * Files an appeal against the account's own punishment — RF-081, RF-037.
  *
- * Scoped to BANNED only for now: it is the one state `PunishmentStatusService`
- * already resolves to a specific `ModerationCase` (a suspension is usually
- * automatic and opens no case at all — see that service). Extending this to
- * SUSPENDED needs a case to point at first, which is a different problem.
+ * A suspended account appeals its suspension case, born resolved by the
+ * punishment ladder (#160); a banned one, the case behind the ban.
  */
 @Injectable()
 export class PunishmentAppealService {
@@ -42,7 +41,10 @@ export class PunishmentAppealService {
       {
         targetAccount: account.id,
         state: ModerationCaseState.RESOLVED,
-        type: { $ne: ModerationCaseType.PUNISHMENT_APPEAL },
+        type:
+          account.state === AccountState.SUSPENDED
+            ? ModerationCaseType.SUSPENSION
+            : { $ne: ModerationCaseType.PUNISHMENT_APPEAL },
       },
       { orderBy: { resolvedAt: 'DESC' } },
     )

@@ -3,6 +3,8 @@ import { EntityManager } from '@mikro-orm/postgresql'
 import { Injectable } from '@nestjs/common'
 
 import { Account } from '../account/account.entity'
+import { AccountState } from '../account/account.enums'
+import { punishIn } from './punishment'
 import { ReputationEventReason } from './ranking-event.enums'
 import { ReputationEvent } from './reputation-event.entity'
 
@@ -39,11 +41,13 @@ export function reputationBand(reputation: number): ReputationBand {
 /** The reasons this service applies on its own; the rest arrive with phase 4.2. */
 export type AutomaticReputationReason =
   | ReputationEventReason.CLEAN_MATCH
+  | ReputationEventReason.PEER_THUMBS_UP
   | ReputationEventReason.DISCONNECT
   | ReputationEventReason.SUSPENSION_SERVED
 
 const AUTOMATIC_REASONS: ReadonlySet<ReputationEventReason> = new Set([
   ReputationEventReason.CLEAN_MATCH,
+  ReputationEventReason.PEER_THUMBS_UP,
   ReputationEventReason.DISCONNECT,
   ReputationEventReason.SUSPENSION_SERVED,
 ])
@@ -58,11 +62,14 @@ export function reputationDelta(reason: AutomaticReputationReason, current: numb
     case ReputationEventReason.CLEAN_MATCH:
       // Playing only recovers up to 70; above it, only a thumbs-up counts.
       return current < CLEAN_MATCH_CAP ? 1 : 0
+    case ReputationEventReason.PEER_THUMBS_UP:
+      // The only way above 70, up to the top of the scale.
+      return current < 100 ? 1 : 0
     case ReputationEventReason.DISCONNECT:
       return Math.max(DISCONNECT_DELTA, 0 - current)
     case ReputationEventReason.SUSPENSION_SERVED:
-      // RF-074: back to 45 wherever it was, not +N.
-      return SUSPENSION_RESTORE - current
+      // RF-074: set to 45, never lower, and whoever is above it stays there.
+      return Math.max(0, SUSPENSION_RESTORE - current)
   }
 }
 
@@ -111,7 +118,7 @@ export class ReputationService {
         { id: accountId },
         { lockMode: LockMode.PESSIMISTIC_WRITE },
       )
-      const change = this.applyIn(em, account, reason, lobbyId)
+      const change = await this.applyIn(em, account, reason, lobbyId)
       await em.flush()
       return change
     })
@@ -127,7 +134,7 @@ export class ReputationService {
     account: Account,
     reason: AutomaticReputationReason,
     lobbyId?: string,
-  ): ReputationChange {
+  ): Promise<ReputationChange> {
     return this.record(em, account, reputationDelta(reason, account.reputation), reason, lobbyId)
   }
 
@@ -159,25 +166,52 @@ export class ReputationService {
     )
   }
 
-  private record(
+  /**
+   * RF-074: the served suspensions, run by a job. The account is back, at 45;
+   * coming back up crosses nothing down, so nothing punishes it again.
+   */
+  async endSuspensions(now: Date = new Date()): Promise<number> {
+    return this.em.fork().transactional(async (em) => {
+      const served = await em.find(
+        Account,
+        { state: AccountState.SUSPENDED, suspensionEndsAt: { $lte: now } },
+        { lockMode: LockMode.PESSIMISTIC_WRITE, orderBy: { id: 'asc' } },
+      )
+      for (const account of served) {
+        account.state = account.emailVerified ? AccountState.ACTIVE : AccountState.UNVERIFIED
+        account.suspensionEndsAt = undefined
+        await this.record(
+          em,
+          account,
+          reputationDelta(ReputationEventReason.SUSPENSION_SERVED, account.reputation),
+          ReputationEventReason.SUSPENSION_SERVED,
+          undefined,
+          now,
+        )
+      }
+      await em.flush()
+      return served.length
+    })
+  }
+
+  /** Every change goes through here, and so does the punishment ladder it may cross. */
+  private async record(
     em: EntityManager,
     account: Account,
     delta: number,
     reason: ReputationEventReason,
     lobbyId: string | undefined,
     now: Date = new Date(),
-  ): ReputationChange {
+  ): Promise<ReputationChange> {
     const before = account.reputation
     em.create(ReputationEvent, { account, delta, reason, lobbyId, createdAt: now })
     account.reputation = before + delta
 
     const from = reputationBand(before)
     const to = reputationBand(account.reputation)
-    return {
-      reputation: account.reputation,
-      band: to,
-      crossed: from === to ? null : { from, to },
-    }
+    const crossed = from === to ? null : { from, to }
+    await punishIn(em, account, crossed, now)
+    return { reputation: account.reputation, band: to, crossed }
   }
 
   /**

@@ -102,13 +102,13 @@ describe('reputation by events (#208)', () => {
     expect(change.reputation).toBe(85)
   })
 
-  it('brings a served suspension down to 45 too, from above it (RF-074)', async () => {
+  it('leaves a served suspension above 45 where it is (RF-074)', async () => {
     const id = await account(52)
 
     const change = await reputation.apply(id, ReputationEventReason.SUSPENSION_SERVED)
 
-    expect(change.reputation).toBe(45)
-    expect((await stored(id)).events[0]!.delta).toBe(-7)
+    expect(change.reputation).toBe(52)
+    expect((await stored(id)).events[0]!.delta).toBe(0)
   })
 
   it('keeps the column equal to 70 plus the events, whatever the order', async () => {
@@ -121,13 +121,14 @@ describe('reputation by events (#208)', () => {
       ReputationEventReason.SUSPENSION_SERVED,
       ReputationEventReason.CLEAN_MATCH,
     ] as const
+    // 62, 54, 55, 47; served above 45 keeps 47 (RF-074); 48.
     for (const reason of reasons) {
       await reputation.apply(id, reason)
     }
 
     const { reputation: value, events } = await stored(id)
     expect(value).toBe(70 + events.reduce((sum, event) => sum + event.delta, 0))
-    expect(value).toBe(46)
+    expect(value).toBe(48)
   })
 
   it('never goes below zero', async () => {
@@ -140,17 +141,21 @@ describe('reputation by events (#208)', () => {
   })
 
   it('says which band was entered, down and back up', async () => {
-    const id = await account(58)
+    const id = await account(44)
 
     const down = await reputation.apply(id, ReputationEventReason.DISCONNECT)
     const up = await reputation.apply(id, ReputationEventReason.SUSPENSION_SERVED)
 
     expect(down).toEqual({
-      reputation: 50,
-      band: 'slow_queue',
-      crossed: { from: 'good', to: 'slow_queue' },
+      reputation: 36,
+      band: 'suspension',
+      crossed: { from: 'slow_queue', to: 'suspension' },
     })
-    expect(up).toEqual({ reputation: 45, band: 'slow_queue', crossed: null })
+    expect(up).toEqual({
+      reputation: 45,
+      band: 'slow_queue',
+      crossed: { from: 'suspension', to: 'slow_queue' },
+    })
     const deeper = await account(41)
     expect((await reputation.apply(deeper, ReputationEventReason.DISCONNECT)).crossed).toEqual({
       from: 'slow_queue',

@@ -7,6 +7,7 @@ import {
   ModerationCaseOrigin,
   ModerationCaseState,
   ModerationCaseType,
+  UserReportReason,
 } from './moderation-case.enums'
 
 /** Name of the class-level @Unique below — shared so it can't drift from itself. */
@@ -105,6 +106,13 @@ export class ModerationCase {
   /** Why the appellant thinks the punishment is wrong — RF-081, RF-037. */
   @Property({ type: 'text', nullable: true })
   appealMessage?: string
+
+  /** `USER_REPORT` only: what it is about, and the reporter's account of it. */
+  @Enum({ items: () => UserReportReason, nullable: true })
+  reportReason?: UserReportReason
+
+  @Property({ type: 'text', nullable: true })
+  reportMessage?: string
 
   /**
    * The case this one appeals — set only on `PUNISHMENT_APPEAL`. The unique

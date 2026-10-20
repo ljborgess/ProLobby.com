@@ -14,6 +14,15 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 - **API:** `GET /api/queue` ganhou `entry.cancelledLobby` (`{ state, endedAt }` ou `null`). Ele diz por que a busca recomeçou quando o lobby foi cancelado; lobby desfeito nos 30 s não deixa registro, e a tela deduz pelo lobby que sumiu.
 - **O que sobra pra você nesse fluxo:** as telas do report, da contestação, da avaliação e da denúncia (fatia E da 4.1 e 4.2), que entram por cima de "partida em andamento". O contrato está nos recados de 2026-10-15 e 2026-10-20.
 
+### A escada de punição e a avaliação por pares existem na API (Fase 4.2)
+
+- **Suspensão e banimento agora acontecem de verdade.** A reputação cruzando 40 pra baixo suspende por 7 dias (a 2ª em 180 dias bane); cruzando 25, bane. Fim dos 7 dias: conta `active` de novo, com reputação 45.
+- **Pras telas:** a conta suspensa ou banida para no guard das rotas da fila, como já parava. `GET /api/accounts/me/punishment` já diz `state`, `reason` e `endsAt` (suspensão).
+- **Apelação de suspensão (#160):** `POST /api/accounts/me/punishment/appeals` com `{ message }` passou a aceitar conta `suspended`, além de `banned`. Uma por punição: a segunda é `409 appeal_already_filed`.
+- **Avaliação por pares:** `GET /api/queue` traz em `lastMatch` as listas `teammates` (os outros humanos do mesmo lado) e `opponents` (os do outro lado), cada item `{ participationId, gamertag, category, myRating }`; `gamertag` pode vir `null`. Só dá pra avaliar `teammates`, com a partida em `finished`, até `lastMatch.rateUntil` (48 h depois do encerramento; `null` fora disso). `POST /api/queue/ratings` com `{ lobbyId, participationId, kind: 'thumbs_up' | 'negative' }` responde `204`. Erros: `404 no_lobby`, `404 not_a_teammate` (outro lado ou a própria pessoa), `409 rating_closed` (partida não encerrada), `409 rating_exists` (já avaliou essa pessoa nessa partida). Avaliar é opcional, e a tela nunca mostra quem avaliou quem.
+- **Denúncia:** `POST /api/queue/user-reports` com `{ lobbyId, participationId, reason: 'fraud' | 'disconnect' | 'behavior', message }`, com a mensagem entre 20 e 2000 caracteres, responde `201 { caseId }`. Vale pra qualquer pessoa da partida, dos dois lados. Erros: `404 no_lobby` (não jogou essa partida), `404 not_in_match` (a própria pessoa ou alguém de fora), `409 too_many_open_reports` (já tem 3 abertas, RF-068). A tela nunca mostra pro denunciado quem foi. O `participationId` vem das listas `teammates` e `opponents` do `lastMatch`.
+- **Bot (RF-055):** a API ainda **não** manda `account.punished`, porque o bot ainda não trata esse evento. Quando você pegar a revogação do cargo Verificado, me avise que eu ligo o envio dos dois lados (punição e fim de suspensão).
+
 ---
 
 ## 2026-10-15 · Rafael
