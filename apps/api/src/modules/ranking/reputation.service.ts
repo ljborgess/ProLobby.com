@@ -68,8 +68,8 @@ export function reputationDelta(reason: AutomaticReputationReason, current: numb
     case ReputationEventReason.DISCONNECT:
       return Math.max(DISCONNECT_DELTA, 0 - current)
     case ReputationEventReason.SUSPENSION_SERVED:
-      // RF-074: back to 45 wherever it was, not +N.
-      return SUSPENSION_RESTORE - current
+      // RF-074: set to 45, never lower, and whoever is above it stays there.
+      return Math.max(0, SUSPENSION_RESTORE - current)
   }
 }
 
