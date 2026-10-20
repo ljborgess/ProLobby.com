@@ -6,6 +6,17 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 
 ---
 
+## 2026-10-20 · Rafael
+
+### A escada de punição existe na API (Fase 4.2)
+
+- **Suspensão e banimento agora acontecem de verdade.** A reputação cruzando 40 pra baixo suspende por 7 dias (a 2ª em 180 dias bane); cruzando 25, bane. Fim dos 7 dias: conta `active` de novo, com reputação 45.
+- **Pras telas:** a conta suspensa ou banida para no guard das rotas da fila, como já parava. `GET /api/accounts/me/punishment` já diz `state`, `reason` e `endsAt` (suspensão).
+- **Apelação de suspensão (#160):** `POST /api/accounts/me/punishment/appeals` com `{ message }` passou a aceitar conta `suspended`, além de `banned`. Uma por punição: a segunda é `409 appeal_already_filed`.
+- **Bot (RF-055):** a API ainda **não** manda `account.punished`, porque o bot ainda não trata esse evento. Quando você pegar a revogação do cargo Verificado, me avise que eu ligo o envio dos dois lados (punição e fim de suspensão).
+
+---
+
 ## 2026-10-15 · Rafael
 
 ### O report de placar existe na API (4.1, primeira fatia)

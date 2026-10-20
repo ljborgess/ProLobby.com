@@ -379,7 +379,7 @@ export class MatchReportService {
    */
   private async cleanMatch(em: EntityManager, lobby: Lobby): Promise<void> {
     for (const account of await lockHumans(em, lobby)) {
-      this.reputationService.applyIn(em, account, ReputationEventReason.CLEAN_MATCH, lobby.id)
+      await this.reputationService.applyIn(em, account, ReputationEventReason.CLEAN_MATCH, lobby.id)
     }
   }
 

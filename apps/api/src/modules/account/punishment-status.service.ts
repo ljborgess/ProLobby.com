@@ -11,9 +11,7 @@ export interface PunishmentStatus {
   state: AccountState
   /**
    * `null` when the account is not punished, and also when it is punished but
-   * nothing on record explains why yet — the mechanisms that set SUSPENDED or
-   * BANNED are not built (this slice only displays), so a manually-flipped
-   * account in tests or in early production can carry no matching row.
+   * nothing on record explains why — a state flipped by hand carries no row.
    */
   reason: string | null
   /** Only meaningful for SUSPENDED; `undefined` for every other state. */
@@ -46,11 +44,9 @@ export class PunishmentStatusService {
   }
 
   /**
-   * Reason comes from the reputation log, not the moderation queue: a
-   * suspension is usually automatic (RF-071's zero-report escalation crossing
-   * the threshold) and opens no case at all. `ReputationEvent.reason` is the
-   * one thing every suspension path is guaranteed to have written, including
-   * a moderator's manual adjustment (`MODERATION_ADJUSTMENT`).
+   * Reason comes from the reputation log: what pushed the account across 40
+   * (a zero-report, a disconnect, a moderator's adjustment) says more than the
+   * suspension case, whose text is the same for everyone.
    */
   private async suspendedStatus(account: Account): Promise<PunishmentStatus> {
     const event = await this.em.findOne(

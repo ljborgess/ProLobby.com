@@ -30,6 +30,13 @@ export enum ModerationCaseType {
    * failures do.
    */
   CHARACTER_VERIFICATION = 'character_verification',
+  /**
+   * The punishment ladder (phase 4.2): born resolved by the system, kept so
+   * an appeal has a case to point at (RF-037, #160) and RF-038 has
+   * suspensions to count.
+   */
+  SUSPENSION = 'suspension',
+  BAN = 'ban',
 }
 
 export enum ModerationCaseState {
