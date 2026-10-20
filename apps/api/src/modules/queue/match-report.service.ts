@@ -45,6 +45,27 @@ export type ReportScore = { scoreA: number; scoreB: number }
 
 export type MatchReportView = ReportScore & { id: string; side: LobbySide }
 
+/** States a match ends up in once it has a result, or lacks one for good. */
+const RESULT_STATES: readonly LobbyState[] = [
+  LobbyState.NOT_CONFIRMED,
+  LobbyState.FINISHED,
+  LobbyState.IN_DISPUTE,
+]
+
+/**
+ * The account's latest match with a result (`GET /api/queue`): after it
+ * settles the queue entry is gone, and this is where the screen finds the
+ * lobby to contest.
+ */
+export type LastMatchView = {
+  lobbyId: string
+  state: LobbyState
+  scoreA: number | null
+  scoreB: number | null
+  /** Set while this account can still contest (RF-012); null otherwise. */
+  contestUntil: Date | null
+}
+
 /**
  * The result of a match, reported by any human of it — phase 4.1, first slice.
  *
@@ -219,6 +240,82 @@ export class MatchReportService {
       await em.flush()
       return unconfirmed.length + final.length
     })
+  }
+
+  /**
+   * RF-012, RF-013: any human of the match contests a one-sided result within
+   * its 48 h, once. The lobby goes to `in_dispute` with a score-dispute case,
+   * and everyone in it is held again: out of the search, no new queue until
+   * moderation decides.
+   */
+  async contest(accountId: string, lobbyId: string, now: Date = new Date()): Promise<void> {
+    await this.em.fork().transactional(async (em) => {
+      // The lobby row serializes contests and the 48 h job.
+      const lobby = await em.findOne(
+        Lobby,
+        { id: lobbyId },
+        { lockMode: LockMode.PESSIMISTIC_WRITE },
+      )
+      if (!lobby || !(await em.count(LobbyParticipation, { lobby, account: accountId }))) {
+        throw new NotFoundException('no_lobby')
+      }
+      if (
+        await em.count(ModerationCase, {
+          type: ModerationCaseType.SCORE_DISPUTE,
+          lobbyId,
+          openedBy: accountId,
+        })
+      ) {
+        throw new ConflictException('contest_exists')
+      }
+      if (
+        lobby.state !== LobbyState.NOT_CONFIRMED ||
+        now.getTime() >= lobby.unconfirmedAt!.getTime() + CONTEST_WINDOW_MS
+      ) {
+        throw new ConflictException('contest_closed')
+      }
+      em.create(ModerationCase, {
+        type: ModerationCaseType.SCORE_DISPUTE,
+        origin: ModerationCaseOrigin.USER,
+        lobbyId,
+        openedBy: em.getReference(Account, accountId),
+      })
+      lobby.state = LobbyState.IN_DISPUTE
+      lobby.scoreA = undefined
+      lobby.scoreB = undefined
+      await em.flush()
+      // Searching again since the 15 min: back out. Whoever was placed in a
+      // new lobby stays there; seven other people count on that roster.
+      const accounts = await em.find(LobbyParticipation, { lobby }, { fields: ['account'] })
+      await em.nativeDelete(QueueEntry, {
+        account: { $in: accounts.map((p) => p.account.id) },
+        lobby: null,
+      })
+    })
+  }
+
+  async lastMatch(em: EntityManager, accountId: string): Promise<LastMatchView | null> {
+    const mine = await em.findOne(
+      LobbyParticipation,
+      { account: accountId, lobby: { state: { $in: [...RESULT_STATES] } } },
+      { orderBy: { lobby: { createdAt: 'desc' } }, populate: ['lobby'] },
+    )
+    if (!mine) return null
+    const lobby = mine.lobby
+    const open =
+      lobby.state === LobbyState.NOT_CONFIRMED &&
+      !(await em.count(ModerationCase, {
+        type: ModerationCaseType.SCORE_DISPUTE,
+        lobbyId: lobby.id,
+        openedBy: accountId,
+      }))
+    return {
+      lobbyId: lobby.id,
+      state: lobby.state,
+      scoreA: lobby.scoreA ?? null,
+      scoreB: lobby.scoreB ?? null,
+      contestUntil: open ? new Date(lobby.unconfirmedAt!.getTime() + CONTEST_WINDOW_MS) : null,
+    }
   }
 
   /** What the lobby screen shows of this account's report (`GET /api/queue`). */

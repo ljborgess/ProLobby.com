@@ -15,7 +15,7 @@ import { ACTIVE_CHARACTER_STATES, Character, CharacterState } from '../character
 import { DeclaredClub } from '../account/declared-club.entity'
 import { CaptainOffer } from '../lobby/captain-offer.entity'
 import { LobbyParticipation, LobbySide } from '../lobby/lobby-participation.entity'
-import type { LobbyState } from '../lobby/lobby.entity'
+import { LobbyState } from '../lobby/lobby.entity'
 import { EloService } from '../ranking/elo.service'
 import { confirmBy } from './lobby-confirmation.service'
 import { FormationVoteService, type FormationView } from './formation-vote.service'
@@ -24,6 +24,7 @@ import {
   reportConfirmBy,
   MatchReportService,
   reportableFrom,
+  type LastMatchView,
   type MatchReportView,
 } from './match-report.service'
 import { captainAnswerBy } from './captain-cascade.service'
@@ -103,7 +104,11 @@ export class QueueService {
   async current(
     accountId: string,
     now: Date = new Date(),
-  ): Promise<{ entry: QueueEntryView | null; blockedUntil: Date | null }> {
+  ): Promise<{
+    entry: QueueEntryView | null
+    blockedUntil: Date | null
+    lastMatch: LastMatchView | null
+  }> {
     const em = this.em.fork()
     const entry = await em.findOne(QueueEntry, { account: accountId }, { populate: ['lobby'] })
     const mine =
@@ -139,6 +144,7 @@ export class QueueService {
           })
         : null,
       blockedUntil: await blockedUntilFor(em, accountId, now),
+      lastMatch: await this.matchReportService.lastMatch(em, accountId),
     }
   }
 
@@ -171,6 +177,15 @@ export class QueueService {
         )
         if (await em.count(QueueEntry, { account: accountId })) {
           throw new ConflictException('already_in_queue')
+        }
+        // RF-013: a match in dispute holds everyone in it until moderation decides.
+        if (
+          await em.count(LobbyParticipation, {
+            account: accountId,
+            lobby: { state: LobbyState.IN_DISPUTE },
+          })
+        ) {
+          throw new ConflictException('match_in_dispute')
         }
         // RF-009: the message carries the time left.
         const now = new Date()

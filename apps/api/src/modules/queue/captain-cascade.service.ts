@@ -250,7 +250,8 @@ export class CaptainCascadeService {
   ): Promise<boolean> {
     const busy = await em.count(Lobby, {
       id: { $ne: lobbyId },
-      state: { $nin: [...TERMINAL_LOBBY_STATES] },
+      // A disputed match holds the queue, not the club: the game was played.
+      state: { $nin: [...TERMINAL_LOBBY_STATES, LobbyState.IN_DISPUTE] },
       $or: [{ captainA: accountId }, { captainB: accountId }],
     })
     return busy > 0

@@ -441,4 +441,134 @@ describe('match report (4.1)', () => {
     })
     expect(await cleanMatchesOf(lobbyId)).toBe(8)
   })
+
+  /** A one-sided result: side A reported 0x4 and nobody of side B, past the 15 min. */
+  const unconfirmed = async () => {
+    const lobby = await playing()
+    const first = lobby.closedAt + 20 * MINUTE
+    await reports.submit(lobby.a.others[0]!.accountId, score(0, 4), png(), at(first))
+    await reports.expire(at(first + 15 * MINUTE))
+    return { ...lobby, unconfirmedAt: first + 15 * MINUTE }
+  }
+
+  it('any human of the match contests within 48 h, once, and the lobby goes to dispute (RF-012, RF-013)', async () => {
+    const { lobbyId, unconfirmedAt, a, b } = await unconfirmed()
+    // Someone of the side that reported can contest too.
+    const contestant = a.others[1]!.accountId
+
+    await reports.contest(contestant, lobbyId, at(unconfirmedAt + 47 * 60 * MINUTE))
+
+    const lobby = await lobbyOf(lobbyId)
+    expect(lobby.state).toBe(LobbyState.IN_DISPUTE)
+    expect(lobby.scoreA ?? null).toBeNull()
+    const cases = await orm.em
+      .fork()
+      .find(ModerationCase, { type: ModerationCaseType.SCORE_DISPUTE, lobbyId })
+    expect(cases).toHaveLength(1)
+    expect(cases[0]!.openedBy!.id).toBe(contestant)
+
+    await expect(reports.contest(contestant, lobbyId)).rejects.toMatchObject({
+      status: 409,
+      message: 'contest_exists',
+    })
+    // Already in dispute: nothing left to contest.
+    await expect(reports.contest(b.others[0]!.accountId, lobbyId)).rejects.toMatchObject({
+      status: 409,
+      message: 'contest_closed',
+    })
+    // And the 48 h job leaves a disputed lobby alone.
+    expect(await reports.expire(at(unconfirmedAt + 49 * 60 * MINUTE))).toBe(0)
+  })
+
+  it('refuses a contest after the 48 h, on a confirmed match, and from outside the match', async () => {
+    const late = await unconfirmed()
+    await expect(
+      reports.contest(
+        late.b.others[0]!.accountId,
+        late.lobbyId,
+        at(late.unconfirmedAt + 48 * 60 * MINUTE),
+      ),
+    ).rejects.toMatchObject({ status: 409, message: 'contest_closed' })
+
+    const confirmed = await playing()
+    await reports.submit(
+      confirmed.a.others[0]!.accountId,
+      score(1, 0),
+      png(),
+      at(confirmed.closedAt + 20 * MINUTE),
+    )
+    await reports.submit(
+      confirmed.b.others[0]!.accountId,
+      score(1, 0),
+      png(),
+      at(confirmed.closedAt + 21 * MINUTE),
+    )
+    await expect(
+      reports.contest(confirmed.b.others[1]!.accountId, confirmed.lobbyId),
+    ).rejects.toMatchObject({ status: 409, message: 'contest_closed' })
+
+    await expect(
+      reports.contest(confirmed.a.others[0]!.accountId, late.lobbyId),
+    ).rejects.toMatchObject({ status: 404, message: 'no_lobby' })
+  })
+
+  it('a dispute holds the queue: searching entries go, joining is refused (RF-013, HTTP)', async () => {
+    const { lobbyId, a, b } = await unconfirmed()
+    // Move the 48 h onto the real clock, for the HTTP call.
+    const em = orm.em.fork()
+    const row = await em.findOneOrFail(Lobby, { id: lobbyId })
+    row.unconfirmedAt = new Date(Date.now() - MINUTE)
+    await em.flush()
+    // b.captain searches again after the match freed the queue.
+    const character = await em.findOneOrFail(Character, { account: b.captain.accountId })
+    em.create(QueueEntry, {
+      account: b.captain.accountId,
+      character,
+      category: character.category,
+      eloAtEntry: 1000,
+    })
+    await em.flush()
+
+    // The entry is gone; the screen finds the lobby to contest here.
+    const before = await request(app.getHttpServer())
+      .get('/api/queue')
+      .set('Cookie', a.others[0]!.cookie)
+    expect(before.body.entry).toBeNull()
+    expect(before.body.lastMatch).toMatchObject({
+      lobbyId,
+      state: LobbyState.NOT_CONFIRMED,
+      scoreA: 0,
+      scoreB: 4,
+      contestUntil: expect.any(String),
+    })
+
+    const contested = await request(app.getHttpServer())
+      .post('/api/queue/contest')
+      .set('Cookie', a.others[0]!.cookie)
+      .send({ lobbyId })
+    expect(contested.status).toBe(204)
+    expect(await orm.em.fork().count(QueueEntry, { account: b.captain.accountId })).toBe(0)
+    const after = await request(app.getHttpServer())
+      .get('/api/queue')
+      .set('Cookie', a.others[0]!.cookie)
+    expect(after.body.lastMatch).toMatchObject({
+      lobbyId,
+      state: LobbyState.IN_DISPUTE,
+      scoreA: null,
+      contestUntil: null,
+    })
+
+    const joined = await request(app.getHttpServer())
+      .post('/api/queue')
+      .set('Cookie', b.captain.cookie)
+      .send({ characterId: character.id })
+    expect(joined.status).toBe(409)
+    expect(joined.body.message).toBe('match_in_dispute')
+
+    const bad = await request(app.getHttpServer())
+      .post('/api/queue/contest')
+      .set('Cookie', a.others[0]!.cookie)
+      .send({ lobbyId: 'not-a-uuid' })
+    expect(bad.status).toBe(400)
+  })
 })
