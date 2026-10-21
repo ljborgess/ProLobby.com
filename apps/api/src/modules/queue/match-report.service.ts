@@ -20,6 +20,7 @@ import { checkPrintImage, printsDir, sha256 } from '../character/print-submissio
 import { LobbyParticipation, LobbySide } from '../lobby/lobby-participation.entity'
 import { Lobby, LobbyState } from '../lobby/lobby.entity'
 import { MatchReport } from '../lobby/match-report.entity'
+import { ReportedAbsence } from '../lobby/reported-absence.entity'
 import { ModerationCase } from '../moderation/moderation-case.entity'
 import { ModerationCaseOrigin, ModerationCaseType } from '../moderation/moderation-case.enums'
 import { ReputationEventReason } from '../ranking/ranking-event.enums'
@@ -46,7 +47,12 @@ export const reportConfirmBy = (lobby: Pick<Lobby, 'firstReportAt'>): Date | nul
 
 export type ReportScore = { scoreA: number; scoreB: number }
 
-export type MatchReportView = ReportScore & { id: string; side: LobbySide }
+export type MatchReportView = ReportScore & {
+  id: string
+  side: LobbySide
+  /** Who this report says left or never played, by their row in the lobby. */
+  absent: string[]
+}
 
 /** States a match ends up in once it has a result, or lacks one for good. */
 const RESULT_STATES: readonly LobbyState[] = [
@@ -105,6 +111,7 @@ export class MatchReportService {
     score: ReportScore,
     file: Buffer,
     now: Date = new Date(),
+    absent: string[] = [],
   ): Promise<MatchReportView> {
     // Cheapest first: garbage never reaches the database or the disk.
     const rejection = checkPrintImage(file)
@@ -139,6 +146,13 @@ export class MatchReportService {
         if (await em.count(MatchReport, { fileHash })) {
           throw new ConflictException('print_already_used')
         }
+        const named = [...new Set(absent)]
+        const absentees = named.length
+          ? await em.find(LobbyParticipation, { id: { $in: named }, lobby })
+          : []
+        if (absentees.length !== named.length || absentees.some((p) => p.id === mine.id)) {
+          throw new BadRequestException('absent_not_in_match')
+        }
 
         await mkdir(printsDir(), { recursive: true })
         await writeFile(path, encryptAtRest(this.encryptionKey, file))
@@ -151,6 +165,9 @@ export class MatchReportService {
           filePath: path,
           submittedAt: now,
         })
+        for (const participation of absentees) {
+          em.create(ReportedAbsence, { report, participation })
+        }
         if (lobby.state === LobbyState.IN_PROGRESS) {
           lobby.state = LobbyState.AWAITING_CONFIRMATION
           lobby.firstReportAt = now
@@ -159,7 +176,7 @@ export class MatchReportService {
           // mismatch is a divergence.
           if (earlier.every((r) => r.scoreA === score.scoreA && r.scoreB === score.scoreB)) {
             await settle(em, lobby, LobbyState.FINISHED, now, score)
-            await this.cleanMatch(em, lobby)
+            await this.finishedFor(em, lobby)
           } else {
             em.create(ModerationCase, {
               type: ModerationCaseType.SCORE_DISPUTE,
@@ -170,7 +187,7 @@ export class MatchReportService {
           }
         }
         await em.flush()
-        return toView(report)
+        return toView(report, named)
       })
     } catch (error) {
       await rm(path, { force: true })
@@ -206,7 +223,7 @@ export class MatchReportService {
       report.scoreB = score.scoreB
       report.correctedAt = now
       await em.flush()
-      return toView(report)
+      return toView(report, await absentOf(em, report))
     })
   }
 
@@ -266,7 +283,7 @@ export class MatchReportService {
       for (const lobby of final) {
         lobby.state = LobbyState.FINISHED
         lobby.endedAt = now
-        await this.cleanMatch(em, lobby)
+        await this.finishedFor(em, lobby)
       }
       await em.flush()
       return silent.length + unconfirmed.length + final.length
@@ -354,7 +371,7 @@ export class MatchReportService {
   /** What the lobby screen shows of this account's report (`GET /api/queue`). */
   async view(em: EntityManager, lobby: Lobby, accountId: string): Promise<MatchReportView | null> {
     const report = await em.findOne(MatchReport, { lobby, account: accountId })
-    return report ? toView(report) : null
+    return report ? toView(report, await absentOf(em, report)) : null
   }
 
   /** The 90-day retention of the result prints, run with the character ones. */
@@ -383,13 +400,43 @@ export class MatchReportService {
   }
 
   /**
-   * A finished match is a clean one for every human of it: +1 reputation, up
-   * to 70 (#208). Disconnects and upheld reports come with their own slices
-   * and reverse it then.
+   * Reputation for a finished match. Clean for every human of it — +1, up to
+   * 70 (#208) — except who a report named absent: named by both sides, the
+   * absence is confirmed and costs −8 (docs/produto/03-partida/04-resultado.md);
+   * named by one side only, it is not confirmed, so neither the −8 nor the +1.
+   * A one-sided result (the 48 h path) can never confirm an absence.
+   *
+   * ponytail: no exception for a 0.0 match rating (RF-046, possible game bug)
+   * until OCR reads the rating (#191); the other side confirming is the guard.
    */
-  private async cleanMatch(em: EntityManager, lobby: Lobby): Promise<void> {
+  private async finishedFor(em: EntityManager, lobby: Lobby): Promise<void> {
+    const absences = await em.find(
+      ReportedAbsence,
+      { report: { lobby } },
+      { populate: ['report', 'participation'] },
+    )
+    const namedBy = new Map<string, Set<LobbySide>>()
+    for (const absence of absences) {
+      const accountId = absence.participation.account.id
+      namedBy.set(accountId, (namedBy.get(accountId) ?? new Set()).add(absence.report.side))
+    }
     for (const account of await lockHumans(em, lobby)) {
-      await this.reputationService.applyIn(em, account, ReputationEventReason.CLEAN_MATCH, lobby.id)
+      const sides = namedBy.get(account.id)
+      if (!sides) {
+        await this.reputationService.applyIn(
+          em,
+          account,
+          ReputationEventReason.CLEAN_MATCH,
+          lobby.id,
+        )
+      } else if (sides.size === 2) {
+        await this.reputationService.applyIn(
+          em,
+          account,
+          ReputationEventReason.DISCONNECT,
+          lobby.id,
+        )
+      }
     }
   }
 
@@ -453,6 +500,11 @@ async function settle(
   await em.nativeDelete(QueueEntry, { lobby })
 }
 
-function toView(report: MatchReport): MatchReportView {
-  return { id: report.id, side: report.side, scoreA: report.scoreA, scoreB: report.scoreB }
+function toView(report: MatchReport, absent: string[]): MatchReportView {
+  return { id: report.id, side: report.side, scoreA: report.scoreA, scoreB: report.scoreB, absent }
+}
+
+async function absentOf(em: EntityManager, report: MatchReport): Promise<string[]> {
+  const rows = await em.find(ReportedAbsence, { report })
+  return rows.map((row) => row.participation.id)
 }

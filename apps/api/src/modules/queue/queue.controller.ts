@@ -31,6 +31,7 @@ import { RateTeammateDto } from './dto/rate-teammate.dto'
 import { FormationDto } from './dto/formation.dto'
 import { JoinQueueDto } from './dto/join-queue.dto'
 import { ReportScoreDto } from './dto/report-score.dto'
+import { SubmitReportDto } from './dto/submit-report.dto'
 import { LobbyConfirmationService } from './lobby-confirmation.service'
 import { LobbyInviteService } from './lobby-invite.service'
 import { MatchReportService, type MatchReportView } from './match-report.service'
@@ -140,13 +141,19 @@ export class QueueController {
   )
   report(
     @Req() request: RequestWithAccount,
-    @Body() dto: ReportScoreDto,
+    @Body() dto: SubmitReportDto,
     @UploadedFile() print?: Express.Multer.File,
   ): Promise<MatchReportView> {
     if (!print) {
       throw new BadRequestException('print_required')
     }
-    return this.matchReportService.submit(request.account!.id, dto, print.buffer)
+    return this.matchReportService.submit(
+      request.account!.id,
+      { scoreA: dto.scoreA, scoreB: dto.scoreB },
+      print.buffer,
+      undefined,
+      dto.absent ?? [],
+    )
   }
 
   /** Fixes the typed score while the other side has not reported (RF-042). */
