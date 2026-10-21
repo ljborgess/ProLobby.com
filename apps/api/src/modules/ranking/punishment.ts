@@ -69,10 +69,10 @@ export async function punishIn(
   )
   account.state = AccountState.SUSPENDED
   account.suspensionEndsAt = new Date(now.getTime() + SUSPENSION_MS)
-  // ponytail: account lock, then the searching entry — the matcher takes the
-  // entry, then the account (the participation's foreign key). Today nobody
-  // searching gets punished (zero-report hits a lobby, thumbs-up goes up);
-  // the disconnect slice must punish before the account can search again.
+  // Account lock, then the searching entry — the matcher takes the entry,
+  // then the account (the participation's foreign key), so punishing someone
+  // searching could deadlock. Nobody searching gets punished: zero-report and
+  // a confirmed absence land in the transaction that ends the match.
   await em.nativeDelete(QueueEntry, { account, lobby: null })
 }
 

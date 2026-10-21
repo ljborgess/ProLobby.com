@@ -6,6 +6,16 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 
 ---
 
+## 2026-10-21 · Rafael
+
+### Ausência no report do placar (4.1)
+
+- **`POST /api/queue/report`** aceita o campo `absent` no multipart: os `participationId` de quem saiu ou não jogou, separados por vírgula. Pode ser gente de qualquer lado, menos a própria pessoa. Nome fora da partida dá `400 absent_not_in_match`. A resposta, e o `myReport` do `GET /api/queue`, trazem `absent`.
+- **De onde a tela tira os nomes:** com a partida em `in_progress` ou `awaiting_confirmation`, o `entry.lobby.players` traz `{ teammates, opponents }`, cada item com `participationId`, `gamertag` e `category`.
+- **Efeito:** ausência apontada pelos dois lados custa −8 na partida encerrada, no lugar do +1 de partida limpa. Apontada por um lado só, a pessoa não leva nem um nem outro.
+
+---
+
 ## 2026-10-20 · Rafael
 
 ### A #252 (telas do lobby) passou pro Luciano

@@ -29,6 +29,7 @@ import {
 } from './match-report.service'
 import { captainAnswerBy } from './captain-cascade.service'
 import { blockedUntilFor } from './queue-block'
+import { PeerRatingService, type TeammateView } from './peer-rating.service'
 import { QueueEntry } from './queue-entry.entity'
 
 /** RF-002, in the order the refusal lists them. */
@@ -88,6 +89,8 @@ export interface QueueEntryView {
     myReport: MatchReportView | null
     /** After the first report: the other side reports until here (RF-043). */
     reportConfirmBy: Date | null
+    /** While the match runs: who played, to name an absence in the report (4.1). */
+    players: { teammates: TeammateView[]; opponents: TeammateView[] } | null
   } | null
 }
 
@@ -108,6 +111,7 @@ export class QueueService {
     private readonly eloService: EloService,
     private readonly formationVoteService: FormationVoteService,
     private readonly matchReportService: MatchReportService,
+    private readonly peerRatingService: PeerRatingService,
   ) {}
 
   async current(
@@ -166,6 +170,12 @@ export class QueueService {
               ? await this.matchReportService.view(em, entry.lobby, accountId)
               : null,
             reportConfirmBy: entry.lobby ? reportConfirmBy(entry.lobby) : null,
+            players:
+              entry.lobby &&
+              (entry.lobby.state === LobbyState.IN_PROGRESS ||
+                entry.lobby.state === LobbyState.AWAITING_CONFIRMATION)
+                ? await this.peerRatingService.players(em, entry.lobby, accountId)
+                : null,
           })
         : null,
       blockedUntil: await blockedUntilFor(em, accountId, now),
