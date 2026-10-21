@@ -23,7 +23,9 @@ export const clockOf = (ms: number) => {
 export function trapFocus(event: React.KeyboardEvent<HTMLElement>) {
   if (event.key !== 'Tab') return
   const controls = Array.from(
-    event.currentTarget.querySelectorAll<HTMLElement>('button:not([disabled]), a[href]'),
+    event.currentTarget.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), a[href], input:not([disabled]), select, textarea',
+    ),
   )
   const first = controls[0]
   const last = controls.at(-1)

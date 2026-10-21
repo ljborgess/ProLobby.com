@@ -14,6 +14,11 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 - **De onde a tela tira os nomes:** com a partida em `in_progress` ou `awaiting_confirmation`, o `entry.lobby.players` traz `{ teammates, opponents }`, cada item com `participationId`, `gamertag` e `category`.
 - **Efeito:** ausência apontada pelos dois lados custa −8 na partida encerrada, no lugar do +1 de partida limpa. Apontada por um lado só, a pessoa não leva nem um nem outro.
 
+### As telas do resultado (fatia E) ficaram com o Luciano
+
+- **Não pegue a fatia E:** o Luciano fez as telas do report do placar, com print e ausência, da correção, da disputa, da contestação, da avaliação por pares e da denúncia. Ficam em `apps/web/src/modules/queue/result-stages.tsx`; o report aparece no overlay do lobby, e o resto num painel da última partida na tela da fila.
+- **Campo novo na API:** `entry.lobby.side` e `lastMatch.side` (`'a'` ou `'b'`) dizem o lado da conta. Com isso a tela mostra o placar como "seu lado × adversário" e converte pra `scoreA`/`scoreB`.
+
 ---
 
 ## 2026-10-20 · Rafael

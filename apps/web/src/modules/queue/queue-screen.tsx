@@ -15,6 +15,7 @@ import { CATEGORY_ORDER, Shirt } from '@/modules/character/roster'
 import { archetypeLabel, type CharacterView } from '@/modules/character/types'
 import { LobbyOverlay, type LobbyView } from './lobby-stages'
 import { clockOf, PRIMARY } from './queue-ui'
+import { LastMatchPanel, type LastMatchView } from './result-stages'
 
 /** `GET /queue` → `entry` (#228, #232, #252). */
 export interface QueueEntryView {
@@ -29,6 +30,8 @@ export interface QueueEntryView {
 export interface QueueState {
   entry: QueueEntryView | null
   blockedUntil: string | null
+  /** The latest match with a result, once its entry is gone (4.1). */
+  lastMatch?: LastMatchView | null
 }
 
 const POLL_MS = 5000
@@ -341,6 +344,9 @@ export function QueueScreen({
 
       <footer className="pointer-events-none relative z-10 flex flex-col gap-3 px-4 pb-5 sm:px-8 sm:pb-7">
         <div className="pointer-events-auto">
+          {scene === 'picking' && state.lastMatch && (
+            <LastMatchPanel match={state.lastMatch} now={now} onChanged={reload} />
+          )}
           {scene === 'picking' &&
             (verified.length === 0 ? (
               <div className="flex flex-wrap items-center justify-between gap-4">

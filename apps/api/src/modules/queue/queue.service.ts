@@ -69,6 +69,8 @@ export interface QueueEntryView {
   lobby: {
     state: LobbyState
     confirmBy: Date
+    /** This account's side: `scoreA` is side A's goals (4.1). */
+    side: LobbySide
     confirmed: boolean
     /** The captain role offered to this account right now, if it is (#247). */
     captainOffer: { answerBy: Date; clubName: string } | null
@@ -150,6 +152,7 @@ export class QueueService {
     return {
       entry: entry
         ? toView(entry, cancelled?.lobby, {
+            side: mine?.side ?? LobbySide.A,
             confirmed: mine ? !!mine.confirmedAt : false,
             captainOffer: offer
               ? { answerBy: captainAnswerBy(offer), clubName: club?.clubName ?? '' }

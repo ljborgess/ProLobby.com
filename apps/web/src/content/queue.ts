@@ -2,6 +2,7 @@ import type { Locale } from './locale'
 
 export type MovementBand = 'low' | 'busy' | 'full'
 export type MissingPrerequisite = 'email' | 'character' | 'discord' | 'discord_server'
+export type UserReportReason = 'fraud' | 'disconnect' | 'behavior'
 
 /** Text for `/queue` — issue #233. */
 export interface QueueContent {
@@ -67,7 +68,48 @@ export interface QueueContent {
     formationCaptainPick: string
     formationWaitCaptain: string
     matchTitle: string
-    matchHint: string
+  }
+  /** The result: report, contest, rating and report of a person (4.1, 4.2). */
+  result: {
+    reportOpensIn: (clock: string) => string
+    reportTitle: string
+    mine: string
+    theirs: string
+    printLabel: string
+    printHint: string
+    absentLegend: string
+    absentHint: string
+    teammate: string
+    opponent: string
+    send: string
+    sending: string
+    sent: (mine: number, theirs: number) => string
+    otherSideBy: (clock: string) => string
+    correct: string
+    saveCorrection: string
+    cancel: string
+    /** By the API's message; `generic` for anything else. */
+    errors: Record<string, string>
+    disputeTitle: string
+    disputeHint: string
+    lastTitle: string
+    states: Record<string, string>
+    contest: string
+    contestUntil: (hours: number) => string
+    contested: string
+    rateTitle: string
+    rateHint: string
+    thumbsUp: string
+    negative: string
+    rated: string
+    reportPerson: string
+    person: string
+    reason: string
+    reasons: Record<UserReportReason, string>
+    message: string
+    messageHint: string
+    reportSend: string
+    reportSent: string
   }
   /** Back to searching, and why (#252). */
   notice: {
@@ -146,7 +188,68 @@ export const QUEUE_CONTENT: Record<Locale, QueueContent> = {
       formationCaptainPick: 'Deu empate. Como capitão, você escolhe:',
       formationWaitCaptain: 'Deu empate. O capitão do lado escolhe.',
       matchTitle: 'Partida em andamento',
-      matchHint: 'Boa partida. O report do placar abre 5 min depois do lobby fechar.',
+    },
+    result: {
+      reportOpensIn: (clock) => `O report do placar abre em ${clock}.`,
+      reportTitle: 'Placar final',
+      mine: 'Seu lado',
+      theirs: 'Adversário',
+      printLabel: 'Print da tela de fim de partida',
+      printHint: 'JPG, PNG ou WebP, até 10 MB. A tela com o placar e as estatísticas.',
+      absentLegend: 'Alguém saiu ou não jogou?',
+      absentHint: 'Marque só quem faltou. Confirmado pelo outro lado, custa −8 de reputação.',
+      teammate: 'seu lado',
+      opponent: 'adversário',
+      send: 'Enviar placar',
+      sending: 'Enviando…',
+      sent: (mine, theirs) => `Você reportou ${mine} × ${theirs}.`,
+      otherSideBy: (clock) => `O outro lado tem ${clock} pra reportar.`,
+      correct: 'Corrigir placar',
+      saveCorrection: 'Salvar correção',
+      cancel: 'Cancelar',
+      errors: {
+        print_required: 'Escolha o print do placar.',
+        invalid_format: 'Esse arquivo não é uma imagem JPG, PNG ou WebP.',
+        image_too_small: 'Imagem pequena demais. Mande o print na resolução da tela.',
+        print_already_used: 'Esse print já foi usado em outra partida.',
+        report_exists: 'Você já reportou essa partida.',
+        report_too_early: 'Ainda não dá pra reportar. Espera o tempo acabar.',
+        report_closed: 'O prazo pra reportar ou corrigir acabou.',
+        absent_not_in_match: 'Uma das pessoas marcadas não está nessa partida.',
+        payload_too_large: 'Arquivo grande demais: até 10 MB.',
+        contest_exists: 'Você já contestou essa partida.',
+        contest_closed: 'O prazo pra contestar acabou.',
+        rating_closed: 'A avaliação dessa partida fechou.',
+        rating_exists: 'Você já avaliou essa pessoa nessa partida.',
+        too_many_open_reports:
+          'Você já tem 3 denúncias abertas. Espera a moderação decidir alguma.',
+        generic: 'Não deu certo agora. Tenta de novo em instantes.',
+      },
+      disputeTitle: 'Placar em disputa',
+      disputeHint: 'Os placares não bateram. A moderação decide, e a fila fica presa até lá.',
+      lastTitle: 'Última partida',
+      states: {
+        finished: 'Resultado confirmado.',
+        not_confirmed: 'Só um lado reportou. Vira definitivo em 48 h se ninguém contestar.',
+        in_dispute: 'Em disputa: a moderação decide.',
+        expired_no_report: 'Ninguém reportou o placar em 60 min: −3 de reputação pra cada um.',
+      },
+      contest: 'Contestar resultado',
+      contestUntil: (hours) => `Dá pra contestar por mais ${hours} h.`,
+      contested: 'Resultado contestado. A moderação vai olhar.',
+      rateTitle: 'Avalie seu lado',
+      rateHint: 'Opcional, e ninguém fica sabendo quem avaliou quem.',
+      thumbsUp: 'Jogou bem',
+      negative: 'Não colaborou',
+      rated: 'avaliado',
+      reportPerson: 'Denunciar alguém',
+      person: 'Quem',
+      reason: 'Motivo',
+      reasons: { fraud: 'Fraude', disconnect: 'Desconexão', behavior: 'Comportamento' },
+      message: 'O que aconteceu',
+      messageHint: 'De 20 a 2000 caracteres. A pessoa nunca sabe quem denunciou.',
+      reportSend: 'Enviar denúncia',
+      reportSent: 'Denúncia enviada pra moderação.',
     },
     notice: {
       undone: 'Alguém não confirmou a partida. Você voltou pra busca, com o tempo que tinha.',
@@ -224,7 +327,70 @@ export const QUEUE_CONTENT: Record<Locale, QueueContent> = {
       formationCaptainPick: 'Hubo empate. Como capitán, eliges tú:',
       formationWaitCaptain: 'Hubo empate. El capitán del lado elige.',
       matchTitle: 'Partido en curso',
-      matchHint: 'Buen partido. El reporte del marcador abre 5 min después de que cierre el lobby.',
+    },
+    result: {
+      reportOpensIn: (clock) => `El reporte del marcador abre en ${clock}.`,
+      reportTitle: 'Marcador final',
+      mine: 'Tu lado',
+      theirs: 'Rival',
+      printLabel: 'Captura de la pantalla de fin de partido',
+      printHint: 'JPG, PNG o WebP, hasta 10 MB. La pantalla con el marcador y las estadísticas.',
+      absentLegend: '¿Alguien se fue o no jugó?',
+      absentHint: 'Marca solo a quien faltó. Si el otro lado lo confirma, cuesta −8 de reputación.',
+      teammate: 'tu lado',
+      opponent: 'rival',
+      send: 'Enviar marcador',
+      sending: 'Enviando…',
+      sent: (mine, theirs) => `Reportaste ${mine} × ${theirs}.`,
+      otherSideBy: (clock) => `El otro lado tiene ${clock} para reportar.`,
+      correct: 'Corregir marcador',
+      saveCorrection: 'Guardar corrección',
+      cancel: 'Cancelar',
+      errors: {
+        print_required: 'Elige la captura del marcador.',
+        invalid_format: 'Ese archivo no es una imagen JPG, PNG o WebP.',
+        image_too_small:
+          'Imagen demasiado pequeña. Envía la captura en la resolución de la pantalla.',
+        print_already_used: 'Esa captura ya se usó en otro partido.',
+        report_exists: 'Ya reportaste este partido.',
+        report_too_early: 'Todavía no se puede reportar. Espera a que termine el tiempo.',
+        report_closed: 'Se acabó el plazo para reportar o corregir.',
+        absent_not_in_match: 'Una de las personas marcadas no está en este partido.',
+        payload_too_large: 'Archivo demasiado grande: hasta 10 MB.',
+        contest_exists: 'Ya impugnaste este partido.',
+        contest_closed: 'Se acabó el plazo para impugnar.',
+        rating_closed: 'La evaluación de este partido cerró.',
+        rating_exists: 'Ya evaluaste a esta persona en este partido.',
+        too_many_open_reports:
+          'Ya tienes 3 denuncias abiertas. Espera a que la moderación decida alguna.',
+        generic: 'No funcionó ahora. Inténtalo de nuevo en un momento.',
+      },
+      disputeTitle: 'Marcador en disputa',
+      disputeHint:
+        'Los marcadores no coincidieron. La moderación decide, y la cola queda trabada hasta entonces.',
+      lastTitle: 'Último partido',
+      states: {
+        finished: 'Resultado confirmado.',
+        not_confirmed: 'Solo un lado reportó. Queda definitivo en 48 h si nadie impugna.',
+        in_dispute: 'En disputa: la moderación decide.',
+        expired_no_report: 'Nadie reportó el marcador en 60 min: −3 de reputación para cada uno.',
+      },
+      contest: 'Impugnar resultado',
+      contestUntil: (hours) => `Puedes impugnar por ${hours} h más.`,
+      contested: 'Resultado impugnado. La moderación lo revisará.',
+      rateTitle: 'Evalúa a tu lado',
+      rateHint: 'Opcional, y nadie sabe quién evaluó a quién.',
+      thumbsUp: 'Jugó bien',
+      negative: 'No colaboró',
+      rated: 'evaluado',
+      reportPerson: 'Denunciar a alguien',
+      person: 'Quién',
+      reason: 'Motivo',
+      reasons: { fraud: 'Fraude', disconnect: 'Desconexión', behavior: 'Comportamiento' },
+      message: 'Qué pasó',
+      messageHint: 'De 20 a 2000 caracteres. La persona nunca sabe quién la denunció.',
+      reportSend: 'Enviar denuncia',
+      reportSent: 'Denuncia enviada a la moderación.',
     },
     notice: {
       undone: 'Alguien no confirmó el partido. Volviste a la búsqueda, con el tiempo que tenías.',
