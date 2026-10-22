@@ -943,4 +943,102 @@ describe('match report (4.1)', () => {
       .set('Cookie', a.others[1]!.cookie)
     expect(new Date(shown.body.lastMatch.rateUntil).getTime()).toBe(ended + 48 * 60 * MINUTE)
   })
+
+  /** The participation row of someone in this lobby: what `absent` names. */
+  const rowOf = async (lobbyId: string, accountId: string) =>
+    (await orm.em.fork().findOneOrFail(LobbyParticipation, { lobby: lobbyId, account: accountId }))
+      .id
+  const reasonsOf = async (lobbyId: string, accountId: string) =>
+    (await orm.em.fork().find(ReputationEvent, { lobbyId, account: accountId })).map(
+      (e) => e.reason,
+    )
+
+  it('an absence named by both sides costs −8 instead of the clean match (4.1)', async () => {
+    const { lobbyId, closedAt, a, b } = await playing()
+    const gone = a.others[2]!
+    const row = await rowOf(lobbyId, gone.accountId)
+
+    const view = await reports.submit(
+      a.others[0]!.accountId,
+      score(1, 3),
+      png(),
+      at(closedAt + 20 * MINUTE),
+      [row],
+    )
+    expect(view.absent).toEqual([row])
+    await reports.submit(b.others[0]!.accountId, score(1, 3), png(), at(closedAt + 21 * MINUTE), [
+      row,
+    ])
+
+    expect((await lobbyOf(lobbyId)).state).toBe(LobbyState.FINISHED)
+    expect(await reasonsOf(lobbyId, gone.accountId)).toEqual([ReputationEventReason.DISCONNECT])
+    expect(await reasonsOf(lobbyId, a.others[1]!.accountId)).toEqual([
+      ReputationEventReason.CLEAN_MATCH,
+    ])
+  })
+
+  it('named by one side only: not confirmed, so neither −8 nor the clean match (4.1)', async () => {
+    const { lobbyId, closedAt, a, b } = await playing()
+    const named = a.others[2]!
+    await reports.submit(a.others[0]!.accountId, score(0, 0), png(), at(closedAt + 20 * MINUTE), [
+      await rowOf(lobbyId, named.accountId),
+    ])
+    await reports.submit(b.others[0]!.accountId, score(0, 0), png(), at(closedAt + 21 * MINUTE))
+
+    expect(await reasonsOf(lobbyId, named.accountId)).toEqual([])
+    expect(await reasonsOf(lobbyId, b.captain.accountId)).toEqual([
+      ReputationEventReason.CLEAN_MATCH,
+    ])
+  })
+
+  it('refuses an absence of oneself or of someone outside the match (4.1)', async () => {
+    const { lobbyId, closedAt, a } = await playing()
+    const other = await playing()
+    const me = a.others[0]!.accountId
+    const when = at(closedAt + 20 * MINUTE)
+
+    await expect(
+      reports.submit(me, score(1, 0), png(), when, [await rowOf(lobbyId, me)]),
+    ).rejects.toMatchObject({ status: 400, message: 'absent_not_in_match' })
+    await expect(
+      reports.submit(me, score(1, 0), png(), when, [
+        await rowOf(other.lobbyId, other.a.captain.accountId),
+      ]),
+    ).rejects.toMatchObject({ status: 400, message: 'absent_not_in_match' })
+    expect(await orm.em.fork().count(MatchReport, { lobby: lobbyId })).toBe(0)
+  })
+
+  it('names the absence over HTTP and the screen has who played to choose from (4.1)', async () => {
+    const { lobbyId, a } = await playing()
+    const em = orm.em.fork()
+    const lobby = await em.findOneOrFail(Lobby, { id: lobbyId })
+    lobby.closedAt = new Date(Date.now() - 10 * MINUTE)
+    await em.flush()
+    const player = a.others[0]!
+
+    const screen = await request(app.getHttpServer()).get('/api/queue').set('Cookie', player.cookie)
+    const { teammates, opponents } = screen.body.entry.lobby.players
+    expect(teammates).toHaveLength(3)
+    expect(opponents).toHaveLength(4)
+
+    const bad = await request(app.getHttpServer())
+      .post('/api/queue/report')
+      .set('Cookie', player.cookie)
+      .field('scoreA', '1')
+      .field('scoreB', '0')
+      .field('absent', 'not-a-uuid')
+      .attach('print', png(), 'print.png')
+    expect(bad.status).toBe(400)
+
+    const two = [teammates[0].participationId, opponents[0].participationId]
+    const sent = await request(app.getHttpServer())
+      .post('/api/queue/report')
+      .set('Cookie', player.cookie)
+      .field('scoreA', '1')
+      .field('scoreB', '0')
+      .field('absent', two.join(','))
+      .attach('print', png(), 'print.png')
+    expect(sent.status).toBe(201)
+    expect([...sent.body.absent].sort()).toEqual([...two].sort())
+  })
 })
