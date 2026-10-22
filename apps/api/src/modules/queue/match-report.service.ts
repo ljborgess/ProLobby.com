@@ -70,6 +70,8 @@ const RESULT_STATES: readonly LobbyState[] = [
 export type LastMatchView = {
   lobbyId: string
   state: LobbyState
+  /** This account's side: `scoreA` is side A's goals. */
+  side: LobbySide
   scoreA: number | null
   scoreB: number | null
   /** Set while this account can still contest (RF-012); null otherwise. */
@@ -360,6 +362,7 @@ export class MatchReportService {
     return {
       lobbyId: lobby.id,
       state: lobby.state,
+      side: mine.side,
       scoreA: lobby.scoreA ?? null,
       scoreB: lobby.scoreB ?? null,
       contestUntil: open ? new Date(lobby.unconfirmedAt!.getTime() + CONTEST_WINDOW_MS) : null,

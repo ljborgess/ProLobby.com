@@ -62,6 +62,11 @@ function inLobby(lobby: Partial<LobbyView>): QueueState {
         inviteReceived: false,
         clubFullDeclared: false,
         formation: null,
+        side: 'a',
+        reportableFrom: null,
+        myReport: null,
+        reportConfirmBy: null,
+        players: null,
         ...lobby,
       },
     },
@@ -438,6 +443,205 @@ describe('QueueScreen (#233)', () => {
 
       await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2))
       expect(screen.queryByText(pt.error)).toBeNull()
+    })
+  })
+
+  describe('the result (4.1, 4.2)', () => {
+    const player = (participationId: string, gamertag: string | null) => ({
+      participationId,
+      gamertag,
+      category: 'defender' as const,
+      myRating: null,
+    })
+    const ago = (seconds: number) => inSeconds(-seconds)
+
+    it('counts down until the print is accepted', () => {
+      renderScreen(inLobby({ state: 'in_progress', reportableFrom: inSeconds(125) }))
+      expect(screen.getByText(/O report do placar abre em 2:0\d\./)).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: pt.result.send })).toBeNull()
+    })
+
+    it('sends score, print and absence with the side the API knows; then shows it sent', async () => {
+      const step = {
+        state: 'in_progress',
+        side: 'b' as const,
+        reportableFrom: ago(60),
+        players: { teammates: [player('p-mate', 'Lateral10')], opponents: [player('p-opp', null)] },
+      }
+      vi.mocked(fetch)
+        .mockResolvedValueOnce(answer(201, {}))
+        .mockResolvedValueOnce(
+          answer(
+            200,
+            inLobby({
+              ...step,
+              state: 'awaiting_confirmation',
+              reportConfirmBy: inSeconds(600),
+              myReport: { id: 'r1', side: 'b', scoreA: 1, scoreB: 3, absent: ['p-opp'] },
+            }),
+          ),
+        )
+      renderScreen(inLobby(step))
+
+      fireEvent.change(screen.getByLabelText(pt.result.mine), { target: { value: '3' } })
+      fireEvent.change(screen.getByLabelText(pt.result.theirs), { target: { value: '1' } })
+      fireEvent.change(screen.getByLabelText(pt.result.printLabel, { exact: false }), {
+        target: { files: [new File(['png'], 'placar.png', { type: 'image/png' })] },
+      })
+      // No gamertag: the place stands in for the name.
+      fireEvent.click(screen.getByRole('checkbox', { name: /ZAG/ }))
+      fireEvent.click(screen.getByRole('button', { name: pt.result.send }))
+
+      expect(await screen.findByText(pt.result.sent(3, 1))).toBeInTheDocument()
+      expect(screen.getByText(/O outro lado tem \d+:\d\d pra reportar\./)).toBeInTheDocument()
+      const [path, init] = vi.mocked(fetch).mock.calls[0]!
+      expect(path).toBe('/bff/queue/report')
+      const sent = init!.body as FormData
+      expect([sent.get('scoreA'), sent.get('scoreB'), sent.get('absent')]).toEqual([
+        '1',
+        '3',
+        'p-opp',
+      ])
+      expect((sent.get('print') as File).name).toBe('placar.png')
+    })
+
+    it('says why a report was refused', async () => {
+      vi.mocked(fetch).mockResolvedValueOnce(answer(409, { message: 'print_already_used' }))
+      renderScreen(inLobby({ state: 'in_progress', reportableFrom: ago(60) }))
+      fireEvent.change(screen.getByLabelText(pt.result.mine), { target: { value: '0' } })
+      fireEvent.change(screen.getByLabelText(pt.result.theirs), { target: { value: '0' } })
+      fireEvent.change(screen.getByLabelText(pt.result.printLabel, { exact: false }), {
+        target: { files: [new File(['png'], 'p.png', { type: 'image/png' })] },
+      })
+      fireEvent.click(screen.getByRole('button', { name: pt.result.send }))
+      expect(await screen.findByRole('alert')).toHaveTextContent(
+        pt.result.errors.print_already_used!,
+      )
+    })
+
+    it('a score in dispute keeps the lobby and says moderation decides', () => {
+      renderScreen(inLobby({ state: 'in_dispute' }))
+      expect(screen.getByRole('heading', { name: pt.result.disputeTitle })).toBeInTheDocument()
+      expect(screen.getByText(pt.result.disputeHint)).toBeInTheDocument()
+    })
+
+    const settled = {
+      lobbyId: 'l1',
+      state: 'not_confirmed',
+      side: 'b' as const,
+      scoreA: 2,
+      scoreB: 0,
+      contestUntil: inSeconds(47 * 3600),
+      teammates: [player('p-mate', 'Lateral10')],
+      opponents: [player('p-opp', 'Ponta7')],
+      rateUntil: null,
+    }
+
+    it('after the match: the result this side first, and the contest', async () => {
+      vi.mocked(fetch)
+        .mockResolvedValueOnce(answer(204, {}))
+        .mockResolvedValueOnce(
+          answer(200, {
+            entry: null,
+            blockedUntil: null,
+            lastMatch: { ...settled, state: 'in_dispute', contestUntil: null },
+          }),
+        )
+      renderScreen({ entry: null, blockedUntil: null, lastMatch: settled })
+
+      expect(screen.getByText('0 × 2')).toBeInTheDocument()
+      expect(screen.getByText(pt.result.states.not_confirmed!)).toBeInTheDocument()
+      fireEvent.click(screen.getByRole('button', { name: pt.result.contest }))
+
+      expect(await screen.findByText(pt.result.states.in_dispute!)).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: pt.result.contest })).toBeNull()
+      expect(fetch).toHaveBeenNthCalledWith(
+        1,
+        '/bff/queue/contest',
+        expect.objectContaining({ method: 'POST', body: JSON.stringify({ lobbyId: 'l1' }) }),
+      )
+    })
+
+    it('rates a teammate once, only within the 48 h', async () => {
+      const finished = {
+        ...settled,
+        state: 'finished',
+        contestUntil: null,
+        rateUntil: inSeconds(3600),
+      }
+      vi.mocked(fetch)
+        .mockResolvedValueOnce(answer(204, {}))
+        .mockResolvedValueOnce(
+          answer(200, {
+            entry: null,
+            blockedUntil: null,
+            lastMatch: {
+              ...finished,
+              teammates: [{ ...finished.teammates[0]!, myRating: 'thumbs_up' }],
+            },
+          }),
+        )
+      renderScreen({ entry: null, blockedUntil: null, lastMatch: finished })
+
+      const rate = screen.getByRole('region', { name: pt.result.rateTitle })
+      expect(within(rate).queryByText('Ponta7')).toBeNull()
+      fireEvent.click(within(rate).getByRole('button', { name: pt.result.thumbsUp }))
+
+      expect(
+        await within(rate).findByRole('button', { name: pt.result.thumbsUp, pressed: true }),
+      ).toBeDisabled()
+      expect(fetch).toHaveBeenNthCalledWith(
+        1,
+        '/bff/queue/ratings',
+        expect.objectContaining({
+          body: JSON.stringify({ lobbyId: 'l1', participationId: 'p-mate', kind: 'thumbs_up' }),
+        }),
+      )
+    })
+
+    it('reports anyone of the match, and says when 3 are already open', async () => {
+      vi.mocked(fetch)
+        .mockResolvedValueOnce(answer(409, { message: 'too_many_open_reports' }))
+        .mockResolvedValueOnce(answer(201, { caseId: 'c1' }))
+      renderScreen({ entry: null, blockedUntil: null, lastMatch: settled })
+
+      fireEvent.click(screen.getByRole('button', { name: pt.result.reportPerson }))
+      fireEvent.change(screen.getByLabelText(pt.result.person), { target: { value: 'p-opp' } })
+      fireEvent.change(screen.getByLabelText(pt.result.reason), { target: { value: 'behavior' } })
+      fireEvent.change(screen.getByLabelText(pt.result.message, { exact: false }), {
+        target: { value: '  xingou o time inteiro no chat de voz  ' },
+      })
+      fireEvent.click(screen.getByRole('button', { name: pt.result.reportSend }))
+      expect(await screen.findByRole('alert')).toHaveTextContent(
+        pt.result.errors.too_many_open_reports!,
+      )
+
+      fireEvent.click(screen.getByRole('button', { name: pt.result.reportSend }))
+      expect(await screen.findByText(pt.result.reportSent)).toBeInTheDocument()
+      expect(fetch).toHaveBeenLastCalledWith(
+        '/bff/queue/user-reports',
+        expect.objectContaining({
+          body: JSON.stringify({
+            lobbyId: 'l1',
+            participationId: 'p-opp',
+            reason: 'behavior',
+            message: 'xingou o time inteiro no chat de voz',
+          }),
+        }),
+      )
+    })
+
+    it('a message long only by its spaces says it is short, and is not sent', () => {
+      renderScreen({ entry: null, blockedUntil: null, lastMatch: settled })
+
+      fireEvent.click(screen.getByRole('button', { name: pt.result.reportPerson }))
+      fireEvent.change(screen.getByLabelText(pt.result.message, { exact: false }), {
+        target: { value: 'trapaceou feio            ' },
+      })
+      fireEvent.click(screen.getByRole('button', { name: pt.result.reportSend }))
+
+      expect(screen.getByRole('alert')).toHaveTextContent(pt.result.errors.message_too_short!)
+      expect(fetch).not.toHaveBeenCalled()
     })
   })
 

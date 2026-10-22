@@ -4,11 +4,14 @@ import { type CSSProperties, useState } from 'react'
 import { useQueueContent } from '@/hooks/use-queue-content'
 import { Brackets } from '@/modules/character/pitch-art'
 import { CountdownRing, PRIMARY, SECONDARY, secondsTo, trapFocus } from './queue-ui'
+import { type PlayerView, ReportStep, type ReportView, type Side } from './result-stages'
 
-/** `GET /queue` → `entry.lobby` (#232, #247, #248, #249). */
+/** `GET /queue` → `entry.lobby` (#232, #247, #248, #249, 4.1). */
 export interface LobbyView {
   state: string
   confirmBy: string
+  /** This account's side: `scoreA` is side A's goals. */
+  side: Side
   confirmed: boolean
   /** The captain role offered to this account right now. */
   captainOffer: { answerBy: string; clubName: string } | null
@@ -19,6 +22,13 @@ export interface LobbyView {
   inviteReceived: boolean
   clubFullDeclared: boolean
   formation: FormationView | null
+  /** The result print is accepted from here; null before the lobby closed. */
+  reportableFrom: string | null
+  myReport: ReportView | null
+  /** After the first report: the other side reports until here. */
+  reportConfirmBy: string | null
+  /** While the match runs: who played, to name an absence. */
+  players: { teammates: PlayerView[]; opponents: PlayerView[] } | null
 }
 
 export interface FormationView {
@@ -114,7 +124,9 @@ export function LobbyOverlay({
           : content.lobby.choosingTitle
         : lobby.state === 'waiting_invite'
           ? content.lobby.inviteTitle
-          : content.lobby.matchTitle
+          : lobby.state === 'in_dispute'
+            ? content.result.disputeTitle
+            : content.lobby.matchTitle
 
   return (
     <div
@@ -169,11 +181,12 @@ export function LobbyOverlay({
           {lobby.state === 'waiting_invite' && (
             <InviteStep key="invite" lobby={lobby} now={now} onChanged={onChanged} />
           )}
-          {lobby.state !== 'waiting_players' &&
-            lobby.state !== 'waiting_captain' &&
-            lobby.state !== 'waiting_invite' && (
-              <p className="text-sm text-foreground-soft">{content.lobby.matchHint}</p>
-            )}
+          {(lobby.state === 'in_progress' || lobby.state === 'awaiting_confirmation') && (
+            <ReportStep key="report" lobby={lobby} now={now} onChanged={onChanged} />
+          )}
+          {lobby.state === 'in_dispute' && (
+            <p className="text-sm text-foreground-soft">{content.result.disputeHint}</p>
+          )}
           {(lobby.state === 'waiting_invite' || lobby.state === 'in_progress') &&
             lobby.formation && (
               <FormationVote formation={lobby.formation} now={now} onChanged={onChanged} />

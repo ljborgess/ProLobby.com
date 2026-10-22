@@ -5,12 +5,13 @@ import { rejectCrossSite } from '@/common/api/same-origin'
 
 /**
  * Thin proxy for the lobby's answers under `/queue` (#247, #248, #249),
- * the steps of screen #252. Same guard as every other write.
+ * the steps of screen #252, and the result's (4.1, 4.2). Same guard as
+ * every other write.
  */
 export async function lobbyAction(
   request: Request,
   path: string,
-  method: 'PUT',
+  method: 'POST' | 'PUT',
   withBody: boolean,
 ): Promise<Response> {
   const refused = rejectCrossSite(request, { jsonBody: withBody })
