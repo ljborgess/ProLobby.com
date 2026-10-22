@@ -25,6 +25,8 @@ export interface FormationView {
   /** End of the 60 s; null until the bot created the channels. */
   voteBy: Date | null
   myVote: string | null
+  /** The job counted the votes; before that, past the 60 s, the count is due. */
+  counted: boolean
   /** The formation of this account's side, once decided. */
   chosen: string | null
   /** Only for the captain, only while the side waits on them: what they may pick. */
@@ -127,6 +129,7 @@ export class FormationVoteService {
       options: FORMATIONS,
       voteBy: formationVoteBy(lobby),
       myVote: myVote?.formation ?? null,
+      counted: !!lobby.formationVoteClosedAt,
       chosen,
       captainChoices: pendingOnMe ? leaders(await this.votesOf(em, lobby, mine.side)) : null,
     }

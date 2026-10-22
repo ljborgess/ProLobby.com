@@ -328,10 +328,16 @@ describe('formation vote (#249)', () => {
     expect(shown.body.entry.lobby.formation).toMatchObject({
       options: ['4-3-3', '4-4-2', '4-2-3-1'],
       myVote: '4-2-3-1',
+      counted: false,
       chosen: null,
       captainChoices: null,
     })
     expect(shown.body.entry.lobby.formation.voteBy).toEqual(expect.any(String))
+
+    // Past the 60 s the job counts; the only vote of the side wins, and the screen knows.
+    await formation.close(new Date(Date.now() + 61 * SECOND))
+    const after = await request(app.getHttpServer()).get('/api/queue').set('Cookie', player.cookie)
+    expect(after.body.entry.lobby.formation).toMatchObject({ counted: true, chosen: '4-2-3-1' })
     expect(await orm.em.fork().count(QueueEntry, { lobby: lobbyId })).toBe(8)
   })
 })

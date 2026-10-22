@@ -32,8 +32,11 @@ export interface QueueState {
 }
 
 const POLL_MS = 5000
-/** Inside a lobby the steps count in seconds: ask more often. */
+/** While a lobby step counts in seconds: ask more often. */
 const LOBBY_POLL_MS = 2000
+const TIMED_STATES = new Set(['waiting_players', 'waiting_captain', 'waiting_invite'])
+/** The last cancellation told in this tab, so a reload does not tell it again. */
+const TOLD_CANCEL_KEY = 'queue:told-cancel'
 const BAND_LEVEL: Record<MovementBand, number> = { low: 1, busy: 2, full: 3 }
 const ARCHES = Array.from({ length: 9 }, (_, index) => index)
 
@@ -56,6 +59,30 @@ function cancelNotice(entry: QueueEntryView | null): Notice | null {
   const cancelled = entry?.lobby ? null : entry?.cancelledLobby
   if (!cancelled) return null
   return cancelled.state === 'cancelled_by_captain' ? 'byCaptain' : 'noFault'
+}
+
+function readToldCancel(): string | null {
+  try {
+    return sessionStorage.getItem(TOLD_CANCEL_KEY)
+  } catch {
+    return null
+  }
+}
+
+function rememberToldCancel(endedAt: string | null) {
+  try {
+    if (endedAt) sessionStorage.setItem(TOLD_CANCEL_KEY, endedAt)
+    else sessionStorage.removeItem(TOLD_CANCEL_KEY)
+  } catch {
+    // Without storage a reload may tell it again; nothing else breaks.
+  }
+}
+
+/** A lobby step with a clock in seconds, or a formation vote still open. */
+function isTimed(lobby: LobbyView | null | undefined): boolean {
+  if (!lobby) return false
+  if (TIMED_STATES.has(lobby.state)) return true
+  return lobby.formation?.voteBy != null && !lobby.formation.counted
 }
 
 type Refusal =
@@ -168,11 +195,32 @@ export function QueueScreen({
   })
   const [busy, setBusy] = useState(false)
   const [refusal, setRefusal] = useState<Refusal | null>(null)
-  const [notice, setNotice] = useState<Notice | null>(() => cancelNotice(initial.entry))
+  const [notice, setNotice] = useState<Notice | null>(null)
   const lastLobby = useRef(initial.entry?.lobby ?? null)
   // Each cancellation is told once: the entry keeps saying it while searching,
   // and an older one must not stand in for a lobby undone later.
   const toldCancel = useRef(initial.entry?.cancelledLobby?.endedAt ?? null)
+  // Polls answer out of order: only one newer than the last applied state counts.
+  const asked = useRef(0)
+  const applied = useRef(0)
+
+  // The cancellation the page opened with, unless this tab already told it.
+  useEffect(() => {
+    const cancelled = cancelNotice(initial.entry)
+    const endedAt = initial.entry?.cancelledLobby?.endedAt ?? null
+    if (!cancelled || endedAt === readToldCancel()) return
+    rememberToldCancel(endedAt)
+    const show = setTimeout(() => setNotice(cancelled), 0)
+    return () => clearTimeout(show)
+    // Only the state the page opened with.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  function tell(endedAt: string | null, next: Notice) {
+    toldCancel.current = endedAt
+    rememberToldCancel(endedAt)
+    setNotice(next)
+  }
 
   /**
    * Every new queue state goes through here, to tell why the search started
@@ -193,14 +241,11 @@ export function QueueScreen({
       const ours =
         endedAt !== null && (startedAt === null || new Date(endedAt).getTime() >= startedAt)
       if (cancelled && ours && endedAt !== toldCancel.current) {
-        toldCancel.current = endedAt
-        setNotice(cancelled)
+        tell(endedAt, cancelled)
       } else if (before?.state === 'waiting_players') {
-        toldCancel.current = endedAt
-        setNotice('undone')
+        tell(endedAt, 'undone')
       } else if (cancelled && endedAt !== toldCancel.current) {
-        toldCancel.current = endedAt
-        setNotice(cancelled)
+        tell(endedAt, cancelled)
       }
     } else {
       setNotice(null)
@@ -209,8 +254,18 @@ export function QueueScreen({
   }
 
   async function reload() {
+    const ask = ++asked.current
     const response = await fetch('/bff/queue')
-    if (response.ok) apply((await response.json()) as QueueState)
+    if (!response.ok) return
+    const next = (await response.json()) as QueueState
+    if (ask < applied.current) return
+    applied.current = ask
+    apply(next)
+  }
+
+  /** A join or leave settled the state: answers to polls sent before it are stale. */
+  function settle() {
+    applied.current = ++asked.current
   }
   const now = useNow(state.entry !== null || state.blockedUntil !== null)
 
@@ -230,7 +285,7 @@ export function QueueScreen({
 
   // While in the queue, ask again every few seconds: the lobby arrives on its own.
   const inQueue = state.entry !== null
-  const inLobby = state.entry?.lobby != null
+  const fast = isTimed(state.entry?.lobby)
   useEffect(() => {
     if (!inQueue) return
     const timer = setInterval(
@@ -241,12 +296,12 @@ export function QueueScreen({
           // A missed poll is not news; the next one tries again.
         }
       },
-      inLobby ? LOBBY_POLL_MS : POLL_MS,
+      fast ? LOBBY_POLL_MS : POLL_MS,
     )
     return () => clearInterval(timer)
     // reload only reads refs and setters; the interval restarts on the two flags.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inQueue, inLobby])
+  }, [inQueue, fast])
 
   async function join() {
     setBusy(true)
@@ -264,6 +319,7 @@ export function QueueScreen({
         retryAfterSeconds?: number
       }
       if (response.ok) {
+        settle()
         apply({ entry: body as unknown as QueueEntryView, blockedUntil: null })
       } else if (body.message === 'queue_prerequisites_missing' && body.missing) {
         setRefusal({ kind: 'missing', missing: body.missing })
@@ -286,7 +342,11 @@ export function QueueScreen({
     try {
       const response = await fetch('/bff/queue', { method: 'DELETE' })
       if (response.ok) {
-        apply({ ...state, entry: null })
+        settle()
+        lastLobby.current = null
+        setNotice(null)
+        // Functional: a poll that landed during the DELETE keeps its fields.
+        setState((current) => ({ ...current, entry: null }))
       } else {
         setRefusal({ kind: response.status === 409 ? 'inLobby' : 'error' })
       }

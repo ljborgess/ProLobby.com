@@ -26,6 +26,8 @@ export interface FormationView {
   /** End of the 60 s; null until the bot created the channels. */
   voteBy: string | null
   myVote: string | null
+  /** The votes were counted; past the 60 s and not yet, the count is due. */
+  counted: boolean
   chosen: string | null
   /** Only for the captain, only while the side waits on them. */
   captainChoices: string[] | null
@@ -41,7 +43,9 @@ const BEAMS = [
 
 /**
  * A PUT to one of the lobby's steps, then the queue state again. A 409 is the
- * step's window closing under the click; anything else is "try again".
+ * step's window closing under the click; anything else is "try again". The
+ * answer counts once the PUT does: a failed reload after it is not an error,
+ * the next poll brings the new state.
  */
 function useStep(onChanged: () => Promise<void>, closedMessage?: string) {
   const content = useQueueContent()
@@ -51,22 +55,30 @@ function useStep(onChanged: () => Promise<void>, closedMessage?: string) {
   async function send(path: string, body?: unknown) {
     setSending(true)
     setFailed(null)
+    let response: Response
     try {
-      const response = await fetch(`/bff/queue/${path}`, {
+      response = await fetch(`/bff/queue/${path}`, {
         method: 'PUT',
         ...(body === undefined
           ? {}
           : { headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }),
       })
-      if (!response.ok) {
-        setFailed(
-          response.status === 409 ? (closedMessage ?? content.lobby.stepClosed) : content.error,
-        )
-        return
-      }
-      await onChanged()
     } catch {
       setFailed(content.error)
+      setSending(false)
+      return
+    }
+    if (!response.ok) {
+      setFailed(
+        response.status === 409 ? (closedMessage ?? content.lobby.stepClosed) : content.error,
+      )
+      setSending(false)
+      return
+    }
+    try {
+      await onChanged()
+    } catch {
+      // Already answered; the poll catches up.
     } finally {
       setSending(false)
     }
@@ -111,7 +123,7 @@ export function LobbyOverlay({
       aria-labelledby="lobby-step"
       tabIndex={-1}
       onKeyDown={trapFocus}
-      className="queue-overlay fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden bg-background/85 px-4 py-6 backdrop-blur-sm"
+      className="queue-overlay fixed inset-0 z-50 flex justify-center overflow-y-auto overflow-x-hidden bg-background/85 px-4 py-6 backdrop-blur-sm"
     >
       <div
         aria-hidden
@@ -137,7 +149,8 @@ export function LobbyOverlay({
         />
       ))}
 
-      <div className="queue-card-rise relative w-full max-w-sm">
+      {/* my-auto, not items-center: a card taller than the screen scrolls from its top. */}
+      <div className="queue-card-rise relative my-auto w-full max-w-sm">
         <div className="relative flex flex-col items-center gap-5 px-6 pb-6 pt-8 text-center">
           <Brackets lit />
           <h2
@@ -408,8 +421,10 @@ function FormationVote({
         />
       </>
     )
-  } else {
+  } else if (formation.counted) {
     body = <p className="text-sm text-foreground-soft">{content.lobby.formationWaitCaptain}</p>
+  } else {
+    body = <p className="text-sm text-foreground-soft">{content.lobby.formationCounting}</p>
   }
 
   return (

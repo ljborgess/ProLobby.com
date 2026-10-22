@@ -89,6 +89,7 @@ describe('QueueScreen (#233)', () => {
 
   afterEach(() => {
     vi.unstubAllGlobals()
+    sessionStorage.clear()
   })
 
   it('shows each category as a band, never a count (RF-008)', () => {
@@ -323,6 +324,7 @@ describe('QueueScreen (#233)', () => {
         options: FORMATIONS,
         voteBy: inSeconds(50),
         myVote: null,
+        counted: false,
         chosen: null,
         captainChoices: null,
       }
@@ -359,6 +361,7 @@ describe('QueueScreen (#233)', () => {
         options: FORMATIONS,
         voteBy: inSeconds(-5),
         myVote: '4-3-3',
+        counted: true,
         chosen: null,
         captainChoices: ['4-3-3', '4-4-2'],
       }
@@ -394,6 +397,7 @@ describe('QueueScreen (#233)', () => {
             options: FORMATIONS,
             voteBy: null,
             myVote: null,
+            counted: false,
             chosen: null,
             captainChoices: null,
           },
@@ -401,6 +405,39 @@ describe('QueueScreen (#233)', () => {
       )
 
       expect(screen.getByText(pt.lobby.formationNotOpen)).toBeInTheDocument()
+    })
+
+    it.each([
+      [false, pt.lobby.formationCounting],
+      [true, pt.lobby.formationWaitCaptain],
+    ])('past the 60 s, counted=%s: counting, then waiting on the captain', (counted, text) => {
+      renderScreen(
+        inLobby({
+          state: 'in_progress',
+          formation: {
+            options: FORMATIONS,
+            voteBy: inSeconds(-5),
+            myVote: '4-3-3',
+            counted,
+            chosen: null,
+            captainChoices: null,
+          },
+        }),
+      )
+
+      expect(screen.getByText(text)).toBeInTheDocument()
+    })
+
+    it('an answer that went through is not an error when the reload after it fails', async () => {
+      vi.mocked(fetch)
+        .mockResolvedValueOnce(answer(204, {}))
+        .mockRejectedValueOnce(new Error('offline'))
+      renderScreen(inLobby({}))
+
+      fireEvent.click(screen.getByRole('button', { name: pt.accept }))
+
+      await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2))
+      expect(screen.queryByText(pt.error)).toBeNull()
     })
   })
 
@@ -458,12 +495,28 @@ describe('QueueScreen (#233)', () => {
     it.each([
       ['cancelled_by_captain', pt.notice.byCaptain],
       ['cancelled_no_fault', pt.notice.noFault],
-    ] as const)('a %s lobby says why, until dismissed', (state, text) => {
+    ] as const)('a %s lobby says why, until dismissed', async (state, text) => {
       renderScreen(searchingAgain({ state, endedAt: new Date().toISOString() }))
 
-      expect(screen.getByText(text)).toBeInTheDocument()
+      expect(await screen.findByText(text)).toBeInTheDocument()
       fireEvent.click(screen.getByRole('button', { name: pt.notice.dismiss }))
       expect(screen.queryByText(text)).toBeNull()
+    })
+
+    it('a reload does not tell the same cancellation again', async () => {
+      const again = searchingAgain({
+        state: 'cancelled_by_captain',
+        endedAt: new Date().toISOString(),
+      })
+      const first = renderScreen(again)
+      expect(await screen.findByText(pt.notice.byCaptain)).toBeInTheDocument()
+      first.unmount()
+
+      renderScreen(again)
+      await waitFor(() =>
+        expect(screen.getByRole('button', { name: pt.leave })).toBeInTheDocument(),
+      )
+      expect(screen.queryByText(pt.notice.byCaptain)).toBeNull()
     })
   })
 
