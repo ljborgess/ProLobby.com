@@ -67,6 +67,7 @@ export interface QueueContent {
     formationChosen: (formation: string) => string
     formationCaptainPick: string
     formationWaitCaptain: string
+    formationCounting: string
     matchTitle: string
   }
   /** The result: report, contest, rating and report of a person (4.1, 4.2). */
@@ -185,8 +186,9 @@ export const QUEUE_CONTENT: Record<Locale, QueueContent> = {
       formationNotOpen: 'A votação abre quando os canais do Discord estiverem prontos.',
       formationMine: 'seu voto',
       formationChosen: (formation) => `O lado joga no ${formation}.`,
-      formationCaptainPick: 'Deu empate. Como capitão, você escolhe:',
-      formationWaitCaptain: 'Deu empate. O capitão do lado escolhe.',
+      formationCaptainPick: 'A votação não teve vencedora. Como capitão, você escolhe:',
+      formationWaitCaptain: 'A votação não teve vencedora. O capitão do lado escolhe.',
+      formationCounting: 'Votação encerrada. Contando os votos.',
       matchTitle: 'Partida em andamento',
     },
     result: {
@@ -324,8 +326,9 @@ export const QUEUE_CONTENT: Record<Locale, QueueContent> = {
       formationNotOpen: 'La votación abre cuando los canales de Discord estén listos.',
       formationMine: 'tu voto',
       formationChosen: (formation) => `El lado juega en ${formation}.`,
-      formationCaptainPick: 'Hubo empate. Como capitán, eliges tú:',
-      formationWaitCaptain: 'Hubo empate. El capitán del lado elige.',
+      formationCaptainPick: 'La votación no tuvo ganadora. Como capitán, eliges tú:',
+      formationWaitCaptain: 'La votación no tuvo ganadora. El capitán del lado elige.',
+      formationCounting: 'Votación cerrada. Contando los votos.',
       matchTitle: 'Partido en curso',
     },
     result: {

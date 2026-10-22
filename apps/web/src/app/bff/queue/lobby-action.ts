@@ -11,7 +11,7 @@ import { rejectCrossSite } from '@/common/api/same-origin'
 export async function lobbyAction(
   request: Request,
   path: string,
-  method: 'POST' | 'PUT' | 'DELETE',
+  method: 'POST' | 'PUT',
   withBody: boolean,
 ): Promise<Response> {
   const refused = rejectCrossSite(request, { jsonBody: withBody })
