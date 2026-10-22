@@ -1040,5 +1040,10 @@ describe('match report (4.1)', () => {
       .attach('print', png(), 'print.png')
     expect(sent.status).toBe(201)
     expect([...sent.body.absent].sort()).toEqual([...two].sort())
+
+    // Reported: the form is gone, and so is the list it needed.
+    const after = await request(app.getHttpServer()).get('/api/queue').set('Cookie', player.cookie)
+    expect(after.body.entry.lobby.myReport).not.toBeNull()
+    expect(after.body.entry.lobby.players).toBeNull()
   })
 })

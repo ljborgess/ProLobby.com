@@ -630,6 +630,19 @@ describe('QueueScreen (#233)', () => {
         }),
       )
     })
+
+    it('a message long only by its spaces says it is short, and is not sent', () => {
+      renderScreen({ entry: null, blockedUntil: null, lastMatch: settled })
+
+      fireEvent.click(screen.getByRole('button', { name: pt.result.reportPerson }))
+      fireEvent.change(screen.getByLabelText(pt.result.message, { exact: false }), {
+        target: { value: 'trapaceou feio            ' },
+      })
+      fireEvent.click(screen.getByRole('button', { name: pt.result.reportSend }))
+
+      expect(screen.getByRole('alert')).toHaveTextContent(pt.result.errors.message_too_short!)
+      expect(fetch).not.toHaveBeenCalled()
+    })
   })
 
   describe('back to searching, and why (#252)', () => {

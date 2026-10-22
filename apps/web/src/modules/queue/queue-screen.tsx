@@ -405,7 +405,13 @@ export function QueueScreen({
       <footer className="pointer-events-none relative z-10 flex flex-col gap-3 px-4 pb-5 sm:px-8 sm:pb-7">
         <div className="pointer-events-auto">
           {scene === 'picking' && state.lastMatch && (
-            <LastMatchPanel match={state.lastMatch} now={now} onChanged={reload} />
+            // Keyed by match: a new one starts with nothing sent and nothing open.
+            <LastMatchPanel
+              key={state.lastMatch.lobbyId}
+              match={state.lastMatch}
+              now={now}
+              onChanged={reload}
+            />
           )}
           {scene === 'picking' &&
             (verified.length === 0 ? (

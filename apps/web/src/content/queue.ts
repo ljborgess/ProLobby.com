@@ -97,12 +97,10 @@ export interface QueueContent {
     states: Record<string, string>
     contest: string
     contestUntil: (hours: number) => string
-    contested: string
     rateTitle: string
     rateHint: string
     thumbsUp: string
     negative: string
-    rated: string
     reportPerson: string
     person: string
     reason: string
@@ -219,6 +217,7 @@ export const QUEUE_CONTENT: Record<Locale, QueueContent> = {
         report_closed: 'O prazo pra reportar ou corrigir acabou.',
         absent_not_in_match: 'Uma das pessoas marcadas não está nessa partida.',
         payload_too_large: 'Arquivo grande demais: até 10 MB.',
+        message_too_short: 'Escreva pelo menos 20 caracteres contando o que aconteceu.',
         contest_exists: 'Você já contestou essa partida.',
         contest_closed: 'O prazo pra contestar acabou.',
         rating_closed: 'A avaliação dessa partida fechou.',
@@ -238,12 +237,10 @@ export const QUEUE_CONTENT: Record<Locale, QueueContent> = {
       },
       contest: 'Contestar resultado',
       contestUntil: (hours) => `Dá pra contestar por mais ${hours} h.`,
-      contested: 'Resultado contestado. A moderação vai olhar.',
       rateTitle: 'Avalie seu lado',
       rateHint: 'Opcional, e ninguém fica sabendo quem avaliou quem.',
       thumbsUp: 'Jogou bem',
       negative: 'Não colaborou',
-      rated: 'avaliado',
       reportPerson: 'Denunciar alguém',
       person: 'Quem',
       reason: 'Motivo',
@@ -360,6 +357,7 @@ export const QUEUE_CONTENT: Record<Locale, QueueContent> = {
         report_closed: 'Se acabó el plazo para reportar o corregir.',
         absent_not_in_match: 'Una de las personas marcadas no está en este partido.',
         payload_too_large: 'Archivo demasiado grande: hasta 10 MB.',
+        message_too_short: 'Escribe al menos 20 caracteres contando lo que pasó.',
         contest_exists: 'Ya impugnaste este partido.',
         contest_closed: 'Se acabó el plazo para impugnar.',
         rating_closed: 'La evaluación de este partido cerró.',
@@ -380,12 +378,10 @@ export const QUEUE_CONTENT: Record<Locale, QueueContent> = {
       },
       contest: 'Impugnar resultado',
       contestUntil: (hours) => `Puedes impugnar por ${hours} h más.`,
-      contested: 'Resultado impugnado. La moderación lo revisará.',
       rateTitle: 'Evalúa a tu lado',
       rateHint: 'Opcional, y nadie sabe quién evaluó a quién.',
       thumbsUp: 'Jugó bien',
       negative: 'No colaboró',
-      rated: 'evaluado',
       reportPerson: 'Denunciar a alguien',
       person: 'Quién',
       reason: 'Motivo',

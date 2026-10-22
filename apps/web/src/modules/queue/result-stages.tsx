@@ -449,6 +449,12 @@ function PersonReport({
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const form = new FormData(event.currentTarget)
+    // The browser's minLength counts the spaces the trim drops; the API does not.
+    const message = String(form.get('message') ?? '').trim()
+    if (message.length < 20) {
+      setFailed(r.errors.message_too_short!)
+      return
+    }
     setSending(true)
     setFailed(null)
     const code = await call(
@@ -457,7 +463,7 @@ function PersonReport({
         lobbyId: match.lobbyId,
         participationId: form.get('participationId'),
         reason: form.get('reason'),
-        message: String(form.get('message') ?? '').trim(),
+        message,
       }),
     )
     setSending(false)

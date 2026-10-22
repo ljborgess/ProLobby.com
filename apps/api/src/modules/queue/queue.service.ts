@@ -133,6 +133,9 @@ export class QueueService {
       entry?.lobby &&
       (await em.findOne(CaptainOffer, { lobby: entry.lobby, account: accountId, outcome: null }))
     const club = offer ? await em.findOne(DeclaredClub, { account: accountId }) : null
+    const myReport = entry?.lobby
+      ? await this.matchReportService.view(em, entry.lobby, accountId)
+      : null
     // The entry keeps its joinedAt through a cancellation, so a lobby that
     // ended after it is one this search came back from.
     const cancelled =
@@ -169,12 +172,12 @@ export class QueueService {
                 ? await this.formationVoteService.view(em, entry.lobby, mine)
                 : null,
             reportableFrom: entry.lobby ? reportableFrom(entry.lobby) : null,
-            myReport: entry.lobby
-              ? await this.matchReportService.view(em, entry.lobby, accountId)
-              : null,
+            myReport,
             reportConfirmBy: entry.lobby ? reportConfirmBy(entry.lobby) : null,
+            // Only for the report form: once this account reported, nobody to name.
             players:
               entry.lobby &&
+              !myReport &&
               (entry.lobby.state === LobbyState.IN_PROGRESS ||
                 entry.lobby.state === LobbyState.AWAITING_CONFIRMATION)
                 ? await this.peerRatingService.players(em, entry.lobby, accountId)
