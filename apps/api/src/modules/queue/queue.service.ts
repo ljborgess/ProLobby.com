@@ -28,7 +28,7 @@ import {
   type MatchReportView,
 } from './match-report.service'
 import { captainAnswerBy } from './captain-cascade.service'
-import { blockedUntilFor, refusalBlockMsFor } from './queue-block'
+import { blockedUntilFor, blockStateFor } from './queue-block'
 import { type QueueStall, QueueStallState } from './queue-stall'
 import { PeerRatingService, type TeammateView } from './peer-rating.service'
 import { QueueEntry } from './queue-entry.entity'
@@ -150,6 +150,7 @@ export class QueueService {
       : null
     // The entry keeps its joinedAt through a cancellation, so a lobby that
     // ended after it is one this search came back from.
+    const block = await blockStateFor(em, accountId, now)
     const cancelled =
       entry && !entry.lobby
         ? await em.findOne(
@@ -171,7 +172,7 @@ export class QueueService {
             confirmed: mine ? !!mine.confirmedAt : false,
             refusalBlockMinutes:
               entry.lobby?.state === LobbyState.WAITING_PLAYERS && mine && !mine.confirmedAt
-                ? Math.round((await refusalBlockMsFor(em, accountId, now)) / 60_000)
+                ? Math.round(block.refusalBlockMs / 60_000)
                 : null,
             captainOffer: offer
               ? { answerBy: captainAnswerBy(offer), clubName: club?.clubName ?? '' }
@@ -200,7 +201,7 @@ export class QueueService {
                 : null,
           })
         : null,
-      blockedUntil: await blockedUntilFor(em, accountId, now),
+      blockedUntil: block.blockedUntil,
       lastMatch: await this.matchReportService.lastMatch(em, accountId),
     }
   }

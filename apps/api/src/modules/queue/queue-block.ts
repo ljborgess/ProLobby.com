@@ -76,14 +76,18 @@ export async function blockedUntilFor(
 }
 
 /**
- * How long refusing right now would block (#234): the 30 s card says it
- * before the person refuses. The same ladder, with this refusal added.
+ * The block now, and how long refusing right now would block — the 30 s card
+ * says the second before the person refuses (#234). One read of the history
+ * for both: the screen asks every 2 s in that step.
  */
-export async function refusalBlockMsFor(
+export async function blockStateFor(
   em: EntityManager,
   accountId: string,
   now: Date,
-): Promise<number> {
+): Promise<{ blockedUntil: Date | null; refusalBlockMs: number }> {
   const { refusals, lastMatch } = await historyOf(em, accountId)
-  return blockedUntil([...refusals, now], lastMatch, now)!.getTime() - now.getTime()
+  return {
+    blockedUntil: blockedUntil(refusals, lastMatch, now),
+    refusalBlockMs: blockedUntil([...refusals, now], lastMatch, now)!.getTime() - now.getTime(),
+  }
 }
