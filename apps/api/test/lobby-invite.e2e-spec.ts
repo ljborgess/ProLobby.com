@@ -6,6 +6,8 @@ import request from 'supertest'
 
 import { linkDiscord } from './support/discord'
 import { AppModule } from '../src/app.module'
+import { EventDelivery } from '../src/modules/bot-integration/event-delivery.entity'
+import { EventDeliveryService } from '../src/modules/bot-integration/event-delivery.service'
 import { CURRENT_EDITION } from '../src/common/domain/game-edition.enum'
 import { Platform } from '../src/common/domain/platform.enum'
 import { MailSender } from '../src/common/mail/mail.types'
@@ -53,6 +55,7 @@ describe('lobby invite window (#248)', () => {
   let confirmation: LobbyConfirmationService
   let cascade: CaptainCascadeService
   let invite: LobbyInviteService
+  let events: EventDeliveryService
   let counter = 0
 
   const cookieOf = (res: request.Response): string => {
@@ -160,6 +163,7 @@ describe('lobby invite window (#248)', () => {
     confirmation = moduleRef.get(LobbyConfirmationService)
     cascade = moduleRef.get(CaptainCascadeService)
     invite = moduleRef.get(LobbyInviteService)
+    events = moduleRef.get(EventDeliveryService)
   }, 60_000)
 
   beforeEach(async () => {
@@ -211,6 +215,23 @@ describe('lobby invite window (#248)', () => {
     }
     expect(await orm.em.fork().count(QueueRefusal, {})).toBe(0)
     expect(await orm.em.fork().count(ReputationEvent, {})).toBe(0)
+    // The bot never reported channels for this lobby: nothing to drop.
+    expect(await orm.em.fork().count(EventDelivery, { type: 'lobby.ended' })).toBe(0)
+  })
+
+  it('tells the bot to drop the channels of a cancelled lobby at once (#251)', async () => {
+    const { lobbyId, closedAt } = await closedLobby()
+    const em = orm.em.fork()
+    const lobby = await em.findOneOrFail(Lobby, { id: lobbyId })
+    lobby.textChannelId = '900000000000000001'
+    lobby.voiceAChannelId = '900000000000000002'
+    lobby.voiceBChannelId = '900000000000000003'
+    await em.flush()
+
+    await invite.expire(at(closedAt + 5 * MINUTE))
+
+    const sent = await orm.em.fork().find(EventDelivery, { type: 'lobby.ended' })
+    expect(sent.map((row) => events.payloadOf(row))).toEqual([{ lobbyId }])
   })
 
   it('a captain who declared the club full: cancelled_no_fault, no case', async () => {

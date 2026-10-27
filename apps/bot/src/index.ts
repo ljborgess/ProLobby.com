@@ -1,7 +1,7 @@
 import type { Server } from 'node:http'
 import { Events } from 'discord.js'
 import { createDiscordClient, logGatewayErrors } from './discord/client'
-import { lobbyChannelsOn } from './discord/lobby-channels'
+import { lobbyChannelsOn, scheduleLobbySweep } from './discord/lobby-channels'
 import {
   readDiscordGuildId,
   reportPresence,
@@ -40,6 +40,7 @@ export async function main(): Promise<void> {
   client.once(Events.ClientReady, () => {
     void reportPresenceSnapshot(client, logger)
     schedulePresenceSnapshots(client, logger)
+    scheduleLobbySweep(client, logger)
   })
   await client.login(token)
   logger.info('bootstrap', 'Discord gateway connected')

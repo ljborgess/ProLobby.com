@@ -167,6 +167,9 @@ services:
       # Category for the 3 channels of each lobby (#250). Optional: empty puts
       # them at the top of the server.
       DISCORD_LOBBY_CATEGORY_ID: ${DISCORD_LOBBY_CATEGORY_ID:-}
+      # #status-sistema, for the 400-channel alert (#251). Required: in
+      # production a missing channel would hide the alert in a log nobody reads.
+      DISCORD_STATUS_CHANNEL_ID: ${DISCORD_STATUS_CHANNEL_ID:?DISCORD_STATUS_CHANNEL_ID is required}
       WEB_URL: ${WEB_URL:?WEB_URL is required}
     # /health is loopback-only and unauthenticated on purpose (server.ts): it
     # reports gateway state, not business data, and only Compose calls it.
