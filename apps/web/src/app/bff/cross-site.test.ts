@@ -5,6 +5,7 @@ const apiFetch = vi.fn()
 vi.mock('@/common/api/client', () => ({ apiFetch: (...args: unknown[]) => apiFetch(...args) }))
 
 import { POST as signUp } from './accounts/route'
+import { DELETE as removeClub, PUT as declareClub } from './accounts/me/club/route'
 import { POST as startDiscordLink } from './accounts/me/discord-link/attempts/route'
 import { POST as resendVerification } from './accounts/me/verifications/resends/route'
 import { POST as confirmPasswordReset } from './accounts/password-resets/confirmations/route'
@@ -71,6 +72,25 @@ describe('the /bff proxies refuse requests from other sites', () => {
     })
 
     expect(res.status).toBe(403)
+  })
+
+  it('refuses a cross-site change to the declared club (#229), with a body or without', async () => {
+    const put = await declareClub(
+      new Request('https://prolobby.test/bff/accounts/me/club', {
+        method: 'PUT',
+        headers: { 'content-type': 'text/plain' },
+        body: '{"clubName":"x","freeSlots":1}',
+      }),
+    )
+    const del = await removeClub(
+      new Request('https://prolobby.test/bff/accounts/me/club', {
+        method: 'DELETE',
+        headers: { 'sec-fetch-site': 'cross-site' },
+      }),
+    )
+
+    expect([put.status, del.status]).toEqual([403, 403])
+    expect(apiFetch).not.toHaveBeenCalled()
   })
 
   it('refuses a cross-site start of the Discord link, which has no body', async () => {

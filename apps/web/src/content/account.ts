@@ -37,6 +37,8 @@ export interface AccountContent {
     absentHint: string
     absentAction: string
   }
+  /** The declared club: optional, so a line under the steps, not a step (#229). */
+  club: { hint: string; action: string }
   allDone: string
   goToQueue: string
   reputation: {
@@ -79,6 +81,10 @@ export const ACCOUNT_CONTENT: Record<Locale, AccountContent> = {
       absentHint:
         'A fila fica bloqueada enquanto você estiver fora. Volte pelo convite abaixo e o acesso libera sozinho — seu vínculo continua o mesmo.',
       absentAction: 'Entrar no servidor',
+    },
+    club: {
+      hint: 'Tem clube com vaga? Declare e você pode ser escolhido capitão.',
+      action: 'Declarar clube',
     },
     allDone: 'Tudo pronto. A fila já te aceita.',
     goToQueue: 'Ir pra fila',
@@ -127,6 +133,10 @@ export const ACCOUNT_CONTENT: Record<Locale, AccountContent> = {
       absentHint:
         'La cola queda bloqueada mientras estés fuera. Vuelve por la invitación de abajo y el acceso se libera solo — tu vínculo sigue siendo el mismo.',
       absentAction: 'Entrar al servidor',
+    },
+    club: {
+      hint: '¿Tienes club con plazas libres? Decláralo y puedes ser elegido capitán.',
+      action: 'Declarar club',
     },
     allDone: 'Todo listo. La cola ya te acepta.',
     goToQueue: 'Ir a la cola',

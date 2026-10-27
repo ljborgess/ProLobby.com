@@ -194,6 +194,17 @@ export function QueuePrerequisitesPanel({
           </>
         )}
       </Step>
+
+      {/* Not a prerequisite (#229): a quiet line, outside the count. */}
+      <p className="text-sm leading-relaxed text-foreground-soft">
+        {content.club.hint}{' '}
+        <Link
+          href="/account/club"
+          className="landing-focus text-accent underline-offset-4 hover:underline"
+        >
+          {content.club.action}
+        </Link>
+      </p>
     </section>
   )
 }
