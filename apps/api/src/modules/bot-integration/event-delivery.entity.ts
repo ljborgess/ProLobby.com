@@ -26,8 +26,13 @@ export class EventDelivery {
   @Property({ length: 64 })
   type!: string
 
-  @Property({ type: 'json', columnType: 'jsonb' })
-  payload!: Record<string, unknown>
+  /**
+   * The payload as JSON, AES-256-GCM like every personal datum at rest
+   * (RNF-009): `lobby.closed` carries the Discord ids of the whole lobby.
+   * Read through `EventDeliveryService.payloadOf`, never queried.
+   */
+  @Property({ type: 'blob', hidden: true })
+  payloadEncrypted!: Buffer
 
   /**
    * When the event happened — the business timestamp, forwarded to the bot

@@ -7,6 +7,7 @@ import { AppModule } from '../src/app.module'
 import { applySecurity } from '../src/common/security/security.config'
 import { EventDelivery } from '../src/modules/bot-integration/event-delivery.entity'
 import { EventDeliveryTargetKind } from '../src/modules/bot-integration/event-delivery.enums'
+import { EventDeliveryService } from '../src/modules/bot-integration/event-delivery.service'
 import { ModerationCase } from '../src/modules/moderation/moderation-case.entity'
 import {
   ModerationCaseOrigin,
@@ -17,13 +18,14 @@ import {
 describe('moderation case announcer (#226)', () => {
   let app: INestApplication
   let orm: MikroORM
+  let events: EventDeliveryService
 
   /** The announcement is queued right after the flush, not inside it. */
   const announcementsOf = async (caseId: string): Promise<EventDelivery[]> => {
     for (let tries = 0; tries < 40; tries += 1) {
       const rows = (
         await orm.em.fork().find(EventDelivery, { type: 'moderation.case_opened' })
-      ).filter((row) => row.payload.caseId === caseId)
+      ).filter((row) => events.payloadOf(row).caseId === caseId)
       if (rows.length > 0) return rows
       await new Promise((resolve) => setTimeout(resolve, 50))
     }
@@ -48,6 +50,7 @@ describe('moderation case announcer (#226)', () => {
     await app.init()
 
     orm = moduleRef.get(MikroORM)
+    events = moduleRef.get(EventDeliveryService)
     await orm.getSchemaGenerator().refreshDatabase()
   }, 60_000)
 
@@ -62,7 +65,7 @@ describe('moderation case announcer (#226)', () => {
 
     expect(more).toHaveLength(0)
     expect(announcement!.targetKind).toBe(EventDeliveryTargetKind.SYSTEM)
-    expect(announcement!.payload).toEqual({ caseId, caseType: 'character_verification' })
+    expect(events.payloadOf(announcement!)).toEqual({ caseId, caseType: 'character_verification' })
   })
 
   it('never announces a delivery failure, which would loop through the same bot', async () => {

@@ -1,9 +1,10 @@
 import { MikroORM } from '@mikro-orm/postgresql'
 import type { INestApplication } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
-import { randomBytes, randomUUID } from 'node:crypto'
+import { randomBytes } from 'node:crypto'
 import request from 'supertest'
 
+import { linkDiscord } from './support/discord'
 import { AppModule } from '../src/app.module'
 import { CURRENT_EDITION } from '../src/common/domain/game-edition.enum'
 import { Platform } from '../src/common/domain/platform.enum'
@@ -14,7 +15,9 @@ import { Account } from '../src/modules/account/account.entity'
 import { AccountState } from '../src/modules/account/account.enums'
 import { DeclaredClub } from '../src/modules/account/declared-club.entity'
 import { CURRENT_TERMS_VERSION } from '../src/modules/account/terms.constants'
+import type { LobbyClosedEvent } from '@prolobby/types'
 import { EventDelivery } from '../src/modules/bot-integration/event-delivery.entity'
+import { EventDeliveryService } from '../src/modules/bot-integration/event-delivery.service'
 import { Archetype, CharacterCategory } from '../src/modules/character/archetype'
 import { Character, CharacterState } from '../src/modules/character/character.entity'
 import { CaptainOffer, CaptainOfferOutcome } from '../src/modules/lobby/captain-offer.entity'
@@ -39,7 +42,7 @@ const ARCHETYPE: Record<CharacterCategory, Archetype> = {
   [CharacterCategory.STRIKER]: Archetype.FINISHER,
 }
 
-type Player = { accountId: string; cookie: string; name: string }
+type Player = { accountId: string; cookie: string; name: string; discordId: string }
 
 /** Phase 3, #247: the captain cascade — RF-006, RF-032, RF-033, RF-080. */
 describe('captain cascade (#247)', () => {
@@ -48,6 +51,7 @@ describe('captain cascade (#247)', () => {
   let matching: QueueMatchingService
   let confirmation: LobbyConfirmationService
   let cascade: CaptainCascadeService
+  let events: EventDeliveryService
   let counter = 0
 
   const cookieOf = (res: request.Response): string => {
@@ -75,7 +79,7 @@ describe('captain cascade (#247)', () => {
     const account = await em.findOneOrFail(Account, { email })
     account.emailVerified = true
     account.state = AccountState.ACTIVE
-    account.discordIdHash = randomUUID()
+    const discordId = linkDiscord(account)
     account.reputation = reputation
     const character = em.create(Character, {
       account,
@@ -94,7 +98,7 @@ describe('captain cascade (#247)', () => {
     const res = await request(app.getHttpServer())
       .post('/api/sessions')
       .send({ email, password: PASSWORD })
-    return { accountId: account.id, cookie: cookieOf(res), name }
+    return { accountId: account.id, cookie: cookieOf(res), name, discordId }
   }
 
   /**
@@ -147,6 +151,7 @@ describe('captain cascade (#247)', () => {
     matching = moduleRef.get(QueueMatchingService)
     confirmation = moduleRef.get(LobbyConfirmationService)
     cascade = moduleRef.get(CaptainCascadeService)
+    events = moduleRef.get(EventDeliveryService)
   }, 60_000)
 
   beforeEach(async () => {
@@ -212,8 +217,23 @@ describe('captain cascade (#247)', () => {
     const gk90Club = gk90Side === LobbySide.A ? lobby.clubA : lobby.clubB
     expect(gk90Club).toBe('Clube gk90')
     const [delivery] = await orm.em.fork().find(EventDelivery, { type: 'lobby.closed' })
-    expect(delivery!.payload).toMatchObject({ lobbyId })
-    expect(delivery!.payload.participantAccountIds).toHaveLength(8)
+    // Discord ids are personal data: never in the clear in the table (RNF-009).
+    expect(delivery!.payloadEncrypted.includes(roster.gk90.discordId)).toBe(false)
+    const payload = events.payloadOf(delivery!) as LobbyClosedEvent['payload']
+    expect(payload.lobbyId).toBe(lobbyId)
+    const gk90Payload = gk90Side === LobbySide.A ? payload.sideA : payload.sideB
+    expect(gk90Payload.captainDiscordId).toBe(roster.gk90.discordId)
+    expect(gk90Payload.clubName).toBe('Clube gk90')
+    const all = [...payload.sideA.discordIds, ...payload.sideB.discordIds].sort()
+    expect(all).toEqual(
+      Object.values(roster)
+        .map((player) => player.discordId)
+        .sort(),
+    )
+    for (const player of Object.values(roster)) {
+      const mine = (await sideOf(player.accountId)) === LobbySide.A ? payload.sideA : payload.sideB
+      expect(mine.discordIds).toContain(player.discordId)
+    }
   })
 
   it('cancels with no fault when a side runs out: everyone searches again, nobody pays', async () => {

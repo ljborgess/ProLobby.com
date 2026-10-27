@@ -182,7 +182,9 @@ Os tipos são os já enumerados em [Moderação](../produto/04-governanca/01-mod
 **`aberto_por` — gap fechado em 2026-09-08**: conta que abriu o caso (denunciante, contestante), ou `sistema` nos casos automáticos (acúmulo de avaliação negativa, retry de webhook esgotado). Sem esse campo, três requisitos não têm onde se apoiar: [RF-036](05-funcionais.md#rf-036--denunciado-nunca-vê-quem-denunciou) (painel precisa ver quem denunciou), [RF-068](05-funcionais.md#rf-068--máximo-de-3-denúncias-abertas-por-conta) (contar denúncias abertas por conta) e [RF-012](05-funcionais.md#rf-012--qualquer-humano-da-partida-contesta-uma-vez-cada) (bloquear 2ª contestação da mesma pessoa).
 
 ### EntregaEvento
-`id_evento` (único) · `tipo` · `payload` · `alvo` (lobby ou conta) · `tentativas` · `entregue_em` · `criado_em`
+`id_evento` (único) · `tipo` · `payload_cifrado` · `alvo` (lobby ou conta) · `tentativas` · `entregue_em` · `criado_em`
+
+**`payload_cifrado` (2026-10-27, [#250](https://github.com/ljborgess/ProLobby.com/issues/250))**: o `lobby.closed` leva os Discord IDs de todos os humanos do lobby, e Discord ID não fica em texto puro no banco ([RNF-009](07-nao-funcionais.md#rnf-009--dado-sensível-criptografado-em-repouso)). O payload de todo evento é gravado cifrado com a mesma chave do print, e a API decifra só na hora de entregar.
 
 **Gap fechado em 2026-09-11.** [RF-058](05-funcionais.md#rf-058--evento-da-plataforma-pro-bot-tem-retry-e-vira-caso-ao-esgotar) exige retry com backoff (10s/20s/40s) e descarte de reenvio duplicado por id — e a [arquitetura do bot](../discord/05-arquitetura-bot.md) colocava as duas coisas **em memória, no bot**, que não tem banco e perde tudo em restart (justo quando o retry importa). O registro passa a viver na API, que é quem retenta; o bot fica idempotente checando o estado real no Discord antes de agir.
 

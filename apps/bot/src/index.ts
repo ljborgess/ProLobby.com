@@ -1,6 +1,7 @@
 import type { Server } from 'node:http'
 import { Events } from 'discord.js'
 import { createDiscordClient, logGatewayErrors } from './discord/client'
+import { lobbyChannelsOn } from './discord/lobby-channels'
 import {
   readDiscordGuildId,
   reportPresence,
@@ -9,6 +10,7 @@ import {
 } from './discord/presence'
 import { readDiscordBotToken } from './discord/token'
 import { logger } from './logger'
+import { postBotEvent } from './platform/client'
 import { handlePlatformEvent } from './webhook/handlers'
 import { createWebhookServer, readWebhookSecret } from './webhook/server'
 
@@ -63,6 +65,7 @@ export async function main(): Promise<void> {
           await channel.send({ content, allowedMentions: { parse: [] } })
         },
         warn: (message) => logger.warn('events', message),
+        lobby: { ...lobbyChannelsOn(client), report: postBotEvent },
       }),
   })
   const httpServer = app.listen(port, () => {

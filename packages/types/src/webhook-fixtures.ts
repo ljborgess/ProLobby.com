@@ -7,14 +7,21 @@ import type {
 
 const NIL = (n: number) => `11111111-1111-1111-1111-${n.toString().padStart(12, '0')}`
 
+/** A Discord snowflake, fixed so tests can name who was let in. */
+export const SNOWFLAKE = (n: number) => `1${n.toString().padStart(17, '0')}`
+
 /**
- * A lobby.closed payload sized for the real case: 10 humans, two captains.
- * Used by webhook tests so they exercise the contract, not `{}`.
+ * A lobby.closed payload sized for the real case: 5 humans a side, the first
+ * of each its captain. Used by webhook tests so they exercise the contract,
+ * not `{}`.
  */
 export function sampleLobbyClosedEvent(
   overrides: Partial<LobbyClosedEvent> = {},
 ): LobbyClosedEvent {
-  const participantAccountIds = Array.from({ length: 10 }, (_, i) => NIL(i + 1))
+  const side = (from: number, clubName: string) => {
+    const discordIds = Array.from({ length: 5 }, (_, i) => SNOWFLAKE(from + i))
+    return { captainDiscordId: discordIds[0]!, clubName, discordIds }
+  }
 
   return {
     id: NIL(100),
@@ -22,9 +29,8 @@ export function sampleLobbyClosedEvent(
     type: 'lobby.closed',
     payload: {
       lobbyId: NIL(200),
-      sideACaptainAccountId: NIL(1),
-      sideBCaptainAccountId: NIL(2),
-      participantAccountIds,
+      sideA: side(1, 'Clube Azul'),
+      sideB: side(11, 'Clube Rojo'),
     },
     ...overrides,
   }

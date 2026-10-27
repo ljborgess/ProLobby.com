@@ -1,7 +1,25 @@
 import { z } from 'zod'
 
+import { snowflake } from './bot-event'
+
 const uuid = z.guid()
 const occurredAt = z.string().datetime()
+
+/**
+ * One side of a closed lobby, as the bot needs it to open the channels
+ * (#250): who may see this side's voice channel, who to name as captain, and
+ * the club the captain declared. Discord ids, not account ids: the bot has no
+ * database to turn one into the other. They are personal data (RNF-009), which
+ * is why `EventDelivery` keeps the payload encrypted.
+ */
+const lobbySideSchema = z
+  .object({
+    captainDiscordId: snowflake,
+    clubName: z.string().min(1).max(20),
+    // Every human of the side, the captain included; 11 a side at most.
+    discordIds: z.array(snowflake).min(1).max(11),
+  })
+  .strict()
 
 /**
  * Discriminated union of platform → bot events (RF-058, issue #95).
@@ -20,10 +38,8 @@ export const lobbyClosedEventSchema = z.object({
   payload: z
     .object({
       lobbyId: uuid,
-      sideACaptainAccountId: uuid,
-      sideBCaptainAccountId: uuid,
-      // Floor of 8 humans, cap of 22 — docs/produto/03-partida/02-fila.md.
-      participantAccountIds: z.array(uuid).min(8).max(22),
+      sideA: lobbySideSchema,
+      sideB: lobbySideSchema,
     })
     .strict(),
 })

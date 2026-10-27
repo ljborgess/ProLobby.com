@@ -5,6 +5,10 @@ import { sampleLobbyClosedEvent } from '@prolobby/types'
 
 import { AppModule } from '../src/app.module'
 import { applySecurity } from '../src/common/security/security.config'
+import {
+  encryptAtRest,
+  readEvidenceEncryptionKey,
+} from '../src/common/security/evidence-encryption'
 import { EventDelivery } from '../src/modules/bot-integration/event-delivery.entity'
 import { EventDeliveryTargetKind } from '../src/modules/bot-integration/event-delivery.enums'
 import { EventDeliveryService } from '../src/modules/bot-integration/event-delivery.service'
@@ -39,6 +43,25 @@ describe('EventDelivery (e2e)', () => {
     await app.close()
   })
 
+  it('keeps the payload encrypted at rest and reads it back whole (RNF-009)', async () => {
+    const event = sampleLobbyClosedEvent({ id: '11111111-1111-1111-1111-000000000060' })
+    const discordId = event.payload.sideA.captainDiscordId
+
+    await service.enqueue(event, { kind: EventDeliveryTargetKind.LOBBY, id: event.payload.lobbyId })
+
+    const [raw] = await orm.em
+      .fork()
+      .getConnection()
+      .execute<{ payload_encrypted: Buffer }[]>(
+        `select payload_encrypted from event_delivery where event_id = ?`,
+        [event.id],
+      )
+    expect(raw!.payload_encrypted.includes(discordId)).toBe(false)
+    expect(raw!.payload_encrypted.includes(event.payload.lobbyId)).toBe(false)
+    const row = await orm.em.fork().findOneOrFail(EventDelivery, { eventId: event.id })
+    expect(service.payloadOf(row)).toEqual(event.payload)
+  })
+
   it('stores a single row when the same event is enqueued twice at once', async () => {
     const event = sampleLobbyClosedEvent()
     const target = { kind: EventDeliveryTargetKind.LOBBY, id: event.payload.lobbyId }
@@ -58,7 +81,10 @@ describe('EventDelivery (e2e)', () => {
       em.create(EventDelivery, {
         eventId: event.id,
         type: event.type,
-        payload: event.payload,
+        payloadEncrypted: encryptAtRest(
+          readEvidenceEncryptionKey(),
+          Buffer.from(JSON.stringify(event.payload)),
+        ),
         occurredAt: new Date(event.occurredAt),
         targetKind: EventDeliveryTargetKind.LOBBY,
         targetId: event.payload.lobbyId,

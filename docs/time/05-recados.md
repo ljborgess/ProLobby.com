@@ -6,6 +6,16 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 
 ---
 
+## 2026-10-27 · Para todos
+
+### O payload dos eventos pro bot agora é cifrado (#250)
+
+- **O que mudou:** o `lobby.closed` passou a levar os Discord IDs dos humanos de cada lado (`sideA` e `sideB`, cada um com `captainDiscordId`, `clubName` e `discordIds`), porque o bot cria os canais por eles. Discord ID não fica em texto puro no banco (RNF-009), então a coluna `event_delivery.payload` virou `payload_encrypted`, cifrada com a `EVIDENCE_ENCRYPTION_KEY`.
+- **Em teste:** pra ler o que foi enfileirado, use `EventDeliveryService.payloadOf(row)`; `row.payload` não existe mais. Conta de e2e que entra em lobby precisa de Discord vinculado de verdade: use `linkDiscord(account)` de `apps/api/test/support/discord.ts`.
+- **A migration apaga as linhas de `event_delivery`** dos bancos de desenvolvimento e teste, porque o SQL não tem a chave pra cifrar o que já existe.
+
+---
+
 ## 2026-10-27 · Rafael
 
 ### A #229, a #234, a #250 e a #251 passaram pro Luciano

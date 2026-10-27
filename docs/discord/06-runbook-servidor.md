@@ -55,7 +55,7 @@ Sete, com as permissões de [Canais](02-canais.md):
 
 Canais de lobby são **temporários** e criados pelo bot em tempo de execução (3 por lobby) — não criar à mão.
 
-Categoria separada pros temporários ajuda a enxergar o teto de 500 canais, mas não é obrigatória.
+Categoria separada pros temporários ajuda a enxergar o teto de 500 canais, mas não é obrigatória. Se criar, o id dela vai em `DISCORD_LOBBY_CATEGORY_ID`; sem ele, os canais nascem no topo do servidor. **Uma categoria do Discord comporta no máximo 50 canais**: a 3 por lobby, são 16 lobbies ao mesmo tempo. Os 10 lobbies simultâneos da [RNF-004](../requisitos/07-nao-funcionais.md) cabem, mas se o volume passar disso, deixe a variável vazia. Os nomes são `time-a-<id do lobby>`, `time-b-<id do lobby>` e `lobby-<id do lobby>`, com o id inteiro: é por eles, e por o canal ter a permissão do próprio bot, que ele reconhece os canais que já criou.
 
 ## 5 · Onboarding nativo
 
