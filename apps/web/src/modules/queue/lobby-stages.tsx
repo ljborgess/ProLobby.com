@@ -13,6 +13,8 @@ export interface LobbyView {
   /** This account's side: `scoreA` is side A's goals. */
   side: Side
   confirmed: boolean
+  /** Before answering: the block a refusal would cost, in minutes (#234). */
+  refusalBlockMinutes: number | null
   /** The captain role offered to this account right now. */
   captainOffer: { answerBy: string; clubName: string } | null
   isCaptain: boolean
@@ -220,8 +222,11 @@ function ConfirmStep({
 }) {
   const content = useQueueContent()
   const { sending, failed, send } = useStep(onChanged, content.answerClosed)
+  // Refusing costs a block (RF-009): it is said first, and refused on a second click.
+  const [refusing, setRefusing] = useState(false)
   const left = secondsTo(lobby.confirmBy, now)
   const closed = left === 0
+  const minutes = lobby.refusalBlockMinutes
 
   return (
     <>
@@ -230,7 +235,30 @@ function ConfirmStep({
         <span className="text-xs font-semibold tracking-[0.15em] text-accent">{code}</span>
         {lobby.confirmed ? content.confirmed : content.placedHint}
       </p>
-      {!lobby.confirmed && (
+      {!lobby.confirmed && refusing && minutes !== null && (
+        <div role="alert" className="flex w-full flex-col gap-3">
+          <p className="text-sm text-foreground">{content.refuseWarning(minutes)}</p>
+          <div className="flex w-full flex-col gap-3 sm:flex-row-reverse">
+            <button
+              type="button"
+              autoFocus
+              onClick={() => setRefusing(false)}
+              className={`${PRIMARY} flex-1 py-3 text-base`}
+            >
+              {content.refuseBack}
+            </button>
+            <button
+              type="button"
+              onClick={() => send('confirmation', { accept: false })}
+              disabled={sending || closed}
+              className={`${SECONDARY} flex-1 py-3 text-base`}
+            >
+              {content.refuseConfirm}
+            </button>
+          </div>
+        </div>
+      )}
+      {!lobby.confirmed && !(refusing && minutes !== null) && (
         <div className="flex w-full flex-col gap-3 sm:flex-row-reverse">
           <button
             type="button"
@@ -243,7 +271,9 @@ function ConfirmStep({
           </button>
           <button
             type="button"
-            onClick={() => send('confirmation', { accept: false })}
+            onClick={() =>
+              minutes === null ? send('confirmation', { accept: false }) : setRefusing(true)
+            }
             disabled={sending || closed}
             className={`${SECONDARY} flex-1 py-3 text-base`}
           >

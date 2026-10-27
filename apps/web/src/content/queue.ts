@@ -28,6 +28,12 @@ export interface QueueContent {
   next: string
   accept: string
   refuse: string
+  /** Before refusing in the 30 s: the block it costs (RF-009, #234). */
+  refuseWarning: (minutes: number) => string
+  refuseConfirm: string
+  refuseBack: string
+  /** 10 min searching with no lobby: what is missing, every 5 min (RF-007, #234). */
+  stall: { unpaired: string; captain_missing: string; keepWaiting: string }
   confirmed: string
   answerClosed: string
   movementHeading: string
@@ -142,6 +148,16 @@ export const QUEUE_CONTENT: Record<Locale, QueueContent> = {
     next: 'Próximo armário',
     accept: 'Aceitar',
     refuse: 'Recusar',
+    refuseWarning: (minutes) =>
+      `Recusar te bloqueia da fila por ${minutes} min. A recusa sobe o bloqueio enquanto você recusar em menos de 12 h.`,
+    refuseConfirm: 'Recusar mesmo',
+    refuseBack: 'Voltar',
+    stall: {
+      unpaired: 'A fila está parada porque falta alguém da sua posição pra formar par com você.',
+      captain_missing:
+        'A fila está parada porque falta capitão: ninguém na busca declarou clube com vaga pra um dos lados.',
+      keepWaiting: 'Continuar esperando',
+    },
     confirmed: 'Confirmado. Esperando os outros jogadores.',
     answerClosed: 'O tempo pra responder acabou.',
     movementHeading: 'Movimento agora',
@@ -281,6 +297,17 @@ export const QUEUE_CONTENT: Record<Locale, QueueContent> = {
     next: 'Siguiente casillero',
     accept: 'Aceptar',
     refuse: 'Rechazar',
+    refuseWarning: (minutes) =>
+      `Rechazar te bloquea de la cola por ${minutes} min. El bloqueo sube mientras rechaces con menos de 12 h de diferencia.`,
+    refuseConfirm: 'Rechazar igual',
+    refuseBack: 'Volver',
+    stall: {
+      unpaired:
+        'La cola está parada porque falta alguien de tu posición para formar pareja contigo.',
+      captain_missing:
+        'La cola está parada porque falta capitán: nadie en la búsqueda declaró un club con plazas para uno de los lados.',
+      keepWaiting: 'Seguir esperando',
+    },
     confirmed: 'Confirmado. Esperando a los demás jugadores.',
     answerClosed: 'Se acabó el tiempo para responder.',
     movementHeading: 'Movimiento ahora',

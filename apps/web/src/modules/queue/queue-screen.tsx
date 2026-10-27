@@ -25,6 +25,8 @@ export interface QueueEntryView {
   /** Searching again because a lobby of this entry was cancelled, and why. */
   cancelledLobby: { state: 'cancelled_no_fault' | 'cancelled_by_captain'; endedAt: string } | null
   lobby: LobbyView | null
+  /** While searching, what keeps the queue from closing for this place (RF-007, #234). */
+  stall: 'unpaired' | 'captain_missing' | null
 }
 
 export interface QueueState {
@@ -92,6 +94,15 @@ type Refusal =
   { kind: 'missing'; missing: MissingPrerequisite[] } | { kind: 'inLobby' } | { kind: 'error' }
 
 /** Now, ticking once a second while `on`. */
+/** RF-007: the stall notice shows at 10 min of search, and again every 5 min. */
+const STALL_AFTER_MS = 10 * 60_000
+const STALL_EVERY_MS = 5 * 60_000
+
+/** Which 5 min turn of the stall notice a wait is in; -1 before the first 10 min. */
+export function stallTurn(waitedMs: number): number {
+  return waitedMs < STALL_AFTER_MS ? -1 : Math.floor((waitedMs - STALL_AFTER_MS) / STALL_EVERY_MS)
+}
+
 function useNow(on: boolean): number {
   const [now, setNow] = useState(() => Date.now())
   useEffect(() => {
@@ -199,6 +210,8 @@ export function QueueScreen({
   const [busy, setBusy] = useState(false)
   const [refusal, setRefusal] = useState<Refusal | null>(null)
   const [notice, setNotice] = useState<Notice | null>(null)
+  // The stall notice's last turn dismissed, for this search (its joinedAt).
+  const [stallSeen, setStallSeen] = useState<{ joinedAt: string; turn: number } | null>(null)
   const lastLobby = useRef(initial.entry?.lobby ?? null)
   // Each cancellation is told once: the entry keeps saying it while searching,
   // and an older one must not stand in for a lobby undone later.
@@ -473,6 +486,14 @@ export function QueueScreen({
                 {content.notice.dismiss}
               </button>
             </div>
+          )}
+          {scene === 'searching' && state.entry && (
+            <StallNotice
+              entry={state.entry}
+              now={now}
+              seen={stallSeen}
+              onKeepWaiting={setStallSeen}
+            />
           )}
           {scene === 'searching' && (
             <BackAction kind="cancel" onClick={leave} label={content.leave} />
@@ -966,6 +987,43 @@ function Tunnel({
         </span>
         <span className="sr-only">{content.waited(clockOf(waited))}</span>
       </div>
+    </div>
+  )
+}
+
+/**
+ * RF-007 (#234): 10 min searching and the queue still has not closed — what
+ * is missing, from the last matching run, never a count (RF-008). Keep
+ * waiting hides it until the next 5 min turn; leaving is the button below.
+ */
+function StallNotice({
+  entry,
+  now,
+  seen,
+  onKeepWaiting,
+}: {
+  entry: QueueEntryView
+  now: number
+  seen: { joinedAt: string; turn: number } | null
+  onKeepWaiting: (seen: { joinedAt: string; turn: number }) => void
+}) {
+  const content = useQueueContent()
+  const turn = stallTurn(now - new Date(entry.joinedAt).getTime())
+  const dismissed = seen?.joinedAt === entry.joinedAt ? seen.turn : -1
+  if (!entry.stall || turn < 0 || turn <= dismissed) return null
+  return (
+    <div
+      role="status"
+      className="mb-3 flex flex-wrap items-center justify-between gap-3 border-l-2 border-accent pl-3"
+    >
+      <p className="max-w-xl text-sm text-foreground">{content.stall[entry.stall]}</p>
+      <button
+        type="button"
+        onClick={() => onKeepWaiting({ joinedAt: entry.joinedAt, turn })}
+        className="landing-focus text-sm text-accent underline-offset-4 hover:underline"
+      >
+        {content.stall.keepWaiting}
+      </button>
     </div>
   )
 }

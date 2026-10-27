@@ -220,6 +220,18 @@ describe('lobby confirmation and queue block (#232)', () => {
     expect(await em.count(QueueEntry, { lobby: null })).toBe(7)
   })
 
+  it('tells, before the answer, how long a refusal would block (#234)', async () => {
+    const { players } = await placed()
+    await refusal(players[0]!, 60)
+
+    const shown = (await queueOf(players[0]!)).body.entry.lobby
+    expect(shown.refusalBlockMinutes).toBe(15)
+    expect((await queueOf(players[1]!)).body.entry.lobby.refusalBlockMinutes).toBe(5)
+
+    await answer(players[1]!, true)
+    expect((await queueOf(players[1]!)).body.entry.lobby.refusalBlockMinutes).toBeNull()
+  })
+
   it('climbs the ladder: a 2nd refusal blocks 15 min', async () => {
     const { players } = await placed()
     await refusal(players[0]!, 60)

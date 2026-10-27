@@ -162,6 +162,36 @@ describe('queue closes matches (#231)', () => {
     expect(await orm.em.fork().count(LobbyParticipation, {})).toBe(8)
   })
 
+  it('tells who still searches what keeps the queue: no pair for their place (#234)', async () => {
+    await eight()
+    const lone = await queued(CharacterCategory.WINGER)
+
+    expect(await matching.closeMatches()).toBe(1)
+
+    const shown = await request(app.getHttpServer()).get('/api/queue').set('Cookie', lone.cookie)
+    expect(shown.body.entry.stall).toBe('unpaired')
+  })
+
+  it('tells who still searches what keeps the queue: no captain with room (#234)', async () => {
+    const players = [
+      await queued(CharacterCategory.MIDFIELDER),
+      await queued(CharacterCategory.MIDFIELDER),
+      await queued(CharacterCategory.GOALKEEPER),
+      await queued(CharacterCategory.GOALKEEPER),
+      await queued(CharacterCategory.DEFENDER),
+      await queued(CharacterCategory.DEFENDER),
+      await queued(CharacterCategory.STRIKER),
+      await queued(CharacterCategory.STRIKER),
+    ]
+
+    expect(await matching.closeMatches()).toBe(0)
+
+    const shown = await request(app.getHttpServer())
+      .get('/api/queue')
+      .set('Cookie', players[0]!.cookie)
+    expect(shown.body.entry.stall).toBe('captain_missing')
+  })
+
   it('leaves the excess searching with its original joinedAt', async () => {
     await eight()
     const lone = await queued(CharacterCategory.WINGER)

@@ -16,6 +16,7 @@ import { QueueMatchingJob } from './queue-matching.job'
 import { QueueMatchingService } from './queue-matching.service'
 import { QueueController } from './queue.controller'
 import { QueueService } from './queue.service'
+import { QueueStallState } from './queue-stall'
 
 /** Phase 2.5 and the lobby of phase 3: queue, matchmaking, captains (#55, #56). */
 @Module({
@@ -33,6 +34,7 @@ import { QueueService } from './queue.service'
     QueueService,
     QueueMatchingService,
     QueueMatchingJob,
+    QueueStallState,
   ],
 })
 export class QueueModule {}

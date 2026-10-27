@@ -4,7 +4,7 @@ import { renderWithLocale } from '@/test-utils'
 import { QUEUE_CONTENT } from '@/content/queue'
 import type { CharacterView } from '@/modules/character/types'
 import type { LobbyView } from './lobby-stages'
-import { QueueScreen, type QueueState } from './queue-screen'
+import { QueueScreen, type QueueState, stallTurn } from './queue-screen'
 
 const pt = QUEUE_CONTENT.pt
 
@@ -51,10 +51,12 @@ function inLobby(lobby: Partial<LobbyView>): QueueState {
       category: 'midfielder',
       joinedAt: new Date().toISOString(),
       cancelledLobby: null,
+      stall: null,
       lobby: {
         state: 'waiting_players',
         confirmBy: inSeconds(25),
         confirmed: false,
+        refusalBlockMinutes: null,
         captainOffer: null,
         isCaptain: false,
         inviteBy: null,
@@ -82,6 +84,7 @@ const searchingAgain = (
     category: 'midfielder',
     joinedAt: new Date().toISOString(),
     cancelledLobby: cancelled,
+    stall: null,
     lobby: null,
   },
   blockedUntil: null,
@@ -222,6 +225,27 @@ describe('QueueScreen (#233)', () => {
         expect.objectContaining({ body: JSON.stringify({ accept: false }) }),
       )
       expect(await screen.findByText(pt.blockedTitle)).toBeInTheDocument()
+    })
+
+    it('says the block before refusing, and going back sends nothing (#234)', async () => {
+      vi.mocked(fetch).mockResolvedValueOnce(answer(204, {}))
+      renderScreen(inLobby({ refusalBlockMinutes: 15 }))
+
+      fireEvent.click(screen.getByRole('button', { name: pt.refuse }))
+      expect(screen.getByRole('alert')).toHaveTextContent(pt.refuseWarning(15))
+      expect(fetch).not.toHaveBeenCalled()
+
+      fireEvent.click(screen.getByRole('button', { name: pt.refuseBack }))
+      expect(screen.getByRole('button', { name: pt.accept })).toBeInTheDocument()
+
+      fireEvent.click(screen.getByRole('button', { name: pt.refuse }))
+      fireEvent.click(screen.getByRole('button', { name: pt.refuseConfirm }))
+      await waitFor(() =>
+        expect(fetch).toHaveBeenCalledWith(
+          '/bff/queue/confirmation',
+          expect.objectContaining({ body: JSON.stringify({ accept: false }) }),
+        ),
+      )
     })
 
     it('says the time ran out when the API closed the answer (409)', async () => {
@@ -642,6 +666,48 @@ describe('QueueScreen (#233)', () => {
 
       expect(screen.getByRole('alert')).toHaveTextContent(pt.result.errors.message_too_short!)
       expect(fetch).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('a queue that does not close (RF-007, #234)', () => {
+    const MINUTE = 60_000
+    const searching = (waitedMs: number, stall: 'unpaired' | 'captain_missing' | null) => ({
+      entry: {
+        characterId: 'c1',
+        category: 'midfielder' as const,
+        joinedAt: new Date(Date.now() - waitedMs).toISOString(),
+        cancelledLobby: null,
+        stall,
+        lobby: null,
+      },
+      blockedUntil: null,
+    })
+
+    it('turns at 10 min and every 5 min after', () => {
+      expect([9, 10, 14, 15, 21].map((m) => stallTurn(m * MINUTE))).toEqual([-1, 0, 0, 1, 2])
+    })
+
+    it('says nothing before 10 min, then what is missing', async () => {
+      const early = renderScreen(searching(9 * MINUTE, 'unpaired'))
+      expect(screen.queryByText(pt.stall.unpaired)).toBeNull()
+      early.unmount()
+
+      renderScreen(searching(11 * MINUTE, 'captain_missing'))
+      expect(await screen.findByText(pt.stall.captain_missing)).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: pt.leave })).toBeInTheDocument()
+    })
+
+    it('keep waiting hides it until the next 5 min turn', async () => {
+      renderScreen(searching(11 * MINUTE, 'unpaired'))
+      fireEvent.click(await screen.findByRole('button', { name: pt.stall.keepWaiting }))
+
+      expect(screen.queryByText(pt.stall.unpaired)).toBeNull()
+    })
+
+    it('says nothing when the last run found nothing missing', () => {
+      renderScreen(searching(30 * MINUTE, null))
+
+      expect(screen.queryByRole('button', { name: pt.stall.keepWaiting })).toBeNull()
     })
   })
 

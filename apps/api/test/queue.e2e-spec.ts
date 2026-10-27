@@ -118,6 +118,7 @@ describe('queue entry (#228)', () => {
       category: 'midfielder',
       joinedAt: expect.any(String),
       cancelledLobby: null,
+      stall: null,
       lobby: null,
     })
     const current = await request(app.getHttpServer()).get('/api/queue').set('Cookie', cookie)
