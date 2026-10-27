@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 import { snowflake } from './bot-event'
 
-const uuid = z.string().uuid()
+const uuid = z.guid()
 const occurredAt = z.string().datetime()
 
 /**
