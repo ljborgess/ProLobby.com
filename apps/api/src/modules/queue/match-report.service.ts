@@ -295,7 +295,7 @@ export class MatchReportService {
       expired = silent
       return silent.length + unconfirmed.length + final.length
     })
-    await announceEnded(this.events, expired)
+    await announceEnded(this.events, expired, this.logger)
     return count
   }
 

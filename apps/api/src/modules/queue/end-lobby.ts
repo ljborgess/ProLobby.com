@@ -1,4 +1,5 @@
 import type { EntityManager } from '@mikro-orm/postgresql'
+import type { Logger } from '@nestjs/common'
 import { randomUUID } from 'node:crypto'
 
 import { EventDeliveryTargetKind } from '../bot-integration/event-delivery.enums'
@@ -29,16 +30,29 @@ export async function endLobby(
  * floor. Call after the commit; lobbies the bot never made channels for
  * are skipped.
  */
-export async function announceEnded(events: EventDeliveryService, lobbies: Lobby[]): Promise<void> {
+export async function announceEnded(
+  events: EventDeliveryService,
+  lobbies: Lobby[],
+  logger: Pick<Logger, 'error'>,
+): Promise<void> {
   for (const lobby of lobbies.filter((ended) => ended.textChannelId)) {
-    await events.enqueue(
-      {
-        id: randomUUID(),
-        occurredAt: (lobby.endedAt ?? new Date()).toISOString(),
-        type: 'lobby.ended',
-        payload: { lobbyId: lobby.id },
-      },
-      { kind: EventDeliveryTargetKind.LOBBY, id: lobby.id },
-    )
+    try {
+      await events.enqueue(
+        {
+          id: randomUUID(),
+          occurredAt: (lobby.endedAt ?? new Date()).toISOString(),
+          type: 'lobby.ended',
+          payload: { lobbyId: lobby.id },
+        },
+        { kind: EventDeliveryTargetKind.LOBBY, id: lobby.id },
+      )
+    } catch (error) {
+      // The lobby already ended; a lost event leaves its channels to the
+      // bot's sweep, which takes them within 15 min of empty calls.
+      logger.error(
+        `could not announce the end of lobby ${lobby.id}`,
+        error instanceof Error ? error.stack : undefined,
+      )
+    }
   }
 }

@@ -4,6 +4,7 @@ import {
   PermissionFlagsBits,
   type Client,
   type Guild,
+  type GuildBasedChannel,
 } from 'discord.js'
 
 import type { Logger } from '../logger'
@@ -91,21 +92,35 @@ export function lobbyChannelsOn(
 export function scheduleLobbySweep(client: Client, log: Logger): () => void {
   const emptySince = new Map<string, number>()
   let alerted = false
+  let running = false
 
   const run = async () => {
     const server = guildOf(client)
-    const channels = [...server.channels.cache.values()].map((channel) => ({
-      id: channel.id,
-      name: channel.name,
-      createdAt: channel.createdTimestamp ?? Date.now(),
-      voiceMembers: channel.isVoiceBased() ? channel.members.size : null,
-    }))
+    // Threads do not count towards the 500, and are never lobby channels.
+    const all = [...server.channels.cache.values()].filter((channel) => !channel.isThread())
+    const channels = all
+      // Only what the bot made: a person's channel called "lobby-…" is not ours to delete.
+      .filter((channel) => isOwnedBy(client, channel))
+      .map((channel) => ({
+        id: channel.id,
+        name: channel.name,
+        createdAt: channel.createdTimestamp ?? Date.now(),
+        voiceMembers: channel.isVoiceBased() ? channel.members.size : null,
+      }))
     for (const group of sweep(lobbyGroups(channels), emptySince, Date.now())) {
-      for (const id of group.channelIds) await server.channels.delete(id)
+      for (const id of group.channelIds) {
+        // One already gone (a `lobby.ended` got there first) must not stop the rest.
+        await server.channels.delete(id).catch((error: unknown) => {
+          log.warn('lobby', 'lobby channel not deleted', {
+            channelId: id,
+            message: error instanceof Error ? error.message : String(error),
+          })
+        })
+      }
       log.info('lobby', 'lobby channels deleted', { tag: group.tag })
     }
 
-    const count = server.channels.cache.size
+    const count = all.length
     if (count >= CHANNEL_ALERT_AT && !alerted) {
       alerted = true
       log.warn('lobby', 'channel count past the alert line', { count })
@@ -123,11 +138,24 @@ export function scheduleLobbySweep(client: Client, log: Logger): () => void {
   }
 
   const timer = setInterval(() => {
-    run().catch((error: unknown) => {
-      log.error('lobby', 'lobby channel sweep failed', {
-        message: error instanceof Error ? error.message : String(error),
+    // A slow pass (many deletes) never overlaps the next one.
+    if (running) return
+    running = true
+    run()
+      .catch((error: unknown) => {
+        log.error('lobby', 'lobby channel sweep failed', {
+          message: error instanceof Error ? error.message : String(error),
+        })
       })
-    })
+      .finally(() => {
+        running = false
+      })
   }, SWEEP_INTERVAL_MS)
   return () => clearInterval(timer)
+}
+
+/** Made by this bot: it gave itself an overwrite on every lobby channel it created. */
+function isOwnedBy(client: Client, channel: GuildBasedChannel): boolean {
+  const me = client.user?.id
+  return !!me && 'permissionOverwrites' in channel && channel.permissionOverwrites.cache.has(me)
 }

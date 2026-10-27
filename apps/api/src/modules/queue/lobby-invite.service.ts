@@ -1,6 +1,6 @@
 import { LockMode } from '@mikro-orm/core'
 import { EntityManager } from '@mikro-orm/postgresql'
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common'
+import { ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common'
 
 import { LobbyParticipation, LobbySide } from '../lobby/lobby-participation.entity'
 import { Lobby, LobbyState } from '../lobby/lobby.entity'
@@ -32,6 +32,8 @@ export const inviteBy = (lobby: Pick<Lobby, 'closedAt'>): Date | null =>
  */
 @Injectable()
 export class LobbyInviteService {
+  private readonly logger = new Logger(LobbyInviteService.name)
+
   constructor(
     private readonly em: EntityManager,
     private readonly events: EventDeliveryService,
@@ -109,7 +111,7 @@ export class LobbyInviteService {
       await em.flush()
       return lobbies.length
     })
-    await announceEnded(this.events, ended)
+    await announceEnded(this.events, ended, this.logger)
     return count
   }
 
