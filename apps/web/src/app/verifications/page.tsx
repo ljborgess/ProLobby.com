@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Logo } from '@/common/ui/logo'
 import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { apiFetch } from '@/common/api/client'
@@ -71,7 +72,7 @@ export default async function VerificationsPage() {
 
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4">
         <span className="font-display text-base font-semibold tracking-tight text-foreground">
-          Pro<span className="text-accent">Lobby</span>
+          <Logo />
         </span>
         {/* The switcher belongs here too: this was the one screen without it,
             and it is where someone lands after login — so a person who picked

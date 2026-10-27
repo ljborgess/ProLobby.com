@@ -64,12 +64,12 @@ export function proxy(request: NextRequest): NextResponse {
 export const config = {
   matcher: [
     /*
-     * Every page, and nothing served straight off disk: static chunks, images
-     * and the favicon carry no inline script, so a policy on them costs a
-     * proxy invocation and buys nothing.
+     * Every page, and nothing served straight off disk: static chunks, images,
+     * the app icons and the brand files carry no inline script, so a policy
+     * on them costs a proxy invocation and buys nothing.
      */
     {
-      source: '/((?!_next/static|_next/image|favicon.ico).*)',
+      source: '/((?!_next/static|_next/image|favicon.ico|icon.svg|apple-icon.png|brand/).*)',
       missing: [
         { type: 'header', key: 'next-router-prefetch' },
         { type: 'header', key: 'purpose', value: 'prefetch' },
