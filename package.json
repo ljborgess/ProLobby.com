@@ -32,11 +32,14 @@
       "unrs-resolver"
     ],
     "overrides": {
-      "multer": ">=2.3.0",
+      "multer": ">=2.5.0",
       "brace-expansion@<2": "1.1.20",
       "brace-expansion@>=4": "5.0.12",
       "proxy-addr": ">=2.0.8",
-      "source-map-js": ">=1.2.2"
+      "source-map-js": ">=1.2.2",
+      "body-parser@<2": "^1.20.9",
+      "body-parser@>=2": "^2.4.0",
+      "undici": "^6.29.1"
     },
     "auditConfig": {
       "ignoreGhsas": [
