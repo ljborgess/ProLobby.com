@@ -41,15 +41,8 @@ export function blockedUntil(
   return until > now.getTime() ? new Date(until) : null
 }
 
-/**
- * `blockedUntil` for one account, from the database. A completed match is
- * the latest elo event from a match result, in any of its characters.
- */
-export async function blockedUntilFor(
-  em: EntityManager,
-  accountId: string,
-  now: Date,
-): Promise<Date | null> {
+/** The refusals and the last completed match that decide the block. */
+async function historyOf(em: EntityManager, accountId: string) {
   const [refusals, lastMatch] = await Promise.all([
     // The ladder stops at the 4th step, so the last 4 refusals decide it.
     em.find(
@@ -63,9 +56,38 @@ export async function blockedUntilFor(
       { fields: ['createdAt'], orderBy: { createdAt: 'desc' } },
     ),
   ])
-  return blockedUntil(
-    refusals.map((refusal) => refusal.createdAt),
-    lastMatch?.createdAt ?? null,
-    now,
-  )
+  return {
+    refusals: refusals.map((refusal) => refusal.createdAt),
+    lastMatch: lastMatch?.createdAt ?? null,
+  }
+}
+
+/**
+ * `blockedUntil` for one account, from the database. A completed match is
+ * the latest elo event from a match result, in any of its characters.
+ */
+export async function blockedUntilFor(
+  em: EntityManager,
+  accountId: string,
+  now: Date,
+): Promise<Date | null> {
+  const { refusals, lastMatch } = await historyOf(em, accountId)
+  return blockedUntil(refusals, lastMatch, now)
+}
+
+/**
+ * The block now, and how long refusing right now would block — the 30 s card
+ * says the second before the person refuses (#234). One read of the history
+ * for both: the screen asks every 2 s in that step.
+ */
+export async function blockStateFor(
+  em: EntityManager,
+  accountId: string,
+  now: Date,
+): Promise<{ blockedUntil: Date | null; refusalBlockMs: number }> {
+  const { refusals, lastMatch } = await historyOf(em, accountId)
+  return {
+    blockedUntil: blockedUntil(refusals, lastMatch, now),
+    refusalBlockMs: blockedUntil([...refusals, now], lastMatch, now)!.getTime() - now.getTime(),
+  }
 }

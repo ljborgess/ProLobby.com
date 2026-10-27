@@ -10,6 +10,7 @@ import { LobbyParticipation, LobbySide } from '../lobby/lobby-participation.enti
 import { Lobby } from '../lobby/lobby.entity'
 import { type Candidate, findMatch } from './matchmaker'
 import { QueueEntry } from './queue-entry.entity'
+import { QueueStallState } from './queue-stall'
 import { missingPrerequisites } from './queue.service'
 
 /**
@@ -18,7 +19,10 @@ import { missingPrerequisites } from './queue.service'
  */
 @Injectable()
 export class QueueMatchingService {
-  constructor(private readonly em: EntityManager) {}
+  constructor(
+    private readonly em: EntityManager,
+    private readonly stall: QueueStallState,
+  ) {}
 
   /** Lobbies created by this run; 0 when another run holds the queue. */
   async closeMatches(now: Date = new Date()): Promise<number> {
@@ -43,7 +47,10 @@ export class QueueMatchingService {
       let lobbies = 0
       for (;;) {
         const result = findMatch(remaining, now)
-        if (result.kind === 'wait') break
+        if (result.kind === 'wait') {
+          this.stall.record(result.unpaired, result.captainMissing)
+          break
+        }
 
         // Born at the run's clock: the 30 s confirmation counts from here (#232).
         const lobby = em.create(Lobby, { createdAt: now })

@@ -28,7 +28,8 @@ import {
   type MatchReportView,
 } from './match-report.service'
 import { captainAnswerBy } from './captain-cascade.service'
-import { blockedUntilFor } from './queue-block'
+import { blockedUntilFor, blockStateFor } from './queue-block'
+import { type QueueStall, QueueStallState } from './queue-stall'
 import { PeerRatingService, type TeammateView } from './peer-rating.service'
 import { QueueEntry } from './queue-entry.entity'
 
@@ -65,6 +66,11 @@ export interface QueueEntryView {
     state: LobbyState.CANCELLED_NO_FAULT | LobbyState.CANCELLED_BY_CAPTAIN
     endedAt: Date
   } | null
+  /**
+   * While searching: what keeps the queue from closing for this category, as
+   * of the last run (RF-007, #234). Null once placed, or when nothing does.
+   */
+  stall: QueueStall | null
   /** Null while searching; once placed, what the 30 s screen needs (#232). */
   lobby: {
     state: LobbyState
@@ -72,6 +78,11 @@ export interface QueueEntryView {
     /** This account's side: `scoreA` is side A's goals (4.1). */
     side: LobbySide
     confirmed: boolean
+    /**
+     * In the 30 s, before answering: how long refusing would block, in
+     * minutes (RF-009, #234). Null once answered or past the 30 s step.
+     */
+    refusalBlockMinutes: number | null
     /** The captain role offered to this account right now, if it is (#247). */
     captainOffer: { answerBy: Date; clubName: string } | null
     /** This account confirmed as its side's captain. */
@@ -114,6 +125,7 @@ export class QueueService {
     private readonly formationVoteService: FormationVoteService,
     private readonly matchReportService: MatchReportService,
     private readonly peerRatingService: PeerRatingService,
+    private readonly stall: QueueStallState,
   ) {}
 
   async current(
@@ -138,6 +150,7 @@ export class QueueService {
       : null
     // The entry keeps its joinedAt through a cancellation, so a lobby that
     // ended after it is one this search came back from.
+    const block = await blockStateFor(em, accountId, now)
     const cancelled =
       entry && !entry.lobby
         ? await em.findOne(
@@ -154,9 +167,13 @@ export class QueueService {
         : null
     return {
       entry: entry
-        ? toView(entry, cancelled?.lobby, {
+        ? toView(entry, cancelled?.lobby, this.stall.for(entry.category), {
             side: mine?.side ?? LobbySide.A,
             confirmed: mine ? !!mine.confirmedAt : false,
+            refusalBlockMinutes:
+              entry.lobby?.state === LobbyState.WAITING_PLAYERS && mine && !mine.confirmedAt
+                ? Math.round(block.refusalBlockMs / 60_000)
+                : null,
             captainOffer: offer
               ? { answerBy: captainAnswerBy(offer), clubName: club?.clubName ?? '' }
               : null,
@@ -184,7 +201,7 @@ export class QueueService {
                 : null,
           })
         : null,
-      blockedUntil: await blockedUntilFor(em, accountId, now),
+      blockedUntil: block.blockedUntil,
       lastMatch: await this.matchReportService.lastMatch(em, accountId),
     }
   }
@@ -290,7 +307,12 @@ export class QueueService {
 
 type LobbyExtra = Omit<NonNullable<QueueEntryView['lobby']>, 'state' | 'confirmBy' | 'inviteBy'>
 
-function toView(entry: QueueEntry, cancelled?: Lobby, extra?: LobbyExtra): QueueEntryView {
+function toView(
+  entry: QueueEntry,
+  cancelled?: Lobby,
+  stall: QueueStall | null = null,
+  extra?: LobbyExtra,
+): QueueEntryView {
   return {
     characterId: entry.character.id,
     category: entry.category,
@@ -301,6 +323,7 @@ function toView(entry: QueueEntry, cancelled?: Lobby, extra?: LobbyExtra): Queue
           endedAt: cancelled.endedAt!,
         }
       : null,
+    stall: entry.lobby ? null : stall,
     lobby:
       entry.lobby && extra
         ? {
