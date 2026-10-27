@@ -73,6 +73,19 @@ describe('EventDeliveryService', () => {
     return { service, em }
   }
 
+  it('after shutdown, an enqueue still writes the row but never posts', async () => {
+    const clock = new FakeClock()
+    const post = jest.fn().mockResolvedValue({ status: 202 })
+    const { service, em } = createService({ post }, clock)
+
+    await service.onModuleDestroy()
+    await service.enqueue(event, { kind: EventDeliveryTargetKind.LOBBY, id: event.payload.lobbyId })
+    await new Promise((resolve) => setImmediate(resolve))
+
+    expect(em.flush).toHaveBeenCalled()
+    expect(post).not.toHaveBeenCalled()
+  })
+
   it('does not query the table on a timer when nothing is pending', async () => {
     const clock = new FakeClock()
     const { service, em } = createService({ post: jest.fn() }, clock)
