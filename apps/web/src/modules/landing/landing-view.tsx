@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { Logo } from '@/common/ui/logo'
 import { useLandingContent } from '@/hooks/use-landing-content'
 import { LanguageSwitcher } from '@/common/ui/language-switcher'
 import { PairingNetwork } from './pairing-network'
@@ -48,7 +49,7 @@ export function LandingView() {
         <div className="flex w-full items-center justify-between px-4 py-4 sm:px-6">
           <div className="flex items-center gap-4">
             <span className="font-display text-lg font-semibold tracking-tight text-foreground">
-              Pro<span className="text-accent">Lobby</span>
+              <Logo />
             </span>
             <TopBarTicker items={content.topBar.ticker} />
           </div>
@@ -265,7 +266,7 @@ export function LandingView() {
           <div className="mt-8 flex flex-col items-center gap-5 text-center sm:flex-row sm:justify-between sm:text-left">
             <div>
               <span className="font-display text-base font-semibold text-foreground">
-                Pro<span className="text-accent">Lobby</span>
+                <Logo />
               </span>
               <p className="mt-1 text-sm text-foreground-soft">{content.footer.tagline}</p>
             </div>

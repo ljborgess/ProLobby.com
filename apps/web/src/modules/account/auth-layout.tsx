@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { Logo } from '@/common/ui/logo'
 import { LanguageSwitcher } from '@/common/ui/language-switcher'
 import { useLandingContent } from '@/hooks/use-landing-content'
 import { AuthArt } from './auth-art'
@@ -53,7 +54,7 @@ export function AuthLayout({
             href="/"
             className="landing-focus font-display text-base font-semibold tracking-tight text-foreground"
           >
-            Pro<span className="text-accent">Lobby</span>
+            <Logo />
           </Link>
           <LanguageSwitcher />
         </div>

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Logo } from '@/common/ui/logo'
 import Link from 'next/link'
 import { AccountBackdrop } from '@/modules/account/account-backdrop'
 import { VerifyEmailStatus } from '@/modules/account/verify-email-status'
@@ -23,7 +24,7 @@ export default function VerifyEmailPage() {
           href="/"
           className="landing-focus self-center font-display text-base font-semibold tracking-tight text-foreground"
         >
-          Pro<span className="text-accent">Lobby</span>
+          <Logo />
         </Link>
         <VerifyEmailStatus />
       </div>
