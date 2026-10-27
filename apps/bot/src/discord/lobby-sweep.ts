@@ -16,7 +16,8 @@ export const LOBBY_CHANNEL_EMPTY_MS = 10 * 60 * 1000
 /** Past this many channels the server is near Discord's 500 (RF-053). */
 export const CHANNEL_ALERT_AT = 400
 
-const LOBBY_CHANNEL = /^(?:time-a|time-b|lobby)-([0-9a-f]{8})$/
+const LOBBY_CHANNEL =
+  /^(?:time-a|time-b|lobby)-([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/
 
 export type ServerChannel = {
   id: string

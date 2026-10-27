@@ -40,7 +40,10 @@ export function lobbyChannelsOn(
     },
     findChannel: async (name) => {
       const channels = await guild().channels.fetch()
-      return channels.find((channel) => channel?.name === name) ?? null
+      // Only what the bot made: a person's channel with the same name is not ours.
+      return (
+        channels.find((channel) => channel?.name === name && isOwnedBy(client, channel)) ?? null
+      )
     },
     createChannel: async ({ name, kind, members }) => {
       const server = guild()
@@ -70,6 +73,11 @@ export function lobbyChannelsOn(
           ...members.map((id) => ({ id, type: OverwriteType.Member, allow: use })),
         ],
       })
+    },
+    isSilent: async (channelId) => {
+      const channel = await client.channels.fetch(channelId)
+      if (!channel?.isTextBased()) return false
+      return (await channel.messages.fetch({ limit: 1 })).size === 0
     },
     send: async (channelId, content, mentions) => {
       const channel = await client.channels.fetch(channelId)
@@ -154,8 +162,8 @@ export function scheduleLobbySweep(client: Client, log: Logger): () => void {
   return () => clearInterval(timer)
 }
 
-/** Made by this bot: it gave itself an overwrite on every lobby channel it created. */
-function isOwnedBy(client: Client, channel: GuildBasedChannel): boolean {
+/** Made by this bot: it gives itself an overwrite on every lobby channel it creates. */
+export function isOwnedBy(client: Client, channel: GuildBasedChannel): boolean {
   const me = client.user?.id
   return !!me && 'permissionOverwrites' in channel && channel.permissionOverwrites.cache.has(me)
 }

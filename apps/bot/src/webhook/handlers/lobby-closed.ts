@@ -1,5 +1,4 @@
 import { randomUUID } from 'node:crypto'
-import { escapeMarkdown } from 'discord.js'
 import type { BotEvent, LobbyClosedEvent } from '@prolobby/types'
 
 export type LobbyChannelSpec = {
@@ -13,16 +12,23 @@ export type LobbyChannelsDeps = {
   /** A channel of the server with this name, if one exists: how a retry finds its own. */
   findChannel: (name: string) => Promise<{ id: string } | null>
   createChannel: (spec: LobbyChannelSpec) => Promise<{ id: string }>
+  /** No message in it yet: a retry posts the one a failed send left out. */
+  isSilent: (channelId: string) => Promise<boolean>
   /** Posts and pings exactly `mentions`, nobody else. */
   send: (channelId: string, content: string, mentions: string[]) => Promise<void>
   report: (event: BotEvent) => Promise<{ status: number }>
 }
 
-/** Names carry the lobby, so a retry finds the channels instead of making them twice. */
-export const lobbyChannelNames = (lobbyId: string) => {
-  const tag = lobbyId.slice(0, 8)
-  return { voiceA: `time-a-${tag}`, voiceB: `time-b-${tag}`, text: `lobby-${tag}` }
-}
+/**
+ * Names carry the whole lobby id, so a retry finds the channels instead of
+ * making them twice, and two lobbies never share a name (a short prefix could,
+ * and the second would get the first one's private channels).
+ */
+export const lobbyChannelNames = (lobbyId: string) => ({
+  voiceA: `time-a-${lobbyId}`,
+  voiceB: `time-b-${lobbyId}`,
+  text: `lobby-${lobbyId}`,
+})
 
 /**
  * #250, RF-059: the three channels of a closed lobby, one after the other —
@@ -50,9 +56,7 @@ export async function openLobbyChannels(
   const everyone = [...sideA.discordIds, ...sideB.discordIds]
   const text = await ensure({ name: names.text, kind: 'text', members: everyone })
 
-  // ponytail: a crash between creating the text channel and posting leaves it
-  // silent on the retry; the players still have the platform's screen.
-  if (text.created) {
+  if (text.created || (await deps.isSilent(text.id))) {
     await deps.send(text.id, closedMessage(event), everyone)
   }
 
@@ -74,11 +78,17 @@ export async function openLobbyChannels(
   }
 }
 
+/**
+ * A club name is typed by a player: inside inline code Discord renders it as
+ * text, so a "[pix](https://…)" is no masked link and a "<@id>" no fake mention.
+ */
+const clubLabel = (name: string) => '`' + name.replace(/`/g, "'") + '`'
+
 /** Shared channel: both languages, short (docs/discord/03-bot.md). */
 function closedMessage(event: LobbyClosedEvent): string {
   const { sideA, sideB } = event.payload
   const captain = (side: LobbyClosedEvent['payload']['sideA']) =>
-    `<@${side.captainDiscordId}> · **${escapeMarkdown(side.clubName)}**`
+    `<@${side.captainDiscordId}> · ${clubLabel(side.clubName)}`
   return [
     '**Lobby fechado · Lobby cerrado**',
     `Time A: ${captain(sideA)}`,
