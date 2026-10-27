@@ -1,12 +1,13 @@
 import { LockMode } from '@mikro-orm/core'
 import { EntityManager } from '@mikro-orm/postgresql'
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common'
+import { ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common'
 
 import { LobbyParticipation, LobbySide } from '../lobby/lobby-participation.entity'
 import { Lobby, LobbyState } from '../lobby/lobby.entity'
 import { ModerationCase } from '../moderation/moderation-case.entity'
 import { ModerationCaseOrigin, ModerationCaseType } from '../moderation/moderation-case.enums'
-import { endLobby } from './end-lobby'
+import { EventDeliveryService } from '../bot-integration/event-delivery.service'
+import { announceEnded, endLobby } from './end-lobby'
 import { QueueEntry } from './queue-entry.entity'
 
 /** From `closed_at` (docs/produto/03-partida/03-lobby.md, "Confirmação de convite recebido"). */
@@ -31,7 +32,12 @@ export const inviteBy = (lobby: Pick<Lobby, 'closedAt'>): Date | null =>
  */
 @Injectable()
 export class LobbyInviteService {
-  constructor(private readonly em: EntityManager) {}
+  private readonly logger = new Logger(LobbyInviteService.name)
+
+  constructor(
+    private readonly em: EntityManager,
+    private readonly events: EventDeliveryService,
+  ) {}
 
   /** This account got the invite to its captain's club. */
   async received(accountId: string, now: Date = new Date()): Promise<void> {
@@ -59,7 +65,8 @@ export class LobbyInviteService {
 
   /** The clock's part, run by the queue job. Returns how many lobbies it ended. */
   async expire(now: Date = new Date()): Promise<number> {
-    return this.em.fork().transactional(async (em) => {
+    const ended: Lobby[] = []
+    const count = await this.em.fork().transactional(async (em) => {
       const lobbies = await em.find(
         Lobby,
         {
@@ -99,10 +106,13 @@ export class LobbyInviteService {
           atFault.length > 0 ? LobbyState.CANCELLED_BY_CAPTAIN : LobbyState.CANCELLED_NO_FAULT,
           now,
         )
+        ended.push(lobby)
       }
       await em.flush()
       return lobbies.length
     })
+    await announceEnded(this.events, ended, this.logger)
+    return count
   }
 
   private async openWindow(em: EntityManager, accountId: string, now: Date) {

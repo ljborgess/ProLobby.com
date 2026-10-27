@@ -15,7 +15,13 @@ import type { Logger } from '../logger'
 // first fifty seen since the last restart.
 export function createDiscordClient(): Client {
   return new Client({
-    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers],
+    // GuildVoiceStates (#251): without it a voice channel's members are always
+    // empty, and the lobby sweep would delete calls with people in them.
+    intents: [
+      GatewayIntentBits.Guilds,
+      GatewayIntentBits.GuildMembers,
+      GatewayIntentBits.GuildVoiceStates,
+    ],
     partials: [Partials.GuildMember, Partials.User],
   })
 }

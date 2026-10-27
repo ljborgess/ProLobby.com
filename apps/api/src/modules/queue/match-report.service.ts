@@ -18,7 +18,9 @@ import { encryptAtRest, readEvidenceEncryptionKey } from '../../common/security/
 import { Account } from '../account/account.entity'
 import { checkPrintImage, printsDir, sha256 } from '../character/print-submission.service'
 import { LobbyParticipation, LobbySide } from '../lobby/lobby-participation.entity'
+import { EventDeliveryService } from '../bot-integration/event-delivery.service'
 import { Lobby, LobbyState } from '../lobby/lobby.entity'
+import { announceEnded } from './end-lobby'
 import { MatchReport } from '../lobby/match-report.entity'
 import { ReportedAbsence } from '../lobby/reported-absence.entity'
 import { ModerationCase } from '../moderation/moderation-case.entity'
@@ -106,6 +108,7 @@ export class MatchReportService {
     private readonly em: EntityManager,
     private readonly reputationService: ReputationService,
     private readonly peerRatingService: PeerRatingService,
+    private readonly events: EventDeliveryService,
   ) {}
 
   async submit(
@@ -236,7 +239,8 @@ export class MatchReportService {
    * Returns how many lobbies it moved.
    */
   async expire(now: Date = new Date()): Promise<number> {
-    return this.em.fork().transactional(async (em) => {
+    let expired: Lobby[] = []
+    const count = await this.em.fork().transactional(async (em) => {
       // Only from in_progress: every invite arrived, so the match happened
       // and reporting was the group's duty (02-estados.md, state 12).
       const silent = await em.find(
@@ -288,8 +292,11 @@ export class MatchReportService {
         await this.finishedFor(em, lobby)
       }
       await em.flush()
+      expired = silent
       return silent.length + unconfirmed.length + final.length
     })
+    await announceEnded(this.events, expired, this.logger)
+    return count
   }
 
   /**

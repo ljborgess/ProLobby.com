@@ -44,6 +44,18 @@ export const lobbyClosedEventSchema = z.object({
     .strict(),
 })
 
+/**
+ * A lobby with channels ended without a match to protect — cancelled in the
+ * invite window or expired with no print (#251, RF-052). The bot deletes its
+ * three channels at once instead of waiting for the 15 min floor.
+ */
+export const lobbyEndedEventSchema = z.object({
+  id: uuid,
+  occurredAt,
+  type: z.literal('lobby.ended'),
+  payload: z.object({ lobbyId: uuid }).strict(),
+})
+
 export const accountPunishedEventSchema = z.object({
   id: uuid,
   occurredAt,
@@ -97,12 +109,14 @@ export const moderationCaseOpenedEventSchema = z.object({
 
 export const platformEventSchema = z.discriminatedUnion('type', [
   lobbyClosedEventSchema,
+  lobbyEndedEventSchema,
   accountPunishedEventSchema,
   systemQuotaAlertEventSchema,
   moderationCaseOpenedEventSchema,
 ])
 
 export type LobbyClosedEvent = z.infer<typeof lobbyClosedEventSchema>
+export type LobbyEndedEvent = z.infer<typeof lobbyEndedEventSchema>
 export type AccountPunishedEvent = z.infer<typeof accountPunishedEventSchema>
 export type SystemQuotaAlertEvent = z.infer<typeof systemQuotaAlertEventSchema>
 export type ModerationCaseOpenedEvent = z.infer<typeof moderationCaseOpenedEventSchema>
