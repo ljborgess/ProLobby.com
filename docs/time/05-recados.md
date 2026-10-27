@@ -16,6 +16,15 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 
 ---
 
+## 2026-10-27 · Rafael
+
+### A #229, a #234, a #250 e a #251 passaram pro Luciano
+
+- **O que mudou:** o Luciano pegou as quatro, que não tinham branch nem PR ainda: o formulário do clube declarado (#229; a API já era dele), o que falta da tela da fila (#234) e os canais do lobby no bot (#250 e #251).
+- **Não pegue essas quatro.** Continuam com você a #209 (resultado vira evento de elo) e a #121 (primeiro deploy interno).
+
+---
+
 ## 2026-10-21 · Rafael
 
 ### Ausência no report do placar (4.1)
