@@ -100,8 +100,13 @@ describe('QueuePrerequisitesPanel', () => {
 
     expect(screen.getByText(pt.allDone)).toBeInTheDocument()
     expect(screen.queryByRole('button')).toBeNull()
-    expect(screen.getAllByRole('link')).toHaveLength(1)
+    // The queue, and the optional club line (#229), which is not a step.
+    expect(screen.getAllByRole('link')).toHaveLength(2)
     expect(screen.getByRole('link', { name: pt.goToQueue })).toHaveAttribute('href', '/queue')
+    expect(screen.getByRole('link', { name: pt.club.action })).toHaveAttribute(
+      'href',
+      '/account/club',
+    )
   })
 
   it('resends the verification email and then hides the button', async () => {
