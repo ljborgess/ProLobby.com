@@ -1,12 +1,13 @@
 import { MikroORM } from '@mikro-orm/postgresql'
 import type { INestApplication } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
-import { randomBytes, randomUUID } from 'node:crypto'
+import { randomBytes } from 'node:crypto'
 import { existsSync, mkdtempSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import request from 'supertest'
 
+import { linkDiscord } from './support/discord'
 import { AppModule } from '../src/app.module'
 import { CURRENT_EDITION } from '../src/common/domain/game-edition.enum'
 import { Platform } from '../src/common/domain/platform.enum'
@@ -95,7 +96,7 @@ describe('match report (4.1)', () => {
     const account = await em.findOneOrFail(Account, { email })
     account.emailVerified = true
     account.state = AccountState.ACTIVE
-    account.discordIdHash = randomUUID()
+    linkDiscord(account)
     const character = em.create(Character, {
       account,
       category,

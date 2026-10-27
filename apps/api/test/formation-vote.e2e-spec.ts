@@ -10,6 +10,7 @@ import {
 import { randomBytes, randomUUID } from 'node:crypto'
 import request from 'supertest'
 
+import { linkDiscord } from './support/discord'
 import { AppModule } from '../src/app.module'
 import { CURRENT_EDITION } from '../src/common/domain/game-edition.enum'
 import { Platform } from '../src/common/domain/platform.enum'
@@ -78,7 +79,7 @@ describe('formation vote (#249)', () => {
     const account = await em.findOneOrFail(Account, { email })
     account.emailVerified = true
     account.state = AccountState.ACTIVE
-    account.discordIdHash = randomUUID()
+    linkDiscord(account)
     const character = em.create(Character, {
       account,
       category,

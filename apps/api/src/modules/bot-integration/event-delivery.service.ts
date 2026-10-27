@@ -4,6 +4,11 @@ import { platformEventSchema, type PlatformEvent } from '@prolobby/types'
 
 import { Clock } from '../../common/time/clock'
 import { isUniqueViolation } from '../../common/database/postgres-error'
+import {
+  decryptAtRest,
+  encryptAtRest,
+  readEvidenceEncryptionKey,
+} from '../../common/security/evidence-encryption'
 import { ModerationCase } from '../moderation/moderation-case.entity'
 import { ModerationCaseOrigin, ModerationCaseType } from '../moderation/moderation-case.enums'
 import { EventDelivery } from './event-delivery.entity'
@@ -26,6 +31,7 @@ export class EventDeliveryService implements OnModuleDestroy {
   /** Attempts in flight, awaited on shutdown so none writes to a closed pool. */
   private readonly inFlight = new Set<Promise<void>>()
   private pendingLookups = 0
+  private readonly encryptionKey = readEvidenceEncryptionKey()
 
   constructor(
     private readonly em: EntityManager,
@@ -77,7 +83,10 @@ export class EventDeliveryService implements OnModuleDestroy {
     const row = em.create(EventDelivery, {
       eventId: parsed.id,
       type: parsed.type,
-      payload: { ...parsed.payload },
+      payloadEncrypted: encryptAtRest(
+        this.encryptionKey,
+        Buffer.from(JSON.stringify(parsed.payload)),
+      ),
       occurredAt: new Date(parsed.occurredAt),
       targetKind: target.kind,
       targetId: target.id,
@@ -230,8 +239,15 @@ export class EventDeliveryService implements OnModuleDestroy {
       // happened, not when this attempt left. Freshness is the signing
       // timestamp's job, and WebhookClient stamps that per attempt.
       occurredAt: row.occurredAt.toISOString(),
-      payload: row.payload,
+      payload: this.payloadOf(row),
     })
+  }
+
+  /** The stored payload, decrypted. */
+  payloadOf(row: EventDelivery): Record<string, unknown> {
+    return JSON.parse(
+      decryptAtRest(this.encryptionKey, row.payloadEncrypted).toString('utf8'),
+    ) as Record<string, unknown>
   }
 }
 

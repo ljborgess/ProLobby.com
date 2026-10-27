@@ -1,12 +1,20 @@
 import { EntityManager } from '@mikro-orm/postgresql'
 import { sampleLobbyClosedEvent } from '@prolobby/types'
+import { randomBytes } from 'node:crypto'
 
+import { encryptAtRest, readEvidenceEncryptionKey } from '../../common/security/evidence-encryption'
 import { Clock } from '../../common/time/clock'
 import { EventDelivery } from './event-delivery.entity'
 import { EventDeliveryTargetKind } from './event-delivery.enums'
 import { ModerationCaseType } from '../moderation/moderation-case.enums'
 import { EventDeliveryService } from './event-delivery.service'
 import { WebhookClient } from './webhook-client'
+
+process.env.EVIDENCE_ENCRYPTION_KEY ??= randomBytes(32).toString('base64')
+
+/** A stored payload, as `enqueue` writes it. */
+const seal = (payload: object): Buffer =>
+  encryptAtRest(readEvidenceEncryptionKey(), Buffer.from(JSON.stringify(payload)))
 
 class FakeClock extends Clock {
   private current = new Date('2026-09-14T12:00:00.000Z')
@@ -95,7 +103,7 @@ describe('EventDeliveryService', () => {
       id: 'delivery-pending',
       eventId: event.id,
       type: event.type,
-      payload: event.payload,
+      payloadEncrypted: seal(event.payload),
       occurredAt: new Date(event.occurredAt),
       attempts: 1,
       deliveredAt: undefined,
@@ -128,7 +136,7 @@ describe('EventDeliveryService', () => {
       id: 'delivery-1',
       eventId: event.id,
       type: event.type,
-      payload: event.payload,
+      payloadEncrypted: seal(event.payload),
       occurredAt: new Date(event.occurredAt),
       attempts: 0,
       targetKind: EventDeliveryTargetKind.LOBBY,
@@ -158,7 +166,7 @@ describe('EventDeliveryService', () => {
       id: 'delivery-1',
       eventId: event.id,
       type: event.type,
-      payload: event.payload,
+      payloadEncrypted: seal(event.payload),
       occurredAt: new Date(event.occurredAt),
       attempts: 0,
       targetKind: EventDeliveryTargetKind.LOBBY,
@@ -196,7 +204,7 @@ describe('EventDeliveryService', () => {
       id: 'delivery-1',
       eventId: event.id,
       type: event.type,
-      payload: event.payload,
+      payloadEncrypted: seal(event.payload),
       occurredAt: new Date(event.occurredAt),
       attempts: 0,
       targetKind: EventDeliveryTargetKind.LOBBY,
@@ -222,7 +230,7 @@ describe('EventDeliveryService', () => {
       id: 'delivery-1',
       eventId: event.id,
       type: event.type,
-      payload: event.payload,
+      payloadEncrypted: seal(event.payload),
       occurredAt: new Date(event.occurredAt),
       attempts: 0,
       targetKind: EventDeliveryTargetKind.LOBBY,
@@ -251,7 +259,7 @@ describe('EventDeliveryService', () => {
       id: 'delivery-1',
       eventId: event.id,
       type: event.type,
-      payload: event.payload,
+      payloadEncrypted: seal(event.payload),
       occurredAt,
       attempts: 0,
       targetKind: EventDeliveryTargetKind.LOBBY,
@@ -285,7 +293,7 @@ describe('EventDeliveryService', () => {
       id: 'delivery-1',
       eventId: punished.id,
       type: punished.type,
-      payload: punished.payload,
+      payloadEncrypted: seal(punished.payload),
       occurredAt: clock.now(),
       attempts: 0,
       targetKind: EventDeliveryTargetKind.ACCOUNT,

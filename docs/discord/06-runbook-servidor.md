@@ -55,7 +55,7 @@ Sete, com as permissões de [Canais](02-canais.md):
 
 Canais de lobby são **temporários** e criados pelo bot em tempo de execução (3 por lobby) — não criar à mão.
 
-Categoria separada pros temporários ajuda a enxergar o teto de 500 canais, mas não é obrigatória.
+Categoria separada pros temporários ajuda a enxergar o teto de 500 canais, mas não é obrigatória. Se criar, o id dela vai em `DISCORD_LOBBY_CATEGORY_ID`; sem ele, os canais nascem no topo do servidor. Os nomes são `time-a-xxxxxxxx`, `time-b-xxxxxxxx` e `lobby-xxxxxxxx`, com o começo do id do lobby: é por eles que o bot reconhece os canais que já criou.
 
 ## 5 · Onboarding nativo
 

@@ -4,7 +4,7 @@ const uuid = z.string().uuid()
 const occurredAt = z.string().datetime()
 
 /** A Discord user id: a snowflake, 17 to 20 digits. Anything else is not an id. */
-const snowflake = z.string().regex(/^\d{17,20}$/)
+export const snowflake = z.string().regex(/^\d{17,20}$/)
 
 /**
  * Bot → platform events (RF-060, issue #150) — the direction that did not exist.

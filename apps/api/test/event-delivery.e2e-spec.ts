@@ -5,6 +5,10 @@ import { sampleLobbyClosedEvent } from '@prolobby/types'
 
 import { AppModule } from '../src/app.module'
 import { applySecurity } from '../src/common/security/security.config'
+import {
+  encryptAtRest,
+  readEvidenceEncryptionKey,
+} from '../src/common/security/evidence-encryption'
 import { EventDelivery } from '../src/modules/bot-integration/event-delivery.entity'
 import { EventDeliveryTargetKind } from '../src/modules/bot-integration/event-delivery.enums'
 import { EventDeliveryService } from '../src/modules/bot-integration/event-delivery.service'
@@ -58,7 +62,10 @@ describe('EventDelivery (e2e)', () => {
       em.create(EventDelivery, {
         eventId: event.id,
         type: event.type,
-        payload: event.payload,
+        payloadEncrypted: encryptAtRest(
+          readEvidenceEncryptionKey(),
+          Buffer.from(JSON.stringify(event.payload)),
+        ),
         occurredAt: new Date(event.occurredAt),
         targetKind: EventDeliveryTargetKind.LOBBY,
         targetId: event.payload.lobbyId,

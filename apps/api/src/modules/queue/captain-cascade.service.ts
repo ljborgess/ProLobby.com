@@ -3,6 +3,7 @@ import { EntityManager } from '@mikro-orm/postgresql'
 import { ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { randomInt, randomUUID } from 'node:crypto'
 
+import { decryptAtRest, readEvidenceEncryptionKey } from '../../common/security/evidence-encryption'
 import { Account } from '../account/account.entity'
 import { DeclaredClub } from '../account/declared-club.entity'
 import { EventDeliveryTargetKind } from '../bot-integration/event-delivery.enums'
@@ -41,6 +42,7 @@ export const captainAnswerBy = (offer: Pick<CaptainOffer, 'offeredAt'>): Date =>
 @Injectable()
 export class CaptainCascadeService {
   private readonly logger = new Logger(CaptainCascadeService.name)
+  private readonly encryptionKey = readEvidenceEncryptionKey()
 
   constructor(
     private readonly em: EntityManager,
@@ -272,11 +274,23 @@ export class CaptainCascadeService {
     return em.findOneOrFail(Lobby, { id }, { lockMode: LockMode.PESSIMISTIC_WRITE })
   }
 
-  /** `lobby.closed` for the bot (#250) — after the commit, never before it. */
+  /**
+   * `lobby.closed` for the bot (#250) — after the commit, never before it.
+   * The bot opens the channels by Discord id, so each side goes with the ids
+   * of its humans, its captain's and the club the captain declared.
+   */
   private async announceClosed(lobbyId: string): Promise<void> {
     const em = this.em.fork()
     const lobby = await em.findOneOrFail(Lobby, { id: lobbyId })
-    const humans = await em.find(LobbyParticipation, { lobby })
+    const humans = await em.find(LobbyParticipation, { lobby }, { populate: ['account'] })
+    // Linking Discord is a queue prerequisite (RF-002), so every human has one.
+    const discordIdOf = (account: Account) =>
+      decryptAtRest(this.encryptionKey, account.discordIdEncrypted!).toString('utf8')
+    const side = (which: LobbySide, captainId: string, clubName: string) => ({
+      captainDiscordId: discordIdOf(humans.find((h) => h.account.id === captainId)!.account),
+      clubName,
+      discordIds: humans.filter((h) => h.side === which).map((h) => discordIdOf(h.account)),
+    })
     try {
       await this.events.enqueue(
         {
@@ -285,9 +299,8 @@ export class CaptainCascadeService {
           type: 'lobby.closed',
           payload: {
             lobbyId,
-            sideACaptainAccountId: lobby.captainA!.id,
-            sideBCaptainAccountId: lobby.captainB!.id,
-            participantAccountIds: humans.map((human) => human.account.id),
+            sideA: side(LobbySide.A, lobby.captainA!.id, lobby.clubA!),
+            sideB: side(LobbySide.B, lobby.captainB!.id, lobby.clubB!),
           },
         },
         { kind: EventDeliveryTargetKind.LOBBY, id: lobbyId },
