@@ -4,6 +4,7 @@ import {
   PermissionFlagsBits,
   type Client,
   type Guild,
+  type GuildBasedChannel,
 } from 'discord.js'
 
 import type { LobbyChannelsDeps } from '../webhook/handlers/lobby-closed'
@@ -27,7 +28,10 @@ export function lobbyChannelsOn(client: Client): Omit<LobbyChannelsDeps, 'report
   return {
     findChannel: async (name) => {
       const channels = await guild().channels.fetch()
-      return channels.find((channel) => channel?.name === name) ?? null
+      // Only what the bot made: a person's channel with the same name is not ours.
+      return (
+        channels.find((channel) => channel?.name === name && isOwnedBy(client, channel)) ?? null
+      )
     },
     createChannel: async ({ name, kind, members }) => {
       const server = guild()
@@ -58,6 +62,11 @@ export function lobbyChannelsOn(client: Client): Omit<LobbyChannelsDeps, 'report
         ],
       })
     },
+    isSilent: async (channelId) => {
+      const channel = await client.channels.fetch(channelId)
+      if (!channel?.isTextBased()) return false
+      return (await channel.messages.fetch({ limit: 1 })).size === 0
+    },
     send: async (channelId, content, mentions) => {
       const channel = await client.channels.fetch(channelId)
       if (!channel?.isSendable()) {
@@ -66,4 +75,10 @@ export function lobbyChannelsOn(client: Client): Omit<LobbyChannelsDeps, 'report
       await channel.send({ content, allowedMentions: { users: mentions } })
     },
   }
+}
+
+/** Made by this bot: it gives itself an overwrite on every lobby channel it creates. */
+export function isOwnedBy(client: Client, channel: GuildBasedChannel): boolean {
+  const me = client.user?.id
+  return !!me && 'permissionOverwrites' in channel && channel.permissionOverwrites.cache.has(me)
 }

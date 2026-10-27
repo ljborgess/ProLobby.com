@@ -2,9 +2,12 @@ import { sampleLobbyClosedEvent } from '@prolobby/types'
 
 import { lobbyChannelNames, openLobbyChannels, type LobbyChannelSpec } from './lobby-closed'
 
+const TICK = '`'
+
 /** A server that only knows what this handler did to it. */
 function fakeServer(report = jest.fn().mockResolvedValue({ status: 204 })) {
   const channels = new Map<string, LobbyChannelSpec & { id: string }>()
+  const posted = new Set<string>()
   let next = 900000000000000001n
   const deps = {
     findChannel: jest.fn(async (name: string) => channels.get(name) ?? null),
@@ -13,7 +16,10 @@ function fakeServer(report = jest.fn().mockResolvedValue({ status: 204 })) {
       channels.set(spec.name, channel)
       return channel
     }),
-    send: jest.fn().mockResolvedValue(undefined),
+    isSilent: jest.fn(async (id: string) => !posted.has(id)),
+    send: jest.fn<Promise<void>, [string, string, string[]]>(async (id) => {
+      posted.add(id)
+    }),
     report,
   }
   return { channels, deps }
@@ -53,19 +59,34 @@ describe('openLobbyChannels (#250)', () => {
 
     const [channelId, content, mentions] = deps.send.mock.calls[0]!
     expect(channelId).toBe(channels.get(names.text)!.id)
-    expect(content).toContain(`Time A: <@${sideA.captainDiscordId}> · **Clube Azul**`)
-    expect(content).toContain(`Time B: <@${sideB.captainDiscordId}> · **Clube Rojo**`)
+    expect(content).toContain(`Time A: <@${sideA.captainDiscordId}> · ${TICK}Clube Azul${TICK}`)
+    expect(content).toContain(`Time B: <@${sideB.captainDiscordId}> · ${TICK}Clube Rojo${TICK}`)
     expect(mentions).toEqual([...sideA.discordIds, ...sideB.discordIds])
   })
 
-  it('escapes markdown in a club name, which a player typed', async () => {
+  it.each([
+    ['a masked link', '[pix](https://x.co)', '[pix](https://x.co)'],
+    ['a fake mention', '<@123456789012345678>', '<@123456789012345678>'],
+    ['a backtick that would close the code span', `a${TICK}b`, "a'b"],
+  ])('shows a club name a player typed as plain text: %s', async (_name, clubName, shown) => {
     const { deps } = fakeServer()
-    const styled = sampleLobbyClosedEvent()
-    styled.payload.sideA.clubName = '**Fake**_club'
+    const typed = sampleLobbyClosedEvent()
+    typed.payload.sideA.clubName = clubName
 
-    await openLobbyChannels(styled, deps)
+    await openLobbyChannels(typed, deps)
 
-    expect(deps.send.mock.calls[0]![1]).toContain('\\*\\*Fake\\*\\*\\_club')
+    expect(deps.send.mock.calls[0]![1]).toContain(`${TICK}${shown}${TICK}`)
+  })
+
+  it('a send that failed is posted on the retry', async () => {
+    const { deps } = fakeServer()
+    deps.send.mockRejectedValueOnce(new Error('rate limited'))
+
+    await expect(openLobbyChannels(event, deps)).rejects.toThrow('rate limited')
+    await openLobbyChannels(event, deps)
+
+    expect(deps.createChannel).toHaveBeenCalledTimes(3)
+    expect(deps.send).toHaveBeenCalledTimes(2)
   })
 
   it('sends the three ids back to the API', async () => {

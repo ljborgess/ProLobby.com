@@ -11,6 +11,7 @@ import {
   verifyWebhookSignature,
 } from '@prolobby/types'
 
+import { logger } from '../logger'
 import { SlidingWindowLimiter, WEBHOOK_BODY_LIMIT, type Clock } from './rate-limit'
 
 type RequestWithRawBody = Request & { rawBody?: Buffer }
@@ -135,7 +136,13 @@ export function createWebhookServer(options: WebhookServerOptions): Express {
       }
       try {
         await run
-      } catch {
+      } catch (error) {
+        // Type and id only: payloads carry Discord ids (RNF-009).
+        logger.error('events', 'event handler failed, the API will retry', {
+          type: parsed.data.type,
+          eventId: id,
+          message: error instanceof Error ? error.message : String(error),
+        })
         res.status(503).json({ error: 'handler_failed' })
         return
       }
