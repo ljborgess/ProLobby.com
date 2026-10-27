@@ -20,12 +20,14 @@ describe('ClubPanel (#229)', () => {
     vi.unstubAllGlobals()
   })
 
-  const nameField = () => screen.getByLabelText(pt.clubNameLabel, { exact: false })
-  const slotsField = () => screen.getByLabelText(pt.freeSlotsLabel, { exact: false })
-  const fill = (name: string, slots: string) => {
+  const nameField = () => screen.getByRole('textbox', { name: new RegExp(`^${pt.clubNameLabel}`) })
+  const seat = (count: number) =>
+    screen.getByRole('radio', { name: count === 0 ? pt.full : pt.seats(count) })
+  const fill = (name: string, slots: number) => {
     fireEvent.change(nameField(), { target: { value: name } })
-    fireEvent.change(slotsField(), { target: { value: slots } })
+    fireEvent.click(seat(slots))
   }
+  const saveButton = () => screen.getByRole('button', { name: pt.save })
 
   it('declares a club, trimmed, and shows what the server kept', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
@@ -34,8 +36,8 @@ describe('ClubPanel (#229)', () => {
     renderWithLocale(<ClubPanel initial={null} />)
 
     expect(screen.queryByRole('button', { name: pt.remove })).toBeNull()
-    fill('  Clube Azul  ', '4')
-    fireEvent.click(screen.getByRole('button', { name: pt.save }))
+    fill('  Clube Azul  ', 4)
+    fireEvent.click(saveButton())
 
     await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent(pt.saved))
     expect(fetch).toHaveBeenCalledWith(
@@ -49,16 +51,49 @@ describe('ClubPanel (#229)', () => {
     expect(screen.getByRole('button', { name: pt.remove })).toBeInTheDocument()
   })
 
+  it('says what the chosen room means for captaincy, as it changes', () => {
+    renderWithLocale(<ClubPanel initial={null} />)
+
+    expect(screen.getByText(pt.captaincy(null))).toBeInTheDocument()
+    fireEvent.click(seat(2))
+    expect(screen.getByText(pt.captaincy(2))).toBeInTheDocument()
+    fireEvent.click(seat(5))
+    expect(screen.getByText(pt.captaincy(5))).toHaveTextContent('até 6 jogadores')
+    fireEvent.click(seat(10))
+    expect(screen.getByText(pt.captaincy(10))).toBeInTheDocument()
+  })
+
+  it('offers "full" and ten seats, one choice at a time', () => {
+    renderWithLocale(<ClubPanel initial={null} />)
+
+    expect(screen.getAllByRole('radio')).toHaveLength(11)
+    fireEvent.click(seat(0))
+    expect(seat(0)).toBeChecked()
+    fireEvent.click(seat(7))
+    expect(seat(7)).toBeChecked()
+    expect(seat(0)).not.toBeChecked()
+  })
+
+  it('saves only something new and complete', () => {
+    renderWithLocale(<ClubPanel initial={{ clubName: 'Clube Azul', freeSlots: 3 }} />)
+
+    expect(saveButton()).toBeDisabled()
+    fireEvent.click(seat(4))
+    expect(saveButton()).toBeEnabled()
+    fireEvent.change(nameField(), { target: { value: '   ' } })
+    expect(saveButton()).toBeDisabled()
+  })
+
   it('says what is wrong when the API refuses the values, and keeps what was typed', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(answer(400))
     renderWithLocale(<ClubPanel initial={null} />)
 
-    fill('Clube', '4')
-    fireEvent.click(screen.getByRole('button', { name: pt.save }))
+    fill('Clube', 4)
+    fireEvent.click(saveButton())
 
     expect(await screen.findByRole('alert')).toHaveTextContent(pt.invalid)
     expect(nameField()).toHaveValue('Clube')
-    expect(slotsField()).toHaveValue(4)
+    expect(seat(4)).toBeChecked()
   })
 
   it('a network failure is a "try again", not a lost club', async () => {
@@ -76,8 +111,8 @@ describe('ClubPanel (#229)', () => {
     vi.mocked(fetch).mockResolvedValueOnce(answer(401))
     renderWithLocale(<ClubPanel initial={null} />)
 
-    fill('Clube', '4')
-    fireEvent.click(screen.getByRole('button', { name: pt.save }))
+    fill('Clube', 4)
+    fireEvent.click(saveButton())
 
     await waitFor(() => expect(push).toHaveBeenCalledWith('/login'))
   })
@@ -87,38 +122,39 @@ describe('ClubPanel (#229)', () => {
     renderWithLocale(<ClubPanel initial={{ clubName: 'Clube Azul', freeSlots: 3 }} />)
 
     expect(nameField()).toHaveValue('Clube Azul')
-    expect(slotsField()).toHaveValue(3)
+    expect(seat(3)).toBeChecked()
     fireEvent.click(screen.getByRole('button', { name: pt.remove }))
 
     await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent(pt.removed))
     expect(fetch).toHaveBeenCalledWith('/bff/accounts/me/club', { method: 'DELETE' })
     expect(nameField()).toHaveValue('')
     expect(nameField()).toHaveFocus()
-    expect(screen.queryByRole('button', { name: pt.remove })).toBeNull()
+    expect(screen.getAllByRole('radio').some((radio) => (radio as HTMLInputElement).checked)).toBe(
+      false,
+    )
   })
 
   it('holds both buttons while a request is out', () => {
     vi.mocked(fetch).mockReturnValueOnce(new Promise(() => {}))
     renderWithLocale(<ClubPanel initial={{ clubName: 'Clube Azul', freeSlots: 3 }} />)
 
-    fireEvent.click(screen.getByRole('button', { name: pt.save }))
+    fireEvent.click(seat(5))
+    fireEvent.click(saveButton())
 
     expect(screen.getByRole('button', { name: pt.saving })).toBeDisabled()
     expect(screen.getByRole('button', { name: pt.remove })).toBeDisabled()
   })
 
-  it('caps the fields where the API does', () => {
+  it('caps the name where the API does', () => {
     renderWithLocale(<ClubPanel initial={null} />)
 
     expect(nameField()).toHaveAttribute('maxLength', '20')
-    expect(slotsField()).toHaveAttribute('min', '0')
-    expect(slotsField()).toHaveAttribute('max', '10')
   })
 
   it('speaks Spanish', () => {
     renderWithLocale(<ClubPanel initial={null} />, 'es')
 
     expect(screen.getByRole('heading', { name: CLUB_CONTENT.es.title })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: CLUB_CONTENT.es.save })).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: CLUB_CONTENT.es.full })).toBeInTheDocument()
   })
 })
