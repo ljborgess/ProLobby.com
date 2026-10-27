@@ -93,6 +93,44 @@ describe('the /bff proxies refuse requests from other sites', () => {
     expect(apiFetch).not.toHaveBeenCalled()
   })
 
+  it('passes a same-origin club change through with the session and nothing else', async () => {
+    // A fresh response per call: a body can be read once.
+    apiFetch.mockImplementation(async () => new Response(null, { status: 204 }))
+    const body = '{"clubName":"Clube Azul","freeSlots":3}'
+    await declareClub(
+      new Request('https://prolobby.test/bff/accounts/me/club', {
+        method: 'PUT',
+        headers: {
+          'content-type': 'application/json',
+          'sec-fetch-site': 'same-origin',
+          cookie: 's=1',
+        },
+        body,
+      }),
+    )
+    await removeClub(
+      new Request('https://prolobby.test/bff/accounts/me/club', {
+        method: 'DELETE',
+        headers: { 'sec-fetch-site': 'same-origin', cookie: 's=1' },
+      }),
+    )
+
+    expect(apiFetch).toHaveBeenNthCalledWith(
+      1,
+      '/api/accounts/me/club',
+      expect.objectContaining({
+        method: 'PUT',
+        headers: { 'content-type': 'application/json', cookie: 's=1' },
+        body,
+      }),
+    )
+    expect(apiFetch).toHaveBeenNthCalledWith(
+      2,
+      '/api/accounts/me/club',
+      expect.objectContaining({ method: 'DELETE', headers: { cookie: 's=1' }, body: undefined }),
+    )
+  })
+
   it('refuses a cross-site start of the Discord link, which has no body', async () => {
     const res = await post(startDiscordLink, { 'sec-fetch-site': 'cross-site' }, undefined)
 
