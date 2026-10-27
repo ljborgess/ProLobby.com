@@ -31,6 +31,12 @@ export class EventDeliveryService implements OnModuleDestroy {
   /** Attempts in flight, awaited on shutdown so none writes to a closed pool. */
   private readonly inFlight = new Set<Promise<void>>()
   private pendingLookups = 0
+  /**
+   * Set on shutdown. A late enqueue (the moderation announcer drains after
+   * this service may already be gone) still writes its row, which the next
+   * boot recovers, but starts no attempt against a closing pool.
+   */
+  private closed = false
   private readonly encryptionKey = readEvidenceEncryptionKey()
 
   constructor(
@@ -40,6 +46,7 @@ export class EventDeliveryService implements OnModuleDestroy {
   ) {}
 
   async onModuleDestroy(): Promise<void> {
+    this.closed = true
     for (const cancel of this.cancelById.values()) {
       cancel()
     }
@@ -108,6 +115,7 @@ export class EventDeliveryService implements OnModuleDestroy {
   }
 
   private arm(id: string, delayMs: number): void {
+    if (this.closed) return
     this.cancelById.get(id)?.()
     const cancel = this.clock.schedule(delayMs, () => {
       this.cancelById.delete(id)
@@ -126,6 +134,7 @@ export class EventDeliveryService implements OnModuleDestroy {
    * next boot picks it up.
    */
   private attempt(id: string): Promise<void> {
+    if (this.closed) return Promise.resolve()
     const run: Promise<void> = this.deliver(id)
       .catch((error: unknown) => {
         this.logger.error(
