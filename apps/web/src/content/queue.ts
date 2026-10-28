@@ -55,6 +55,7 @@ export interface QueueContent {
     captainFull: string
     captainLeft: string
     captainConfirmed: string
+    captainWithdraw: string
     choosingTitle: string
     choosingHint: string
     inviteTitle: string
@@ -184,6 +185,7 @@ export const QUEUE_CONTENT: Record<Locale, QueueContent> = {
       captainFull: 'O clube encheu',
       captainLeft: 's pra responder',
       captainConfirmed: 'Você é o capitão. Esperando o capitão do outro lado.',
+      captainWithdraw: 'Desistir de ser capitão',
       choosingTitle: 'Escolhendo os capitães',
       choosingHint: 'Quem tem clube com vaga é chamado, um de cada vez, 30 s pra cada.',
       inviteTitle: 'Convite do clube',
@@ -334,6 +336,7 @@ export const QUEUE_CONTENT: Record<Locale, QueueContent> = {
       captainFull: 'El club se llenó',
       captainLeft: 's para responder',
       captainConfirmed: 'Eres el capitán. Esperando al capitán del otro lado.',
+      captainWithdraw: 'Dejar de ser capitán',
       choosingTitle: 'Eligiendo a los capitanes',
       choosingHint: 'Quien tiene club con lugar es llamado, uno a la vez, 30 s cada uno.',
       inviteTitle: 'Invitación del club',
