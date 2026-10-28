@@ -64,13 +64,13 @@ function useStep(onChanged: () => Promise<void>, closedMessage?: string) {
   const [sending, setSending] = useState(false)
   const [failed, setFailed] = useState<string | null>(null)
 
-  async function send(path: string, body?: unknown) {
+  async function send(path: string, body?: unknown, method: 'PUT' | 'DELETE' = 'PUT') {
     setSending(true)
     setFailed(null)
     let response: Response
     try {
       response = await fetch(`/bff/queue/${path}`, {
-        method: 'PUT',
+        method,
         ...(body === undefined
           ? {}
           : { headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }),
@@ -305,10 +305,23 @@ function CaptainStep({
   const offer = lobby.captainOffer
 
   if (!offer) {
+    if (!lobby.isCaptain) {
+      return <p className="text-sm text-foreground-soft">{content.lobby.choosingHint}</p>
+    }
+    // RF-032: until the other side confirms, the role can go back, with no penalty.
     return (
-      <p className="text-sm text-foreground-soft">
-        {lobby.isCaptain ? content.lobby.captainConfirmed : content.lobby.choosingHint}
-      </p>
+      <>
+        <p className="text-sm text-foreground-soft">{content.lobby.captainConfirmed}</p>
+        <button
+          type="button"
+          onClick={() => send('captaincy', undefined, 'DELETE')}
+          disabled={sending}
+          className={`${SECONDARY} w-full`}
+        >
+          {content.lobby.captainWithdraw}
+        </button>
+        <Failure message={failed} />
+      </>
     )
   }
   const left = secondsTo(offer.answerBy, now)

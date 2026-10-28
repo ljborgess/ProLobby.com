@@ -303,6 +303,23 @@ describe('QueueScreen (#233)', () => {
       )
     })
 
+    it('a confirmed captain gives the role up before the other side confirms (RF-032)', async () => {
+      vi.mocked(fetch)
+        .mockResolvedValueOnce(answer(204, {}))
+        .mockResolvedValueOnce(answer(200, inLobby({ state: 'waiting_captain' })))
+      renderScreen(inLobby({ state: 'waiting_captain', isCaptain: true }))
+
+      expect(screen.getByText(pt.lobby.captainConfirmed)).toBeInTheDocument()
+      fireEvent.click(screen.getByRole('button', { name: pt.lobby.captainWithdraw }))
+
+      expect(await screen.findByText(pt.lobby.choosingHint)).toBeInTheDocument()
+      expect(fetch).toHaveBeenNthCalledWith(
+        1,
+        '/bff/queue/captaincy',
+        expect.objectContaining({ method: 'DELETE' }),
+      )
+    })
+
     it('everyone else waits while the captains are chosen', () => {
       renderScreen(inLobby({ state: 'waiting_captain' }))
 
