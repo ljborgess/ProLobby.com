@@ -67,15 +67,35 @@ export const lobbyChannelsCreatedEventSchema = z.object({
     .strict(),
 })
 
+/**
+ * The bot's heartbeat (#271, RNF-008), every minute: whether it is connected
+ * to Discord and how many channels the server holds. The API keeps the last
+ * one in memory and stops closing lobbies while the bot is silent or
+ * disconnected, or when three more channels would not fit under the 500.
+ */
+export const botStatusEventSchema = z.object({
+  id: uuid,
+  occurredAt,
+  type: z.literal('bot.status'),
+  payload: z
+    .object({
+      discordReady: z.boolean(),
+      channelCount: z.number().int().min(0).max(1000),
+    })
+    .strict(),
+})
+
 export const botEventSchema = z.discriminatedUnion('type', [
   discordMemberLeftEventSchema,
   discordMemberJoinedEventSchema,
   discordPresenceSnapshotEventSchema,
   lobbyChannelsCreatedEventSchema,
+  botStatusEventSchema,
 ])
 
 export type DiscordMemberLeftEvent = z.infer<typeof discordMemberLeftEventSchema>
 export type DiscordMemberJoinedEvent = z.infer<typeof discordMemberJoinedEventSchema>
 export type DiscordPresenceSnapshotEvent = z.infer<typeof discordPresenceSnapshotEventSchema>
 export type LobbyChannelsCreatedEvent = z.infer<typeof lobbyChannelsCreatedEventSchema>
+export type BotStatusEvent = z.infer<typeof botStatusEventSchema>
 export type BotEvent = z.infer<typeof botEventSchema>

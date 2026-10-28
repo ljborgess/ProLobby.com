@@ -10,6 +10,7 @@ import { AccountRecoveryService } from '../src/modules/account/account-recovery.
 import { DiscordLinkService } from '../src/modules/account/discord-link.service'
 import { DiscordPresenceService } from '../src/modules/account/discord-presence.service'
 import { BotEventsController } from '../src/modules/bot-integration/bot-events.controller'
+import { CoordinationState } from '../src/modules/bot-integration/coordination-state'
 import { LobbyChannelsService } from '../src/modules/bot-integration/lobby-channels.service'
 import { DiscordOAuth, createDiscordOAuth } from '../src/modules/account/discord-oauth'
 import { ConsoleMailSender } from '../src/common/mail/console-mail.sender'
@@ -238,6 +239,7 @@ describe('the bot events channel is validated at boot', () => {
       providers: [
         { provide: DiscordPresenceService, useValue: {} },
         { provide: LobbyChannelsService, useValue: {} },
+        { provide: CoordinationState, useValue: {} },
       ],
     }).compile()
 
