@@ -6,6 +6,16 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 
 ---
 
+## 2026-10-28 · Rafael
+
+### A #209 (resultado vira evento de elo) passou pro Luciano
+
+- **O que mudou:** o Luciano pegou a #209, que não tinha branch nem PR. Continua com você a #121 (primeiro deploy interno).
+- **Como ficou:** partida `finished` grava um `EloEvent` `match_result` por humano, no personagem ativo da categoria, e soma 1 em `matchesInCategory`, no contrato do rollback (#210). O elo congelado agora viaja pra `LobbyParticipation.eloAtEntry`, porque a entrada na fila some quando a partida assenta. Empate vale 0,5.
+- **Em teste:** quem cria `LobbyParticipation` direto precisa passar `eloAtEntry`.
+
+---
+
 ## 2026-10-27 · Para todos
 
 ### O payload dos eventos pro bot agora é cifrado (#250)

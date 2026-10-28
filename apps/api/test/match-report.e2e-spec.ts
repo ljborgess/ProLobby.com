@@ -33,7 +33,11 @@ import {
   ModerationCaseType,
   UserReportReason,
 } from '../src/modules/moderation/moderation-case.enums'
-import { ReputationEventReason } from '../src/modules/ranking/ranking-event.enums'
+import { EloEvent } from '../src/modules/ranking/elo-event.entity'
+import { EloService } from '../src/modules/ranking/elo.service'
+import { MatchEloService } from '../src/modules/ranking/match-elo.service'
+import { MatchRollbackService } from '../src/modules/ranking/match-rollback.service'
+import { EloEventReason, ReputationEventReason } from '../src/modules/ranking/ranking-event.enums'
 import { ReputationEvent } from '../src/modules/ranking/reputation-event.entity'
 import { CaptainCascadeService } from '../src/modules/queue/captain-cascade.service'
 import { LobbyConfirmationService } from '../src/modules/queue/lobby-confirmation.service'
@@ -74,6 +78,9 @@ describe('match report (4.1)', () => {
   let reports: MatchReportService
   let ratings: PeerRatingService
   let userReports: UserReportService
+  let elo: EloService
+  let matchElo: MatchEloService
+  let rollback: MatchRollbackService
   let counter = 0
 
   const cookieOf = (res: request.Response): string => {
@@ -199,6 +206,9 @@ describe('match report (4.1)', () => {
     reports = moduleRef.get(MatchReportService)
     ratings = moduleRef.get(PeerRatingService)
     userReports = moduleRef.get(UserReportService)
+    elo = moduleRef.get(EloService)
+    matchElo = moduleRef.get(MatchEloService)
+    rollback = moduleRef.get(MatchRollbackService)
   }, 60_000)
 
   beforeEach(async () => {
@@ -363,6 +373,7 @@ describe('match report (4.1)', () => {
   })
 
   const entriesOf = (lobbyId: string) => orm.em.fork().count(QueueEntry, { lobby: lobbyId })
+  const eloEventsOf = (lobbyId: string) => orm.em.fork().count(EloEvent, { lobbyId })
   const cleanMatchesOf = (lobbyId: string) =>
     orm.em.fork().count(ReputationEvent, { lobbyId, reason: ReputationEventReason.CLEAN_MATCH })
   const disputesOf = (lobbyId: string) =>
@@ -443,6 +454,7 @@ describe('match report (4.1)', () => {
     expect(unconfirmed.endedAt ?? null).toBeNull()
     expect(await entriesOf(lobbyId)).toBe(0)
     expect(await cleanMatchesOf(lobbyId)).toBe(0)
+    expect(await eloEventsOf(lobbyId)).toBe(0)
 
     const contestEnds = first + 15 * MINUTE + 48 * 60 * MINUTE
     expect(await reports.expire(at(contestEnds - 1))).toBe(0)
@@ -454,6 +466,81 @@ describe('match report (4.1)', () => {
       endedAt: at(contestEnds),
     })
     expect(await cleanMatchesOf(lobbyId)).toBe(8)
+    expect(await eloEventsOf(lobbyId)).toBe(8)
+  })
+
+  describe('a finished match becomes elo (RF-077, #209)', () => {
+    /** The participation and the character of one player. */
+    const rowOf = (em: ReturnType<MikroORM['em']['fork']>, lobbyId: string, p: Player) =>
+      em.findOneOrFail(
+        LobbyParticipation,
+        { lobby: lobbyId, account: p.accountId },
+        { populate: ['character'] },
+      )
+    const eloOf = (p: Player, category: CharacterCategory) =>
+      elo.of(p.accountId, category, CURRENT_EDITION)
+
+    it('side means of the humans, an AI slot out, each with its own K; rollback undoes it', async () => {
+      const { lobbyId, closedAt, a, b } = await playing()
+      const em = orm.em.fork()
+      // Side A entered at 1100; side B at 1000 with one slot left to the AI.
+      for (const p of [a.captain, ...a.others]) (await rowOf(em, lobbyId, p)).eloAtEntry = 1100
+      const veteran = await rowOf(em, lobbyId, a.captain)
+      veteran.character.matchesInCategory = 9 // this is the 10th: K 20
+      const ninth = await rowOf(em, lobbyId, a.others[0]!)
+      ninth.character.matchesInCategory = 8 // this is the 9th: K 32
+      const ai = await rowOf(em, lobbyId, b.others[2]!)
+      em.remove(ai)
+      await em.flush()
+
+      await reports.submit(a.others[0]!.accountId, score(2, 1), png(), at(closedAt + 20 * MINUTE))
+      await reports.submit(b.captain.accountId, score(2, 1), png(), at(closedAt + 30 * MINUTE))
+
+      // Expected for A: 1 / (1 + 10^(-100/400)) = 0.6401.
+      expect(await eloEventsOf(lobbyId)).toBe(7)
+      expect(await eloOf(a.captain, veteran.category)).toBe(1007) // 20 × 0.3599 = 7.2
+      expect(await eloOf(a.others[0]!, ninth.category)).toBe(1012) // 32 × 0.3599 = 11.5
+      expect(await eloOf(b.captain, (await rowOf(em, lobbyId, b.captain)).category)).toBe(988)
+      expect(await eloOf(b.others[2]!, ai.category)).toBe(1000)
+      const counted = orm.em.fork()
+      expect((await rowOf(counted, lobbyId, a.captain)).character.matchesInCategory).toBe(10)
+      expect((await rowOf(counted, lobbyId, a.others[0]!)).character.matchesInCategory).toBe(9)
+
+      // Applied again: nothing new, nothing counted twice.
+      expect(
+        await orm.em
+          .fork()
+          .transactional(async (tx) =>
+            matchElo.applyIn(tx, await tx.findOneOrFail(Lobby, lobbyId)),
+          ),
+      ).toBe(0)
+      expect(await eloEventsOf(lobbyId)).toBe(7)
+
+      await rollback.revertLobby(lobbyId)
+      expect(await eloOf(a.captain, veteran.category)).toBe(1000)
+      const after = orm.em.fork()
+      expect((await rowOf(after, lobbyId, a.captain)).character.matchesInCategory).toBe(9)
+    })
+
+    it('a draw between equal sides moves nothing; a character no longer verified gets no event', async () => {
+      const { lobbyId, closedAt, a, b } = await playing()
+      const em = orm.em.fork()
+      const revoked = await rowOf(em, lobbyId, b.others[0]!)
+      revoked.character.state = CharacterState.PENDING_VERIFICATION
+      await em.flush()
+
+      await reports.submit(a.others[0]!.accountId, score(1, 1), png(), at(closedAt + 20 * MINUTE))
+      await reports.submit(b.captain.accountId, score(1, 1), png(), at(closedAt + 30 * MINUTE))
+
+      expect((await lobbyOf(lobbyId)).state).toBe(LobbyState.FINISHED)
+      const events = await orm.em.fork().find(EloEvent, { lobbyId })
+      expect(events).toHaveLength(7)
+      expect(events.every((e) => e.delta === 0 && e.reason === EloEventReason.MATCH_RESULT)).toBe(
+        true,
+      )
+      const after = orm.em.fork()
+      expect((await rowOf(after, lobbyId, b.others[0]!)).character.matchesInCategory).toBe(0)
+    })
   })
 
   /** A one-sided result: side A reported 0x4 and nobody of side B, past the 15 min. */

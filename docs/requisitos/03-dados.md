@@ -116,7 +116,9 @@ Uma linha por oferta do papel de capitão (#247). A oferta em aberto é a que te
 Não pesa no elo, por decisão ([Ranking](../produto/02-jogador/02-ranking.md)) — é histórico e insumo de moderação.
 
 ### ParticipacaoLobby
-`lobby` · `conta` · `personagem` · `lado` · `posicao` · `confirmou_entrada` · `confirmou_convite_recebido` · `voto_formacao`
+`lobby` · `conta` · `personagem` · `lado` · `posicao` · `elo_no_momento` · `confirmou_entrada` · `confirmou_convite_recebido` · `voto_formacao`
+
+`elo_no_momento` é copiado da entrada na fila quando o lobby fecha (#209): a entrada é apagada quando a partida assenta, e é este valor que entra na média de cada lado da [RF-077](05-funcionais.md#rf-077--expectativa-de-elo-usa-a-média-dos-humanos-de-cada-lado).
 
 `confirmou_convite_recebido` é o que sustenta o cancelamento anti-exclusão de 5 minutos ([Lobby](../produto/03-partida/03-lobby.md)).
 

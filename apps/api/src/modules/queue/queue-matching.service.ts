@@ -64,6 +64,7 @@ export class QueueMatchingService {
               character: entry.character,
               side: index === 0 ? LobbySide.A : LobbySide.B,
               category: entry.category,
+              eloAtEntry: entry.eloAtEntry,
             })
           }
         })
