@@ -711,6 +711,37 @@ describe('QueueScreen (#233)', () => {
     })
   })
 
+  describe('a paused queue (RNF-008, #271)', () => {
+    it.each(['discord_unavailable', 'channels_full', 'lobbies_full'] as const)(
+      'says why no lobby closes (%s), in place of the stall notice',
+      (paused) => {
+        renderScreen({
+          entry: {
+            characterId: 'c1',
+            category: 'midfielder',
+            joinedAt: new Date(Date.now() - 20 * 60_000).toISOString(),
+            cancelledLobby: null,
+            stall: 'unpaired',
+            lobby: null,
+          },
+          blockedUntil: null,
+          paused,
+        })
+
+        expect(screen.getByText(pt.paused[paused])).toBeInTheDocument()
+        expect(screen.queryByText(pt.stall.unpaired)).toBeNull()
+        expect(screen.getByRole('button', { name: pt.leave })).toBeInTheDocument()
+      },
+    )
+
+    it('says it before joining too, and joining still works', () => {
+      renderScreen({ entry: null, blockedUntil: null, paused: 'discord_unavailable' })
+
+      expect(screen.getByText(pt.paused.discord_unavailable)).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: pt.joinAs('MEI') })).toBeEnabled()
+    })
+  })
+
   describe('back to searching, and why (#252)', () => {
     it('someone did not confirm: the lobby vanishes and the search says so', async () => {
       vi.mocked(fetch)

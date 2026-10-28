@@ -34,6 +34,8 @@ export interface QueueContent {
   refuseBack: string
   /** 10 min searching with no lobby: what is missing, every 5 min (RF-007, #234). */
   stall: { unpaired: string; captain_missing: string; keepWaiting: string }
+  /** No lobby closes right now, and why (RNF-008, #271); the search goes on. */
+  paused: { discord_unavailable: string; channels_full: string; lobbies_full: string }
   confirmed: string
   answerClosed: string
   movementHeading: string
@@ -152,6 +154,14 @@ export const QUEUE_CONTENT: Record<Locale, QueueContent> = {
       `Recusar te bloqueia da fila por ${minutes} min. A recusa sobe o bloqueio enquanto você recusar em menos de 12 h.`,
     refuseConfirm: 'Recusar mesmo',
     refuseBack: 'Voltar',
+    paused: {
+      discord_unavailable:
+        'Coordenação indisponível: o Discord está fora do ar. Nenhum lobby fecha agora; sua busca continua e volta sozinha.',
+      channels_full:
+        'O servidor do Discord está sem espaço pra canais novos. Nenhum lobby fecha agora; sua busca continua e volta sozinha.',
+      lobbies_full:
+        'Muitos lobbies ao mesmo tempo. O próximo fecha assim que um terminar; sua busca continua.',
+    },
     stall: {
       unpaired: 'A fila está parada porque falta alguém da sua posição pra formar par com você.',
       captain_missing:
@@ -301,6 +311,14 @@ export const QUEUE_CONTENT: Record<Locale, QueueContent> = {
       `Rechazar te bloquea de la cola por ${minutes} min. El bloqueo sube mientras rechaces con menos de 12 h de diferencia.`,
     refuseConfirm: 'Rechazar igual',
     refuseBack: 'Volver',
+    paused: {
+      discord_unavailable:
+        'Coordinación no disponible: Discord está caído. Ningún lobby se cierra ahora; tu búsqueda sigue y vuelve sola.',
+      channels_full:
+        'El servidor de Discord no tiene espacio para canales nuevos. Ningún lobby se cierra ahora; tu búsqueda sigue y vuelve sola.',
+      lobbies_full:
+        'Muchos lobbies al mismo tiempo. El próximo se cierra apenas termine uno; tu búsqueda sigue.',
+    },
     stall: {
       unpaired:
         'La cola está parada porque falta alguien de tu posición para formar pareja contigo.',

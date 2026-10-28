@@ -5,6 +5,7 @@ import { randomBytes, randomUUID } from 'node:crypto'
 import request from 'supertest'
 
 import { AppModule } from '../src/app.module'
+import { CoordinationState } from '../src/modules/bot-integration/coordination-state'
 import { CURRENT_EDITION } from '../src/common/domain/game-edition.enum'
 import { Platform } from '../src/common/domain/platform.enum'
 import { MailSender } from '../src/common/mail/mail.types'
@@ -37,6 +38,7 @@ describe('queue closes matches (#231)', () => {
   let app: INestApplication
   let orm: MikroORM
   let matching: QueueMatchingService
+  let coordination: CoordinationState
   let counter = 0
 
   const cookieOf = (res: request.Response): string => {
@@ -113,10 +115,58 @@ describe('queue closes matches (#231)', () => {
 
     orm = moduleRef.get(MikroORM)
     matching = moduleRef.get(QueueMatchingService)
+    coordination = moduleRef.get(CoordinationState)
   }, 60_000)
 
   beforeEach(async () => {
     await orm.getSchemaGenerator().refreshDatabase()
+    // A connected bot and nothing running: the pause is a test's own business.
+    coordination.recordBot({ discordReady: true, channelCount: 40 }, Date.now())
+    coordination.recordLobbies(0)
+  })
+
+  describe('the queue pauses instead of closing a lobby it cannot coordinate (#271)', () => {
+    it('with Discord down nobody is placed, the screen says why, and it resumes by itself', async () => {
+      const [first] = await eight()
+      coordination.recordBot({ discordReady: false, channelCount: 40 }, Date.now())
+
+      expect(await matching.closeMatches()).toBe(0)
+      const shown = await request(app.getHttpServer())
+        .get('/api/queue')
+        .set('Cookie', first!.cookie)
+      expect(shown.body.paused).toBe('discord_unavailable')
+      expect(shown.body.entry.lobby).toBeNull()
+
+      coordination.recordBot({ discordReady: true, channelCount: 40 }, Date.now())
+      expect(await matching.closeMatches()).toBe(1)
+    })
+
+    it('with no room for three more channels, nobody is placed', async () => {
+      await eight()
+      coordination.recordBot({ discordReady: true, channelCount: 498 }, Date.now())
+
+      expect(await matching.closeMatches()).toBe(0)
+      expect(await orm.em.fork().count(Lobby, {})).toBe(0)
+    })
+
+    it('with 9 lobbies at once, no 10th closes until one ends', async () => {
+      const em = orm.em.fork()
+      const running = Array.from({ length: 9 }, () =>
+        em.create(Lobby, { state: LobbyState.IN_PROGRESS, createdAt: new Date() }),
+      )
+      await em.flush()
+      const [first] = await eight()
+
+      expect(await matching.closeMatches()).toBe(0)
+      const shown = await request(app.getHttpServer())
+        .get('/api/queue')
+        .set('Cookie', first!.cookie)
+      expect(shown.body.paused).toBe('lobbies_full')
+
+      running[0]!.state = LobbyState.FINISHED
+      await em.flush()
+      expect(await matching.closeMatches()).toBe(1)
+    })
   })
 
   afterAll(async () => {

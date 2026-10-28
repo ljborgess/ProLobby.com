@@ -11,6 +11,7 @@ import { randomBytes, randomUUID } from 'node:crypto'
 import request from 'supertest'
 
 import { AppModule } from '../src/app.module'
+import { CoordinationState } from '../src/modules/bot-integration/coordination-state'
 import { hashIdentity, readIdentityHmacSecret } from '../src/common/security/identity-hmac'
 import { applySecurity } from '../src/common/security/security.config'
 import { Account } from '../src/modules/account/account.entity'
@@ -23,6 +24,7 @@ const STRANGER = '999999999999999999'
 describe('bot → platform events (#150, RF-060)', () => {
   let app: INestApplication
   let orm: MikroORM
+  let coordination: CoordinationState
   let counter = 0
 
   const iso = (offsetMs = 0) => new Date(Date.now() + offsetMs).toISOString()
@@ -100,6 +102,7 @@ describe('bot → platform events (#150, RF-060)', () => {
     await app.init()
 
     orm = moduleRef.get(MikroORM)
+    coordination = moduleRef.get(CoordinationState)
     await orm.getSchemaGenerator().refreshDatabase()
   }, 60_000)
 
@@ -223,6 +226,22 @@ describe('bot → platform events (#150, RF-060)', () => {
     const res = await send(event('discord.member_left', STRANGER))
 
     expect(res.status).toBe(204)
+  })
+
+  it('takes the bot heartbeat, which pauses the queue while Discord is down (#271)', async () => {
+    const status = (discordReady: boolean, channelCount = 40): BotEvent => ({
+      id: randomUUID(),
+      occurredAt: iso(),
+      type: 'bot.status',
+      payload: { discordReady, channelCount },
+    })
+
+    expect((await send(status(false))).status).toBe(204)
+    expect(coordination.pause(Date.now())).toBe('discord_unavailable')
+    expect((await send(status(true, 499))).status).toBe(204)
+    expect(coordination.pause(Date.now())).toBe('channels_full')
+    expect((await send(status(true))).status).toBe(204)
+    expect(coordination.pause(Date.now())).toBeNull()
   })
 
   /**

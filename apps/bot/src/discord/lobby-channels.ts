@@ -7,7 +7,11 @@ import {
   type GuildBasedChannel,
 } from 'discord.js'
 
+import { randomUUID } from 'node:crypto'
+import type { BotEvent } from '@prolobby/types'
+
 import type { Logger } from '../logger'
+import { postBotEvent } from '../platform/client'
 import type { LobbyChannelsDeps } from '../webhook/handlers/lobby-closed'
 import type { LobbyEndedDeps } from '../webhook/handlers/lobby-ended'
 import { CHANNEL_ALERT_AT, lobbyGroups, sweep } from './lobby-sweep'
@@ -95,9 +99,14 @@ export function lobbyChannelsOn(
  * have been empty for 10 min (15 min floor, 3 h ceiling), which is also the
  * hourly cleanup of RF-054: a channel the normal path missed (a lost
  * `lobby.ended`, a restart) is swept on the same rule. Crossing 400 channels
- * tells `DISCORD_STATUS_CHANNEL_ID` once, until the count drops back.
+ * tells `DISCORD_STATUS_CHANNEL_ID` once, until the count drops back. Each
+ * pass starts with the heartbeat the API pauses the queue on (#271).
  */
-export function scheduleLobbySweep(client: Client, log: Logger): () => void {
+export function scheduleLobbySweep(
+  client: Client,
+  log: Logger,
+  report: (event: BotEvent) => Promise<{ status: number }> = postBotEvent,
+): () => void {
   const emptySince = new Map<string, number>()
   let alerted = false
   let running = false
@@ -106,6 +115,18 @@ export function scheduleLobbySweep(client: Client, log: Logger): () => void {
     const server = guildOf(client)
     // Threads do not count towards the 500, and are never lobby channels.
     const all = [...server.channels.cache.values()].filter((channel) => !channel.isThread())
+    // The heartbeat first (#271): the API stops closing lobbies when it goes
+    // quiet, says Discord is down, or three more channels would pass 500.
+    await report({
+      id: randomUUID(),
+      occurredAt: new Date().toISOString(),
+      type: 'bot.status',
+      payload: { discordReady: client.isReady(), channelCount: all.length },
+    }).catch((error: unknown) => {
+      log.warn('lobby', 'bot status not delivered', {
+        message: error instanceof Error ? error.message : String(error),
+      })
+    })
     const channels = all
       // Only what the bot made: a person's channel called "lobby-…" is not ours to delete.
       .filter((channel) => isOwnedBy(client, channel))
@@ -145,7 +166,7 @@ export function scheduleLobbySweep(client: Client, log: Logger): () => void {
     }
   }
 
-  const timer = setInterval(() => {
+  const tick = () => {
     // A slow pass (many deletes) never overlaps the next one.
     if (running) return
     running = true
@@ -158,7 +179,10 @@ export function scheduleLobbySweep(client: Client, log: Logger): () => void {
       .finally(() => {
         running = false
       })
-  }, SWEEP_INTERVAL_MS)
+  }
+  // Once now, so the API hears from the bot as soon as it is ready.
+  tick()
+  const timer = setInterval(tick, SWEEP_INTERVAL_MS)
   return () => clearInterval(timer)
 }
 
