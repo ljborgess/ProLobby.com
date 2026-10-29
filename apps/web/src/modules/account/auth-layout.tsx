@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { Logo } from '@/common/ui/logo'
 import { LanguageSwitcher } from '@/common/ui/language-switcher'
 import { useLandingContent } from '@/hooks/use-landing-content'
-import { AuthArt } from './auth-art'
+import { AuthArt, PitchGrid } from './auth-art'
 
 /**
  * The frame every logged-out account screen sits in — issue #171,
@@ -43,6 +43,18 @@ export function AuthLayout({
         aria-hidden
         className="landing-glow pointer-events-none absolute inset-x-0 top-0 h-80 bg-[radial-gradient(ellipse_80%_70%_at_50%_0%,_var(--color-accent-strong)_0%,_transparent_70%)] lg:hidden"
       />
+      {/* The panel does not fit a phone, but its pitch does: a slice of it
+          tilted away under the form, so the small screen is still the same
+          place and not a bare black page. Faint, and gone from `lg` up, where
+          the panel itself takes over. */}
+      <div
+        aria-hidden
+        className="auth-pitch-band pointer-events-none absolute inset-x-0 bottom-0 h-56 [perspective:520px] lg:hidden"
+      >
+        <div className="absolute inset-0 origin-bottom [transform:rotateX(58deg)_scale(1.6)]">
+          <PitchGrid />
+        </div>
+      </div>
 
       {/* A grid of `auto 1fr`, not a flex column.
        *
@@ -77,7 +89,7 @@ export function AuthLayout({
 
         <div className="relative p-14">
           <div className="landing-rule mb-7 max-w-24" />
-          <p className="landing-section-title max-w-sm text-balance font-display text-foreground">
+          <p className="max-w-sm text-balance font-display text-xl font-light leading-snug tracking-[-0.015em] text-foreground sm:text-2xl">
             {aside.title}
           </p>
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-foreground-soft/85">
@@ -116,7 +128,7 @@ type NoteTone = 'confirmed' | 'waiting' | 'error'
  */
 export function AuthNote({ tone, children }: { tone: NoteTone; children: React.ReactNode }) {
   return (
-    <div className="flex items-start gap-3">
+    <div className="auth-note flex items-start gap-3">
       <svg
         aria-hidden
         viewBox="0 0 24 24"

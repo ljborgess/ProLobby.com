@@ -83,6 +83,8 @@ export interface AuthContent {
   languageSwitcher: {
     label: string
   }
+  /** Nome do olho no campo de senha; o estado vai em aria-pressed. */
+  revealPassword: string
 }
 
 export const AUTH_CONTENT: Record<Locale, AuthContent> = {
@@ -132,7 +134,7 @@ export const AUTH_CONTENT: Record<Locale, AuthContent> = {
     forgotPassword: {
       linkLabel: 'Esqueci minha senha',
       title: 'Redefinir senha',
-      subtitle: 'Manda um link de redefinição para o seu e-mail.',
+      subtitle: 'Mandamos um link de redefinição para o seu e-mail.',
       emailLabel: 'E-mail',
       submit: 'Enviar link',
       submitting: 'Enviando…',
@@ -164,6 +166,7 @@ export const AUTH_CONTENT: Record<Locale, AuthContent> = {
     languageSwitcher: {
       label: 'Idioma',
     },
+    revealPassword: 'Mostrar senha',
   },
   es: {
     signUp: {
@@ -243,5 +246,6 @@ export const AUTH_CONTENT: Record<Locale, AuthContent> = {
     languageSwitcher: {
       label: 'Idioma',
     },
+    revealPassword: 'Mostrar contraseña',
   },
 }

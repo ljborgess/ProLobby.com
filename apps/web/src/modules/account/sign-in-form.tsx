@@ -17,7 +17,7 @@ type Status = 'idle' | 'submitting' | 'error' | 'networkError'
  * trying, which is exactly the signal RF-022's design avoids leaking.
  */
 export function SignInForm() {
-  const { signIn: content, forgotPassword } = useAuthContent()
+  const { signIn: content, forgotPassword, revealPassword } = useAuthContent()
   const router = useRouter()
   const [status, setStatus] = useState<Status>('idle')
   const [emailError, setEmailError] = useState<string>()
@@ -85,6 +85,7 @@ export function SignInForm() {
         type="password"
         autoComplete="current-password"
         label={content.passwordLabel}
+        revealLabel={revealPassword}
       />
       <Link href="/forgot-password" className="auth-link -my-1 self-end py-1 text-sm">
         {forgotPassword.linkLabel}

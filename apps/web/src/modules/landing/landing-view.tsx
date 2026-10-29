@@ -2,20 +2,23 @@
 
 import Link from 'next/link'
 import { Logo } from '@/common/ui/logo'
+import type { CharacterCategory } from '@/content/character'
+import { useCharacterContent } from '@/hooks/use-character-content'
 import { useLandingContent } from '@/hooks/use-landing-content'
+import { initialsOf, KitShirt } from '@/modules/kit/kit-art'
 import { LanguageSwitcher } from '@/common/ui/language-switcher'
 import { PairingNetwork } from './pairing-network'
 import { QueueBoard } from './queue-board'
 import { SectionThread, SectionThreadEnd } from './section-thread'
 import { TopBarTicker } from './top-bar-ticker'
 
-const FEATURE_ICONS = [
-  // shield — identidade verificada
-  <path key="shield" d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z" />,
-  // queue — fila por posição
-  <path key="queue" d="M4 6h16M4 12h16M4 18h10" />,
-  // link — vínculo com Discord
-  <path key="link" d="M9 15l6-6M9 9h6v6" />,
+/** The five places of the squad drawing in the hero, in pitch order. */
+const SQUAD: { category: CharacterCategory; number: number }[] = [
+  { category: 'goalkeeper', number: 1 },
+  { category: 'defender', number: 4 },
+  { category: 'midfielder', number: 8 },
+  { category: 'winger', number: 7 },
+  { category: 'striker', number: 9 },
 ]
 
 /**
@@ -114,6 +117,8 @@ export function LandingView() {
             >
               {content.hero.subtitle}
             </p>
+
+            <HeroSquad caption={content.hero.squadCaption} />
           </div>
         </div>
       </section>
@@ -123,6 +128,36 @@ export function LandingView() {
           stacked. `seam` drops each section's top rule, because a full-width
           hairline across the landing point would cut the thread in half. */}
       <SectionThread step={1} variant="line" />
+
+      {/* How it works, right under the hero (second refine, 2026-10-29): three
+          numbered steps on a hairline, in the order a player lives them. The
+          numerals are scoreboard lettering, outlined until they light. */}
+      <Section seam className="bg-surface">
+        <SectionHeading eyebrow={content.features.eyebrow} />
+        <div className="mt-10 grid gap-10 sm:grid-cols-3 sm:gap-8">
+          {content.features.items.map((item, index) => (
+            <div
+              key={item.title}
+              className={`landing-reveal landing-reveal-${index + 2} flex flex-col gap-3 border-t border-white/10 pt-6`}
+            >
+              <span
+                aria-hidden
+                className="landing-step-numeral font-numeric text-6xl font-bold leading-none"
+              >
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <h2 className="font-display text-xl font-medium tracking-tight text-foreground">
+                {item.title}
+              </h2>
+              <p className="max-w-xs text-[0.95rem] leading-relaxed text-foreground-soft">
+                {item.body}
+              </p>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      <SectionThread step={2} variant="jog" />
 
       {/* A scoreboard, not four stat cards (refine pass, 2026-10-29): one
           panel cut by hairlines reads as a single instrument with four
@@ -156,7 +191,7 @@ export function LandingView() {
         </div>
       </Section>
 
-      <SectionThread step={2} variant="fork" />
+      <SectionThread step={3} variant="fork" />
 
       <Section seam className="landing-weave bg-surface">
         <div className="flex flex-col items-center gap-12 lg:flex-row lg:gap-16">
@@ -198,7 +233,7 @@ export function LandingView() {
         </div>
       </Section>
 
-      <SectionThread step={3} variant="dashes" />
+      <SectionThread step={4} variant="dashes" />
 
       {/* `overflow-clip`, not `overflow-hidden`: hidden makes the section a
           scroll container, and the lobby's view timeline would then track
@@ -221,39 +256,7 @@ export function LandingView() {
         </div>
       </Section>
 
-      <SectionThread step={4} variant="jog" />
-
-      {/* Three columns on a hairline, not three floating cards (refine pass,
-          2026-10-29): the same-size icon card was the page's loudest template
-          and the quietest content. Each column steps in a little later. */}
-      <Section seam className="bg-surface">
-        <SectionHeading eyebrow={content.features.eyebrow} />
-        <div className="mt-10 grid gap-10 sm:grid-cols-3 sm:gap-8">
-          {content.features.items.map((item, index) => (
-            <div
-              key={item.title}
-              className={`landing-reveal landing-reveal-${index + 2} flex flex-col gap-3 border-t border-white/10 pt-6`}
-            >
-              <span className="flex size-10 items-center justify-center rounded-full border border-accent/30">
-                <svg
-                  aria-hidden
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={1.5}
-                  className="size-5 text-accent"
-                >
-                  {FEATURE_ICONS[index]}
-                </svg>
-              </span>
-              <h2 className="mt-2 font-display text-lg font-medium tracking-tight text-foreground">
-                {item.title}
-              </h2>
-              <p className="max-w-xs text-sm leading-relaxed text-foreground-soft">{item.body}</p>
-            </div>
-          ))}
-        </div>
-      </Section>
+      <Closing />
 
       <SectionThreadEnd />
 
@@ -475,5 +478,78 @@ function HeroBackdrop() {
       <div className="landing-scrim-edge absolute inset-0" />
       <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
     </div>
+  )
+}
+
+/**
+ * The squad under the headline (refine, 2026-10-29): five shirts, one per
+ * position, each with the verified tick — what the product is, drawn, in the
+ * first viewport. The kit is the default one, so no club is implied.
+ */
+function HeroSquad({ caption }: { caption: string }) {
+  const codes = useCharacterContent().categoryCodes
+  return (
+    <figure className="mt-12 flex flex-col items-center gap-4">
+      <ul className="flex items-end justify-center gap-3 sm:gap-6">
+        {SQUAD.map(({ category, number }, index) => (
+          <li
+            key={category}
+            className="landing-fade-up flex flex-col items-center gap-2"
+            style={{ '--landing-delay': `${0.3 + index * 0.08}s` } as React.CSSProperties}
+          >
+            <span className="relative">
+              <KitShirt
+                kit={{ primary: 'white', secondary: 'navy', pattern: 'plain', crest: 'shield' }}
+                initials={initialsOf('ProLobby')}
+                className={`drop-shadow-[0_12px_18px_rgb(0_0_0/45%)] ${index === 2 ? 'w-16 sm:w-20' : 'w-12 sm:w-16'}`}
+              />
+              <span className="absolute -bottom-1 -right-1 flex size-5 items-center justify-center rounded-full bg-accent text-background shadow-[0_0_10px_color-mix(in_srgb,var(--color-accent)_55%,transparent)]">
+                <svg viewBox="0 0 16 16" aria-hidden className="size-3" fill="none">
+                  <path
+                    d="m3.5 8.5 3 3 6-7"
+                    stroke="currentColor"
+                    strokeWidth={2.2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
+              <span className="sr-only">{number}</span>
+            </span>
+            <span className="font-numeric text-sm font-semibold uppercase tracking-[0.12em] text-foreground">
+              {codes[category]}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <figcaption className="text-sm text-foreground-soft">{caption}</figcaption>
+    </figure>
+  )
+}
+
+/** The close: the offer once more, with its two doors, under a floodlight. */
+function Closing() {
+  const content = useLandingContent().closing
+  return (
+    <section className="landing-closing relative overflow-clip px-4 py-28 sm:px-6">
+      <div className="landing-reveal relative mx-auto flex max-w-2xl flex-col items-center gap-5 text-center">
+        <h2 className="landing-section-title font-display text-foreground">{content.title}</h2>
+        <p className="max-w-lg text-base leading-relaxed text-foreground-soft">{content.body}</p>
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-3">
+          <Link
+            href="/sign-up"
+            className="landing-focus landing-sheen inline-flex min-h-12 items-center rounded-full bg-accent px-7 text-base font-medium text-background shadow-[0_20px_45px_rgb(0_0_0/35%)] transition-transform duration-200 hover:scale-[1.04] active:scale-95"
+          >
+            {content.cta}
+          </Link>
+          <Link
+            href="/login"
+            className="landing-focus inline-flex min-h-12 items-center rounded-full border border-white/20 px-6 text-sm text-foreground-soft transition-colors hover:border-white/40 hover:text-foreground"
+          >
+            {content.signIn}
+          </Link>
+        </div>
+      </div>
+    </section>
   )
 }

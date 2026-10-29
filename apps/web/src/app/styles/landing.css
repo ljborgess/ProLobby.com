@@ -230,3 +230,47 @@
     opacity: 0.2;
   }
 }
+
+/*
+ * Second refine (2026-10-29). The steps' numerals: scoreboard lettering in
+ * outline, filling with the accent as the step scrolls in. The close: the
+ * offer under one floodlight, the page's last word before the footer.
+ */
+.landing-step-numeral {
+  color: transparent;
+  -webkit-text-stroke: 1px color-mix(in srgb, var(--color-accent) 70%, transparent);
+  background: linear-gradient(to top, var(--color-accent) 50%, transparent 50%) bottom / 100% 200%
+    no-repeat;
+  background-clip: text;
+  -webkit-background-clip: text;
+  animation: landing-step-fill linear both;
+  animation-timeline: view();
+  animation-range: entry 40% cover 45%;
+}
+
+@keyframes landing-step-fill {
+  from {
+    background-position: top;
+  }
+  to {
+    background-position: bottom;
+  }
+}
+
+.landing-closing {
+  background:
+    radial-gradient(
+      ellipse 45% 70% at 50% 0%,
+      color-mix(in srgb, var(--color-accent-strong) 30%, transparent),
+      transparent 70%
+    ),
+    linear-gradient(to bottom, var(--color-surface), var(--color-bg));
+  border-top: 1px solid rgb(255 255 255 / 6%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-step-numeral {
+    animation: none;
+    background-position: bottom;
+  }
+}

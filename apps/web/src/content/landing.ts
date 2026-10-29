@@ -23,6 +23,8 @@ export interface LandingContent {
     titleAccent: string
     titleSuffix: string
     subtitle: string
+    /** Under the hero's squad drawing: what the five shirts are. */
+    squadCaption: string
   }
   facts: {
     eyebrow: string
@@ -45,6 +47,13 @@ export interface LandingContent {
   }
   footer: {
     tagline: string
+  }
+  /** The page's close, before the footer: the one place the offer is repeated. */
+  closing: {
+    title: string
+    body: string
+    cta: string
+    signIn: string
   }
   /**
    * The queue board — the lineup view a lobby fills into. Labelled as an
@@ -83,6 +92,7 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
       titleSuffix: ' é matchmaking de verdade pro seu Pro Clubs',
       subtitle:
         'Cadastra seu personagem, entra na fila por posição e é pareado com outros jogadores verificados — sem grupo de WhatsApp, sem gente sumida no meio do jogo.',
+      squadCaption: 'Um personagem por posição, cada um verificado por print do jogo.',
     },
     facts: {
       eyebrow: 'O que já está decidido',
@@ -124,6 +134,12 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
     footer: {
       tagline: 'Matchmaking competitivo e identidade verificada para EA FC Pro Clubs.',
     },
+    closing: {
+      title: 'Pronto pra entrar em campo?',
+      body: 'Cria a conta, cadastra o personagem da sua posição e entra na fila. A partida é no jogo; o resto a ProLobby coordena.',
+      cta: 'Criar minha conta',
+      signIn: 'Já tenho conta',
+    },
     queueBoard: {
       title: 'Lobby',
       formation: '4-3-3',
@@ -159,6 +175,7 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
       titleSuffix: ' es matchmaking de verdad para tu Pro Clubs',
       subtitle:
         'Registra tu personaje, entra a la cola por posición y te emparejamos con otros jugadores verificados — sin grupo de WhatsApp, sin gente que desaparece a mitad del partido.',
+      squadCaption: 'Un personaje por posición, cada uno verificado con una captura del juego.',
     },
     facts: {
       eyebrow: 'Lo que ya está decidido',
@@ -199,6 +216,12 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
     },
     footer: {
       tagline: 'Matchmaking competitivo e identidad verificada para EA FC Pro Clubs.',
+    },
+    closing: {
+      title: '¿Listo para salir a la cancha?',
+      body: 'Crea la cuenta, registra el personaje de tu posición y entra a la cola. El partido es en el juego; del resto se encarga ProLobby.',
+      cta: 'Crear mi cuenta',
+      signIn: 'Ya tengo cuenta',
     },
     queueBoard: {
       title: 'Lobby',
