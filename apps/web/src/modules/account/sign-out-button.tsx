@@ -51,31 +51,27 @@ export function SignOutButton() {
     router.refresh()
   }
 
-  // Icon only, so the label has to live somewhere a screen reader reaches:
-  // `aria-label` carries it, `title` shows it on hover for everyone else. The
-  // button keeps a 44px box, the comfortable touch target.
-  const label = signingOut ? content.submitting : content.submit
-
+  // A row of the account menu, with its words: an icon alone at the top of
+  // every screen was too easy to hit and too hard to read (2026-10-29).
   return (
-    <div className="flex items-center gap-3">
-      {/* The failure is announced, not just drawn: someone who believes they
-          signed out and did not needs to be told, and a screen reader user
-          gets nothing from a button that simply stayed put. */}
-      {failed && (
-        <p role="alert" className="text-xs text-danger">
-          {content.failed}
-        </p>
-      )}
+    <div className="flex flex-col gap-2">
       <button
         type="button"
         onClick={handleClick}
         disabled={signingOut}
-        aria-label={label}
-        title={label}
-        className="landing-focus flex size-11 items-center justify-center rounded-full border border-white/30 text-foreground-soft transition-colors hover:border-white/35 hover:text-foreground disabled:opacity-60"
+        className="landing-focus group flex min-h-11 w-full items-center gap-3 rounded-sm px-3 text-left text-sm text-foreground-soft transition-colors hover:bg-white/[0.06] hover:text-foreground disabled:opacity-60"
       >
-        <SignOutMark className="size-[18px]" />
+        <SignOutMark className="size-[18px] shrink-0 transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0" />
+        {signingOut ? content.submitting : content.submit}
       </button>
+      {/* The failure is announced, not just drawn: someone who believes they
+          signed out and did not needs to be told, and a screen reader user
+          gets nothing from a button that simply stayed put. */}
+      {failed && (
+        <p role="alert" className="px-3 text-xs leading-snug text-danger">
+          {content.failed}
+        </p>
+      )}
     </div>
   )
 }

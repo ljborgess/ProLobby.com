@@ -195,16 +195,34 @@ export function QueuePrerequisitesPanel({
         )}
       </Step>
 
-      {/* Not a prerequisite (#229): a quiet line, outside the count. */}
-      <p className="text-sm leading-relaxed text-foreground-soft">
-        {content.club.hint}{' '}
-        <Link
-          href="/account/club"
-          className="landing-focus text-accent underline-offset-4 hover:underline"
-        >
-          {content.club.action}
-        </Link>
-      </p>
+      {/* Not a prerequisite (#229): outside the count, one card that is all link. */}
+      <Link
+        href="/account/club"
+        className="club-invite landing-focus group relative flex items-center gap-4 overflow-hidden rounded-md border border-white/10 bg-[linear-gradient(135deg,rgb(255_255_255/4%),rgb(255_255_255/1%))] p-4 shadow-[inset_0_1px_0_rgb(255_255_255/6%)] transition-[border-color,box-shadow] duration-300 hover:border-accent/45 hover:shadow-[inset_0_1px_0_rgb(255_255_255/6%),0_8px_20px_rgb(0_0_0/25%)]"
+      >
+        <CaptainArmband className="h-12 w-14 shrink-0" />
+        <span className="flex min-w-0 flex-1 flex-col gap-1">
+          <span className="font-display text-base font-medium tracking-[-0.01em] text-foreground">
+            {content.club.title}
+          </span>
+          <span className="text-sm leading-relaxed text-foreground-soft">{content.club.hint}</span>
+          <span className="mt-1 inline-flex items-center gap-1.5 text-sm font-medium text-accent">
+            {content.club.action}
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+              className="size-4 transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0"
+            >
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </span>
+        </span>
+      </Link>
     </section>
   )
 }
@@ -286,5 +304,43 @@ function Step({
         {!done && children}
       </div>
     </div>
+  )
+}
+
+/**
+ * The captain's armband, drawn: a band around a sleeve with the C on it. On
+ * hover it tightens a little, as if pulled on.
+ */
+function CaptainArmband({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 56 48"
+      aria-hidden
+      className={`club-armband overflow-visible ${className ?? ''}`}
+    >
+      {/* The sleeve, in hairline. */}
+      <path
+        d="M6 8c10-4 34-4 44 0l-3 34c-9 3-29 3-38 0z"
+        fill="none"
+        stroke="rgb(255 255 255 / 18%)"
+        strokeWidth={1.2}
+      />
+      {/* The band. */}
+      <path
+        d="M7.5 17c10-3.5 31-3.5 41 0l-1.2 13c-9.5 3-29 3-38.6 0z"
+        className="fill-white/[0.06] stroke-accent"
+        strokeWidth={1.6}
+      />
+      <text
+        x="28"
+        y="28.5"
+        textAnchor="middle"
+        fontSize="11"
+        fontWeight={700}
+        className="fill-accent font-display"
+      >
+        C
+      </text>
+    </svg>
   )
 }

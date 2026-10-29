@@ -2,58 +2,253 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { type ReactNode, useEffect, useRef, useState } from 'react'
+import { DISCORD_BLURPLE, DiscordMark } from '@/common/ui/icons'
 import { LanguageSwitcher } from '@/common/ui/language-switcher'
 import { Logo } from '@/common/ui/logo'
 import { useNavContent } from '@/hooks/use-nav-content'
 import { SignOutButton } from './sign-out-button'
 
 const LINKS = [
-  ['/verifications', 'home'],
-  ['/queue', 'queue'],
-  ['/account/character', 'squad'],
-  ['/account/club', 'club'],
+  ['/verifications', 'home', HomeMark],
+  ['/queue', 'queue', QueueMark],
+  ['/account/character', 'squad', SquadMark],
+  ['/account/club', 'club', ClubMark],
 ] as const
 
 /**
- * The one header behind the login (audit of 2026-10-28): before it, four
- * screens had four headers, "back" links named a place they did not go, and
- * signing out only existed on the home. Same place, same menu, on every screen.
+ * The one header behind the login (audits of 2026-10-28 and 2026-10-29).
+ *
+ * Built like a game's main menu: the logo, four tabs with their marks and a
+ * lit bar under the one you are on, and the account behind a single button.
+ * Language and signing out live in that menu, not on the bar: they are
+ * set once, and a sign-out icon beside the tabs was the easiest thing on the
+ * page to hit by mistake.
+ *
+ * The logo always comes first, and the bar stays pinned to the top while the
+ * page scrolls (`fixed`, the default); the queue, a scene that never
+ * scrolls, places it itself.
  */
-export function AppHeader({ className = '', inert }: { className?: string; inert?: boolean }) {
+export function AppHeader({
+  className = '',
+  inert,
+  fixed = true,
+}: {
+  className?: string
+  inert?: boolean
+  fixed?: boolean
+}) {
   const content = useNavContent()
   const pathname = usePathname()
 
-  return (
+  const bar = (
     <header
       inert={inert}
-      className={`mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-2 ${className}`}
+      className={`mx-auto grid w-full max-w-6xl grid-cols-[1fr_auto] items-center gap-x-6 gap-y-3 sm:grid-cols-[auto_1fr_auto] ${className}`}
     >
       <Link
         href="/verifications"
         aria-label={content.homeLabel}
-        className="landing-focus inline-flex min-h-11 items-center rounded-full font-display text-base font-semibold tracking-tight text-foreground"
+        className="landing-focus inline-flex min-h-11 items-center justify-self-start rounded-full font-display text-base font-semibold tracking-tight text-foreground"
       >
         <Logo />
       </Link>
-      <nav aria-label={content.label} className="order-last w-full sm:order-none sm:w-auto">
-        <ul className="-mx-3 flex gap-1 sm:mx-0">
-          {LINKS.map(([href, key]) => (
-            <li key={href}>
-              <Link
-                href={href}
-                aria-current={pathname === href ? 'page' : undefined}
-                className="landing-focus inline-flex min-h-11 items-center rounded-full px-3 text-sm text-foreground-soft transition-colors duration-200 hover:text-foreground aria-[current=page]:bg-white/[0.07] aria-[current=page]:text-foreground"
-              >
-                {content[key]}
-              </Link>
-            </li>
-          ))}
+      <nav
+        aria-label={content.label}
+        className="col-span-2 row-start-2 sm:col-span-1 sm:row-start-1 sm:justify-self-center"
+      >
+        <ul className="grid grid-cols-4 rounded-full border border-white/10 bg-white/[0.03] p-1 sm:flex sm:gap-1">
+          {LINKS.map(([href, key, Mark]) => {
+            const current = pathname === href
+            return (
+              <li key={href}>
+                <Link
+                  href={href}
+                  aria-current={current ? 'page' : undefined}
+                  className="nav-tab landing-focus relative flex min-h-11 flex-col items-center justify-center gap-0.5 rounded-full px-2 text-[0.7rem] text-foreground-soft transition-colors duration-200 hover:text-foreground aria-[current=page]:bg-white/[0.08] aria-[current=page]:text-foreground sm:flex-row sm:gap-2 sm:px-4 sm:text-sm"
+                >
+                  <Mark className={`size-[18px] ${current ? 'text-accent' : ''}`} />
+                  {content[key]}
+                </Link>
+              </li>
+            )
+          })}
         </ul>
       </nav>
-      <div className="flex items-center gap-3">
-        <LanguageSwitcher />
+      <AccountMenu />
+    </header>
+  )
+  if (!fixed) return bar
+  // Bleeds over the page's own gutter so the blur reaches the edges.
+  return (
+    <div className="sticky top-0 z-40 -mx-4 -mt-8 mb-2 border-b border-white/[0.07] bg-background/80 px-4 py-3 backdrop-blur-md sm:-mx-6 sm:px-6">
+      {bar}
+    </div>
+  )
+}
+
+/**
+ * The account behind one button: a disclosure, not a modal. It closes on
+ * Escape (focus back on the button), on a click outside, and when a link in
+ * it is followed.
+ */
+function AccountMenu() {
+  const content = useNavContent()
+  const [open, setOpen] = useState(false)
+  const root = useRef<HTMLDivElement>(null)
+  const button = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const onPointer = (event: PointerEvent) => {
+      if (!root.current?.contains(event.target as Node)) setOpen(false)
+    }
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      setOpen(false)
+      button.current?.focus()
+    }
+    document.addEventListener('pointerdown', onPointer)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('pointerdown', onPointer)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [open])
+
+  return (
+    <div ref={root} className="relative justify-self-end">
+      <button
+        ref={button}
+        type="button"
+        aria-expanded={open}
+        aria-controls="account-menu"
+        onClick={() => setOpen((value) => !value)}
+        className={`landing-focus flex min-h-11 items-center gap-2 rounded-full border py-1 pl-1 pr-3 text-sm transition-colors duration-200 ${
+          open
+            ? 'border-white/40 bg-white/[0.08] text-foreground'
+            : 'border-white/20 text-foreground-soft hover:border-white/40 hover:text-foreground'
+        }`}
+      >
+        <span className="flex size-9 items-center justify-center rounded-full bg-white/[0.08] text-foreground">
+          <PlayerMark className="size-[18px]" />
+        </span>
+        <span className="hidden sm:inline">{content.account}</span>
+        <Chevron
+          className={`size-4 transition-transform duration-200 motion-reduce:transition-none ${open ? 'rotate-180' : ''}`}
+        />
+        <span className="sr-only sm:hidden">{content.account}</span>
+      </button>
+      <div
+        id="account-menu"
+        hidden={!open}
+        className="account-menu absolute right-0 top-[calc(100%+0.5rem)] z-50 w-72 rounded-md border border-white/12 bg-surface p-2 shadow-[0_20px_45px_rgb(0_0_0/45%),inset_0_1px_0_rgb(255_255_255/6%)]"
+      >
+        <MenuSection title={content.language}>
+          <LanguageSwitcher className="w-full" />
+        </MenuSection>
+        <div className="my-1 h-px bg-white/8" />
+        <Link
+          href="/account/discord"
+          onClick={() => setOpen(false)}
+          className="landing-focus flex min-h-11 items-center gap-3 rounded-sm px-3 text-sm text-foreground-soft transition-colors hover:bg-white/[0.06] hover:text-foreground"
+        >
+          <span style={{ color: DISCORD_BLURPLE }} className="flex">
+            <DiscordMark className="size-[18px] shrink-0" />
+          </span>
+          {content.discord}
+        </Link>
         <SignOutButton />
       </div>
-    </header>
+    </div>
+  )
+}
+
+function MenuSection({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div className="flex flex-col gap-2 px-3 pb-3 pt-2">
+      <span className="text-[0.7rem] font-medium uppercase tracking-[0.2em] text-foreground-soft">
+        {title}
+      </span>
+      {children}
+    </div>
+  )
+}
+
+type MarkProps = { className?: string }
+
+function Stroke({ className, children }: MarkProps & { children: ReactNode }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.75}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      className={className}
+    >
+      {children}
+    </svg>
+  )
+}
+
+/** The stadium seen from the stand: home. */
+function HomeMark({ className }: MarkProps) {
+  return (
+    <Stroke className={className}>
+      <path d="M3 10.5 12 4l9 6.5" />
+      <path d="M5.5 9v10.5h13V9" />
+      <path d="M10 19.5v-5h4v5" />
+    </Stroke>
+  )
+}
+
+/** The tunnel's arches: the queue. */
+function QueueMark({ className }: MarkProps) {
+  return (
+    <Stroke className={className}>
+      <path d="M4 20V11a8 8 0 0 1 16 0v9" />
+      <path d="M8 20v-8a4 4 0 0 1 8 0v8" />
+      <path d="M2.5 20h19" />
+    </Stroke>
+  )
+}
+
+/** A shirt: the squad. */
+function SquadMark({ className }: MarkProps) {
+  return (
+    <Stroke className={className}>
+      <path d="M8.5 3.5 12 5l3.5-1.5 5 3-2 4-2-1V20h-9V9.5l-2 1-2-4z" />
+    </Stroke>
+  )
+}
+
+/** A crest: the club. */
+function ClubMark({ className }: MarkProps) {
+  return (
+    <Stroke className={className}>
+      <path d="M4.5 4h15v7.5c0 4.5-3.2 7.6-7.5 8.9-4.3-1.3-7.5-4.4-7.5-8.9z" />
+      <path d="M9 10.5h6M12 8v6" />
+    </Stroke>
+  )
+}
+
+/** A player's head and shoulders: the account. */
+function PlayerMark({ className }: MarkProps) {
+  return (
+    <Stroke className={className}>
+      <circle cx="12" cy="8.5" r="3.5" />
+      <path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5" />
+    </Stroke>
+  )
+}
+
+function Chevron({ className }: MarkProps) {
+  return (
+    <Stroke className={className}>
+      <path d="m6.5 9.5 5.5 5.5 5.5-5.5" />
+    </Stroke>
   )
 }

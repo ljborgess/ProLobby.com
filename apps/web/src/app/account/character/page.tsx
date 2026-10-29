@@ -59,7 +59,7 @@ export default async function CharacterPage() {
   }
 
   return (
-    <main className="relative flex min-h-svh flex-1 flex-col overflow-hidden px-4 py-8 sm:px-6">
+    <main className="relative flex min-h-svh flex-1 flex-col overflow-x-clip px-4 py-8 sm:px-6">
       <AccountBackdrop />
       <AppHeader />
       <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col justify-center py-10">

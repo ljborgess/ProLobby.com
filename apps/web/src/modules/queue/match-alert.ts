@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { secondsTo } from './queue-ui'
 
 /**
@@ -19,6 +19,10 @@ export function askToAlert() {
  * 2026-10-28). While a lobby waits on this account's answer the tab title
  * counts it down; the moment it appears, a hidden tab raises a notification
  * and a phone vibrates.
+ *
+ * ponytail: the notification rides the poll, and a tab hidden for minutes
+ * gets its timers throttled to about one a minute, so it can arrive late in
+ * the 30 s. A worker timer or a push (SSE) is the upgrade if that bites.
  */
 export function useMatchAlert(
   confirmBy: string | null,
@@ -31,7 +35,11 @@ export function useMatchAlert(
     if (!document.hidden || typeof Notification === 'undefined') return
     if (Notification.permission !== 'granted') return
     try {
-      new Notification(text.title, { body: text.body, tag: 'prolobby-match' })
+      const notice = new Notification(text.title, { body: text.body, tag: 'prolobby-match' })
+      notice.onclick = () => {
+        window.focus()
+        notice.close()
+      }
     } catch {
       // Mobile Chrome only notifies through a service worker; the title stays.
     }
@@ -39,15 +47,21 @@ export function useMatchAlert(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [confirmBy])
 
+  // The last title this wrote: only that one is given back, so leaving for
+  // another page never overwrites the title that page just set.
+  const written = useRef<string | null>(null)
   useEffect(() => {
     if (!confirmBy) return
     const original = document.title
     return () => {
-      document.title = original
+      if (document.title === written.current) document.title = original
+      written.current = null
     }
   }, [confirmBy])
 
   useEffect(() => {
-    if (confirmBy) document.title = text.tab(secondsTo(confirmBy, now))
+    if (!confirmBy) return
+    written.current = text.tab(secondsTo(confirmBy, now))
+    document.title = written.current
   }, [confirmBy, now, text])
 }

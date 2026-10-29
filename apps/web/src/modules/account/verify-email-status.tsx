@@ -81,9 +81,10 @@ export function VerifyEmailStatus() {
             ? content.invalidToken
             : content.genericError}
       </p>
-      {/* Failed: the resend lives on the account home (behind the login,
-          which takes over if the session is gone). */}
-      {status === 'success' ? (
+      {/* A dead link: the resend lives on the account home (behind the login,
+          which takes over if the session is gone). A network failure is not
+          a dead link, so it keeps the way to the login. */}
+      {status !== 'invalidToken' ? (
         <Link href="/login" className="text-sm text-foreground-soft underline">
           {content.goToSignIn}
         </Link>

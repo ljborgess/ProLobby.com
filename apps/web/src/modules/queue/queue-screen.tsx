@@ -429,6 +429,7 @@ export function QueueScreen({
       </section>
 
       <AppHeader
+        fixed={false}
         inert={covered}
         className="pointer-events-auto relative z-10 max-w-none px-4 pt-4 sm:px-8 sm:pt-6"
       />
@@ -895,7 +896,7 @@ function KitReveal({ code, name, number }: { code: string; name: string; number:
           <text
             fontSize={Math.min(3.6, 26 / Math.max(name.length, 1))}
             fontWeight={700}
-            letterSpacing="0.4"
+            letterSpacing={Math.min(3.6, 26 / Math.max(name.length, 1)) * 0.11}
             className="fill-background"
           >
             <textPath href={`#kit-arc-${code}`} startOffset="50%" textAnchor="middle">

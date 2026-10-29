@@ -8,6 +8,10 @@ export type NavContent = {
   queue: string
   squad: string
   club: string
+  /** The account menu: language, Discord, sign out. */
+  account: string
+  language: string
+  discord: string
 }
 
 export const NAV_CONTENT: Record<Locale, NavContent> = {
@@ -18,6 +22,9 @@ export const NAV_CONTENT: Record<Locale, NavContent> = {
     queue: 'Fila',
     squad: 'Elenco',
     club: 'Clube',
+    account: 'Sua conta',
+    language: 'Idioma',
+    discord: 'Vínculo com o Discord',
   },
   es: {
     label: 'Menú principal',
@@ -26,5 +33,8 @@ export const NAV_CONTENT: Record<Locale, NavContent> = {
     queue: 'Cola',
     squad: 'Plantel',
     club: 'Club',
+    account: 'Tu cuenta',
+    language: 'Idioma',
+    discord: 'Vínculo con Discord',
   },
 }
