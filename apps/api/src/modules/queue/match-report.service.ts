@@ -25,6 +25,7 @@ import { MatchReport } from '../lobby/match-report.entity'
 import { ReportedAbsence } from '../lobby/reported-absence.entity'
 import { ModerationCase } from '../moderation/moderation-case.entity'
 import { ModerationCaseOrigin, ModerationCaseType } from '../moderation/moderation-case.enums'
+import { MatchEloService } from '../ranking/match-elo.service'
 import { ReputationEventReason } from '../ranking/ranking-event.enums'
 import { ReputationService } from '../ranking/reputation.service'
 import { PeerRatingService, rateUntil, type TeammateView } from './peer-rating.service'
@@ -107,6 +108,7 @@ export class MatchReportService {
   constructor(
     private readonly em: EntityManager,
     private readonly reputationService: ReputationService,
+    private readonly matchEloService: MatchEloService,
     private readonly peerRatingService: PeerRatingService,
     private readonly events: EventDeliveryService,
   ) {}
@@ -410,7 +412,7 @@ export class MatchReportService {
   }
 
   /**
-   * Reputation for a finished match. Clean for every human of it — +1, up to
+   * Elo (#209) and reputation for a finished match. Clean for every human of it — +1, up to
    * 70 (#208) — except who a report named absent: named by both sides, the
    * absence is confirmed and costs −8 (docs/produto/03-partida/04-resultado.md);
    * named by one side only, it is not confirmed, so neither the −8 nor the +1.
@@ -448,6 +450,7 @@ export class MatchReportService {
         )
       }
     }
+    await this.matchEloService.applyIn(em, lobby)
   }
 
   private async mine(em: EntityManager, accountId: string) {
@@ -492,7 +495,8 @@ function open(lobby: Lobby, now: Date): boolean {
 
 /**
  * The score is set and nobody holds the lobby any more: the queue entries go
- * (the account is out of the queue, the character unlocked). Elo is #209's.
+ * (the account is out of the queue, the character unlocked). Elo waits for
+ * `finished` (#209).
  */
 async function settle(
   em: EntityManager,
