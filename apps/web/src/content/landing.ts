@@ -50,6 +50,19 @@ export interface LandingContent {
   footer: {
     tagline: string
   }
+  /**
+   * The broadcast frame (2026-10-29): the plates a matchday transmission puts
+   * on screen. Pre-match, never "live": no match is running on this page.
+   */
+  broadcast: {
+    stage: string
+    clockLabel: string
+    lineup: string
+    example: string
+    tactical: string
+    replay: string
+    finalWhistle: string
+  }
   /** The page's close, before the footer: the one place the offer is repeated. */
   closing: {
     title: string
@@ -139,6 +152,15 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
     footer: {
       tagline: 'Matchmaking competitivo e identidade verificada para EA FC Pro Clubs.',
     },
+    broadcast: {
+      stage: 'Pré-jogo',
+      clockLabel: 'pra confirmar a fila',
+      lineup: 'Escalação',
+      example: 'exemplo',
+      tactical: 'Câmera tática',
+      replay: 'Replay',
+      finalWhistle: 'Apito final',
+    },
     closing: {
       title: 'Pronto pra entrar em campo?',
       body: 'Cria a conta, cadastra o personagem da sua posição e entra na fila. A partida é no jogo; o resto a ProLobby coordena.',
@@ -223,6 +245,15 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
     },
     footer: {
       tagline: 'Matchmaking competitivo e identidad verificada para EA FC Pro Clubs.',
+    },
+    broadcast: {
+      stage: 'Previa',
+      clockLabel: 'para confirmar la cola',
+      lineup: 'Alineación',
+      example: 'ejemplo',
+      tactical: 'Cámara táctica',
+      replay: 'Repetición',
+      finalWhistle: 'Pitazo final',
     },
     closing: {
       title: '¿Listo para salir a la cancha?',
