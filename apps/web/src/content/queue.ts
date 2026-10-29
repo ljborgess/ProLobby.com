@@ -58,6 +58,8 @@ export interface QueueContent {
     captainLeft: string
     captainConfirmed: string
     captainWithdraw: string
+    /** RF-032: the withdrawal arrived after both captains had confirmed. */
+    withdrawClosed: string
     choosingTitle: string
     choosingHint: string
     inviteTitle: string
@@ -202,6 +204,7 @@ export const QUEUE_CONTENT: Record<Locale, QueueContent> = {
       captainLeft: 's pra responder',
       captainConfirmed: 'Você é o capitão. Esperando o capitão do outro lado.',
       captainWithdraw: 'Desistir de ser capitão',
+      withdrawClosed: 'O outro capitão confirmou antes: o lobby já seguiu pro convite.',
       choosingTitle: 'Escolhendo os capitães',
       choosingHint: 'Quem tem clube com vaga é chamado, um de cada vez, 30 s pra cada.',
       inviteTitle: 'Convite do clube',
@@ -366,6 +369,7 @@ export const QUEUE_CONTENT: Record<Locale, QueueContent> = {
       captainLeft: 's para responder',
       captainConfirmed: 'Eres el capitán. Esperando al capitán del otro lado.',
       captainWithdraw: 'Dejar de ser capitán',
+      withdrawClosed: 'El otro capitán confirmó antes: el lobby ya pasó a la invitación.',
       choosingTitle: 'Eligiendo a los capitanes',
       choosingHint: 'Quien tiene club con lugar es llamado, uno a la vez, 30 s cada uno.',
       inviteTitle: 'Invitación del club',

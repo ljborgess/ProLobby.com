@@ -8,7 +8,7 @@ import { DeclaredClub } from '../account/declared-club.entity'
 import { Character } from '../character/character.entity'
 import { LobbyParticipation, LobbySide } from '../lobby/lobby-participation.entity'
 import { CoordinationState, LOBBY_PAUSE_AT } from '../bot-integration/coordination-state'
-import { Lobby, TERMINAL_LOBBY_STATES } from '../lobby/lobby.entity'
+import { Lobby, LobbyState, TERMINAL_LOBBY_STATES } from '../lobby/lobby.entity'
 import { type Candidate, findMatch } from './matchmaker'
 import { QueueEntry } from './queue-entry.entity'
 import { QueueStallState } from './queue-stall'
@@ -40,7 +40,11 @@ export class QueueMatchingService {
       // channels, nobody is placed; everyone keeps searching with their time.
       if (this.coordination.botPause(now.getTime())) return 0
       // And no more than the 9 lobbies at once the system is sized for.
-      let active = await em.count(Lobby, { state: { $nin: [...TERMINAL_LOBBY_STATES] } })
+      // A disputed match was already played and holds no channel: it waits on
+      // moderation, which can take days, and must not hold one of the 10 slots.
+      let active = await em.count(Lobby, {
+        state: { $nin: [...TERMINAL_LOBBY_STATES, LobbyState.IN_DISPUTE] },
+      })
 
       // Row locks too, so a leave in flight waits for this run and then finds
       // the entry placed (QueueService.leave).
