@@ -8,12 +8,13 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 
 ## 2026-10-29 · Rafael
 
-### Issues novas pra você: Kit Lab, front e alerta de partida
+### As telas são suas daqui pra frente; issues novas
 
-- **O que mudou:** o front ganhou a direção Kit Lab (uniforme do clube, #286), barra do topo única, refino em todas as telas e a rota de moderação escondida (404 pra quem não é moderador). Leia o PR #285 e o #287 antes de mexer no web.
-- **Suas:** #294 (uniforme do clube no Elenco e na fila), #295 (lobby com o uniforme de cada capitão, mexe na API), #296 (telas de carregando/erro e título da aba no idioma), #297 (textos pt/es no servidor, reduz o bundle), #298 (alerta de partida com aba escondida) e de volta a #121 (primeiro deploy interno).
-- **Cuidado no web:** animação de entrada não pode mover formulário nem botão (o e2e de login sem JavaScript quebrou o CI por isso, #290). Rode `pnpm --filter @prolobby/web build` e `npx playwright test` antes do PR quando mexer em tela de conta.
-- **Acesso ao GitHub:** a conta `rafaeljs08` tem permissão de escrita no repositório; se o GitHub responder 404, você está logado com outra conta.
+- **Divisão (2026-10-29):** telas com você, agora e as próximas. API, infraestrutura, deploy e o que for refatoração de arquitetura ficam com o Luciano. Por isso a #121 (primeiro deploy interno) passou pra ele.
+- **Suas:** #294 (uniforme do clube no Elenco e na fila), #295 (lobby com o uniforme de cada capitão; depende da #300, a parte de API, com o Luciano) e #296 (telas de carregando/erro e título da aba no idioma).
+- **Contexto do web:** o front ganhou a direção Kit Lab (uniforme do clube, #286), barra do topo única, refino em todas as telas e a rota de moderação escondida (404 pra quem não é moderador). Leia o #285, o #287 e o #293 antes de mexer.
+- **Cuidado:** animação de entrada não pode mover formulário nem botão (o e2e de login sem JavaScript quebrou o CI por isso, #290). Mexendo em tela de conta, rode `pnpm --filter @prolobby/web build` e `npx playwright test` antes do PR.
+- **Acesso ao GitHub:** a conta `rafaeljs08` tem permissão de escrita; se o GitHub responder 404, você está logado com outra conta.
 
 ---
 
