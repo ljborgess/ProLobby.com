@@ -12,11 +12,15 @@
   color: var(--color-text);
 }
 
-/* The arrival: heading, then form, rising out of a slight blur. */
+/*
+ * The arrival: heading, then form, coming into focus out of a slight blur.
+ * No movement: a form whose submit button slides while the page settles is a
+ * moving target, and the e2e that submits with JavaScript off (item 15)
+ * timed out on it in CI waiting for the button to hold still.
+ */
 @keyframes auth-rise {
   from {
     opacity: 0;
-    translate: 0 12px;
     filter: blur(4px);
   }
 }
