@@ -184,11 +184,7 @@
 
 /* Missing link: a dashed gap. */
 .discord-wire-line {
-  background: repeating-linear-gradient(
-    90deg,
-    rgb(255 255 255 / 30%) 0 4px,
-    transparent 4px 8px
-  );
+  background: repeating-linear-gradient(90deg, rgb(255 255 255 / 30%) 0 4px, transparent 4px 8px);
 }
 
 /* Linked: the wire is lit, and a pulse crosses it once, from us to them. */
