@@ -18,7 +18,7 @@ export const NAV_CONTENT: Record<Locale, NavContent> = {
   pt: {
     label: 'Menu principal',
     home: 'Início',
-    homeLabel: 'ProLobby, início',
+    homeLabel: 'ProLobby, página inicial',
     queue: 'Fila',
     squad: 'Elenco',
     club: 'Clube',
@@ -29,7 +29,7 @@ export const NAV_CONTENT: Record<Locale, NavContent> = {
   es: {
     label: 'Menú principal',
     home: 'Inicio',
-    homeLabel: 'ProLobby, inicio',
+    homeLabel: 'ProLobby, página principal',
     queue: 'Cola',
     squad: 'Plantel',
     club: 'Club',

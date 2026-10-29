@@ -43,7 +43,7 @@ const SQUAD: { category: CharacterCategory; number: number }[] = [
  * Client component, like SignUpHeading, so the language switch re-renders this
  * copy without a navigation.
  */
-export function LandingView() {
+export function LandingView({ signedIn = false }: { signedIn?: boolean }) {
   const content = useLandingContent()
 
   return (
@@ -57,18 +57,29 @@ export function LandingView() {
             <TopBarTicker items={content.topBar.ticker} />
           </div>
           <nav className="flex items-center gap-2 sm:gap-3">
-            <Link
-              href="/login"
-              className="landing-focus rounded-full border border-white/15 px-5 py-2 text-sm text-foreground-soft transition-colors hover:border-white/35 hover:text-foreground"
-            >
-              {content.topBar.signIn}
-            </Link>
-            <Link
-              href="/sign-up"
-              className="landing-focus landing-sheen rounded-full bg-accent px-5 py-2 text-sm font-medium text-background transition-transform duration-200 hover:scale-[1.04] active:scale-95"
-            >
-              {content.topBar.cta}
-            </Link>
+            {signedIn ? (
+              <Link
+                href="/verifications"
+                className="landing-focus landing-sheen rounded-full bg-accent px-5 py-2 text-sm font-medium text-background transition-transform duration-200 hover:scale-[1.04] active:scale-95"
+              >
+                {content.topBar.account}
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="landing-focus rounded-full border border-white/15 px-5 py-2 text-sm text-foreground-soft transition-colors hover:border-white/35 hover:text-foreground"
+                >
+                  {content.topBar.signIn}
+                </Link>
+                <Link
+                  href="/sign-up"
+                  className="landing-focus landing-sheen rounded-full bg-accent px-5 py-2 text-sm font-medium text-background transition-transform duration-200 hover:scale-[1.04] active:scale-95"
+                >
+                  {content.topBar.cta}
+                </Link>
+              </>
+            )}
           </nav>
         </div>
         <div
@@ -256,7 +267,7 @@ export function LandingView() {
         </div>
       </Section>
 
-      <Closing />
+      <Closing signedIn={signedIn} />
 
       <SectionThreadEnd />
 
@@ -527,8 +538,11 @@ function HeroSquad({ caption }: { caption: string }) {
   )
 }
 
-/** The close: the offer once more, with its two doors, under a floodlight. */
-function Closing() {
+/**
+ * The close: the offer once more, with its two doors, under a floodlight.
+ * With a session there is one door, and it leads to the queue.
+ */
+function Closing({ signedIn }: { signedIn: boolean }) {
   const content = useLandingContent().closing
   return (
     <section className="landing-closing relative overflow-clip px-4 py-28 sm:px-6">
@@ -537,17 +551,19 @@ function Closing() {
         <p className="max-w-lg text-base leading-relaxed text-foreground-soft">{content.body}</p>
         <div className="mt-3 flex flex-wrap items-center justify-center gap-3">
           <Link
-            href="/sign-up"
+            href={signedIn ? '/queue' : '/sign-up'}
             className="landing-focus landing-sheen inline-flex min-h-12 items-center rounded-full bg-accent px-7 text-base font-medium text-background shadow-[0_20px_45px_rgb(0_0_0/35%)] transition-transform duration-200 hover:scale-[1.04] active:scale-95"
           >
-            {content.cta}
+            {signedIn ? content.signedInCta : content.cta}
           </Link>
-          <Link
-            href="/login"
-            className="landing-focus inline-flex min-h-12 items-center rounded-full border border-white/20 px-6 text-sm text-foreground-soft transition-colors hover:border-white/40 hover:text-foreground"
-          >
-            {content.signIn}
-          </Link>
+          {!signedIn && (
+            <Link
+              href="/login"
+              className="landing-focus inline-flex min-h-12 items-center rounded-full border border-white/20 px-6 text-sm text-foreground-soft transition-colors hover:border-white/40 hover:text-foreground"
+            >
+              {content.signIn}
+            </Link>
+          )}
         </div>
       </div>
     </section>
