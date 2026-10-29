@@ -55,21 +55,19 @@ function PatternInk({ pattern, color }: { pattern: KitPattern; color: string }) 
 
 /**
  * The club's shirt, front on: primary, the pattern in the secondary, the
- * collar and cuffs trimmed in the secondary, the crest over the heart and,
- * when given, the number on the chest.
+ * collar and cuffs trimmed in the secondary, the crest over the heart.
  */
 export function KitShirt({
   kit,
   initials,
-  number,
   className = '',
 }: {
   kit: Kit
   initials: string
-  number?: number
   className?: string
 }) {
   const clip = useId()
+  const sheen = useId()
   const primary = KIT_SWATCH[kit.primary]
   const secondary = KIT_SWATCH[kit.secondary]
 
@@ -84,10 +82,10 @@ export function KitShirt({
         <rect width="48" height="48" fill={primary.fill} />
         <PatternInk pattern={kit.pattern} color={secondary.fill} />
         {/* Fabric: a soft light from the left shoulder. */}
-        <rect width="48" height="48" fill="url(#kit-sheen)" opacity="0.5" />
+        <rect width="48" height="48" fill={`url(#${sheen})`} opacity="0.5" />
       </g>
       <defs>
-        <linearGradient id="kit-sheen" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id={sheen} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#ffffff" stopOpacity="0.28" />
           <stop offset="0.55" stopColor="#ffffff" stopOpacity="0" />
           <stop offset="1" stopColor="#000000" stopOpacity="0.3" />
@@ -119,22 +117,6 @@ export function KitShirt({
       <g transform="translate(27.4 13.2) scale(0.16)">
         <CrestMark kit={kit} initials={initials} />
       </g>
-      {number !== undefined && (
-        <text
-          x="24"
-          y="34"
-          textAnchor="middle"
-          fontSize="11"
-          fontWeight={700}
-          className="font-numeric"
-          fill={kit.pattern === 'plain' ? primary.ink : secondary.ink}
-          stroke={kit.pattern === 'plain' ? 'none' : secondary.fill}
-          strokeWidth="0.6"
-          paintOrder="stroke"
-        >
-          {number}
-        </text>
-      )}
     </svg>
   )
 }
@@ -193,13 +175,13 @@ export function Crest({
   )
 }
 
-/** "Várzea Futebol Clube" → "VFC"; "Lusitana" → "LU". Letters only, up to three. */
+/** "Várzea Futebol Clube" → "VFC"; "Lusitana" → "LU". Letters and digits of any script, up to three. */
 export function initialsOf(name: string): string {
   const words = name
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
+    .replace(/\p{M}/gu, '')
     .toUpperCase()
-    .split(/[^A-Z0-9]+/)
+    .split(/[^\p{L}\p{N}]+/u)
     .filter(Boolean)
   if (words.length === 0) return ''
   if (words.length === 1) return words[0]!.slice(0, 2)

@@ -145,6 +145,19 @@ describe('declared club (#229)', () => {
       freeSlots: 6,
       kit: { primary: 'claret', pattern: 'stripes' },
     })
+
+    // Only one part of the kit sent: that one changes, the rest stays.
+    const repainted = await declare(cookie, {
+      freeSlots: 6,
+      clubName: 'Várzea FC',
+      kitPattern: 'hoops',
+    })
+    expect(repainted.body.kit).toEqual({
+      primary: 'claret',
+      secondary: 'sky',
+      pattern: 'hoops',
+      crest: 'round',
+    })
   })
 
   it('keeps one per account: declaring again replaces and moves updatedAt', async () => {
