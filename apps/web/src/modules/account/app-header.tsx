@@ -7,7 +7,7 @@ import { DISCORD_BLURPLE, DiscordMark } from '@/common/ui/icons'
 import { LanguageSwitcher } from '@/common/ui/language-switcher'
 import { Logo } from '@/common/ui/logo'
 import { useNavContent } from '@/hooks/use-nav-content'
-import { SignOutButton } from './sign-out-button'
+import { MenuRing, SignOutButton } from './sign-out-button'
 
 const LINKS = [
   ['/verifications', 'home', HomeMark],
@@ -55,9 +55,9 @@ export function AppHeader({
       </Link>
       <nav
         aria-label={content.label}
-        className="col-span-2 row-start-2 sm:col-span-1 sm:row-start-1 sm:justify-self-center"
+        className="col-span-2 row-start-2 sm:col-span-1 sm:col-start-2 sm:row-start-1 sm:justify-self-center"
       >
-        <ul className="grid grid-cols-4 rounded-full border border-white/10 bg-white/[0.03] p-1 sm:flex sm:gap-1">
+        <ul className="grid grid-cols-4 rounded-full border border-white/10 bg-white/[0.03] p-1 shadow-[inset_0_1px_0_rgb(255_255_255/5%)] sm:flex sm:gap-1">
           {LINKS.map(([href, key, Mark]) => {
             const current = pathname === href
             return (
@@ -67,7 +67,7 @@ export function AppHeader({
                   aria-current={current ? 'page' : undefined}
                   className="nav-tab landing-focus relative flex min-h-11 flex-col items-center justify-center gap-0.5 rounded-full px-2 text-[0.7rem] text-foreground-soft transition-colors duration-200 hover:text-foreground aria-[current=page]:bg-white/[0.08] aria-[current=page]:text-foreground sm:flex-row sm:gap-2 sm:px-4 sm:text-sm"
                 >
-                  <Mark className={`size-[18px] ${current ? 'text-accent' : ''}`} />
+                  <Mark className={`nav-tab-mark size-[18px] ${current ? 'text-accent' : ''}`} />
                   {content[key]}
                 </Link>
               </li>
@@ -142,35 +142,32 @@ function AccountMenu() {
       <div
         id="account-menu"
         hidden={!open}
-        className="account-menu absolute right-0 top-[calc(100%+0.5rem)] z-50 w-72 rounded-md border border-white/12 bg-surface p-2 shadow-[0_20px_45px_rgb(0_0_0/45%),inset_0_1px_0_rgb(255_255_255/6%)]"
+        className="account-menu absolute right-0 top-[calc(100%+0.5rem)] z-50 w-[min(18rem,calc(100vw-2rem))] rounded-md border border-white/12 bg-surface p-1.5 shadow-[0_20px_45px_rgb(0_0_0/45%),inset_0_1px_0_rgb(255_255_255/6%)]"
       >
-        <MenuSection title={content.language}>
-          <LanguageSwitcher className="w-full" />
-        </MenuSection>
-        <div className="my-1 h-px bg-white/8" />
+        {/* A setting, so a row: the name on the left, the switch on the
+            right, at its own width. Full width, the white plate was the
+            loudest thing on the menu. */}
+        <div className="flex items-center justify-between gap-3 py-1.5 pl-3 pr-1.5">
+          <span className="text-sm text-foreground-soft">{content.language}</span>
+          <LanguageSwitcher className="w-[7.5rem]" />
+        </div>
+        <div className="mx-3 my-1 h-px bg-white/8" />
         <Link
           href="/account/discord"
           onClick={() => setOpen(false)}
-          className="landing-focus flex min-h-11 items-center gap-3 rounded-sm px-3 text-sm text-foreground-soft transition-colors hover:bg-white/[0.06] hover:text-foreground"
+          className="menu-row landing-focus group flex min-h-11 items-center gap-3 rounded-sm px-1.5 text-sm text-foreground-soft transition-colors hover:bg-white/[0.05] hover:text-foreground"
         >
-          <span style={{ color: DISCORD_BLURPLE }} className="flex">
-            <DiscordMark className="size-[18px] shrink-0" />
-          </span>
-          {content.discord}
+          <MenuRing>
+            <span style={{ color: DISCORD_BLURPLE }} className="flex">
+              <DiscordMark className="size-4 shrink-0" />
+            </span>
+          </MenuRing>
+          <span className="flex-1">{content.discord}</span>
+          <Chevron className="menu-row-go size-4 -rotate-90 text-foreground-weak" />
         </Link>
+        <div className="mx-3 my-1 h-px bg-white/8" />
         <SignOutButton />
       </div>
-    </div>
-  )
-}
-
-function MenuSection({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <div className="flex flex-col gap-2 px-3 pb-3 pt-2">
-      <span className="text-[0.7rem] font-medium uppercase tracking-[0.2em] text-foreground-soft">
-        {title}
-      </span>
-      {children}
     </div>
   )
 }

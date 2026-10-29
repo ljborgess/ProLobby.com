@@ -109,7 +109,7 @@ export function LandingView() {
                 conta" and "Entrar" on the page, and it is sticky, so it stays
                 in reach from every section. */}
             <p
-              className="landing-fade-up mx-auto mt-7 max-w-lg text-base leading-relaxed text-foreground-soft/85"
+              className="landing-fade-up mx-auto mt-7 max-w-xl text-base leading-relaxed text-foreground-soft sm:text-lg"
               style={{ '--landing-delay': '0.16s' } as React.CSSProperties}
             >
               {content.hero.subtitle}
@@ -124,23 +124,35 @@ export function LandingView() {
           hairline across the landing point would cut the thread in half. */}
       <SectionThread step={1} variant="line" />
 
+      {/* A scoreboard, not four stat cards (refine pass, 2026-10-29): one
+          panel cut by hairlines reads as a single instrument with four
+          readouts, where four boxed cards read as a template. The eyebrow
+          moves into the panel's head row, where a label belongs on a placar. */}
       <Section seam>
-        <SectionHeading eyebrow={content.facts.eyebrow} align="center" />
-        <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-4">
-          {content.facts.items.map((fact, index) => (
-            <div
-              key={fact.label}
-              // One at a time, each finishing further into the scroll: four
-              // cards lighting together read as a block, in sequence they read
-              // as a list being gone through.
-              className={`landing-reveal landing-reveal-${index + 1} landing-card landing-sheen flex flex-col items-center rounded-md border border-white/10 px-4 py-7 text-center`}
-            >
-              <span className="font-display text-4xl font-light tracking-tight text-accent">
-                {fact.value}
-              </span>
-              <span className="mt-2 text-sm leading-snug text-foreground-soft">{fact.label}</span>
-            </div>
-          ))}
+        <div className="landing-reveal landing-scoreboard overflow-hidden rounded-lg border border-white/10 bg-surface">
+          <p className="flex items-center gap-2 border-b border-white/10 px-5 py-3 text-[0.7rem] font-medium uppercase tracking-[0.2em] text-foreground-soft sm:px-7">
+            <svg aria-hidden viewBox="0 0 16 16" className="size-3.5 text-accent" fill="none">
+              <path
+                d="m3.5 8.5 3 3 6-7"
+                stroke="currentColor"
+                strokeWidth={1.6}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            {content.facts.eyebrow}
+          </p>
+          <dl className="grid grid-cols-2 gap-px bg-white/10 sm:grid-cols-4">
+            {content.facts.items.map((fact) => (
+              <div
+                key={fact.label}
+                className="flex flex-col-reverse gap-2 bg-surface px-5 py-7 sm:px-7"
+              >
+                <dt className="text-sm leading-snug text-foreground-soft">{fact.label}</dt>
+                <dd className="landing-score-value font-display text-foreground">{fact.value}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
       </Section>
 
@@ -188,10 +200,13 @@ export function LandingView() {
 
       <SectionThread step={3} variant="dashes" />
 
-      <Section seam className="overflow-hidden">
+      {/* `overflow-clip`, not `overflow-hidden`: hidden makes the section a
+          scroll container, and the lobby's view timeline would then track
+          this box (which never scrolls) instead of the page. */}
+      <Section seam className="overflow-clip">
         <div
           aria-hidden
-          className="landing-parallax-slow pointer-events-none absolute inset-x-0 -top-1/4 -z-10 h-[150%] bg-[radial-gradient(ellipse_50%_40%_at_20%_40%,_var(--color-accent-strong)_0%,_transparent_70%)] opacity-[0.10]"
+          className="landing-parallax-slow pointer-events-none absolute inset-x-0 -top-1/4 -z-10 h-[150%] bg-[radial-gradient(ellipse_50%_40%_at_20%_40%,_color-mix(in_srgb,var(--color-accent-strong)_7%,transparent)_0%,_transparent_70%)]"
         />
         <div className="flex flex-col items-center gap-12 lg:flex-row-reverse lg:gap-16">
           <div className="landing-reveal flex-1 text-center lg:text-left">
@@ -202,57 +217,39 @@ export function LandingView() {
             />
           </div>
 
-          {/* The lobby filling up, drawn rather than screenshotted — the real
-              queue screen is Fase 2.5 and does not exist to capture yet. */}
-          <div aria-hidden className="landing-parallax-fast relative h-64 w-full flex-1">
-            {content.positions.items.map((position, index) => (
-              <div
-                key={position}
-                // Stepped down and to the right, never straight down: each card
-                // has to clear the one above it by more than its own label, or
-                // the stack reads as a single card with a shadow.
-                className="landing-card absolute flex w-48 items-center gap-3 rounded-md border border-white/10 px-4 py-3 backdrop-blur"
-                style={{ left: `${index * 11}%`, top: `${index * 34}px`, zIndex: index }}
-              >
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-accent/40 bg-accent/10 text-xs font-semibold text-accent">
-                  {index + 1}
-                </span>
-                <span className="truncate text-sm text-foreground">{position}</span>
-                <span className="landing-dot ml-auto size-2 shrink-0 rounded-full bg-accent" />
-              </div>
-            ))}
-          </div>
+          <LobbyFill positions={content.positions.items} labels={content.queueBoard} />
         </div>
       </Section>
 
       <SectionThread step={4} variant="jog" />
 
+      {/* Three columns on a hairline, not three floating cards (refine pass,
+          2026-10-29): the same-size icon card was the page's loudest template
+          and the quietest content. Each column steps in a little later. */}
       <Section seam className="bg-surface">
-        <SectionHeading eyebrow={content.features.eyebrow} align="center" />
-        <div className="mt-12 grid gap-6 sm:grid-cols-3">
+        <SectionHeading eyebrow={content.features.eyebrow} />
+        <div className="mt-10 grid gap-10 sm:grid-cols-3 sm:gap-8">
           {content.features.items.map((item, index) => (
             <div
               key={item.title}
-              // The closing set resolves out of blur rather than sliding, so
-              // the page does not end on the same gesture it opened with.
-              className="landing-blur-in landing-card landing-card-float landing-sheen flex flex-col items-center gap-4 rounded-md border border-white/6 px-6 py-9 text-center"
+              className={`landing-reveal landing-reveal-${index + 2} flex flex-col gap-3 border-t border-white/10 pt-6`}
             >
-              <span className="flex size-12 items-center justify-center rounded-full border border-accent/25 bg-accent/10">
+              <span className="flex size-10 items-center justify-center rounded-full border border-accent/30">
                 <svg
                   aria-hidden
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth={1.5}
-                  className="size-6 text-accent"
+                  className="size-5 text-accent"
                 >
                   {FEATURE_ICONS[index]}
                 </svg>
               </span>
-              <h2 className="font-display text-lg font-medium tracking-tight text-foreground">
+              <h2 className="mt-2 font-display text-lg font-medium tracking-tight text-foreground">
                 {item.title}
               </h2>
-              <p className="text-sm leading-relaxed text-foreground-soft">{item.body}</p>
+              <p className="max-w-xs text-sm leading-relaxed text-foreground-soft">{item.body}</p>
             </div>
           ))}
         </div>
@@ -361,7 +358,10 @@ function HeroWords({ prefix, accent, suffix }: { prefix: string; accent: string;
       {words.map((word, index) => (
         <span key={`${word.text}-${index}`}>
           <span
-            className={`landing-fade-up inline-block ${word.accent ? 'landing-gradient-text' : ''}`}
+            // Solid accent, not the old green-to-amber gradient: amber in a
+            // headline is amber being read, and DESIGN.md's Âmbar Mudo says it
+            // never is.
+            className={`landing-fade-up inline-block ${word.accent ? 'text-accent' : ''}`}
             style={{ '--landing-delay': `${0.06 + index * 0.045}s` } as React.CSSProperties}
           >
             {word.text}
@@ -369,6 +369,67 @@ function HeroWords({ prefix, accent, suffix }: { prefix: string; accent: string;
         </span>
       ))}
     </>
+  )
+}
+
+/**
+ * The lobby filling up, seat by seat — the page's one authored motion moment
+ * (refine pass, 2026-10-29).
+ *
+ * Drawn rather than screenshotted: the real queue screen is the Túnel do
+ * Vestiário, and it has no lobby list to capture. On a scroll timeline each
+ * seat locks in turn (dashed ring to solid, "na fila" to "confirmado"), the
+ * readout counts up with them through a registered integer, and the panel's
+ * edge lights when the last seat locks. The rest state, which is also what
+ * reduced motion and browsers without scroll timelines get, is the lobby
+ * closed: every seat confirmed, the count full.
+ *
+ * Normal flow, not the old absolutely-positioned stack: that one had a fixed
+ * height and clipped its last three cards on a phone. The stair step survives
+ * as an indent from `lg` up.
+ *
+ * `aria-hidden` like the queue board's pitch: invented seats read aloud would
+ * be a lobby that does not exist. The caption says it is an example.
+ */
+function LobbyFill({
+  positions,
+  labels,
+}: {
+  positions: string[]
+  labels: { title: string; example: string; filled: string; waiting: string }
+}) {
+  return (
+    <div
+      aria-hidden
+      className="landing-lobby w-full flex-1"
+      style={{ '--lobby-total': positions.length } as React.CSSProperties}
+    >
+      <div className="landing-lobby-panel rounded-lg border border-white/10 bg-surface p-5 sm:p-6">
+        <div className="flex items-center justify-between text-[0.7rem] font-medium uppercase tracking-[0.2em] text-foreground-soft">
+          <span>{labels.title}</span>
+          <span className="landing-lobby-count font-display text-base font-light tracking-normal text-foreground tabular-nums" />
+        </div>
+        <ol className="mt-5 flex flex-col gap-2">
+          {positions.map((position, index) => (
+            <li
+              key={position}
+              className="landing-lobby-row flex items-center gap-3 rounded-md border border-white/10 px-3 py-2.5"
+              style={{ '--i': index } as React.CSSProperties}
+            >
+              <span className="landing-lobby-seat flex size-7 shrink-0 items-center justify-center rounded-full border text-xs font-semibold tabular-nums">
+                {index + 1}
+              </span>
+              <span className="truncate text-sm text-foreground">{position}</span>
+              <span className="landing-lobby-state ml-auto grid text-xs">
+                <span className="landing-lobby-wait text-foreground-soft">{labels.waiting}</span>
+                <span className="landing-lobby-ok text-accent">{labels.filled}</span>
+              </span>
+            </li>
+          ))}
+        </ol>
+      </div>
+      <p className="mt-3 text-xs text-foreground-soft">{labels.example}</p>
+    </div>
   )
 }
 

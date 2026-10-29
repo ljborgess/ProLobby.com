@@ -1,0 +1,183 @@
+/**
+ * Refine pass (2026-10-29): the queue and its lobby (queue-screen.tsx,
+ * lobby-stages.tsx, queue-ui.tsx). Extends the queue-* rules in globals.css.
+ *
+ * - board digits: every clock, countdown and elo in Sora with lining,
+ *   tabular figures, like the stadium board — light above 1.6rem (Corte
+ *   Leve), the colon ticking once a second;
+ * - the place code as a plate (ZAG, MEI…), always beside the archetype;
+ * - the lobby as a pre-match moment: the matchday strip, the halfway line
+ *   with the centre circle, and the ready check lighting your half.
+ */
+
+.queue-digits {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+/* The tunnel's clock: the board, lit from behind by the tunnel light. */
+.queue-board {
+  letter-spacing: -0.04em;
+  text-shadow: 0 0 28px color-mix(in srgb, var(--color-accent) 22%, transparent);
+}
+
+@keyframes queue-colon-tick {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.queue-colon {
+  display: inline-block;
+  margin-inline: 0.04em;
+  translate: 0 -0.06em;
+  animation: queue-colon-tick 1s steps(1, end) infinite;
+}
+
+/* The last ten seconds of a countdown: each one lands with a beat. */
+@keyframes queue-tick {
+  from {
+    scale: 1.18;
+    color: var(--color-accent);
+  }
+}
+
+.queue-tick {
+  animation: queue-tick 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* The place code: a plate, as on the locker door and the shirt. */
+.queue-code {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 50%, transparent);
+  border-radius: 999px;
+  padding: 0.15em 0.6em;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  line-height: 1.2;
+  color: var(--color-accent);
+}
+
+.queue-code-free {
+  border-color: rgb(255 255 255 / 20%);
+  color: var(--color-foreground-soft);
+}
+
+/* The far pair of lockers is seen from behind, through the ring: they stay
+   as silhouettes, without their words reading backwards. */
+.queue-slot-text,
+.queue-plate {
+  transition: opacity 0.5s ease;
+}
+
+.queue-slot[data-far] .queue-slot-text,
+.queue-slot[data-far] .queue-plate {
+  opacity: 0;
+}
+
+/* The matchday strip: a rail through four dots, done ones lit. */
+.queue-strip-step {
+  position: relative;
+  color: var(--color-foreground-soft);
+}
+
+.queue-strip-step + .queue-strip-step::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  right: 50%;
+  width: 100%;
+  height: 1px;
+  background: rgb(255 255 255 / 14%);
+}
+
+.queue-strip-step[data-done]::before,
+.queue-strip-step[aria-current]::before {
+  background: color-mix(in srgb, var(--color-accent) 60%, transparent);
+}
+
+.queue-strip-dot {
+  position: relative;
+  z-index: 1;
+  width: 9px;
+  height: 9px;
+  border-radius: 9999px;
+  border: 1px solid rgb(255 255 255 / 30%);
+  background: var(--color-background);
+}
+
+.queue-strip-step[data-done] .queue-strip-dot {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+}
+
+.queue-strip-step[aria-current] {
+  color: var(--color-foreground);
+}
+
+.queue-strip-step[aria-current] .queue-strip-dot {
+  border-color: var(--color-accent);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--color-accent) 25%, transparent),
+    0 0 12px color-mix(in srgb, var(--color-accent) 60%, transparent);
+}
+
+/* The centre circle, drawn once as the card rises. */
+@keyframes queue-circle-draw {
+  from {
+    opacity: 0;
+    scale: 0.7;
+  }
+}
+
+.queue-centre-circle {
+  animation: queue-circle-draw 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both;
+}
+
+/* The ready check: your half's light, off until you accept; it clicks on. */
+.queue-ready-light {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  border: 1px solid rgb(255 255 255 / 35%);
+  transition:
+    background-color 0.3s ease,
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
+}
+
+@keyframes queue-ready-on {
+  0% {
+    scale: 2.2;
+  }
+  60% {
+    scale: 0.9;
+  }
+}
+
+.queue-ready[data-ready] .queue-ready-light {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  box-shadow: 0 0 10px 2px color-mix(in srgb, var(--color-accent) 55%, transparent);
+  animation: queue-ready-on 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .queue-colon,
+  .queue-tick,
+  .queue-centre-circle,
+  .queue-ready[data-ready] .queue-ready-light {
+    animation: none;
+  }
+
+  .queue-ready-light,
+  .queue-slot-text,
+  .queue-plate {
+    transition: none;
+  }
+}

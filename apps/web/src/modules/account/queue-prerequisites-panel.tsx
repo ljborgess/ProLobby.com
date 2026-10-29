@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { type CSSProperties, useState } from 'react'
 import { DISCORD_INVITE_URL } from '@/common/discord/invite'
 import {
   CheckMark,
@@ -88,29 +88,42 @@ export function QueuePrerequisitesPanel({
               {allDone ? content.allDone : content.subtitle}
             </p>
           </div>
-          <span className="shrink-0 rounded-full border border-white/10 px-3 py-1 text-xs tabular-nums text-foreground-soft">
+          {/* Read like a scoreboard: the count in the display cut, lit once
+              there is nothing left to do. */}
+          <span
+            className={`shrink-0 rounded-full border px-3 py-1 font-display text-sm tabular-nums ${
+              allDone ? 'border-accent/40 text-accent' : 'border-white/10 text-foreground-soft'
+            }`}
+          >
             {doneCount}/{steps.length}
           </span>
         </div>
 
         {/* The same count, as a bar. It repeats the number beside it on
             purpose — the number is the accessible truth, the bar is the one
-            that reads at a glance. */}
-        <div aria-hidden className="flex gap-2">
+            that reads at a glance. The lit segments fill one after the other
+            as the page opens, the lobby filling slot by slot; with all three
+            lit, one pass of light runs the length of the line. */}
+        <div aria-hidden className={`home-progress flex gap-2 ${allDone ? 'is-full' : ''}`}>
           {steps.map((done, index) => (
             <span
               key={index}
-              className={`h-1 flex-1 rounded-full transition-colors ${
-                done
-                  ? 'bg-accent shadow-[0_0_12px_color-mix(in_srgb,var(--color-accent)_45%,transparent)]'
-                  : 'bg-white/10'
-              }`}
-            />
+              style={{ '--i': index } as CSSProperties}
+              className="relative h-1 flex-1 overflow-hidden rounded-full bg-white/10"
+            >
+              {done && (
+                <span className="home-progress-fill absolute inset-0 rounded-full bg-accent" />
+              )}
+            </span>
           ))}
         </div>
         {allDone && (
-          <Link href="/queue" className={STEP_ACTION}>
+          <Link
+            href="/queue"
+            className="landing-focus landing-sheen group mt-1 inline-flex min-h-11 items-center justify-center gap-2.5 self-start rounded-full bg-accent pl-6 pr-5 text-sm font-medium text-background shadow-[0_8px_20px_rgb(0_0_0/25%)] transition-transform duration-200 hover:scale-[1.03] active:scale-95"
+          >
             {content.goToQueue}
+            <Arrow className="size-4 transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0" />
           </Link>
         )}
       </header>
@@ -195,35 +208,48 @@ export function QueuePrerequisitesPanel({
         )}
       </Step>
 
-      {/* Not a prerequisite (#229): outside the count, one card that is all link. */}
+      {/* Not a prerequisite (#229): outside the count, set apart by air, one
+          card that is all link. The armband is the picture of the offer —
+          being called up to lead the lobby — under a low stadium light. */}
       <Link
         href="/account/club"
-        className="club-invite landing-focus group relative flex items-center gap-4 overflow-hidden rounded-md border border-white/10 bg-[linear-gradient(135deg,rgb(255_255_255/4%),rgb(255_255_255/1%))] p-4 shadow-[inset_0_1px_0_rgb(255_255_255/6%)] transition-[border-color,box-shadow] duration-300 hover:border-accent/45 hover:shadow-[inset_0_1px_0_rgb(255_255_255/6%),0_8px_20px_rgb(0_0_0/25%)]"
+        className="club-invite home-surface landing-focus group relative mt-3 grid grid-cols-[1fr_auto] items-center gap-4 overflow-hidden rounded-md border border-white/10 p-5 sm:gap-6 sm:p-6"
       >
-        <CaptainArmband className="h-12 w-14 shrink-0" />
-        <span className="flex min-w-0 flex-1 flex-col gap-1">
-          <span className="font-display text-base font-medium tracking-[-0.01em] text-foreground">
+        <span className="relative flex min-w-0 flex-col gap-1.5">
+          <span className="font-display text-lg font-medium tracking-[-0.01em] text-foreground">
             {content.club.title}
           </span>
           <span className="text-sm leading-relaxed text-foreground-soft">{content.club.hint}</span>
-          <span className="mt-1 inline-flex items-center gap-1.5 text-sm font-medium text-accent">
+          <span className="mt-2 inline-flex min-h-9 items-center gap-1.5 self-start rounded-full border border-accent/40 px-4 text-sm font-medium text-accent transition-colors duration-200 group-hover:border-accent group-hover:bg-accent/10">
             {content.club.action}
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden
-              className="size-4 transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0"
-            >
-              <path d="M5 12h14M13 6l6 6-6 6" />
-            </svg>
+            <Arrow className="size-4 transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0" />
           </span>
+        </span>
+        <span
+          aria-hidden
+          className="club-stage relative grid size-20 place-items-center sm:size-24"
+        >
+          <CaptainArmband className="relative h-full w-full" />
         </span>
       </Link>
     </section>
+  )
+}
+
+function Arrow({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      className={className}
+    >
+      <path d="M5 12h14M13 6l6 6-6 6" />
+    </svg>
   )
 }
 
@@ -253,9 +279,11 @@ function Step({
   const content = useAccountContent()
 
   return (
+    // A done step is a line on the sheet, not a task: it shrinks to one
+    // centred row and lets the pending ones carry the weight.
     <div
-      className={`landing-card relative flex gap-4 overflow-hidden rounded-md border px-4 py-4 ${
-        done ? 'border-white/8' : 'border-white/12'
+      className={`home-surface relative flex overflow-hidden rounded-md border ${
+        done ? 'items-center gap-3 border-white/8 px-4 py-3' : 'gap-4 border-white/12 p-4'
       }`}
     >
       {/* Two marks that only the pending card carries: a rail down the left
@@ -275,18 +303,18 @@ function Step({
       )}
 
       <span
-        className={`relative flex size-11 shrink-0 items-center justify-center rounded-full border ${
+        className={`relative flex shrink-0 items-center justify-center rounded-full border ${
           done
-            ? 'border-accent/30 bg-accent/10 text-accent'
-            : 'border-white/12 bg-white/5 shadow-[inset_0_1px_0_0_rgb(255_255_255/8%)]'
+            ? 'size-9 border-accent/30 bg-accent/10 text-accent'
+            : 'size-11 border-white/12 bg-white/5 shadow-[inset_0_1px_0_0_rgb(255_255_255/8%)]'
         }`}
         style={!done && brandIcon ? { color: DISCORD_BLURPLE } : undefined}
       >
-        {done ? <CheckMark className="size-5" /> : icon}
+        {done ? <CheckMark className="size-4" /> : icon}
       </span>
 
       <div className="relative flex min-w-0 flex-1 flex-col gap-2">
-        <div className="flex items-start justify-between gap-3">
+        <div className={`flex justify-between gap-3 ${done ? 'items-center' : 'items-start'}`}>
           <p className={`text-sm font-medium ${done ? 'text-foreground-soft' : 'text-foreground'}`}>
             {done ? doneLabel : label}
           </p>
@@ -308,39 +336,47 @@ function Step({
 }
 
 /**
- * The captain's armband, drawn: a band around a sleeve with the C on it. On
- * hover it tightens a little, as if pulled on.
+ * The captain's armband, drawn: an upper arm seen a little from above, in
+ * hairline, with the band wrapped round it — back edge faint, front face
+ * lit, a row of stitching and the C. On hover the band is pulled up the arm
+ * and settles, as if put on (`home.css`).
  */
 function CaptainArmband({ className }: { className?: string }) {
   return (
-    <svg
-      viewBox="0 0 56 48"
-      aria-hidden
-      className={`club-armband overflow-visible ${className ?? ''}`}
-    >
-      {/* The sleeve, in hairline. */}
+    <svg viewBox="0 0 64 64" aria-hidden className={`overflow-visible ${className ?? ''}`}>
+      {/* The arm: shoulder at the top, open toward the elbow. */}
       <path
-        d="M6 8c10-4 34-4 44 0l-3 34c-9 3-29 3-38 0z"
+        d="M17 56V16q0-10 15-11q15 1 15 11v40"
         fill="none"
-        stroke="rgb(255 255 255 / 18%)"
-        strokeWidth={1.2}
+        stroke="rgb(255 255 255 / 22%)"
+        strokeWidth={1}
       />
-      {/* The band. */}
-      <path
-        d="M7.5 17c10-3.5 31-3.5 41 0l-1.2 13c-9.5 3-29 3-38.6 0z"
-        className="fill-white/[0.06] stroke-accent"
-        strokeWidth={1.6}
-      />
-      <text
-        x="28"
-        y="28.5"
-        textAnchor="middle"
-        fontSize="11"
-        fontWeight={700}
-        className="fill-accent font-display"
-      >
-        C
-      </text>
+      <g className="armband-band">
+        {/* Back edge of the band, behind the arm. */}
+        <path d="M17 25q15-6 30 0" fill="none" className="stroke-accent/40" strokeWidth={1} />
+        {/* Front face. */}
+        <path
+          d="M17 25q15 6 30 0v14q-15 6-30 0z"
+          className="fill-accent/[0.12] stroke-accent"
+          strokeWidth={1.4}
+          strokeLinejoin="round"
+        />
+        {/* Stitching along the top and bottom. */}
+        <g fill="none" className="stroke-accent/55" strokeWidth={0.6} strokeDasharray="1.4 1.6">
+          <path d="M19 28.4q13 5 26 0" />
+          <path d="M19 38.6q13 5 26 0" />
+        </g>
+        <text
+          x="32"
+          y="38.5"
+          textAnchor="middle"
+          fontSize="11"
+          fontWeight={600}
+          className="fill-accent font-display"
+        >
+          C
+        </text>
+      </g>
     </svg>
   )
 }

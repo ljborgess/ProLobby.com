@@ -97,7 +97,7 @@ export interface CharacterContent {
 
 export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
   pt: {
-    title: 'Seu personagem',
+    title: 'Seu elenco',
     categories: {
       goalkeeper: 'Goleiro',
       defender: 'Zaga/Lateral',
@@ -114,7 +114,7 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
       striker: 'ATA',
     },
     roster: {
-      heading: 'Seu elenco',
+      heading: 'Escalação no campo',
       count: (filled, total) => `${filled}/${total} vagas`,
       claim: 'Cadastrar',
       formHeading: 'Novo personagem',
@@ -224,7 +224,7 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
     },
   },
   es: {
-    title: 'Tu personaje',
+    title: 'Tu plantilla',
     categories: {
       goalkeeper: 'Portero',
       defender: 'Defensa/Lateral',
@@ -241,7 +241,7 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
       striker: 'DEL',
     },
     roster: {
-      heading: 'Tu plantilla',
+      heading: 'Alineación en el campo',
       count: (filled, total) => `${filled}/${total} plazas`,
       claim: 'Registrar',
       formHeading: 'Nuevo personaje',

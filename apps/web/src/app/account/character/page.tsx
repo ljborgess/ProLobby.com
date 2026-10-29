@@ -11,7 +11,7 @@ import { CharacterScreen } from '@/modules/character/character-screen'
 import type { ArchetypeOption, CharacterView } from '@/modules/character/types'
 
 export const metadata: Metadata = {
-  title: 'Personagem — ProLobby',
+  title: 'Elenco — ProLobby',
 }
 
 /**
@@ -62,7 +62,7 @@ export default async function CharacterPage() {
     <main className="relative flex min-h-svh flex-1 flex-col overflow-x-clip px-4 py-8 sm:px-6">
       <AccountBackdrop />
       <AppHeader />
-      <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col justify-center py-10">
+      <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col py-6 sm:py-10">
         <CharacterScreen characters={characters} archetypes={archetypes} />
       </div>
     </main>

@@ -28,6 +28,8 @@ export interface AuthContent {
     passwordTooShort: string
     ageTooYoung: string
     checkYourEmail: string
+    accessGroup: string
+    recoveryGroup: string
   }
   signIn: {
     title: string
@@ -108,6 +110,8 @@ export const AUTH_CONTENT: Record<Locale, AuthContent> = {
       passwordTooShort: 'Precisa de pelo menos 12 caracteres.',
       ageTooYoung: 'É preciso ter 16 anos ou mais.',
       checkYourEmail: 'Enviamos um e-mail com as instruções.',
+      accessGroup: 'Acesso',
+      recoveryGroup: 'Recuperação da conta',
     },
     signIn: {
       title: 'Entrar',
@@ -185,6 +189,8 @@ export const AUTH_CONTENT: Record<Locale, AuthContent> = {
       passwordTooShort: 'Necesita al menos 12 caracteres.',
       ageTooYoung: 'Debes tener 16 años o más.',
       checkYourEmail: 'Te enviamos un correo con las instrucciones.',
+      accessGroup: 'Acceso',
+      recoveryGroup: 'Recuperación de la cuenta',
     },
     signIn: {
       title: 'Entrar',

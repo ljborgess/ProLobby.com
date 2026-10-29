@@ -1,4 +1,9 @@
 @import 'tailwindcss';
+@import './styles/landing.css';
+@import './styles/auth.css';
+@import './styles/home.css';
+@import './styles/squad.css';
+@import './styles/queue.css';
 
 /**
  * Design tokens — issue #87.

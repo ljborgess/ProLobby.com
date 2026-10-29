@@ -16,7 +16,7 @@ import { ReputationGauge, type ReputationBand } from '@/modules/account/reputati
 import { CATEGORY_ORDER, Shirt } from '@/modules/character/roster'
 import { archetypeLabel, type CharacterView } from '@/modules/character/types'
 import { LobbyOverlay, type LobbyView } from './lobby-stages'
-import { clockOf, PRIMARY } from './queue-ui'
+import { Clock, PRIMARY } from './queue-ui'
 import { LastMatchPanel, type LastMatchView } from './result-stages'
 
 /** `GET /queue` → `entry` (#228, #232, #252). */
@@ -476,13 +476,20 @@ export function QueueScreen({
               <BlockDial left={blockedLeft} />
             ) : (
               <div className="flex flex-wrap items-center justify-between gap-4">
-                <p className="flex min-w-0 items-baseline gap-2 text-sm text-foreground-soft">
+                <p className="flex min-w-0 items-baseline gap-3 text-sm text-foreground-soft">
                   {chosen ? (
+                    // The place and the player read as one line-up entry: code, archetype, elo.
                     <>
+                      <span className="queue-code shrink-0">{codes[chosen.category]}</span>
                       <span className="truncate font-display text-lg font-medium tracking-tight text-foreground">
                         {archetypeLabel(chosen.archetype)}
                       </span>
-                      <span className="tabular-nums">Elo {chosen.elo}</span>
+                      <span className="flex shrink-0 items-baseline gap-1.5">
+                        <span className="text-[0.7rem] font-medium uppercase tracking-[0.2em]">
+                          Elo
+                        </span>
+                        <span className="queue-digits text-xl text-foreground">{chosen.elo}</span>
+                      </span>
                     </>
                   ) : (
                     <Link
@@ -689,17 +696,21 @@ function Carousel({
           return (
             <label
               key={category}
+              data-far={distance === 2 || undefined}
               className={`queue-slot queue-locker absolute inset-0 flex flex-col items-center gap-1.5 ${
                 character ? 'cursor-pointer' : 'cursor-default'
               }`}
               style={
                 {
                   '--i': index,
-                  opacity: distance === 0 ? 1 : distance === 1 ? 0.75 : 0.4,
+                  // Behind you, not gone: the side lockers stay readable, only the far pair softens.
+                  opacity: distance === 0 ? 1 : distance === 1 ? 0.92 : 0.62,
                   filter:
                     distance === 0
                       ? 'none'
-                      : `blur(${distance}px) brightness(${1 - distance * 0.2})`,
+                      : distance === 1
+                        ? 'brightness(0.85)'
+                        : 'blur(1px) brightness(0.7)',
                 } as CSSProperties
               }
             >
@@ -717,14 +728,22 @@ function Carousel({
                 }
                 className="peer sr-only"
               />
-              <span
-                className={`max-w-full truncate text-xs leading-tight ${
-                  character ? 'font-medium text-foreground' : 'text-foreground-soft'
-                }`}
-              >
-                {character ? archetypeLabel(character.archetype) : code}
+              {/* Place and archetype together, the way a line-up card lists them. */}
+              <span className="queue-slot-text flex max-w-full flex-col items-center gap-1.5">
+                <span className="flex max-w-full flex-col items-center gap-0.5 leading-tight">
+                  <span className={character ? 'queue-code' : 'queue-code queue-code-free'}>
+                    {code}
+                  </span>
+                  <span
+                    className={`max-w-full truncate text-xs ${
+                      character ? 'font-medium text-foreground' : 'text-foreground-soft'
+                    }`}
+                  >
+                    {character ? archetypeLabel(character.archetype) : content.noCharacterHere}
+                  </span>
+                </span>
+                <MovementChip band={band} />
               </span>
-              <MovementChip band={band} />
               <span
                 className="w-full"
                 onClick={() => {
@@ -802,7 +821,7 @@ function Locker({
       <span
         aria-hidden
         className={`queue-door absolute inset-0 flex flex-col items-center rounded-t-md rounded-b-sm border bg-[linear-gradient(160deg,#131c2e,#0a101c_70%)] shadow-[inset_0_1px_0_0_rgb(255_255_255/8%),inset_0_0_0_3px_rgb(255_255_255/2%)] ${
-          filled ? 'queue-door-ajar border-white/20' : 'border-white/10'
+          filled ? 'queue-door-ajar border-white/25' : 'border-white/20'
         }`}
       >
         <span className="mt-[10%] flex w-1/2 flex-col gap-[3px]">
@@ -811,8 +830,8 @@ function Locker({
           ))}
         </span>
         <span
-          className={`mt-[10%] rounded-sm border px-1.5 py-0.5 text-[0.55rem] font-semibold tracking-[0.15em] sm:text-[0.7rem] ${
-            filled ? 'border-accent/40 text-accent' : 'border-white/10 text-foreground-soft'
+          className={`queue-plate mt-[10%] rounded-sm border px-1.5 py-0.5 text-[0.55rem] font-semibold tracking-[0.15em] sm:text-[0.7rem] ${
+            filled ? 'border-accent/50 text-accent' : 'border-white/20 text-foreground-soft'
           }`}
         >
           {code}
@@ -1023,17 +1042,16 @@ function Tunnel({
 
       {/* The readout, in the middle of the screen, just under the light. */}
       <div className="absolute left-1/2 top-[56%] flex -translate-x-1/2 flex-col items-center gap-1 text-center">
-        <span
-          aria-hidden
-          className="font-display text-[clamp(2.4rem,1.6rem+3vw,4.5rem)] font-light leading-none tracking-[-0.035em] text-foreground tabular-nums"
-        >
-          {clockOf(waited)}
-        </span>
-        <span className="text-sm text-foreground-soft">
+        <Clock
+          ms={waited}
+          className="queue-board text-[clamp(2.8rem,1.8rem+3.6vw,5.25rem)] text-foreground"
+        />
+        <span className="mt-1 text-sm text-foreground-soft">
           {exit ? content.placedTitle : content.searching}
         </span>
-        <span className="text-xs font-medium uppercase tracking-[0.2em] text-foreground-soft">
-          {code} · {archetype}
+        <span className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.2em] text-foreground-soft">
+          <span className="queue-code">{code}</span>
+          {archetype !== code && archetype}
         </span>
         <span className="mt-3 text-xs font-medium tabular-nums text-accent">
           {content.band(band)}
@@ -1105,12 +1123,7 @@ function BlockDial({ left }: { left: number }) {
           <span role="alert" className="text-sm font-medium text-foreground">
             {content.blockedTitle}
           </span>
-          <span
-            aria-hidden
-            className="font-display text-2xl font-light tracking-tight text-foreground tabular-nums"
-          >
-            {clockOf(left)}
-          </span>
+          <Clock ms={left} className="text-2xl text-foreground" />
         </p>
         <p className="text-xs text-foreground-soft">{content.blockedHint}</p>
         {/* Minutes, not seconds: a countdown read aloud every tick drowns the page. */}

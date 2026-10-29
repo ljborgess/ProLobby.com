@@ -1,0 +1,232 @@
+/* Refine pass (2026-10-29): landing screens.
+ *
+ * Imported at the top of globals.css, so these rules sit *before* the
+ * landing block there in the cascade: everything here uses its own class names
+ * instead of re-declaring a `landing-*` rule from globals.css.
+ *
+ * Motion rule for this file: the rest state is the default, and every
+ * animation lives inside `prefers-reduced-motion: no-preference` plus a
+ * scroll-timeline @supports. Reduced motion and browsers without scroll
+ * timelines both get the arrived state without a second block undoing it.
+ */
+
+/* Browser surfaces carry the palette too: selected text is the accent, dimmed. */
+.landing-page ::selection {
+  background: color-mix(in srgb, var(--color-accent) 35%, transparent);
+  color: var(--color-text);
+}
+
+/* ---- Scoreboard (facts) ------------------------------------------------ */
+
+/* Bolder readouts: the values are the page's only numbers and all of them are
+   real, so they get display size, not card size. Text colour, not accent: the
+   check in the head row already says "decided". */
+.landing-score-value {
+  font-size: clamp(2.5rem, 1.8rem + 2.4vw, 3.75rem);
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+/* ---- Lobby fill (solo queue) ------------------------------------------- */
+
+@property --lobby-n {
+  syntax: '<integer>';
+  inherits: true;
+  initial-value: 0;
+}
+
+/* Rest state: the lobby closed. Count full, every seat confirmed, edge lit. */
+.landing-lobby {
+  --lobby-n: var(--lobby-total);
+  view-timeline: --lobby block;
+}
+
+.landing-lobby-panel {
+  border-color: color-mix(in srgb, var(--color-accent) 40%, transparent);
+  box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 6%);
+}
+
+.landing-lobby-count::before {
+  counter-reset: lobby-n var(--lobby-n) lobby-t var(--lobby-total);
+  content: counter(lobby-n) '/' counter(lobby-t);
+}
+
+.landing-lobby-seat {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: var(--color-bg);
+}
+
+.landing-lobby-state > * {
+  grid-area: 1 / 1;
+  text-align: end;
+}
+
+.landing-lobby-wait {
+  opacity: 0;
+}
+
+/* The old stack's stair step, kept as an indent where there is room for it. */
+@media (min-width: 1024px) {
+  .landing-lobby-row {
+    margin-inline-start: calc(var(--i) * 0.75rem);
+  }
+}
+
+/* The thread's closing centre spot. */
+.landing-thread-spot {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes landing-lobby-count {
+  from {
+    --lobby-n: 0;
+  }
+  to {
+    --lobby-n: var(--lobby-total);
+  }
+}
+
+@keyframes landing-lobby-row {
+  from {
+    opacity: 0.5;
+    translate: 0 6px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+/* Dashed ring to solid disc: the queue board's own waiting/confirmed marks. */
+@keyframes landing-lobby-seat {
+  0%,
+  60% {
+    border-style: dashed;
+    border-color: color-mix(in srgb, var(--color-accent) 55%, transparent);
+    background: transparent;
+    color: var(--color-text-soft);
+    scale: 1;
+  }
+  80% {
+    border-style: solid;
+    scale: 1.15;
+  }
+  100% {
+    border-style: solid;
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+    color: var(--color-bg);
+    scale: 1;
+  }
+}
+
+@keyframes landing-lobby-out {
+  0%,
+  55% {
+    opacity: 1;
+  }
+  70%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes landing-lobby-in {
+  0%,
+  70% {
+    opacity: 0;
+    translate: 0 4px;
+  }
+  100% {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+/* The edge lights only once the last seat has locked: the lobby closed. */
+@keyframes landing-lobby-close {
+  from {
+    border-color: rgb(255 255 255 / 10%);
+    box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 6%);
+  }
+  to {
+    border-color: color-mix(in srgb, var(--color-accent) 40%, transparent);
+    box-shadow:
+      inset 0 1px 0 0 rgb(255 255 255 / 6%),
+      0 0 0 4px color-mix(in srgb, var(--color-accent) 8%, transparent);
+  }
+}
+
+@keyframes landing-thread-spot {
+  from {
+    opacity: 0;
+    scale: 0;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    /* One shared timeline, the panel's own pass through the viewport. Seat
+       `i` locks in its own slice of it, so the order is the scroll's order. */
+    .landing-lobby {
+      animation: landing-lobby-count linear both;
+      animation-timeline: --lobby;
+      animation-range: cover 16% cover 50%;
+    }
+
+    .landing-lobby-row,
+    .landing-lobby-seat,
+    .landing-lobby-wait,
+    .landing-lobby-ok {
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: --lobby;
+      animation-range: cover calc(14% + var(--i) * 7%) cover calc(22% + var(--i) * 7%);
+    }
+
+    .landing-lobby-row {
+      animation-name: landing-lobby-row;
+    }
+
+    .landing-lobby-seat {
+      animation-name: landing-lobby-seat;
+    }
+
+    .landing-lobby-wait {
+      animation-name: landing-lobby-out;
+    }
+
+    .landing-lobby-ok {
+      animation-name: landing-lobby-in;
+    }
+
+    .landing-lobby-panel {
+      animation: landing-lobby-close linear both;
+      animation-timeline: --lobby;
+      animation-range: cover 50% cover 56%;
+    }
+
+    .landing-thread-spot {
+      animation: landing-thread-spot linear both;
+      animation-timeline: view();
+      animation-range: entry 60% cover 70%;
+    }
+  }
+}
+
+/* globals.css rests `.landing-glow` and the parallax layers at `opacity: 1`
+   under reduced motion, which overrides the Tailwind opacity beside them and
+   floods the hero with its brightest frame. The rest state is the wash's
+   middle, not its peak. */
+@media (prefers-reduced-motion: reduce) {
+  .landing-page .landing-glow {
+    opacity: 0.2;
+  }
+}

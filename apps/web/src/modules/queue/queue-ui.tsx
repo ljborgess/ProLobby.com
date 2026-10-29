@@ -16,6 +16,21 @@ export const clockOf = (ms: number) => {
 }
 
 /**
+ * A clock as the stadium board shows it: board digits, the colon ticking
+ * once a second. Always aria-hidden; the screen reader hears a status instead.
+ */
+export function Clock({ ms, className = '' }: { ms: number; className?: string }) {
+  const [minutes, seconds] = clockOf(ms).split(':')
+  return (
+    <span aria-hidden className={`queue-digits ${className}`}>
+      {minutes}
+      <span className="queue-colon">:</span>
+      {seconds}
+    </span>
+  )
+}
+
+/**
  * Keeps Tab inside a modal: from the last control back to the first, and
  * the other way with Shift. With nothing to focus (a card only waiting),
  * focus stays on the dialog itself.
@@ -87,9 +102,11 @@ export function CountdownRing({
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
+        {/* Keyed by the second: in the last ten each one lands with a beat. */}
         <span
-          className={`font-display font-light leading-none tracking-[-0.03em] text-foreground tabular-nums ${
-            small ? 'text-3xl' : 'text-5xl'
+          key={left}
+          className={`queue-digits leading-none text-foreground ${small ? 'text-3xl' : 'text-5xl'} ${
+            left > 0 && left <= 10 ? 'queue-tick' : ''
           }`}
         >
           {left >= 60 ? clockOf(left * 1000) : left}

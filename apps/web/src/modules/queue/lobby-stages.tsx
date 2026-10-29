@@ -171,10 +171,21 @@ export function LobbyOverlay({
         />
       ))}
 
+      {/* The halfway line and the centre circle: the card stands on the centre spot. */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-y-0 left-1/2 w-px bg-[linear-gradient(to_bottom,transparent,rgb(255_255_255/9%)_30%,rgb(255_255_255/9%)_70%,transparent)]"
+      />
+      <span
+        aria-hidden
+        className="queue-centre-circle pointer-events-none absolute left-1/2 top-1/2 size-[min(78vw,30rem)] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/[0.07]"
+      />
+
       {/* my-auto, not items-center: a card taller than the screen scrolls from its top. */}
       <div className="queue-card-rise relative my-auto w-full max-w-sm">
         <div className="relative flex flex-col items-center gap-5 px-6 pb-6 pt-8 text-center">
           <Brackets lit />
+          <MatchdayStrip state={lobby.state} />
           <h2
             id="lobby-step"
             className="font-display text-[clamp(1.65rem,1.1rem+1.7vw,2.4rem)] font-light leading-tight tracking-[-0.028em] text-foreground"
@@ -204,6 +215,36 @@ export function LobbyOverlay({
         </div>
       </div>
     </div>
+  )
+}
+
+const STAGE_OF: Record<string, number> = {
+  waiting_players: 0,
+  waiting_captain: 1,
+  waiting_invite: 2,
+}
+
+/**
+ * The road from the 30 s to kick-off, as the matchday board shows it: the
+ * steps behind lit, the one now marked, the ones ahead faint.
+ */
+function MatchdayStrip({ state }: { state: string }) {
+  const content = useQueueContent()
+  const now = STAGE_OF[state] ?? 3
+  return (
+    <ol aria-label={content.lobby.stagesLabel} className="queue-strip flex w-full items-center">
+      {content.lobby.stages.map((stage, index) => (
+        <li
+          key={stage}
+          aria-current={index === now ? 'step' : undefined}
+          data-done={index < now || undefined}
+          className="queue-strip-step flex flex-1 flex-col items-center gap-1.5"
+        >
+          <span aria-hidden className="queue-strip-dot" />
+          <span className="text-xs font-medium leading-none">{stage}</span>
+        </li>
+      ))}
+    </ol>
   )
 }
 
@@ -239,10 +280,26 @@ function ConfirmStep({
   return (
     <>
       <CountdownRing left={left} total={30} caption={content.secondsLeft} />
-      <p className="flex items-center gap-2 text-sm text-foreground-soft">
-        <span className="text-xs font-semibold tracking-[0.15em] text-accent">{code}</span>
-        {lobby.confirmed ? content.confirmed : content.placedHint}
-      </p>
+      {/* The ready check: your place on your half, its light on once you accept. */}
+      <div
+        data-ready={lobby.confirmed || undefined}
+        className="queue-ready flex w-full flex-col gap-2"
+      >
+        <div
+          aria-hidden
+          className="grid grid-cols-2 text-[0.7rem] font-medium uppercase tracking-[0.2em]"
+        >
+          <span className="flex items-center justify-center gap-2 border-r border-white/10 py-1 text-foreground">
+            <span className="queue-ready-light" />
+            {content.result.mine}
+          </span>
+          <span className="py-1 text-foreground-soft">{content.result.theirs}</span>
+        </div>
+        <p className="flex items-center justify-center gap-2 text-sm text-foreground-soft">
+          <span className="queue-code">{code}</span>
+          {lobby.confirmed ? content.confirmed : content.placedHint}
+        </p>
+      </div>
       {!lobby.confirmed && refusing && minutes !== null && (
         <div role="alert" className="flex w-full flex-col gap-3">
           <p className="text-sm text-foreground">{content.refuseWarning(minutes)}</p>

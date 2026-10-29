@@ -78,6 +78,9 @@ export interface QueueContent {
     formationWaitCaptain: string
     formationCounting: string
     matchTitle: string
+    /** The lobby's road from the 30 s to the match, as a matchday strip. */
+    stagesLabel: string
+    stages: [string, string, string, string]
   }
   /** The result: report, contest, rating and report of a person (4.1, 4.2). */
   result: {
@@ -219,6 +222,8 @@ export const QUEUE_CONTENT: Record<Locale, QueueContent> = {
       formationWaitCaptain: 'A votação não teve vencedora. O capitão do lado escolhe.',
       formationCounting: 'Votação encerrada. Contando os votos.',
       matchTitle: 'Partida em andamento',
+      stagesLabel: 'Etapas até a partida',
+      stages: ['Confirmação', 'Capitães', 'Convite', 'Jogo'],
     },
     result: {
       reportOpensIn: (clock) => `O report do placar abre em ${clock}.`,
@@ -381,6 +386,8 @@ export const QUEUE_CONTENT: Record<Locale, QueueContent> = {
       formationWaitCaptain: 'La votación no tuvo ganadora. El capitán del lado elige.',
       formationCounting: 'Votación cerrada. Contando los votos.',
       matchTitle: 'Partido en curso',
+      stagesLabel: 'Etapas hasta el partido',
+      stages: ['Confirmación', 'Capitanes', 'Invitación', 'Juego'],
     },
     result: {
       reportOpensIn: (clock) => `El reporte del marcador abre en ${clock}.`,
