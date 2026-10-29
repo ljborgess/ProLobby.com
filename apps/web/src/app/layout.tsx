@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Inter, Sora } from 'next/font/google'
+import { Barlow_Condensed, Inter, Sora } from 'next/font/google'
 import { cookies } from 'next/headers'
 import './globals.css'
 import { DEFAULT_LOCALE, LOCALE_COOKIE, isLocale } from '@/content/locale'
@@ -7,6 +7,12 @@ import { LocaleProvider } from '@/common/providers/locale-provider'
 
 const sora = Sora({ variable: '--font-sora', subsets: ['latin'] })
 const inter = Inter({ variable: '--font-inter', subsets: ['latin'] })
+// Kit Lab (2026-10-29): the scoreboard's voice, for numbers and kit lettering only.
+const numeric = Barlow_Condensed({
+  variable: '--font-barlow-condensed',
+  subsets: ['latin'],
+  weight: ['600', '700'],
+})
 
 export const metadata: Metadata = {
   title: 'ProLobby',
@@ -21,7 +27,10 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
   const locale = isLocale(cookieLocale) ? cookieLocale : DEFAULT_LOCALE
 
   return (
-    <html lang={locale} className={`${sora.variable} ${inter.variable} h-full antialiased`}>
+    <html
+      lang={locale}
+      className={`${sora.variable} ${inter.variable} ${numeric.variable} h-full antialiased`}
+    >
       <body className="flex min-h-full flex-col font-sans">
         <LocaleProvider initialLocale={locale}>{children}</LocaleProvider>
       </body>

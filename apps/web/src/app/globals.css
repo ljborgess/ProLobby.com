@@ -53,6 +53,7 @@
 
   --font-sans: var(--font-inter);
   --font-display: var(--font-sora);
+  --font-numeric: var(--font-barlow-condensed);
 }
 
 body {
@@ -1434,5 +1435,61 @@ input:-webkit-autofill:focus {
 
   .landing-sheen:hover::after {
     opacity: 0;
+  }
+}
+
+/*
+ * Kit Lab (2026-10-29): the club's kit room. A spotlight tinted by the kit's
+ * own primary colour, a floor that catches it, and the shirt swinging on its
+ * hanger each time a choice redraws it. The tint is the only place a kit
+ * colour reaches the page around the drawing, and only as light.
+ */
+.kit-room-beam {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--kit-glow) 30%, transparent),
+    color-mix(in srgb, var(--kit-glow) 6%, transparent) 70%,
+    transparent
+  );
+  clip-path: polygon(38% 0, 62% 0, 100% 100%, 0 100%);
+  filter: blur(6px);
+  transition: background 600ms ease-out;
+}
+
+.kit-room-floor {
+  background:
+    radial-gradient(
+      ellipse 55% 70% at 50% 0%,
+      color-mix(in srgb, var(--kit-glow) 16%, transparent),
+      transparent 70%
+    ),
+    linear-gradient(to bottom, rgb(255 255 255 / 3%), rgb(0 0 0 / 35%));
+  border-top: 1px solid rgb(255 255 255 / 6%);
+}
+
+.kit-hang {
+  transform-origin: 50% 0;
+  animation: kit-swing 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes kit-swing {
+  0% {
+    transform: rotate(-5deg) translateY(-6px);
+  }
+  45% {
+    transform: rotate(2.5deg);
+  }
+  100% {
+    transform: rotate(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kit-hang {
+    animation: none;
+  }
+
+  .kit-room-beam {
+    transition: none;
   }
 }

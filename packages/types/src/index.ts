@@ -46,3 +46,13 @@ export {
   sampleQuotaAlertEvent,
   SNOWFLAKE,
 } from './webhook-fixtures'
+export {
+  CREST_SHAPES,
+  DEFAULT_KIT,
+  KIT_COLORS,
+  KIT_PATTERNS,
+  type CrestShape,
+  type Kit,
+  type KitColor,
+  type KitPattern,
+} from './kit'

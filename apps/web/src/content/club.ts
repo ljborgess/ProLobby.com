@@ -1,3 +1,4 @@
+import type { CrestShape, KitColor, KitPattern } from '@prolobby/types'
 import type { Locale } from './locale'
 
 /** Text for the declared club screen — #229, RF-006. One object per locale. */
@@ -28,6 +29,18 @@ export interface ClubContent {
   error: string
   /** Optional; the queue takes anyone without one. */
   optional: string
+  /** Kit Lab (2026-10-29): the kit the lobby dresses this club's side in. */
+  kit: {
+    heading: string
+    hint: string
+    primary: string
+    secondary: string
+    pattern: string
+    crest: string
+    colors: Record<KitColor, string>
+    patterns: Record<KitPattern, string>
+    crests: Record<CrestShape, string>
+  }
 }
 
 export const CLUB_CONTENT: Record<Locale, ClubContent> = {
@@ -58,6 +71,36 @@ export const CLUB_CONTENT: Record<Locale, ClubContent> = {
     invalid: 'Confira os campos: nome de 1 a 20 caracteres e vagas de 0 a 10.',
     error: 'Não deu certo agora. Tenta de novo em instantes.',
     optional: 'Opcional: a fila aceita quem não tem clube.',
+    kit: {
+      heading: 'Uniforme',
+      hint: 'Quando você é capitão, o seu lado entra em campo com ele.',
+      primary: 'Cor principal',
+      secondary: 'Cor do detalhe',
+      pattern: 'Padrão',
+      crest: 'Escudo',
+      colors: {
+        white: 'Branco',
+        black: 'Preto',
+        red: 'Vermelho',
+        claret: 'Grená',
+        orange: 'Laranja',
+        yellow: 'Amarelo',
+        green: 'Verde',
+        sky: 'Celeste',
+        blue: 'Azul',
+        navy: 'Azul-marinho',
+        purple: 'Roxo',
+        grey: 'Cinza',
+      },
+      patterns: {
+        plain: 'Liso',
+        stripes: 'Listras',
+        hoops: 'Faixas',
+        halves: 'Metade',
+        sash: 'Faixa diagonal',
+      },
+      crests: { shield: 'Escudo clássico', round: 'Redondo', diamond: 'Losango' },
+    },
   },
   es: {
     title: 'Tu club',
@@ -86,5 +129,35 @@ export const CLUB_CONTENT: Record<Locale, ClubContent> = {
     invalid: 'Revisa los campos: nombre de 1 a 20 caracteres y plazas de 0 a 10.',
     error: 'No funcionó ahora. Inténtalo de nuevo en un momento.',
     optional: 'Opcional: la cola acepta a quien no tiene club.',
+    kit: {
+      heading: 'Uniforme',
+      hint: 'Cuando eres capitán, tu lado sale a la cancha con él.',
+      primary: 'Color principal',
+      secondary: 'Color del detalle',
+      pattern: 'Diseño',
+      crest: 'Escudo',
+      colors: {
+        white: 'Blanco',
+        black: 'Negro',
+        red: 'Rojo',
+        claret: 'Granate',
+        orange: 'Naranja',
+        yellow: 'Amarillo',
+        green: 'Verde',
+        sky: 'Celeste',
+        blue: 'Azul',
+        navy: 'Azul marino',
+        purple: 'Morado',
+        grey: 'Gris',
+      },
+      patterns: {
+        plain: 'Liso',
+        stripes: 'Rayas',
+        hoops: 'Franjas',
+        halves: 'Mitades',
+        sash: 'Banda diagonal',
+      },
+      crests: { shield: 'Escudo clásico', round: 'Redondo', diamond: 'Rombo' },
+    },
   },
 }

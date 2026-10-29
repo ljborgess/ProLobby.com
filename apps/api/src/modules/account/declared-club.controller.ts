@@ -3,12 +3,15 @@ import { Body, Controller, Delete, Get, HttpCode, Put, Req } from '@nestjs/commo
 import { randomUUID } from 'node:crypto'
 
 import type { RequestWithAccount } from '../../common/auth/session.guard'
-import { DeclaredClub } from './declared-club.entity'
+import type { Kit } from '@prolobby/types'
+
+import { DeclaredClub, kitOf } from './declared-club.entity'
 import { DeclareClubDto } from './dto/declare-club.dto'
 
 export interface DeclaredClubView {
   freeSlots: number
   clubName: string
+  kit: Kit
   updatedAt: Date
 }
 
@@ -41,6 +44,10 @@ export class DeclaredClubController {
         account: request.account!.id,
         freeSlots: dto.freeSlots,
         clubName: dto.clubName,
+        ...(dto.kitPrimary && { kitPrimary: dto.kitPrimary }),
+        ...(dto.kitSecondary && { kitSecondary: dto.kitSecondary }),
+        ...(dto.kitPattern && { kitPattern: dto.kitPattern }),
+        ...(dto.crestShape && { crestShape: dto.crestShape }),
         updatedAt: new Date(),
       },
       { onConflictFields: ['account'], onConflictExcludeFields: ['id'] },
@@ -56,5 +63,10 @@ export class DeclaredClubController {
 }
 
 function toView(club: DeclaredClub): DeclaredClubView {
-  return { freeSlots: club.freeSlots, clubName: club.clubName, updatedAt: club.updatedAt }
+  return {
+    freeSlots: club.freeSlots,
+    clubName: club.clubName,
+    kit: kitOf(club),
+    updatedAt: club.updatedAt,
+  }
 }
