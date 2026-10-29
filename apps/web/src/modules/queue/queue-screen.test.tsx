@@ -6,6 +6,12 @@ import type { CharacterView } from '@/modules/character/types'
 import type { LobbyView } from './lobby-stages'
 import { QueueScreen, type QueueState, stallTurn } from './queue-screen'
 
+const push = vi.fn()
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push, refresh: vi.fn() }),
+  usePathname: () => '/queue',
+}))
+
 const pt = QUEUE_CONTENT.pt
 
 const MAESTRO: CharacterView = {
@@ -272,6 +278,33 @@ describe('QueueScreen (#233)', () => {
 
       fireEvent.keyDown(dialog, { key: 'Tab', shiftKey: true })
       expect(document.activeElement).toBe(last)
+    })
+  })
+
+  describe('outside the tab and behind the login (audit 2026-10-28)', () => {
+    it('counts the 30 s down in the tab title while the answer is due, and gives it back', () => {
+      document.title = 'Fila — ProLobby'
+      const { unmount } = renderScreen(inLobby({ confirmBy: inSeconds(25) }))
+
+      expect(document.title).toMatch(/^\(2[45]s\) Aceitar partida · ProLobby$/)
+
+      unmount()
+      expect(document.title).toBe('Fila — ProLobby')
+    })
+
+    it('a poll answered 401 goes to the login instead of searching forever', async () => {
+      vi.mocked(fetch).mockResolvedValue(answer(401, {}))
+      renderScreen(inLobby({ confirmed: true }))
+
+      fireEvent(document, new Event('visibilitychange'))
+
+      await waitFor(() => expect(push).toHaveBeenCalledWith('/login'))
+    })
+
+    it('the menu marks the queue as the current page', () => {
+      renderScreen()
+
+      expect(screen.getByRole('link', { name: 'Fila' })).toHaveAttribute('aria-current', 'page')
     })
   })
 

@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { apiFetch } from '@/common/api/client'
 import { forwardedIpFrom } from '@/common/api/forwarded-ip'
 import { SESSION_COOKIE_NAME } from '@/common/auth/session-cookie'
-import { LanguageSwitcher } from '@/common/ui/language-switcher'
+import { AppHeader } from '@/modules/account/app-header'
 import { AccountBackdrop } from '@/modules/account/account-backdrop'
 import { LoadErrorMessage } from '@/modules/account/load-error-message'
 import { ModerationScreen } from '@/modules/moderation/moderation-screen'
@@ -70,9 +70,7 @@ export default async function ModerationPage() {
   return (
     <main className="relative flex min-h-svh flex-1 flex-col overflow-hidden px-4 py-8 sm:px-6">
       <AccountBackdrop />
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-end gap-4">
-        <LanguageSwitcher />
-      </div>
+      <AppHeader />
       <div className="mx-auto flex w-full max-w-xl flex-1 flex-col py-10">
         <ModerationScreen cases={cases} archetypes={archetypes} />
       </div>

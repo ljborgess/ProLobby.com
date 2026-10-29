@@ -50,9 +50,12 @@ export function ResetPasswordForm() {
 
   if (!token) {
     return (
-      <p role="alert" className="text-sm text-danger">
-        {content.invalidToken}
-      </p>
+      <div className="flex flex-col gap-4">
+        <p role="alert" className="text-sm text-danger">
+          {content.invalidToken}
+        </p>
+        <RequestNewLink label={content.requestNew} />
+      </div>
     )
   }
 
@@ -86,6 +89,7 @@ export function ResetPasswordForm() {
           {status === 'invalidToken' ? content.invalidToken : content.genericError}
         </p>
       )}
+      {status === 'invalidToken' && <RequestNewLink label={content.requestNew} />}
 
       <button
         type="submit"
@@ -95,5 +99,17 @@ export function ResetPasswordForm() {
         {status === 'submitting' ? content.submitting : content.submit}
       </button>
     </form>
+  )
+}
+
+/** A dead link is not a dead end: the way out is asking for a new one. */
+function RequestNewLink({ label }: { label: string }) {
+  return (
+    <Link
+      href="/forgot-password"
+      className="landing-focus self-start text-sm text-accent underline underline-offset-4"
+    >
+      {label}
+    </Link>
   )
 }

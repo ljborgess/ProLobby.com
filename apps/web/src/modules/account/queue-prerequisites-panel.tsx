@@ -81,9 +81,9 @@ export function QueuePrerequisitesPanel({
       <header className="flex flex-col gap-3">
         <div className="flex items-start justify-between gap-4">
           <div className="flex flex-col gap-1">
-            <h2 id="next-steps" className="landing-section-title font-display text-foreground">
+            <h1 id="next-steps" className="landing-section-title font-display text-foreground">
               {content.title}
-            </h2>
+            </h1>
             <p className="text-sm leading-relaxed text-foreground-soft">
               {allDone ? content.allDone : content.subtitle}
             </p>

@@ -15,11 +15,11 @@ export function LanguageSwitcher() {
 
   return (
     <label className="flex items-center gap-2 text-sm text-foreground-soft">
-      <span>{content.languageSwitcher.label}</span>
+      <span className="sr-only">{content.languageSwitcher.label}</span>
       <select
         value={locale}
         onChange={(event) => setLocale(event.target.value as (typeof LOCALES)[number])}
-        className="rounded-sm border border-white/10 bg-surface px-2 py-1 text-foreground outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        className="min-h-11 rounded-full border border-white/30 bg-surface px-3 text-foreground outline-none focus-visible:ring-2 focus-visible:ring-accent"
       >
         {LOCALES.map((option) => (
           <option key={option} value={option}>

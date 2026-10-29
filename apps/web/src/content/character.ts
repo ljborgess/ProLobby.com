@@ -93,7 +93,6 @@ export interface CharacterContent {
     sendPrint: string
     sendAgain: string
   }
-  back: string
 }
 
 export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
@@ -223,7 +222,6 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
       sendPrint: 'Enviar print',
       sendAgain: 'Enviar de novo',
     },
-    back: 'Próximos passos',
   },
   es: {
     title: 'Tu personaje',
@@ -354,6 +352,5 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
       sendPrint: 'Enviar captura',
       sendAgain: 'Enviar de nuevo',
     },
-    back: 'Próximos pasos',
   },
 }

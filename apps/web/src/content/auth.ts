@@ -65,6 +65,7 @@ export interface AuthContent {
     submitting: string
     success: string
     invalidToken: string
+    requestNew: string
     genericError: string
     goToSignIn: string
   }
@@ -73,6 +74,7 @@ export interface AuthContent {
     verifying: string
     success: string
     invalidToken: string
+    requestNew: string
     genericError: string
     goToSignIn: string
   }
@@ -142,6 +144,7 @@ export const AUTH_CONTENT: Record<Locale, AuthContent> = {
       submitting: 'Salvando…',
       success: 'Senha redefinida. Já dá pra entrar com ela.',
       invalidToken: 'Esse link não é mais válido. Pede um novo link de redefinição.',
+      requestNew: 'Pedir novo link',
       genericError: 'Não deu pra redefinir agora. Tenta de novo em instantes.',
       goToSignIn: 'Ir para o login',
     },
@@ -150,6 +153,7 @@ export const AUTH_CONTENT: Record<Locale, AuthContent> = {
       verifying: 'Verificando…',
       success: 'E-mail verificado. Já dá pra entrar na fila.',
       invalidToken: 'Esse link não é mais válido. Pede um novo na sua conta.',
+      requestNew: 'Pedir um novo e-mail',
       genericError: 'Não deu pra verificar agora. Tenta de novo em instantes.',
       goToSignIn: 'Ir para o login',
     },
@@ -217,6 +221,7 @@ export const AUTH_CONTENT: Record<Locale, AuthContent> = {
       submitting: 'Guardando…',
       success: 'Contraseña restablecida. Ya puedes entrar con ella.',
       invalidToken: 'Ese enlace ya no es válido. Pide un nuevo enlace de restablecimiento.',
+      requestNew: 'Pedir un nuevo enlace',
       genericError: 'No se pudo restablecer ahora. Intenta de nuevo en un momento.',
       goToSignIn: 'Ir al login',
     },
@@ -225,6 +230,7 @@ export const AUTH_CONTENT: Record<Locale, AuthContent> = {
       verifying: 'Verificando…',
       success: 'Correo verificado. Ya puedes entrar en la cola.',
       invalidToken: 'Ese enlace ya no es válido. Pide uno nuevo desde tu cuenta.',
+      requestNew: 'Pedir un nuevo correo',
       genericError: 'No se pudo verificar ahora. Intenta de nuevo en un momento.',
       goToSignIn: 'Ir al login',
     },

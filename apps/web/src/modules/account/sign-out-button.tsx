@@ -53,7 +53,7 @@ export function SignOutButton() {
 
   // Icon only, so the label has to live somewhere a screen reader reaches:
   // `aria-label` carries it, `title` shows it on hover for everyone else. The
-  // button keeps a 40px box, which is the smallest comfortable pointer target.
+  // button keeps a 44px box, the comfortable touch target.
   const label = signingOut ? content.submitting : content.submit
 
   return (
@@ -72,7 +72,7 @@ export function SignOutButton() {
         disabled={signingOut}
         aria-label={label}
         title={label}
-        className="landing-focus flex size-10 items-center justify-center rounded-full border border-white/15 text-foreground-soft transition-colors hover:border-white/35 hover:text-foreground disabled:opacity-60"
+        className="landing-focus flex size-11 items-center justify-center rounded-full border border-white/30 text-foreground-soft transition-colors hover:border-white/35 hover:text-foreground disabled:opacity-60"
       >
         <SignOutMark className="size-[18px]" />
       </button>

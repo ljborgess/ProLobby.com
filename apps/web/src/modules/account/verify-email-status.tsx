@@ -81,9 +81,20 @@ export function VerifyEmailStatus() {
             ? content.invalidToken
             : content.genericError}
       </p>
-      <Link href="/login" className="text-sm text-foreground-soft underline">
-        {content.goToSignIn}
-      </Link>
+      {/* Failed: the resend lives on the account home (behind the login,
+          which takes over if the session is gone). */}
+      {status === 'success' ? (
+        <Link href="/login" className="text-sm text-foreground-soft underline">
+          {content.goToSignIn}
+        </Link>
+      ) : (
+        <Link
+          href="/verifications"
+          className="landing-focus self-start text-sm text-accent underline underline-offset-4"
+        >
+          {content.requestNew}
+        </Link>
+      )}
     </div>
   )
 }

@@ -4,7 +4,9 @@ import Link from 'next/link'
 import { type CSSProperties, type PointerEvent, useEffect, useRef, useState } from 'react'
 import { DISCORD_INVITE_URL } from '@/common/discord/invite'
 import { BackAction } from '@/common/ui/back-action'
-import { LanguageSwitcher } from '@/common/ui/language-switcher'
+import { useRouter } from 'next/navigation'
+import { AppHeader } from '@/modules/account/app-header'
+import { askToAlert, useMatchAlert } from './match-alert'
 import { DISCORD_BLURPLE, DiscordMark, MailMark, PlayerCardMark } from '@/common/ui/icons'
 import type { CharacterCategory } from '@/content/character'
 import type { MissingPrerequisite, MovementBand, QueueContent } from '@/content/queue'
@@ -201,6 +203,7 @@ export function QueueScreen({
   reputationBand: ReputationBand
 }) {
   const content = useQueueContent()
+  const router = useRouter()
   const codes = useCharacterContent().categoryCodes
   const verified = characters.filter((character) => character.state === 'verified')
   const [state, setState] = useState(initial)
@@ -276,6 +279,8 @@ export function QueueScreen({
   async function reload() {
     const ask = ++asked.current
     const response = await fetch('/bff/queue')
+    // The session ran out: polling forever would leave the tunnel running on nothing.
+    if (response.status === 401) return router.push('/login')
     if (!response.ok) return
     const next = (await response.json()) as QueueState
     if (ask < applied.current) return
@@ -318,12 +323,29 @@ export function QueueScreen({
       },
       fast ? LOBBY_POLL_MS : POLL_MS,
     )
-    return () => clearInterval(timer)
+    // A hidden tab's timers get throttled to about one a minute: coming back
+    // asks at once instead of waiting out the interval.
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') reload().catch(() => {})
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      clearInterval(timer)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
     // reload only reads refs and setters; the interval restarts on the two flags.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inQueue, fast])
 
+  const answering = state.entry?.lobby
+  useMatchAlert(
+    answering?.state === 'waiting_players' && !answering.confirmed ? answering.confirmBy : null,
+    now,
+    content.alert,
+  )
+
   async function join() {
+    askToAlert()
     setBusy(true)
     setRefusal(null)
     try {
@@ -378,12 +400,14 @@ export function QueueScreen({
   }
 
   const scene = state.entry ? (state.entry.lobby ? 'found' : 'searching') : 'picking'
+  // The lobby dialog is modal: what lies under it leaves the tab order.
+  const covered = scene === 'found'
   const look = useLook()
 
   return (
     <div className="absolute inset-0 flex flex-col">
       {/* The scene is the whole window; everything else sits over it. */}
-      <section {...look} className="absolute inset-0">
+      <section {...look} inert={covered} className="absolute inset-0">
         {state.entry ? (
           <Tunnel
             entry={state.entry}
@@ -404,22 +428,31 @@ export function QueueScreen({
         )}
       </section>
 
-      <header className="pointer-events-none relative z-10 flex items-start justify-between gap-4 px-4 pt-4 sm:px-8 sm:pt-6">
+      <AppHeader
+        inert={covered}
+        className="pointer-events-auto relative z-10 max-w-none px-4 pt-4 sm:px-8 sm:pt-6"
+      />
+      <header
+        inert={covered}
+        className="pointer-events-none relative z-10 flex items-start justify-between gap-4 px-4 pt-2 sm:px-8 sm:pt-4"
+      >
         <div className="pointer-events-auto flex items-center gap-4">
-          <BackAction href="/verifications" label={content.back} />
-          <h1 className="font-display text-[clamp(1.65rem,1.1rem+1.7vw,2.4rem)] font-light leading-none tracking-[-0.028em] text-foreground">
+          {/* On a phone the menu already marks the queue: the title stays for screen readers. */}
+          <h1 className="sr-only font-display text-[clamp(1.65rem,1.1rem+1.7vw,2.4rem)] font-light sm:not-sr-only leading-none tracking-[-0.028em] text-foreground">
             {content.title}
           </h1>
         </div>
         <div className="pointer-events-auto flex flex-col items-end gap-3">
-          <LanguageSwitcher />
           <ReputationGauge inline reputation={reputation} band={reputationBand} />
         </div>
       </header>
 
       <div className="flex-1" />
 
-      <footer className="pointer-events-none relative z-10 flex flex-col gap-3 px-4 pb-5 sm:px-8 sm:pb-7">
+      <footer
+        inert={covered}
+        className="pointer-events-none relative z-10 flex flex-col gap-3 px-4 pb-5 sm:px-8 sm:pb-7"
+      >
         <div className="pointer-events-auto">
           {scene === 'picking' && state.lastMatch && (
             // Keyed by match: a new one starts with nothing sent and nothing open.
@@ -479,13 +512,13 @@ export function QueueScreen({
           {scene === 'searching' && notice && (
             <div
               role="status"
-              className="mb-3 flex flex-wrap items-center justify-between gap-3 border-l-2 border-accent pl-3"
+              className="mb-3 flex flex-wrap items-center justify-between gap-3 border-l border-accent pl-3"
             >
               <p className="max-w-xl text-sm text-foreground">{content.notice[notice]}</p>
               <button
                 type="button"
                 onClick={() => setNotice(null)}
-                className="landing-focus text-sm text-accent underline-offset-4 hover:underline"
+                className="landing-focus inline-flex min-h-11 items-center text-sm text-accent underline-offset-4 hover:underline"
               >
                 {content.notice.dismiss}
               </button>
@@ -495,7 +528,7 @@ export function QueueScreen({
             // Said where the person decides to join or to wait; the search goes on.
             <p
               role="status"
-              className="mb-3 max-w-xl border-l-2 border-accent pl-3 text-sm text-foreground"
+              className="mb-3 max-w-xl border-l border-accent pl-3 text-sm text-foreground"
             >
               {content.paused[state.paused]}
             </p>
@@ -553,7 +586,7 @@ function SideChevron({
       type="button"
       aria-label={label}
       onClick={() => onStep(direction)}
-      className={`landing-focus group absolute top-1/2 z-10 flex h-40 w-16 -translate-y-1/2 items-center justify-center text-white/20 transition-colors hover:text-accent ${
+      className={`landing-focus group absolute top-1/2 z-10 flex h-40 w-16 -translate-y-1/2 items-center justify-center text-white/45 transition-colors hover:text-accent ${
         direction === 1 ? 'right-2 sm:right-8' : 'left-2 sm:left-8'
       }`}
     >
@@ -627,7 +660,7 @@ function Carousel({
       <SideChevron direction={1} label={content.next} onStep={onStep} />
       <h2
         id="movement"
-        className="absolute left-1/2 top-[19svh] -translate-x-1/2 text-[0.7rem] font-medium uppercase tracking-[0.2em] text-foreground-soft"
+        className="absolute left-1/2 top-[27svh] -translate-x-1/2 whitespace-nowrap text-[0.7rem] sm:top-[19svh] font-medium uppercase tracking-[0.2em] text-foreground-soft"
       >
         {content.movementHeading}
       </h2>
@@ -701,7 +734,7 @@ function Carousel({
                 <Locker
                   code={code}
                   filled={character !== undefined}
-                  name={character ? archetypeLabel(character.archetype) : ''}
+                  name={character ? (character.name ?? archetypeLabel(character.archetype)) : ''}
                   number={SHIRT_NUMBER[category]}
                 />
               </span>
@@ -858,7 +891,13 @@ function KitReveal({ code, name, number }: { code: string; name: string; number:
             strokeLinejoin="round"
             className="fill-accent stroke-accent"
           />
-          <text fontSize="3.6" fontWeight={700} letterSpacing="0.4" className="fill-background">
+          {/* The arc is ~19 units long: a long name shrinks to fit instead of losing its ends. */}
+          <text
+            fontSize={Math.min(3.6, 26 / Math.max(name.length, 1))}
+            fontWeight={700}
+            letterSpacing="0.4"
+            className="fill-background"
+          >
             <textPath href={`#kit-arc-${code}`} startOffset="50%" textAnchor="middle">
               {name}
             </textPath>
@@ -883,7 +922,7 @@ function KitReveal({ code, name, number }: { code: string; name: string; number:
 function MovementChip({ band }: { band: MovementBand }) {
   const content = useQueueContent()
   return (
-    <span className="flex max-w-full flex-col items-center gap-1 text-center text-[0.58rem] leading-none text-foreground-soft sm:flex-row sm:gap-1.5 sm:whitespace-nowrap sm:text-[0.68rem]">
+    <span className="flex max-w-full flex-col items-center gap-1 text-center text-[0.7rem] leading-none text-foreground-soft sm:flex-row sm:gap-1.5 sm:whitespace-nowrap">
       <span aria-hidden className="flex gap-0.5">
         {[1, 2, 3].map((level) => (
           <span
@@ -922,7 +961,7 @@ function Tunnel({
   const light = 0.55 + ((band - 150) / 250) * 0.9
 
   return (
-    <div role="status" className="queue-push-in absolute inset-0">
+    <div className="queue-push-in absolute inset-0">
       <div
         data-exit={exit || undefined}
         className="queue-tunnel absolute inset-0 overflow-hidden [mask-image:radial-gradient(ellipse_72%_68%_at_50%_46%,black_58%,transparent_100%)]"
@@ -983,7 +1022,10 @@ function Tunnel({
 
       {/* The readout, in the middle of the screen, just under the light. */}
       <div className="absolute left-1/2 top-[56%] flex -translate-x-1/2 flex-col items-center gap-1 text-center">
-        <span className="font-display text-[clamp(2.4rem,1.6rem+3vw,4.5rem)] font-light leading-none tracking-[-0.035em] text-foreground tabular-nums">
+        <span
+          aria-hidden
+          className="font-display text-[clamp(2.4rem,1.6rem+3vw,4.5rem)] font-light leading-none tracking-[-0.035em] text-foreground tabular-nums"
+        >
           {clockOf(waited)}
         </span>
         <span className="text-sm text-foreground-soft">
@@ -998,7 +1040,10 @@ function Tunnel({
         <span className="max-w-56 text-[0.7rem] leading-snug text-foreground-soft">
           {content.bandWidens}
         </span>
-        <span className="sr-only">{content.waited(clockOf(waited))}</span>
+        {/* Read on change only: the status and the band, never the seconds. */}
+        <span role="status" className="sr-only">
+          {exit ? content.placedTitle : `${content.searching}. ${content.band(band)}`}
+        </span>
       </div>
     </div>
   )
@@ -1027,13 +1072,13 @@ function StallNotice({
   return (
     <div
       role="status"
-      className="mb-3 flex flex-wrap items-center justify-between gap-3 border-l-2 border-accent pl-3"
+      className="mb-3 flex flex-wrap items-center justify-between gap-3 border-l border-accent pl-3"
     >
       <p className="max-w-xl text-sm text-foreground">{content.stall[entry.stall]}</p>
       <button
         type="button"
         onClick={() => onKeepWaiting({ joinedAt: entry.joinedAt, turn })}
-        className="landing-focus text-sm text-accent underline-offset-4 hover:underline"
+        className="landing-focus inline-flex min-h-11 items-center text-sm text-accent underline-offset-4 hover:underline"
       >
         {content.stall.keepWaiting}
       </button>
@@ -1045,7 +1090,7 @@ function StallNotice({
 function BlockDial({ left }: { left: number }) {
   const content = useQueueContent()
   return (
-    <div role="alert" className="flex items-center gap-4">
+    <div className="flex items-center gap-4">
       <span className="relative flex size-14 shrink-0 items-center justify-center rounded-full border border-danger/40">
         <svg viewBox="0 0 24 24" aria-hidden className="size-5 text-danger">
           <g fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round">
@@ -1056,13 +1101,21 @@ function BlockDial({ left }: { left: number }) {
       </span>
       <div className="flex flex-col gap-0.5">
         <p className="flex items-baseline gap-3">
-          <span className="text-sm font-medium text-foreground">{content.blockedTitle}</span>
-          <span className="font-display text-2xl font-light tracking-tight text-foreground tabular-nums">
+          <span role="alert" className="text-sm font-medium text-foreground">
+            {content.blockedTitle}
+          </span>
+          <span
+            aria-hidden
+            className="font-display text-2xl font-light tracking-tight text-foreground tabular-nums"
+          >
             {clockOf(left)}
           </span>
         </p>
         <p className="text-xs text-foreground-soft">{content.blockedHint}</p>
-        <span className="sr-only">{content.blocked(Math.ceil(left / 60_000))}</span>
+        {/* Minutes, not seconds: a countdown read aloud every tick drowns the page. */}
+        <span role="status" className="sr-only">
+          {content.blocked(Math.ceil(left / 60_000))}
+        </span>
       </div>
     </div>
   )

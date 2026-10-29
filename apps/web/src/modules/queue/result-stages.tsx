@@ -183,7 +183,7 @@ function ReportForm({ lobby, onChanged }: { lobby: LobbyView; onChanged: () => P
     const code = await call('report', { method: 'POST', body })
     setSending(false)
     if (code) setFailed(errorText(r, code))
-    else await onChanged()
+    else await onChanged().catch(() => {})
   }
 
   return (
@@ -259,7 +259,7 @@ function SentReport({
       return
     }
     setEditing(false)
-    await onChanged()
+    await onChanged().catch(() => {})
   }
 
   return (
@@ -328,13 +328,13 @@ export function LastMatchPanel({
     const code = await call(path, json('POST', body))
     setBusy(false)
     if (code) setFailed(errorText(r, code))
-    await onChanged()
+    await onChanged().catch(() => {})
   }
 
   return (
     <details
       open={match.contestUntil !== null || rating}
-      className="mb-3 max-h-[45vh] overflow-y-auto rounded-[10px] border border-white/10 bg-background/80 px-4 py-3 backdrop-blur-sm"
+      className="mb-3 max-h-[45svh] overflow-y-auto rounded-[10px] border border-white/10 bg-background/80 px-4 py-3 backdrop-blur-sm"
     >
       <summary className="landing-focus cursor-pointer text-sm text-foreground">
         {r.lastTitle}

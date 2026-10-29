@@ -17,7 +17,11 @@ vi.mock('next/headers', () => ({
   cookies: () => Promise.resolve(cookieJar),
   headers: () => Promise.resolve(new Headers()),
 }))
-vi.mock('next/navigation', () => ({ redirect: (path: string) => redirect(path) }))
+vi.mock('next/navigation', () => ({
+  redirect: (path: string) => redirect(path),
+  useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
+  usePathname: () => '/account/discord',
+}))
 vi.mock('@/common/api/client', () => ({ apiFetch: (...args: unknown[]) => apiFetch(...args) }))
 
 import DiscordPage from './page'

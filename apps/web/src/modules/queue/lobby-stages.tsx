@@ -1,6 +1,6 @@
 'use client'
 
-import { type CSSProperties, useState } from 'react'
+import { type CSSProperties, useEffect, useRef, useState } from 'react'
 import { useQueueContent } from '@/hooks/use-queue-content'
 import { Brackets } from '@/modules/character/pitch-art'
 import { CountdownRing, PRIMARY, SECONDARY, secondsTo, trapFocus } from './queue-ui'
@@ -117,6 +117,13 @@ export function LobbyOverlay({
   onChanged: () => Promise<void>
 }) {
   const content = useQueueContent()
+  const dialog = useRef<HTMLDivElement>(null)
+  // Each step swaps the buttons out from under the focus: if it fell out of
+  // the dialog (or never came in), it lands on the dialog again.
+  useEffect(() => {
+    const node = dialog.current
+    if (node && !node.contains(document.activeElement)) node.focus()
+  }, [lobby.state])
   const title =
     lobby.state === 'waiting_players'
       ? content.placedTitle
@@ -132,6 +139,7 @@ export function LobbyOverlay({
 
   return (
     <div
+      ref={dialog}
       role="dialog"
       aria-modal="true"
       aria-labelledby="lobby-step"
@@ -541,7 +549,7 @@ function Choices({
           >
             {option}
             {pressed && mineLabel && (
-              <span className="text-[0.6rem] uppercase tracking-[0.15em] text-accent">
+              <span className="text-[0.7rem] uppercase tracking-[0.2em] text-accent">
                 {mineLabel}
               </span>
             )}

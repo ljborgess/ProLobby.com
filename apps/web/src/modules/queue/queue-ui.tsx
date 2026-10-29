@@ -1,10 +1,10 @@
 /** Bits shared by the queue screen and its lobby steps (#233, #252). */
 
 export const PRIMARY =
-  'landing-focus landing-sheen inline-flex items-center justify-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-background shadow-[0_8px_20px_rgb(0_0_0/25%)] transition-transform duration-200 hover:scale-[1.04] active:scale-95 disabled:opacity-50 disabled:hover:scale-100'
+  'landing-focus landing-sheen inline-flex items-center justify-center gap-2 min-h-11 rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-background shadow-[0_8px_20px_rgb(0_0_0/25%)] transition-transform duration-200 hover:scale-[1.04] active:scale-95 disabled:opacity-50 disabled:hover:scale-100'
 
 export const SECONDARY =
-  'landing-focus inline-flex items-center justify-center rounded-full border border-white/15 px-5 py-2.5 text-sm text-foreground-soft transition-colors hover:border-white/35 hover:text-foreground disabled:opacity-50'
+  'landing-focus inline-flex items-center justify-center min-h-11 rounded-full border border-white/30 px-5 py-2.5 text-sm text-foreground-soft transition-colors hover:border-white/35 hover:text-foreground disabled:opacity-50'
 
 /** Whole seconds from `now` to `until`, never below zero. */
 export const secondsTo = (until: string, now: number) =>
@@ -94,7 +94,7 @@ export function CountdownRing({
         >
           {left >= 60 ? clockOf(left * 1000) : left}
         </span>
-        <span className="mt-1 max-w-[80%] text-center text-[0.68rem] leading-tight text-foreground-soft">
+        <span className="mt-1 max-w-[80%] text-center text-[0.7rem] leading-tight text-foreground-soft">
           {caption}
         </span>
       </div>

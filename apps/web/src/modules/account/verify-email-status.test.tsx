@@ -45,6 +45,11 @@ describe('VerifyEmailStatus', () => {
     renderWithLocale(<VerifyEmailStatus />)
 
     await waitFor(() => expect(screen.getByRole('alert').textContent).toBe(pt.invalidToken))
+    // The resend lives on the account home.
+    expect(screen.getByRole('link', { name: pt.requestNew })).toHaveAttribute(
+      'href',
+      '/verifications',
+    )
   })
 
   it('shows a generic error when the request itself fails', async () => {

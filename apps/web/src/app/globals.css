@@ -1348,6 +1348,7 @@ input:-webkit-autofill:focus {
   .queue-slot,
   .queue-tunnel,
   .queue-door,
+  .queue-end-light,
   .queue-kit-turn {
     transition: none;
   }

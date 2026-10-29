@@ -31,7 +31,7 @@ export function TextField({ label, hint, error, id, className, ...inputProps }: 
         id={fieldId}
         aria-describedby={[hintId, errorId].filter(Boolean).join(' ') || undefined}
         aria-invalid={error ? true : undefined}
-        className={`rounded-sm border border-white/10 bg-surface px-3.5 py-2.5 text-sm text-foreground outline-none transition-colors focus-visible:border-accent/50 focus-visible:ring-2 focus-visible:ring-accent ${className ?? ''}`}
+        className={`rounded-sm border border-white/30 bg-surface px-3.5 py-2.5 text-sm text-foreground outline-none transition-colors focus-visible:border-accent/50 focus-visible:ring-2 focus-visible:ring-accent ${className ?? ''}`}
         {...inputProps}
       />
       {hint && !error && (

@@ -7,7 +7,6 @@ export type UserReportReason = 'fraud' | 'disconnect' | 'behavior'
 /** Text for `/queue` — issue #233. */
 export interface QueueContent {
   title: string
-  back: string
   pickHeading: string
   noCharacterHere: string
   noVerified: string
@@ -16,12 +15,13 @@ export interface QueueContent {
   joinAs: (code: string) => string
   joining: string
   searching: string
-  waited: (clock: string) => string
   /** RF-003: the elo band the search accepts right now. */
   band: (points: number) => string
   bandWidens: string
   leave: string
   placedTitle: string
+  /** Outside the tab: the title countdown and the notification (audit 2026-10-28). */
+  alert: { title: string; body: string; tab: (seconds: number) => string }
   placedHint: string
   secondsLeft: string
   previous: string
@@ -131,7 +131,6 @@ export interface QueueContent {
 export const QUEUE_CONTENT: Record<Locale, QueueContent> = {
   pt: {
     title: 'Fila',
-    back: 'Voltar',
     pickHeading: 'Escolha com quem você vai',
     noCharacterHere: 'sem personagem',
     noVerified: 'Nenhum personagem verificado ainda.',
@@ -140,11 +139,15 @@ export const QUEUE_CONTENT: Record<Locale, QueueContent> = {
     joinAs: (code) => `Entrar na fila como ${code}`,
     joining: 'Entrando…',
     searching: 'Buscando partida',
-    waited: (clock) => `Na fila há ${clock}`,
     band: (points) => `Banda de elo ±${points}`,
     bandWidens: 'Abre 50 a cada 2 min, até ±400.',
     leave: 'Sair da fila',
     placedTitle: 'Partida encontrada',
+    alert: {
+      title: 'Partida encontrada',
+      body: 'Você tem 30 s pra aceitar no ProLobby.',
+      tab: (seconds) => `(${seconds}s) Aceitar partida · ProLobby`,
+    },
     placedHint: 'Esperando a confirmação dos jogadores.',
     secondsLeft: 's pra confirmar',
     previous: 'Armário anterior',
@@ -289,7 +292,6 @@ export const QUEUE_CONTENT: Record<Locale, QueueContent> = {
   },
   es: {
     title: 'Cola',
-    back: 'Volver',
     pickHeading: 'Elige con quién vas',
     noCharacterHere: 'sin personaje',
     noVerified: 'Todavía no hay personaje verificado.',
@@ -298,11 +300,15 @@ export const QUEUE_CONTENT: Record<Locale, QueueContent> = {
     joinAs: (code) => `Entrar a la cola como ${code}`,
     joining: 'Entrando…',
     searching: 'Buscando partido',
-    waited: (clock) => `En la cola hace ${clock}`,
     band: (points) => `Franja de elo ±${points}`,
     bandWidens: 'Se abre 50 cada 2 min, hasta ±400.',
     leave: 'Salir de la cola',
     placedTitle: 'Partido encontrado',
+    alert: {
+      title: 'Partido encontrado',
+      body: 'Tienes 30 s para aceptar en ProLobby.',
+      tab: (seconds) => `(${seconds}s) Aceptar partido · ProLobby`,
+    },
     placedHint: 'Esperando la confirmación de los jugadores.',
     secondsLeft: 's para confirmar',
     previous: 'Casillero anterior',

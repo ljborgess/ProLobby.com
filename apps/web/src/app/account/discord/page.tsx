@@ -1,11 +1,10 @@
 import type { Metadata } from 'next'
-import { BackAction } from '@/common/ui/back-action'
 import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { AccountBackdrop } from '@/modules/account/account-backdrop'
 import { apiFetch } from '@/common/api/client'
 import { forwardedIpFrom } from '@/common/api/forwarded-ip'
-import { LanguageSwitcher } from '@/common/ui/language-switcher'
+import { AppHeader } from '@/modules/account/app-header'
 import { DiscordLinkPanel } from '@/modules/account/discord-link-panel'
 import { isDiscordLinkStatus, type DiscordLinkStatus } from '@/modules/account/discord-link-status'
 
@@ -70,10 +69,7 @@ function Screen({ linked, status }: { linked: boolean; status?: DiscordLinkStatu
     <main className="relative flex min-h-svh flex-1 flex-col overflow-hidden px-4 py-8 sm:px-6">
       <AccountBackdrop />
 
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4">
-        <BackAction href="/verifications" label="ProLobby" />
-        <LanguageSwitcher />
-      </div>
+      <AppHeader />
 
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-10">
         <DiscordLinkPanel linked={linked} status={status} />

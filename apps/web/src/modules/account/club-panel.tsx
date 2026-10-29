@@ -264,7 +264,7 @@ function SeatChoice({
 }) {
   return (
     <label
-      className={`flex cursor-pointer items-center justify-center rounded-full p-0.5 transition-colors sm:p-1 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent ${
+      className={`flex min-h-11 cursor-pointer items-center justify-center rounded-full p-0.5 transition-colors sm:p-1 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent ${
         checked ? 'text-accent' : 'text-foreground-soft hover:text-foreground'
       }`}
     >
