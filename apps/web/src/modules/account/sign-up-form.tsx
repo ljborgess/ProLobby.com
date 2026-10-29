@@ -49,7 +49,7 @@ type Status = 'idle' | 'submitting' | 'submitted' | 'error'
  * would defeat that no matter how careful the API is.
  */
 export function SignUpForm() {
-  const content = useAuthContent().signUp
+  const { signUp: content, revealPassword } = useAuthContent()
   const [status, setStatus] = useState<Status>('idle')
   const [errors, setErrors] = useState<FieldErrors>({})
 
@@ -174,6 +174,7 @@ export function SignUpForm() {
             label={content.passwordLabel}
             hint={content.passwordHint}
             error={errors.password}
+            revealLabel={revealPassword}
           />
           <TextField
             name="birthDate"
@@ -207,12 +208,12 @@ export function SignUpForm() {
           error={errors.securityAnswer}
         />
       </fieldset>
-      <label className="-my-1 flex items-start gap-2.5 py-1 text-sm text-foreground-soft">
+      <label className="-my-1 flex cursor-pointer items-start gap-2.5 py-1 text-sm text-foreground-soft transition-colors hover:text-foreground">
         <input
           type="checkbox"
           name="acceptedTerms"
           aria-invalid={errors.acceptedTerms ? true : undefined}
-          className="mt-1 h-5 w-5 shrink-0 accent-accent"
+          className="mt-1 h-5 w-5 shrink-0 cursor-pointer accent-accent [color-scheme:dark]"
         />
         <span>{content.acceptTerms}</span>
       </label>

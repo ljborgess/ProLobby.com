@@ -47,7 +47,7 @@ export function AppHeader({
       className={`mx-auto grid w-full max-w-6xl grid-cols-[1fr_auto] items-center gap-x-6 gap-y-3 sm:grid-cols-[auto_1fr_auto] ${className}`}
     >
       <Link
-        href="/verifications"
+        href="/"
         aria-label={content.homeLabel}
         className="landing-focus inline-flex min-h-11 items-center justify-self-start rounded-full font-display text-base font-semibold tracking-tight text-foreground"
       >

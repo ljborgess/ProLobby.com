@@ -15,6 +15,8 @@ export interface LandingContent {
   topBar: {
     cta: string
     signIn: string
+    /** With a session: the one door, back into the account. */
+    account: string
     /** Short labels for the top bar ticker — same real facts as `facts.items`, tightened for a small badge instead of a full strip. */
     ticker: { value: string; label: string }[]
   }
@@ -23,6 +25,8 @@ export interface LandingContent {
     titleAccent: string
     titleSuffix: string
     subtitle: string
+    /** Under the hero's squad drawing: what the five shirts are. */
+    squadCaption: string
   }
   facts: {
     eyebrow: string
@@ -45,6 +49,28 @@ export interface LandingContent {
   }
   footer: {
     tagline: string
+  }
+  /**
+   * The broadcast frame (2026-10-29): the plates a matchday transmission puts
+   * on screen. Pre-match, never "live": no match is running on this page.
+   */
+  broadcast: {
+    stage: string
+    clockLabel: string
+    lineup: string
+    example: string
+    tactical: string
+    replay: string
+    finalWhistle: string
+  }
+  /** The page's close, before the footer: the one place the offer is repeated. */
+  closing: {
+    title: string
+    body: string
+    cta: string
+    signIn: string
+    /** With a session: straight to the queue. */
+    signedInCta: string
   }
   /**
    * The queue board — the lineup view a lobby fills into. Labelled as an
@@ -70,6 +96,7 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
     topBar: {
       cta: 'Criar conta',
       signIn: 'Entrar',
+      account: 'Minha conta',
       ticker: [
         { value: '5', label: 'posições' },
         { value: '30s', label: 'de fila' },
@@ -83,6 +110,7 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
       titleSuffix: ' é matchmaking de verdade pro seu Pro Clubs',
       subtitle:
         'Cadastra seu personagem, entra na fila por posição e é pareado com outros jogadores verificados — sem grupo de WhatsApp, sem gente sumida no meio do jogo.',
+      squadCaption: 'Um personagem por posição, cada um verificado por print do jogo.',
     },
     facts: {
       eyebrow: 'O que já está decidido',
@@ -124,6 +152,22 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
     footer: {
       tagline: 'Matchmaking competitivo e identidade verificada para EA FC Pro Clubs.',
     },
+    broadcast: {
+      stage: 'Pré-jogo',
+      clockLabel: 'pra confirmar a fila',
+      lineup: 'Escalação',
+      example: 'exemplo',
+      tactical: 'Câmera tática',
+      replay: 'Replay',
+      finalWhistle: 'Apito final',
+    },
+    closing: {
+      title: 'Pronto pra entrar em campo?',
+      body: 'Cria a conta, cadastra o personagem da sua posição e entra na fila. A partida é no jogo; o resto a ProLobby coordena.',
+      cta: 'Criar minha conta',
+      signIn: 'Já tenho conta',
+      signedInCta: 'Ir pra fila',
+    },
     queueBoard: {
       title: 'Lobby',
       formation: '4-3-3',
@@ -146,6 +190,7 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
     topBar: {
       cta: 'Crear cuenta',
       signIn: 'Entrar',
+      account: 'Mi cuenta',
       ticker: [
         { value: '5', label: 'posiciones' },
         { value: '30s', label: 'de cola' },
@@ -159,6 +204,7 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
       titleSuffix: ' es matchmaking de verdad para tu Pro Clubs',
       subtitle:
         'Registra tu personaje, entra a la cola por posición y te emparejamos con otros jugadores verificados — sin grupo de WhatsApp, sin gente que desaparece a mitad del partido.',
+      squadCaption: 'Un personaje por posición, cada uno verificado con una captura del juego.',
     },
     facts: {
       eyebrow: 'Lo que ya está decidido',
@@ -199,6 +245,22 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
     },
     footer: {
       tagline: 'Matchmaking competitivo e identidad verificada para EA FC Pro Clubs.',
+    },
+    broadcast: {
+      stage: 'Previa',
+      clockLabel: 'para confirmar la cola',
+      lineup: 'Alineación',
+      example: 'ejemplo',
+      tactical: 'Cámara táctica',
+      replay: 'Repetición',
+      finalWhistle: 'Pitazo final',
+    },
+    closing: {
+      title: '¿Listo para salir a la cancha?',
+      body: 'Crea la cuenta, registra el personaje de tu posición y entra a la cola. El partido es en el juego; del resto se encarga ProLobby.',
+      cta: 'Crear mi cuenta',
+      signIn: 'Ya tengo cuenta',
+      signedInCta: 'Ir a la cola',
     },
     queueBoard: {
       title: 'Lobby',
