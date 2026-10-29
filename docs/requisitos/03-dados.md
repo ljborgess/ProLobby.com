@@ -41,7 +41,9 @@ Reputação e identidade da pessoa. Uma por Discord ID.
 ### ClubeDeclarado
 Auto-declaração que habilita a pessoa a ser capitão.
 
-`conta` · `vagas_livres` (0–10) · `nome_clube` (≤20 caracteres) · `atualizado_em`
+`conta` · `vagas_livres` (0–10) · `nome_clube` (≤20 caracteres) · `cor_principal` · `cor_detalhe` · `padrao_camisa` · `formato_escudo` · `atualizado_em`
+
+**Uniforme (Kit Lab, 2026-10-29)**: duas cores, padrão (liso, listras, faixas, metade, faixa diagonal) e formato de escudo (clássico, redondo, losango), de um conjunto fechado e não de cor livre, pra todo par desenhado ter contraste conferido e nenhum uniforme imitar uma cor de estado da interface. O escudo leva as iniciais do nome. Quem não escolhe usa o padrão (branco com detalhe azul-marinho, liso, escudo clássico); salvar sem mandar o uniforme mantém o que já estava.
 
 - **`vagas_livres` substitui o `tem_vaga` booleano (2026-09-11)**: [RF-006](05-funcionais.md#rf-006--lobby-só-fecha-com-candidato-a-capitão-em-cada-lado) passou a exigir vagas suficientes pros humanos do lado, não "pelo menos uma". Booleano deixava fechar lobby que não tinha como convidar todo mundo, e o estouro caía como abuso no capitão.
 

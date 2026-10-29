@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { fireEvent, screen, waitFor } from '@testing-library/react'
+import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { renderWithLocale } from '@/test-utils'
 import { CLUB_CONTENT } from '@/content/club'
 import { ClubPanel } from './club-panel'
@@ -44,11 +44,40 @@ describe('ClubPanel (#229)', () => {
       '/bff/accounts/me/club',
       expect.objectContaining({
         method: 'PUT',
-        body: JSON.stringify({ clubName: 'Clube Azul', freeSlots: 4 }),
+        body: JSON.stringify({
+          clubName: 'Clube Azul',
+          freeSlots: 4,
+          kitPrimary: 'white',
+          kitSecondary: 'navy',
+          kitPattern: 'plain',
+          crestShape: 'shield',
+        }),
       }),
     )
     expect(nameField()).toHaveValue('Clube Azul')
     expect(screen.getByRole('button', { name: pt.remove })).toBeInTheDocument()
+  })
+
+  it('dresses the club: colours, pattern and crest go with the save, and count as a change', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(answer(200, {}))
+    renderWithLocale(<ClubPanel initial={{ clubName: 'Clube Azul', freeSlots: 3 }} />)
+
+    expect(saveButton()).toBeDisabled()
+    const group = (name: string) => within(screen.getByRole('radiogroup', { name }))
+    fireEvent.click(group(pt.kit.primary).getByRole('radio', { name: pt.kit.colors.claret }))
+    fireEvent.click(group(pt.kit.secondary).getByRole('radio', { name: pt.kit.colors.sky }))
+    fireEvent.click(screen.getByRole('radio', { name: pt.kit.patterns.stripes }))
+    fireEvent.click(screen.getByRole('radio', { name: pt.kit.crests.round }))
+    expect(saveButton()).toBeEnabled()
+    fireEvent.click(saveButton())
+
+    await waitFor(() => expect(fetch).toHaveBeenCalled())
+    expect(JSON.parse(vi.mocked(fetch).mock.calls[0]![1]!.body as string)).toMatchObject({
+      kitPrimary: 'claret',
+      kitSecondary: 'sky',
+      kitPattern: 'stripes',
+      crestShape: 'round',
+    })
   })
 
   it('says what the chosen room means for captaincy, as it changes', () => {
@@ -66,7 +95,10 @@ describe('ClubPanel (#229)', () => {
   it('offers "full" and ten seats, one choice at a time', () => {
     renderWithLocale(<ClubPanel initial={null} />)
 
-    expect(screen.getAllByRole('radio')).toHaveLength(11)
+    const seats = screen
+      .getAllByRole('radio')
+      .filter((radio) => radio.getAttribute('name') === 'freeSlots')
+    expect(seats).toHaveLength(11)
     fireEvent.click(seat(0))
     expect(seat(0)).toBeChecked()
     fireEvent.click(seat(7))
@@ -129,9 +161,10 @@ describe('ClubPanel (#229)', () => {
     expect(fetch).toHaveBeenCalledWith('/bff/accounts/me/club', { method: 'DELETE' })
     expect(nameField()).toHaveValue('')
     expect(nameField()).toHaveFocus()
-    expect(screen.getAllByRole('radio').some((radio) => (radio as HTMLInputElement).checked)).toBe(
-      false,
-    )
+    const seats = screen
+      .getAllByRole('radio')
+      .filter((radio) => radio.getAttribute('name') === 'freeSlots')
+    expect(seats.some((radio) => (radio as HTMLInputElement).checked)).toBe(false)
   })
 
   it('holds both buttons while a request is out', () => {

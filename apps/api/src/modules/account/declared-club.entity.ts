@@ -1,4 +1,14 @@
-import { Check, Entity, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core'
+import { Check, Entity, Enum, OneToOne, Opt, PrimaryKey, Property } from '@mikro-orm/core'
+import {
+  CREST_SHAPES,
+  type CrestShape,
+  DEFAULT_KIT,
+  KIT_COLORS,
+  KIT_PATTERNS,
+  type Kit,
+  type KitColor,
+  type KitPattern,
+} from '@prolobby/types'
 import { randomUUID } from 'node:crypto'
 
 import { Account } from './account.entity'
@@ -31,6 +41,28 @@ export class DeclaredClub {
   @Property({ length: MAX_CLUB_NAME_LENGTH })
   clubName!: string
 
+  /** The kit the lobby dresses this club's side in (Kit Lab, 2026-10-29). */
+  @Enum({ items: () => KIT_COLORS, default: DEFAULT_KIT.primary })
+  kitPrimary: KitColor & Opt = DEFAULT_KIT.primary
+
+  @Enum({ items: () => KIT_COLORS, default: DEFAULT_KIT.secondary })
+  kitSecondary: KitColor & Opt = DEFAULT_KIT.secondary
+
+  @Enum({ items: () => KIT_PATTERNS, default: DEFAULT_KIT.pattern })
+  kitPattern: KitPattern & Opt = DEFAULT_KIT.pattern
+
+  @Enum({ items: () => CREST_SHAPES, default: DEFAULT_KIT.crest })
+  crestShape: CrestShape & Opt = DEFAULT_KIT.crest
+
   @Property()
   updatedAt: Date & Opt = new Date()
+}
+
+export function kitOf(club: DeclaredClub): Kit {
+  return {
+    primary: club.kitPrimary,
+    secondary: club.kitSecondary,
+    pattern: club.kitPattern,
+    crest: club.crestShape,
+  }
 }

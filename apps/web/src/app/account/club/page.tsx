@@ -61,7 +61,7 @@ function Screen({ children }: { children: React.ReactNode }) {
 
       <AppHeader />
 
-      <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-10">
+      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center py-10">
         {children}
       </div>
     </main>

@@ -85,7 +85,13 @@ describe('declared club (#229)', () => {
     const res = await declare(cookie, { freeSlots: 3, clubName: '  Várzea FC  ' })
 
     expect(res.status).toBe(200)
-    expect(res.body).toEqual({ freeSlots: 3, clubName: 'Várzea FC', updatedAt: expect.any(String) })
+    expect(res.body).toEqual({
+      freeSlots: 3,
+      clubName: 'Várzea FC',
+      // Nothing chosen: the default kit.
+      kit: { primary: 'white', secondary: 'navy', pattern: 'plain', crest: 'shield' },
+      updatedAt: expect.any(String),
+    })
     expect((await read(cookie)).body.club).toMatchObject({ freeSlots: 3, clubName: 'Várzea FC' })
   })
 
@@ -99,6 +105,9 @@ describe('declared club (#229)', () => {
     [{ freeSlots: 3, clubName: 'Clube\u200bFC' }],
     [{ freeSlots: 3, clubName: 'Clube\u202eCF' }],
     [{ freeSlots: 3 }],
+    [{ freeSlots: 3, clubName: 'Clube', kitPrimary: '#ff0000' }],
+    [{ freeSlots: 3, clubName: 'Clube', kitPattern: 'polka' }],
+    [{ freeSlots: 3, clubName: 'Clube', crestShape: 'star' }],
   ])('refuses %j in the API, not just on the screen', async (body) => {
     const { cookie } = await account()
 
@@ -113,6 +122,42 @@ describe('declared club (#229)', () => {
 
     expect((await declare(cookie, { freeSlots: 0, clubName: 'x'.repeat(20) })).status).toBe(200)
     expect((await declare(cookie, { freeSlots: 10, clubName: 'Clube' })).status).toBe(200)
+  })
+
+  it('takes the kit from the closed set, and a save without it keeps the kit (Kit Lab)', async () => {
+    const { cookie } = await account()
+    const kit = {
+      kitPrimary: 'claret',
+      kitSecondary: 'sky',
+      kitPattern: 'stripes',
+      crestShape: 'round',
+    }
+
+    expect((await declare(cookie, { freeSlots: 4, clubName: 'Várzea', ...kit })).body.kit).toEqual({
+      primary: 'claret',
+      secondary: 'sky',
+      pattern: 'stripes',
+      crest: 'round',
+    })
+    const renamed = await declare(cookie, { freeSlots: 6, clubName: 'Várzea FC' })
+
+    expect(renamed.body).toMatchObject({
+      freeSlots: 6,
+      kit: { primary: 'claret', pattern: 'stripes' },
+    })
+
+    // Only one part of the kit sent: that one changes, the rest stays.
+    const repainted = await declare(cookie, {
+      freeSlots: 6,
+      clubName: 'Várzea FC',
+      kitPattern: 'hoops',
+    })
+    expect(repainted.body.kit).toEqual({
+      primary: 'claret',
+      secondary: 'sky',
+      pattern: 'hoops',
+      crest: 'round',
+    })
   })
 
   it('keeps one per account: declaring again replaces and moves updatedAt', async () => {
