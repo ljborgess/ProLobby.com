@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { cookies, headers } from 'next/headers'
-import { redirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import { apiFetch } from '@/common/api/client'
 import { forwardedIpFrom } from '@/common/api/forwarded-ip'
 import { SESSION_COOKIE_NAME } from '@/common/auth/session-cookie'
@@ -10,18 +10,21 @@ import { LoadErrorMessage } from '@/modules/account/load-error-message'
 import { ModerationScreen } from '@/modules/moderation/moderation-screen'
 import type { VerificationCase } from '@/modules/moderation/verification-queue'
 
+// No route name in the tab: the area does not say what it is to anyone.
 export const metadata: Metadata = {
-  title: 'Moderação — ProLobby',
+  title: 'ProLobby',
 }
 
 /**
  * Character prints waiting for a moderator — issue #198. The API decides who
- * gets in: a 403 here only changes what the page says, never what it shows.
+ * gets in; this page only hides that the door exists (2026-10-29): without a
+ * session, or without the role, the answer is the same 404 as a route that
+ * was never there, not a login redirect or an "only for moderation" notice.
  */
 export default async function ModerationPage() {
   const jar = await cookies()
   if (!jar.get(SESSION_COOKIE_NAME)) {
-    redirect('/login')
+    notFound()
   }
 
   const init = {
@@ -41,29 +44,22 @@ export default async function ModerationPage() {
     return <LoadError />
   }
 
-  if (queue.status === 401) {
-    redirect('/login')
+  if (queue.status === 401 || queue.status === 403) {
+    notFound()
   }
 
-  const forbidden = queue.status === 403
-  if (!forbidden && (!queue.ok || !options.ok)) {
+  if (!queue.ok || !options.ok) {
     console.error(`moderation: API answered ${queue.status}, ${options.status}`)
     return <LoadError />
   }
 
-  let cases: VerificationCase[] | 'forbidden' = 'forbidden'
-  let archetypes: string[] = []
-  let parsed = true
-  if (!forbidden) {
-    try {
-      cases = (await queue.json()) as VerificationCase[]
-      archetypes = ((await options.json()) as { archetype: string }[]).map((item) => item.archetype)
-    } catch (error) {
-      console.error('moderation: could not parse the API response', error)
-      parsed = false
-    }
-  }
-  if (!parsed) {
+  let cases: VerificationCase[]
+  let archetypes: string[]
+  try {
+    cases = (await queue.json()) as VerificationCase[]
+    archetypes = ((await options.json()) as { archetype: string }[]).map((item) => item.archetype)
+  } catch (error) {
+    console.error('moderation: could not parse the API response', error)
     return <LoadError />
   }
 

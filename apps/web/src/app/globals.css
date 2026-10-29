@@ -1488,3 +1488,24 @@ input:-webkit-autofill:focus {
     animation: none;
   }
 }
+
+/* The 404's ball settles past the line, once (2026-10-29). */
+.not-found-ball {
+  animation: not-found-roll 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes not-found-roll {
+  from {
+    translate: -60px 34px;
+    rotate: -220deg;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .not-found-ball {
+    animation: none;
+  }
+}
