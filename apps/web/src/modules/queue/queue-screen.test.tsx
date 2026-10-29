@@ -320,6 +320,15 @@ describe('QueueScreen (#233)', () => {
       )
     })
 
+    it('withdrawing after the other captain confirmed says so, not "deadline over"', async () => {
+      vi.mocked(fetch).mockResolvedValueOnce(answer(409, {}))
+      renderScreen(inLobby({ state: 'waiting_captain', isCaptain: true }))
+
+      fireEvent.click(screen.getByRole('button', { name: pt.lobby.captainWithdraw }))
+
+      expect(await screen.findByText(pt.lobby.withdrawClosed)).toBeInTheDocument()
+    })
+
     it('everyone else waits while the captains are chosen', () => {
       renderScreen(inLobby({ state: 'waiting_captain' }))
 

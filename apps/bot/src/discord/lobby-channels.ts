@@ -122,11 +122,17 @@ export function scheduleLobbySweep(
       occurredAt: new Date().toISOString(),
       type: 'bot.status',
       payload: { discordReady: client.isReady(), channelCount: all.length },
-    }).catch((error: unknown) => {
-      log.warn('lobby', 'bot status not delivered', {
-        message: error instanceof Error ? error.message : String(error),
-      })
     })
+      .then(({ status }) => {
+        // A refused heartbeat (wrong secret, 400, 429) pauses the queue in
+        // production just like a silent bot: say it here, not only there.
+        if (status !== 204) log.warn('lobby', 'bot status refused', { status })
+      })
+      .catch((error: unknown) => {
+        log.warn('lobby', 'bot status not delivered', {
+          message: error instanceof Error ? error.message : String(error),
+        })
+      })
     const channels = all
       // Only what the bot made: a person's channel called "lobby-…" is not ours to delete.
       .filter((channel) => isOwnedBy(client, channel))

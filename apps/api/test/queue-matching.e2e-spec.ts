@@ -167,6 +167,17 @@ describe('queue closes matches (#231)', () => {
       await em.flush()
       expect(await matching.closeMatches()).toBe(1)
     })
+
+    it('disputed matches wait on moderation without holding a slot', async () => {
+      const em = orm.em.fork()
+      for (let i = 0; i < 9; i++) {
+        em.create(Lobby, { state: LobbyState.IN_DISPUTE, createdAt: new Date() })
+      }
+      await em.flush()
+      await eight()
+
+      expect(await matching.closeMatches()).toBe(1)
+    })
   })
 
   afterAll(async () => {

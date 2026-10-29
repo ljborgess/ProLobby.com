@@ -302,6 +302,8 @@ function CaptainStep({
 }) {
   const content = useQueueContent()
   const { sending, failed, send } = useStep(onChanged)
+  // A 409 on withdrawing means the other captain confirmed first, not a deadline.
+  const withdrawal = useStep(onChanged, content.lobby.withdrawClosed)
   const offer = lobby.captainOffer
 
   if (!offer) {
@@ -314,13 +316,13 @@ function CaptainStep({
         <p className="text-sm text-foreground-soft">{content.lobby.captainConfirmed}</p>
         <button
           type="button"
-          onClick={() => send('captaincy', undefined, 'DELETE')}
-          disabled={sending}
+          onClick={() => withdrawal.send('captaincy', undefined, 'DELETE')}
+          disabled={withdrawal.sending}
           className={`${SECONDARY} w-full`}
         >
           {content.lobby.captainWithdraw}
         </button>
-        <Failure message={failed} />
+        <Failure message={withdrawal.failed} />
       </>
     )
   }
