@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { TextField } from '@/common/ui/text-field'
 import { useAuthContent } from '@/hooks/use-auth-content'
+import { AuthNote } from './auth-layout'
 
 type Status = 'idle' | 'submitting' | 'error' | 'networkError'
 
@@ -85,25 +86,27 @@ export function SignInForm() {
         autoComplete="current-password"
         label={content.passwordLabel}
       />
-      <Link href="/forgot-password" className="self-end text-sm text-foreground-soft underline">
+      <Link href="/forgot-password" className="auth-link -my-1 self-end py-1 text-sm">
         {forgotPassword.linkLabel}
       </Link>
 
       {(status === 'error' || status === 'networkError') && (
-        <p role="alert" className="text-sm text-danger">
-          {status === 'networkError' ? content.networkError : content.invalidCredentials}
-        </p>
+        <AuthNote tone="error">
+          <p role="alert" className="text-sm leading-relaxed text-danger">
+            {status === 'networkError' ? content.networkError : content.invalidCredentials}
+          </p>
+        </AuthNote>
       )}
 
       <button
         type="submit"
         disabled={status === 'submitting'}
-        className="rounded-sm bg-accent px-4 py-3 text-base font-medium text-background disabled:opacity-60"
+        className="auth-submit landing-sheen px-5 text-base"
       >
         {status === 'submitting' ? content.submitting : content.submit}
       </button>
 
-      <Link href="/sign-up" className="text-sm text-foreground-soft underline">
+      <Link href="/sign-up" className="auth-link self-center text-sm">
         {content.switchToSignUp}
       </Link>
     </form>

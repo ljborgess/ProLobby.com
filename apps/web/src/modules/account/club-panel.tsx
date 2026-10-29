@@ -342,7 +342,7 @@ function KitRoom({
   captaincy: string
 }) {
   return (
-    <div className="flex flex-col gap-4 lg:sticky lg:top-8 lg:self-start">
+    <div className="flex flex-col gap-4 lg:sticky lg:top-24 lg:self-start">
       <div
         aria-hidden
         className="kit-room relative flex aspect-[4/4.4] flex-col items-center justify-end overflow-hidden rounded-lg border border-white/10 bg-surface sm:aspect-[4/3.3]"

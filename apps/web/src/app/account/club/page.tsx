@@ -3,8 +3,7 @@ import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { apiFetch } from '@/common/api/client'
 import { forwardedIpFrom } from '@/common/api/forwarded-ip'
-import { BackAction } from '@/common/ui/back-action'
-import { LanguageSwitcher } from '@/common/ui/language-switcher'
+import { AppHeader } from '@/modules/account/app-header'
 import { AccountBackdrop } from '@/modules/account/account-backdrop'
 import { ClubPanel, type DeclaredClubView } from '@/modules/account/club-panel'
 import { LoadErrorMessage } from '@/modules/account/load-error-message'
@@ -57,13 +56,10 @@ export default async function ClubPage() {
 
 function Screen({ children }: { children: React.ReactNode }) {
   return (
-    <main className="relative flex min-h-svh flex-1 flex-col overflow-hidden px-4 py-8 sm:px-6">
+    <main className="relative flex min-h-svh flex-1 flex-col overflow-x-clip px-4 py-8 sm:px-6">
       <AccountBackdrop />
 
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4">
-        <BackAction href="/verifications" label="ProLobby" />
-        <LanguageSwitcher />
-      </div>
+      <AppHeader />
 
       <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center py-10">
         {children}

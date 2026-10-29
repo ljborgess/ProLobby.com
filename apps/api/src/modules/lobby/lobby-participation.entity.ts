@@ -39,6 +39,10 @@ export class LobbyParticipation {
   @Enum({ items: () => CharacterCategory })
   category!: CharacterCategory
 
+  /** The queue entry's frozen elo: the entry is gone once the match settles (RF-077, #209). */
+  @Property({ type: 'integer' })
+  eloAtEntry!: number
+
   /** `confirmou_entrada`: accepted within the 30 s (#232). */
   @Property({ nullable: true })
   confirmedAt?: Date

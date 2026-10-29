@@ -15,7 +15,7 @@ describe('LanguageSwitcher', () => {
 
     expect(screen.getByRole('heading')).toHaveTextContent('Criar conta')
 
-    fireEvent.change(screen.getByLabelText('Idioma'), { target: { value: 'es' } })
+    fireEvent.click(screen.getByRole('radio', { name: 'Español' }))
 
     expect(screen.getByRole('heading')).toHaveTextContent('Crear cuenta')
     expect(document.documentElement.lang).toBe('es')

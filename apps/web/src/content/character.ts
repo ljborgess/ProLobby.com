@@ -93,12 +93,11 @@ export interface CharacterContent {
     sendPrint: string
     sendAgain: string
   }
-  back: string
 }
 
 export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
   pt: {
-    title: 'Seu personagem',
+    title: 'Seu elenco',
     categories: {
       goalkeeper: 'Goleiro',
       defender: 'Zaga/Lateral',
@@ -115,7 +114,7 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
       striker: 'ATA',
     },
     roster: {
-      heading: 'Seu elenco',
+      heading: 'Escalação no campo',
       count: (filled, total) => `${filled}/${total} vagas`,
       claim: 'Cadastrar',
       formHeading: 'Novo personagem',
@@ -223,10 +222,9 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
       sendPrint: 'Enviar print',
       sendAgain: 'Enviar de novo',
     },
-    back: 'Próximos passos',
   },
   es: {
-    title: 'Tu personaje',
+    title: 'Tu plantilla',
     categories: {
       goalkeeper: 'Portero',
       defender: 'Defensa/Lateral',
@@ -243,7 +241,7 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
       striker: 'DEL',
     },
     roster: {
-      heading: 'Tu plantilla',
+      heading: 'Alineación en el campo',
       count: (filled, total) => `${filled}/${total} plazas`,
       claim: 'Registrar',
       formHeading: 'Nuevo personaje',
@@ -354,6 +352,5 @@ export const CHARACTER_CONTENT: Record<Locale, CharacterContent> = {
       sendPrint: 'Enviar captura',
       sendAgain: 'Enviar de nuevo',
     },
-    back: 'Próximos pasos',
   },
 }

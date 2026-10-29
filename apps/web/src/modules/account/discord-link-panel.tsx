@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { DISCORD_BLURPLE, DiscordMark } from '@/common/ui/icons'
+import { LogoMark } from '@/common/ui/logo'
 import { useDiscordContent } from '@/hooks/use-discord-content'
 import type { DiscordLinkStatus } from './discord-link-status'
 
@@ -72,14 +73,23 @@ export function DiscordLinkPanel({
             missing — it is the thing being recognised. Once linked it turns
             accent, because from then on the card reports our state, not
             theirs. */}
-        <span
-          className={`flex size-16 items-center justify-center rounded-full border ${
-            linked ? 'border-accent/35 bg-accent/10 text-accent' : 'border-white/10 bg-white/5'
-          }`}
-          style={linked ? undefined : { color: DISCORD_BLURPLE }}
-        >
-          <DiscordMark className="size-8" />
-        </span>
+        {/* The link itself, drawn: our mark, a wire, theirs. Missing, the
+            wire is a dashed gap waiting to be closed; linked, it is lit and
+            a pulse crosses it once, from us to them. */}
+        <div aria-hidden className={`discord-wire flex items-center ${linked ? 'is-linked' : ''}`}>
+          <span className="flex size-12 items-center justify-center rounded-full border border-white/10 bg-surface text-foreground shadow-[inset_0_1px_0_rgb(255_255_255/6%)]">
+            <LogoMark className="size-6" />
+          </span>
+          <span className="discord-wire-line relative mx-2 h-px w-14 sm:w-20" />
+          <span
+            className={`flex size-16 items-center justify-center rounded-full border ${
+              linked ? 'border-accent/35 bg-accent/10 text-accent' : 'border-white/10 bg-white/5'
+            }`}
+            style={linked ? undefined : { color: DISCORD_BLURPLE }}
+          >
+            <DiscordMark className="size-8" />
+          </span>
+        </div>
 
         <div className="flex flex-col gap-1">
           <h1 className="landing-section-title font-display text-foreground">{content.title}</h1>
@@ -87,7 +97,7 @@ export function DiscordLinkPanel({
         </div>
       </header>
 
-      <div className="landing-card relative flex flex-col gap-2 overflow-hidden rounded-md border border-white/12 px-4 py-4">
+      <div className="home-surface relative flex flex-col gap-2 overflow-hidden rounded-md border border-white/12 p-5">
         {!linked && (
           <span
             aria-hidden

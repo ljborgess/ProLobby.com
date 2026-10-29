@@ -27,7 +27,7 @@ export function BackAction({ label, kind = 'back', className = '', ...target }: 
       <span>{label}</span>
     </>
   )
-  const classes = `landing-focus group inline-flex items-center gap-2.5 self-start rounded-full py-0.5 pr-2 text-sm text-foreground-soft transition-colors duration-200 hover:text-foreground ${className}`
+  const classes = `landing-focus group inline-flex min-h-11 items-center gap-2.5 self-start rounded-full pr-2 text-sm text-foreground-soft transition-colors duration-200 hover:text-foreground ${className}`
 
   if (target.href !== undefined) {
     return (

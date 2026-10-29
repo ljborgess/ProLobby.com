@@ -4,14 +4,14 @@ import { redirect } from 'next/navigation'
 import { apiFetch } from '@/common/api/client'
 import { forwardedIpFrom } from '@/common/api/forwarded-ip'
 import { SESSION_COOKIE_NAME } from '@/common/auth/session-cookie'
-import { LanguageSwitcher } from '@/common/ui/language-switcher'
+import { AppHeader } from '@/modules/account/app-header'
 import { AccountBackdrop } from '@/modules/account/account-backdrop'
 import { LoadErrorMessage } from '@/modules/account/load-error-message'
 import { CharacterScreen } from '@/modules/character/character-screen'
 import type { ArchetypeOption, CharacterView } from '@/modules/character/types'
 
 export const metadata: Metadata = {
-  title: 'Personagem — ProLobby',
+  title: 'Elenco — ProLobby',
 }
 
 /**
@@ -59,12 +59,10 @@ export default async function CharacterPage() {
   }
 
   return (
-    <main className="relative flex min-h-svh flex-1 flex-col overflow-hidden px-4 py-8 sm:px-6">
+    <main className="relative flex min-h-svh flex-1 flex-col overflow-x-clip px-4 py-8 sm:px-6">
       <AccountBackdrop />
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-end gap-4">
-        <LanguageSwitcher />
-      </div>
-      <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col justify-center py-10">
+      <AppHeader />
+      <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col py-6 sm:py-10">
         <CharacterScreen characters={characters} archetypes={archetypes} />
       </div>
     </main>

@@ -72,8 +72,9 @@ export function SectionThread({ step, variant = 'line' }: { step: number; varian
 }
 
 /**
- * The end of the line: a ring with nothing after it, so the thread closes
- * instead of simply stopping mid-air above the footer.
+ * The end of the line: the pitch's centre circle with its spot, so the thread
+ * closes where a match restarts instead of simply stopping mid-air above the
+ * footer. The spot lands a beat after the circle closes.
  */
 export function SectionThreadEnd() {
   return (
@@ -89,6 +90,14 @@ export function SectionThreadEnd() {
       >
         <path d="M20 0 V104" pathLength={1} className="landing-draw" />
         <circle cx="20" cy="110" r="5" pathLength={1} className="landing-draw" />
+        <circle
+          cx="20"
+          cy="110"
+          r="1.4"
+          fill="currentColor"
+          stroke="none"
+          className="landing-thread-spot"
+        />
       </svg>
     </div>
   )

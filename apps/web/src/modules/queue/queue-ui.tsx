@@ -1,10 +1,10 @@
 /** Bits shared by the queue screen and its lobby steps (#233, #252). */
 
 export const PRIMARY =
-  'landing-focus landing-sheen inline-flex items-center justify-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-background shadow-[0_8px_20px_rgb(0_0_0/25%)] transition-transform duration-200 hover:scale-[1.04] active:scale-95 disabled:opacity-50 disabled:hover:scale-100'
+  'landing-focus landing-sheen inline-flex items-center justify-center gap-2 min-h-11 rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-background shadow-[0_8px_20px_rgb(0_0_0/25%)] transition-transform duration-200 hover:scale-[1.04] active:scale-95 disabled:opacity-50 disabled:hover:scale-100'
 
 export const SECONDARY =
-  'landing-focus inline-flex items-center justify-center rounded-full border border-white/15 px-5 py-2.5 text-sm text-foreground-soft transition-colors hover:border-white/35 hover:text-foreground disabled:opacity-50'
+  'landing-focus inline-flex items-center justify-center min-h-11 rounded-full border border-white/30 px-5 py-2.5 text-sm text-foreground-soft transition-colors hover:border-white/35 hover:text-foreground disabled:opacity-50'
 
 /** Whole seconds from `now` to `until`, never below zero. */
 export const secondsTo = (until: string, now: number) =>
@@ -13,6 +13,21 @@ export const secondsTo = (until: string, now: number) =>
 export const clockOf = (ms: number) => {
   const seconds = Math.max(0, Math.floor(ms / 1000))
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
+}
+
+/**
+ * A clock as the stadium board shows it: board digits, the colon ticking
+ * once a second. Always aria-hidden; the screen reader hears a status instead.
+ */
+export function Clock({ ms, className = '' }: { ms: number; className?: string }) {
+  const [minutes, seconds] = clockOf(ms).split(':')
+  return (
+    <span aria-hidden className={`queue-digits ${className}`}>
+      {minutes}
+      <span className="queue-colon">:</span>
+      {seconds}
+    </span>
+  )
 }
 
 /**
@@ -87,14 +102,16 @@ export function CountdownRing({
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
+        {/* Keyed by the second: in the last ten each one lands with a beat. */}
         <span
-          className={`font-display font-light leading-none tracking-[-0.03em] text-foreground tabular-nums ${
-            small ? 'text-3xl' : 'text-5xl'
+          key={left}
+          className={`queue-digits leading-none text-foreground ${small ? 'text-3xl' : 'text-5xl'} ${
+            left > 0 && left <= 10 ? 'queue-tick' : ''
           }`}
         >
           {left >= 60 ? clockOf(left * 1000) : left}
         </span>
-        <span className="mt-1 max-w-[80%] text-center text-[0.68rem] leading-tight text-foreground-soft">
+        <span className="mt-1 max-w-[80%] text-center text-[0.7rem] leading-tight text-foreground-soft">
           {caption}
         </span>
       </div>

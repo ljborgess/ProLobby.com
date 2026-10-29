@@ -25,7 +25,7 @@ export default async function Home() {
   }
 
   return (
-    <main className="flex w-full flex-1 flex-col">
+    <main className="landing-page flex w-full flex-1 flex-col">
       <LandingView />
     </main>
   )

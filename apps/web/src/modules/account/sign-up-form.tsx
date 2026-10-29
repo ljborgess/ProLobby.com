@@ -4,7 +4,11 @@ import { useState, type FormEvent } from 'react'
 import Link from 'next/link'
 import { TextField } from '@/common/ui/text-field'
 import { useAuthContent } from '@/hooks/use-auth-content'
+import { AuthNote } from './auth-layout'
 import { CURRENT_TERMS_VERSION } from './terms-version'
+
+/** Group names in the Label role: small caps, wide tracking, like a panel. */
+const LEGEND = 'mb-2.5 text-[0.7rem] font-medium uppercase tracking-[0.2em] text-foreground-soft'
 
 const MIN_AGE_YEARS = 16
 const MIN_PASSWORD_LENGTH = 12
@@ -127,14 +131,17 @@ export function SignUpForm() {
 
   if (status === 'submitted') {
     return (
-      <p role="status" className="text-base text-foreground">
-        {content.checkYourEmail}
-      </p>
+      // Waiting, never confirmed: a taken address lands here too (RF-070).
+      <AuthNote tone="waiting">
+        <p role="status" className="text-base leading-relaxed text-foreground">
+          {content.checkYourEmail}
+        </p>
+      </AuthNote>
     )
   }
 
   return (
-    <form onSubmit={handleSubmit} method="post" noValidate className="relative flex flex-col gap-3">
+    <form onSubmit={handleSubmit} method="post" noValidate className="relative flex flex-col gap-5">
       {/*
        * Honeypot — item 12 of the security checklist, issue #101. Hidden
        * with CSS, never removed from the markup: a person never sees or
@@ -147,49 +154,60 @@ export function SignUpForm() {
         <label htmlFor="website">Website</label>
         <input type="text" id="website" name="website" tabIndex={-1} autoComplete="off" />
       </div>
-      <TextField
-        name="email"
-        type="email"
-        autoComplete="email"
-        label={content.emailLabel}
-        error={errors.email}
-      />
-      <TextField
-        name="password"
-        type="password"
-        autoComplete="new-password"
-        label={content.passwordLabel}
-        hint={content.passwordHint}
-        error={errors.password}
-      />
-      <TextField
-        name="birthDate"
-        type="date"
-        autoComplete="bday"
-        label={content.birthDateLabel}
-        error={errors.birthDate}
-      />
-      <TextField
-        name="securityQuestion"
-        type="text"
-        label={content.securityQuestionLabel}
-        hint={content.securityQuestionHint}
-        error={errors.securityQuestion}
-      />
-      {/*
-       * autoComplete off: the answer is a credential, not a profile field —
-       * it is one of the two factors that recover an account without email or
-       * Discord (RF-025). Letting a browser save and replay it puts the
-       * recovery path behind whatever protects that browser profile.
-       */}
-      <TextField
-        name="securityAnswer"
-        type="text"
-        autoComplete="off"
-        label={content.securityAnswerLabel}
-        error={errors.securityAnswer}
-      />
-      <label className="flex items-start gap-2 text-sm text-foreground-soft">
+      {/* Two groups instead of one column of six: what you sign in with, and
+          what gets you back in when the e-mail is gone. Password and birth
+          date share a row from `sm` up, both short answers. */}
+      <fieldset className="flex flex-col gap-3">
+        <legend className={LEGEND}>{content.accessGroup}</legend>
+        <TextField
+          name="email"
+          type="email"
+          autoComplete="email"
+          label={content.emailLabel}
+          error={errors.email}
+        />
+        <div className="grid gap-3 sm:grid-cols-2 sm:items-start">
+          <TextField
+            name="password"
+            type="password"
+            autoComplete="new-password"
+            label={content.passwordLabel}
+            hint={content.passwordHint}
+            error={errors.password}
+          />
+          <TextField
+            name="birthDate"
+            type="date"
+            autoComplete="bday"
+            label={content.birthDateLabel}
+            error={errors.birthDate}
+          />
+        </div>
+      </fieldset>
+      <fieldset className="flex flex-col gap-3">
+        <legend className={LEGEND}>{content.recoveryGroup}</legend>
+        <TextField
+          name="securityQuestion"
+          type="text"
+          label={content.securityQuestionLabel}
+          hint={content.securityQuestionHint}
+          error={errors.securityQuestion}
+        />
+        {/*
+         * autoComplete off: the answer is a credential, not a profile field —
+         * it is one of the two factors that recover an account without email or
+         * Discord (RF-025). Letting a browser save and replay it puts the
+         * recovery path behind whatever protects that browser profile.
+         */}
+        <TextField
+          name="securityAnswer"
+          type="text"
+          autoComplete="off"
+          label={content.securityAnswerLabel}
+          error={errors.securityAnswer}
+        />
+      </fieldset>
+      <label className="-my-1 flex items-start gap-2.5 py-1 text-sm text-foreground-soft">
         <input
           type="checkbox"
           name="acceptedTerms"
@@ -199,26 +217,28 @@ export function SignUpForm() {
         <span>{content.acceptTerms}</span>
       </label>
       {errors.acceptedTerms && (
-        <p role="alert" className="text-sm text-danger">
+        <p role="alert" className="-mt-1 text-xs text-danger">
           {errors.acceptedTerms}
         </p>
       )}
 
       {status === 'error' && (
-        <p role="alert" className="text-sm text-danger">
-          {content.genericError}
-        </p>
+        <AuthNote tone="error">
+          <p role="alert" className="text-sm leading-relaxed text-danger">
+            {content.genericError}
+          </p>
+        </AuthNote>
       )}
 
       <button
         type="submit"
         disabled={status === 'submitting'}
-        className="rounded-sm bg-accent px-4 py-3 text-base font-medium text-background disabled:opacity-60"
+        className="auth-submit landing-sheen px-5 text-base"
       >
         {status === 'submitting' ? content.submitting : content.submit}
       </button>
 
-      <Link href="/login" className="text-sm text-foreground-soft underline">
+      <Link href="/login" className="auth-link self-center text-sm">
         {content.switchToSignIn}
       </Link>
     </form>

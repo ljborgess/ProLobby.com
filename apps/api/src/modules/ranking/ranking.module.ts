@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common'
 import { EloDecayJob } from './elo-decay.job'
 import { EloDecayService } from './elo-decay.service'
 import { EloService } from './elo.service'
+import { MatchEloService } from './match-elo.service'
 import { MatchRollbackService } from './match-rollback.service'
 import { ReputationService } from './reputation.service'
 import { SuspensionEndJob } from './suspension-end.job'
@@ -14,9 +15,10 @@ import { SuspensionEndJob } from './suspension-end.job'
     EloDecayService,
     EloDecayJob,
     ReputationService,
+    MatchEloService,
     MatchRollbackService,
     SuspensionEndJob,
   ],
-  exports: [EloService, EloDecayService, ReputationService, MatchRollbackService],
+  exports: [EloService, EloDecayService, ReputationService, MatchEloService, MatchRollbackService],
 })
 export class RankingModule {}
