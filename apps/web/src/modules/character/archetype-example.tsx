@@ -27,15 +27,15 @@ export function ArchetypeExample({ caption, gamertag }: { caption: string; gamer
           height="16"
           rx="4"
           fill="none"
-          stroke="#22c55e"
+          className="stroke-accent"
           strokeWidth="1.5"
         />
 
         <text x="120" y="52" fontSize="20" fontWeight="700" fill="currentColor">
           MAESTRO
         </text>
-        <circle cx="232" cy="45" r="8" fill="#22c55e" />
-        <path d="M228 45l3 3 5-6" stroke="#0b0f14" strokeWidth="2" fill="none" />
+        <circle cx="232" cy="45" r="8" className="fill-accent" />
+        <path d="M228 45l3 3 5-6" className="stroke-background" strokeWidth="2" fill="none" />
         <rect
           x="116"
           y="30"
@@ -43,7 +43,7 @@ export function ArchetypeExample({ caption, gamertag }: { caption: string; gamer
           height="28"
           rx="6"
           fill="none"
-          stroke="#22c55e"
+          className="stroke-accent"
           strokeWidth="1.5"
         />
 

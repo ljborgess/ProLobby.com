@@ -18,6 +18,7 @@ vi.mock('next/headers', () => ({
 vi.mock('next/navigation', () => ({
   redirect: (path: string) => redirect(path),
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
+  usePathname: () => '/verifications',
 }))
 vi.mock('@/common/api/client', () => ({ apiFetch: (...args: unknown[]) => apiFetch(...args) }))
 

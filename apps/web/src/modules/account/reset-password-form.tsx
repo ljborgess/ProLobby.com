@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { TextField } from '@/common/ui/text-field'
 import { useAuthContent } from '@/hooks/use-auth-content'
+import { AuthNote } from './auth-layout'
 
 type Status = 'idle' | 'submitting' | 'success' | 'invalidToken' | 'error'
 
@@ -50,19 +51,26 @@ export function ResetPasswordForm() {
 
   if (!token) {
     return (
-      <p role="alert" className="text-sm text-danger">
-        {content.invalidToken}
-      </p>
+      <div className="flex flex-col gap-5">
+        <AuthNote tone="error">
+          <p role="alert" className="text-sm leading-relaxed text-danger">
+            {content.invalidToken}
+          </p>
+        </AuthNote>
+        <RequestNewLink label={content.requestNew} />
+      </div>
     )
   }
 
   if (status === 'success') {
     return (
-      <div className="flex flex-col gap-4">
-        <p role="status" className="text-sm text-accent">
-          {content.success}
-        </p>
-        <Link href="/login" className="text-sm text-foreground-soft underline">
+      <div className="flex flex-col gap-5">
+        <AuthNote tone="confirmed">
+          <p role="status" className="text-sm leading-relaxed text-foreground">
+            {content.success}
+          </p>
+        </AuthNote>
+        <Link href="/login" className="auth-link self-start text-sm">
           {content.goToSignIn}
         </Link>
       </div>
@@ -82,18 +90,30 @@ export function ResetPasswordForm() {
       />
 
       {(status === 'invalidToken' || status === 'error') && (
-        <p role="alert" className="text-sm text-danger">
-          {status === 'invalidToken' ? content.invalidToken : content.genericError}
-        </p>
+        <AuthNote tone="error">
+          <p role="alert" className="text-sm leading-relaxed text-danger">
+            {status === 'invalidToken' ? content.invalidToken : content.genericError}
+          </p>
+        </AuthNote>
       )}
+      {status === 'invalidToken' && <RequestNewLink label={content.requestNew} />}
 
       <button
         type="submit"
         disabled={status === 'submitting'}
-        className="rounded-sm bg-accent px-4 py-3 text-base font-medium text-background disabled:opacity-60"
+        className="auth-submit landing-sheen px-5 text-base"
       >
         {status === 'submitting' ? content.submitting : content.submit}
       </button>
     </form>
+  )
+}
+
+/** A dead link is not a dead end: the way out is asking for a new one. */
+function RequestNewLink({ label }: { label: string }) {
+  return (
+    <Link href="/forgot-password" className="auth-link self-start text-sm">
+      {label}
+    </Link>
   )
 }

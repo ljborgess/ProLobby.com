@@ -38,7 +38,7 @@ export interface AccountContent {
     absentAction: string
   }
   /** The declared club: optional, so a line under the steps, not a step (#229). */
-  club: { hint: string; action: string }
+  club: { title: string; hint: string; action: string }
   allDone: string
   goToQueue: string
   reputation: {
@@ -83,7 +83,8 @@ export const ACCOUNT_CONTENT: Record<Locale, AccountContent> = {
       absentAction: 'Entrar no servidor',
     },
     club: {
-      hint: 'Tem clube com vaga? Declare e você pode ser escolhido capitão.',
+      title: 'Tem clube com vaga?',
+      hint: 'Declare o seu clube e você pode ser chamado pra capitão do lobby. É opcional.',
       action: 'Declarar clube',
     },
     allDone: 'Tudo pronto. A fila já te aceita.',
@@ -135,7 +136,8 @@ export const ACCOUNT_CONTENT: Record<Locale, AccountContent> = {
       absentAction: 'Entrar al servidor',
     },
     club: {
-      hint: '¿Tienes club con plazas libres? Decláralo y puedes ser elegido capitán.',
+      title: '¿Tienes club con plazas libres?',
+      hint: 'Declara tu club y te pueden llamar de capitán del lobby. Es opcional.',
       action: 'Declarar club',
     },
     allDone: 'Todo listo. La cola ya te acepta.',

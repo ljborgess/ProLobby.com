@@ -46,7 +46,7 @@ export function AuthArt() {
 
       <CornerBrackets />
 
-      <div className="landing-scanlines absolute inset-0 opacity-70" />
+      <div className="landing-scanlines absolute inset-0 opacity-50" />
 
       {/* Settles the whole thing back down so the copy on top stays first.
           Light-handed at the bottom on purpose: the pitch lives there, and a
@@ -57,6 +57,19 @@ export function AuthArt() {
     </div>
   )
 }
+
+/**
+ * The five contacts, and when the sweep reaches each: its angle clockwise
+ * from 12 o'clock as a share of the 7s turn, written as the negative delay
+ * that lands its flare on that moment.
+ */
+const CONTACTS = [
+  { cx: 128, cy: 62, r: 2, ping: '-6.29s' },
+  { cx: 72, cy: 86, r: 1.6, ping: '-1.23s' },
+  { cx: 146, cy: 118, r: 1.6, ping: '-4.83s' },
+  { cx: 64, cy: 134, r: 1.4, ping: '-2.59s' },
+  { cx: 104, cy: 152, r: 1.8, ping: '-3.59s' },
+]
 
 /** Range rings and crosshairs under the sweep. */
 function RadarRings() {
@@ -70,13 +83,23 @@ function RadarRings() {
         <line x1="4" y1="100" x2="196" y2="100" strokeWidth="0.3" opacity="0.16" />
         <line x1="100" y1="4" x2="100" y2="196" strokeWidth="0.3" opacity="0.16" />
       </g>
-      {/* Contacts on the sweep — five, one per position category. */}
+      {/* Contacts on the sweep — five, one per position category. Each one
+          flares as the light crosses it and settles back (auth.css). */}
       <g className="text-accent" fill="currentColor">
-        <circle cx="128" cy="62" r="2" opacity="0.9" />
-        <circle cx="72" cy="86" r="1.6" opacity="0.7" />
-        <circle cx="146" cy="118" r="1.6" opacity="0.6" />
-        <circle cx="64" cy="134" r="1.4" opacity="0.5" />
-        <circle cx="104" cy="152" r="1.8" opacity="0.75" />
+        {CONTACTS.map(({ cx, cy, r, ping }) => (
+          <g key={`${cx}-${cy}`} style={{ '--auth-ping': ping } as React.CSSProperties}>
+            <circle
+              className="auth-contact-ring"
+              cx={cx}
+              cy={cy}
+              r={r}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="0.4"
+            />
+            <circle className="auth-contact" cx={cx} cy={cy} r={r} />
+          </g>
+        ))}
       </g>
     </svg>
   )

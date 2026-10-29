@@ -329,12 +329,25 @@ function Marker({
           <Shirt status={status} code={content.categoryCodes[category]} />
         </span>
       </span>
+      {/* Position and archetype together, the way a team sheet reads: the
+          code says where, the archetype says who. */}
       <span
-        className={`max-w-32 truncate rounded-sm px-1.5 py-0.5 text-xs leading-tight ${
-          character ? 'font-medium text-foreground' : 'text-foreground-soft'
-        } ${selected ? 'bg-background/80' : ''}`}
+        className={`flex max-w-36 items-baseline gap-1.5 rounded-sm px-1.5 py-0.5 text-xs leading-tight ${
+          selected ? 'bg-background/90' : 'bg-background/60'
+        }`}
       >
-        {label}
+        <span
+          className={`shrink-0 text-[0.7rem] font-semibold tracking-[0.12em] ${
+            status === 'verified' ? 'text-accent' : 'text-foreground-soft'
+          }`}
+        >
+          {content.categoryCodes[category]}
+        </span>
+        <span
+          className={`truncate ${character ? 'font-medium text-foreground' : 'text-foreground-soft'}`}
+        >
+          {label}
+        </span>
       </span>
     </button>
   )
@@ -431,7 +444,7 @@ function Legend() {
     },
   ]
   return (
-    <ul className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-foreground-soft">
+    <ul className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs text-foreground-soft sm:flex sm:flex-wrap sm:gap-x-5">
       {items.map((item) => (
         <li key={item.text} className="inline-flex items-center gap-2">
           <span aria-hidden className="flex">
@@ -469,8 +482,17 @@ function FilledSlot({
       <Brackets lit={status === 'verified'} />
 
       <header className="flex items-center justify-between gap-2">
-        <span className="text-[0.7rem] font-medium uppercase tracking-[0.2em] text-foreground-soft">
-          {content.categoryCodes[character.category]}
+        <span className="flex items-baseline gap-2">
+          <span
+            className={`font-display text-sm font-semibold tracking-[0.2em] ${
+              status === 'verified' ? 'text-accent' : 'text-foreground'
+            }`}
+          >
+            {content.categoryCodes[character.category]}
+          </span>
+          <span className="text-[0.7rem] text-foreground-soft">
+            {content.categories[character.category]}
+          </span>
         </span>
         <span className="text-[0.7rem] text-foreground-soft">
           {content.platforms[character.platform]}
@@ -481,10 +503,9 @@ function FilledSlot({
 
       {/* The archetype the way the game prints it — the word the player
           will photograph, so it is the loudest thing in the slot. */}
-      <h3 className="font-display text-base font-medium leading-tight tracking-tight break-words text-foreground">
+      <h3 className="font-display text-2xl font-semibold leading-none tracking-tight break-words text-foreground">
         {archetypeLabel(character.archetype)}
       </h3>
-      <p className="sr-only">{content.categories[character.category]}</p>
 
       <p className="flex items-baseline justify-between gap-2 text-xs text-foreground-soft">
         {content.roster.elo}
@@ -600,7 +621,7 @@ function ProFigure({ status }: { status: SlotStatus | 'empty' }) {
   const waiting = status === 'empty' || status === 'review'
   const line = lit ? 'stroke-accent' : waiting ? 'stroke-white/25' : 'stroke-white/55'
   return (
-    <svg viewBox="0 0 120 84" aria-hidden className="my-2 h-28 w-full">
+    <svg viewBox="0 0 120 84" aria-hidden className="squad-figure my-2 h-28 w-full">
       <ellipse
         cx="60"
         cy="76"

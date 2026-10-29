@@ -1,7 +1,5 @@
 import type { Metadata } from 'next'
-import { Logo } from '@/common/ui/logo'
-import Link from 'next/link'
-import { AccountBackdrop } from '@/modules/account/account-backdrop'
+import { AuthLayout } from '@/modules/account/auth-layout'
 import { VerifyEmailStatus } from '@/modules/account/verify-email-status'
 
 export const metadata: Metadata = {
@@ -17,17 +15,8 @@ export const metadata: Metadata = {
  */
 export default function VerifyEmailPage() {
   return (
-    <main className="relative flex min-h-svh flex-1 items-center justify-center overflow-hidden px-4 py-10">
-      <AccountBackdrop />
-      <div className="flex w-full max-w-sm flex-col gap-6">
-        <Link
-          href="/"
-          className="landing-focus self-center font-display text-base font-semibold tracking-tight text-foreground"
-        >
-          <Logo />
-        </Link>
-        <VerifyEmailStatus />
-      </div>
-    </main>
+    <AuthLayout variant="signUp">
+      <VerifyEmailStatus />
+    </AuthLayout>
   )
 }

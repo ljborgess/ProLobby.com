@@ -44,6 +44,11 @@ describe('ResetPasswordForm', () => {
     fireEvent.click(screen.getByRole('button', { name: pt.submit }))
 
     await waitFor(() => expect(screen.getByRole('alert').textContent).toBe(pt.invalidToken))
+    // A dead link is not a dead end.
+    expect(screen.getByRole('link', { name: pt.requestNew })).toHaveAttribute(
+      'href',
+      '/forgot-password',
+    )
   })
 
   it('sends the token from the URL alongside the new password', async () => {

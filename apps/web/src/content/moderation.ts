@@ -7,7 +7,6 @@ export interface ModerationContent {
   title: string
   subtitle: string
   empty: string
-  forbidden: string
   declared: string
   printAlt: string
   typedArchetype: string
@@ -30,7 +29,6 @@ export const MODERATION_CONTENT: Record<Locale, ModerationContent> = {
     subtitle:
       'Digite o arquétipo e o gamertag que você vê no print. O sistema compara com o que o jogador declarou.',
     empty: 'Nenhum print esperando verificação.',
-    forbidden: 'Esta área é só da moderação.',
     declared: 'Declarado',
     printAlt: 'Print da tela de arquétipos enviado pelo jogador',
     typedArchetype: 'Arquétipo no print',
@@ -55,7 +53,6 @@ export const MODERATION_CONTENT: Record<Locale, ModerationContent> = {
     subtitle:
       'Escribe el arquetipo y el gamertag que ves en la captura. El sistema compara con lo que el jugador declaró.',
     empty: 'Ninguna captura esperando verificación.',
-    forbidden: 'Esta área es solo de la moderación.',
     declared: 'Declarado',
     printAlt: 'Captura de la pantalla de arquetipos enviada por el jugador',
     typedArchetype: 'Arquetipo en la captura',
