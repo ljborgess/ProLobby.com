@@ -303,6 +303,23 @@ describe('QueueScreen (#233)', () => {
       )
     })
 
+    it('a confirmed captain gives the role up before the other side confirms (RF-032)', async () => {
+      vi.mocked(fetch)
+        .mockResolvedValueOnce(answer(204, {}))
+        .mockResolvedValueOnce(answer(200, inLobby({ state: 'waiting_captain' })))
+      renderScreen(inLobby({ state: 'waiting_captain', isCaptain: true }))
+
+      expect(screen.getByText(pt.lobby.captainConfirmed)).toBeInTheDocument()
+      fireEvent.click(screen.getByRole('button', { name: pt.lobby.captainWithdraw }))
+
+      expect(await screen.findByText(pt.lobby.choosingHint)).toBeInTheDocument()
+      expect(fetch).toHaveBeenNthCalledWith(
+        1,
+        '/bff/queue/captaincy',
+        expect.objectContaining({ method: 'DELETE' }),
+      )
+    })
+
     it('everyone else waits while the captains are chosen', () => {
       renderScreen(inLobby({ state: 'waiting_captain' }))
 
@@ -708,6 +725,37 @@ describe('QueueScreen (#233)', () => {
       renderScreen(searching(30 * MINUTE, null))
 
       expect(screen.queryByRole('button', { name: pt.stall.keepWaiting })).toBeNull()
+    })
+  })
+
+  describe('a paused queue (RNF-008, #271)', () => {
+    it.each(['discord_unavailable', 'channels_full', 'lobbies_full'] as const)(
+      'says why no lobby closes (%s), in place of the stall notice',
+      (paused) => {
+        renderScreen({
+          entry: {
+            characterId: 'c1',
+            category: 'midfielder',
+            joinedAt: new Date(Date.now() - 20 * 60_000).toISOString(),
+            cancelledLobby: null,
+            stall: 'unpaired',
+            lobby: null,
+          },
+          blockedUntil: null,
+          paused,
+        })
+
+        expect(screen.getByText(pt.paused[paused])).toBeInTheDocument()
+        expect(screen.queryByText(pt.stall.unpaired)).toBeNull()
+        expect(screen.getByRole('button', { name: pt.leave })).toBeInTheDocument()
+      },
+    )
+
+    it('says it before joining too, and joining still works', () => {
+      renderScreen({ entry: null, blockedUntil: null, paused: 'discord_unavailable' })
+
+      expect(screen.getByText(pt.paused.discord_unavailable)).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: pt.joinAs('MEI') })).toBeEnabled()
     })
   })
 

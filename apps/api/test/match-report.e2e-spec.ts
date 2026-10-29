@@ -520,6 +520,32 @@ describe('match report (4.1)', () => {
       expect(await eloOf(a.captain, veteran.category)).toBe(1000)
       const after = orm.em.fork()
       expect((await rowOf(after, lobbyId, a.captain)).character.matchesInCategory).toBe(9)
+
+      // Annulled is not a fresh start: applying it again still writes nothing.
+      expect(
+        await orm.em
+          .fork()
+          .transactional(async (tx) =>
+            matchElo.applyIn(tx, await tx.findOneOrFail(Lobby, lobbyId)),
+          ),
+      ).toBe(0)
+      expect(await eloOf(a.captain, veteran.category)).toBe(1000)
+    })
+
+    it('the 48 h job finishing two matches in one run gives each its own elo, once', async () => {
+      const one = await playing()
+      const two = await playing()
+      const first = Math.max(one.closedAt, two.closedAt) + 20 * MINUTE
+      await reports.submit(one.a.others[0]!.accountId, score(1, 0), png(), at(first))
+      await reports.submit(two.a.others[0]!.accountId, score(0, 1), png(), at(first))
+      await reports.expire(at(first + 15 * MINUTE))
+
+      expect(await reports.expire(at(first + 15 * MINUTE + 48 * 60 * MINUTE))).toBe(2)
+      expect(await eloEventsOf(one.lobbyId)).toBe(8)
+      expect(await eloEventsOf(two.lobbyId)).toBe(8)
+
+      expect(await reports.expire(at(first + 50 * 60 * MINUTE))).toBe(0)
+      expect(await eloEventsOf(one.lobbyId)).toBe(8)
     })
 
     it('a draw between equal sides moves nothing; a character no longer verified gets no event', async () => {

@@ -31,7 +31,9 @@ export class DiscordPresenceService {
 
   constructor(private readonly em: EntityManager) {}
 
-  async apply(event: Exclude<BotEvent, { type: 'lobby.channels_created' }>): Promise<void> {
+  async apply(
+    event: Exclude<BotEvent, { type: 'lobby.channels_created' | 'bot.status' }>,
+  ): Promise<void> {
     if (event.type === 'discord.presence_snapshot') {
       await this.applySnapshot(event.payload.discordIds, new Date(event.occurredAt))
       return

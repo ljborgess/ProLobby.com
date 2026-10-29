@@ -7,7 +7,8 @@ import { AccountState } from '../account/account.enums'
 import { DeclaredClub } from '../account/declared-club.entity'
 import { Character } from '../character/character.entity'
 import { LobbyParticipation, LobbySide } from '../lobby/lobby-participation.entity'
-import { Lobby } from '../lobby/lobby.entity'
+import { CoordinationState, LOBBY_PAUSE_AT } from '../bot-integration/coordination-state'
+import { Lobby, TERMINAL_LOBBY_STATES } from '../lobby/lobby.entity'
 import { type Candidate, findMatch } from './matchmaker'
 import { QueueEntry } from './queue-entry.entity'
 import { QueueStallState } from './queue-stall'
@@ -22,6 +23,7 @@ export class QueueMatchingService {
   constructor(
     private readonly em: EntityManager,
     private readonly stall: QueueStallState,
+    private readonly coordination: CoordinationState,
   ) {}
 
   /** Lobbies created by this run; 0 when another run holds the queue. */
@@ -34,6 +36,12 @@ export class QueueMatchingService {
       )
       if (!lock?.locked) return 0
 
+      // RNF-008 (#271): with Discord out of reach, or no room for three more
+      // channels, nobody is placed; everyone keeps searching with their time.
+      if (this.coordination.botPause(now.getTime())) return 0
+      // And no more than the 9 lobbies at once the system is sized for.
+      let active = await em.count(Lobby, { state: { $nin: [...TERMINAL_LOBBY_STATES] } })
+
       // Row locks too, so a leave in flight waits for this run and then finds
       // the entry placed (QueueService.leave).
       const entries = await em.find(
@@ -45,7 +53,7 @@ export class QueueMatchingService {
       const entryById = new Map(entries.map((entry) => [entry.id, entry]))
 
       let lobbies = 0
-      for (;;) {
+      while (active < LOBBY_PAUSE_AT) {
         const result = findMatch(remaining, now)
         if (result.kind === 'wait') {
           this.stall.record(result.unpaired, result.captainMissing)
@@ -71,7 +79,9 @@ export class QueueMatchingService {
         const placed = new Set(result.sides.flat().map((candidate) => candidate.id))
         remaining = remaining.filter((candidate) => !placed.has(candidate.id))
         lobbies += 1
+        active += 1
       }
+      this.coordination.recordLobbies(active)
       await em.flush()
       return lobbies
     })

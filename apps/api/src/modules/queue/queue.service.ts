@@ -30,6 +30,7 @@ import {
 import { captainAnswerBy } from './captain-cascade.service'
 import { blockedUntilFor, blockStateFor } from './queue-block'
 import { type QueueStall, QueueStallState } from './queue-stall'
+import { CoordinationState, type QueuePause } from '../bot-integration/coordination-state'
 import { PeerRatingService, type TeammateView } from './peer-rating.service'
 import { QueueEntry } from './queue-entry.entity'
 
@@ -126,6 +127,7 @@ export class QueueService {
     private readonly matchReportService: MatchReportService,
     private readonly peerRatingService: PeerRatingService,
     private readonly stall: QueueStallState,
+    private readonly coordination: CoordinationState,
   ) {}
 
   async current(
@@ -135,6 +137,8 @@ export class QueueService {
     entry: QueueEntryView | null
     blockedUntil: Date | null
     lastMatch: LastMatchView | null
+    /** Why no lobby closes right now (RNF-008, #271); null when the queue runs. */
+    paused: QueuePause | null
   }> {
     const em = this.em.fork()
     const entry = await em.findOne(QueueEntry, { account: accountId }, { populate: ['lobby'] })
@@ -203,6 +207,7 @@ export class QueueService {
         : null,
       blockedUntil: block.blockedUntil,
       lastMatch: await this.matchReportService.lastMatch(em, accountId),
+      paused: this.coordination.pause(now.getTime()),
     }
   }
 

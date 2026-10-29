@@ -34,7 +34,11 @@ export interface QueueState {
   blockedUntil: string | null
   /** The latest match with a result, once its entry is gone (4.1). */
   lastMatch?: LastMatchView | null
+  /** No lobby closes right now, and why (RNF-008, #271). */
+  paused?: QueuePause | null
 }
+
+export type QueuePause = 'discord_unavailable' | 'channels_full' | 'lobbies_full'
 
 const POLL_MS = 5000
 /** While a lobby step counts in seconds: ask more often. */
@@ -487,7 +491,16 @@ export function QueueScreen({
               </button>
             </div>
           )}
-          {scene === 'searching' && state.entry && (
+          {(scene === 'searching' || scene === 'picking') && state.paused && (
+            // Said where the person decides to join or to wait; the search goes on.
+            <p
+              role="status"
+              className="mb-3 max-w-xl border-l-2 border-accent pl-3 text-sm text-foreground"
+            >
+              {content.paused[state.paused]}
+            </p>
+          )}
+          {scene === 'searching' && state.entry && !state.paused && (
             <StallNotice
               entry={state.entry}
               now={now}

@@ -16,6 +16,16 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 
 ---
 
+## 2026-10-28 · Para todos
+
+### A fila pausa sozinha quando não dá pra coordenar o lobby (#271)
+
+- **O que mudou:** o job da fila não fecha lobby novo com o Discord fora, com o servidor sem espaço pra 3 canais (teto de 500) ou com 9 lobbies em andamento. O `GET /api/queue` traz `paused` (`discord_unavailable`, `channels_full`, `lobbies_full` ou `null`), e a tela da fila mostra o motivo. Entrar na fila e partida em andamento seguem normais.
+- **De onde vem:** o bot manda `bot.status` a cada minuto pro `POST /api/bot-events`. Em produção, 3 min sem esse sinal pausam a fila; em desenvolvimento e nos e2e, sem bot rodando, a fila roda como antes.
+- **Em teste:** pra simular, pegue o `CoordinationState` do módulo e chame `recordBot(...)` / `recordLobbies(...)` (exemplo em `apps/api/test/queue-matching.e2e-spec.ts`). Teste que cria 9 ou mais lobbies não terminais vai ver o matching parar.
+
+---
+
 ## 2026-10-27 · Para todos
 
 ### O payload dos eventos pro bot agora é cifrado (#250)

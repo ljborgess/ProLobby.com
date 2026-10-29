@@ -19,11 +19,13 @@ export {
 } from './webhook-event'
 export {
   botEventSchema,
+  botStatusEventSchema,
   discordMemberJoinedEventSchema,
   discordMemberLeftEventSchema,
   lobbyChannelsCreatedEventSchema,
   snowflake,
   type BotEvent,
+  type BotStatusEvent,
   type DiscordMemberJoinedEvent,
   type DiscordMemberLeftEvent,
   type LobbyChannelsCreatedEvent,

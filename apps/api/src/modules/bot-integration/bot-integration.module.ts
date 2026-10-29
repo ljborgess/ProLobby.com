@@ -5,6 +5,7 @@ import { Clock, SystemClock } from '../../common/time/clock'
 import { AccountModule } from '../account/account.module'
 import { ModerationCase } from '../moderation/moderation-case.entity'
 import { BotEventsController } from './bot-events.controller'
+import { CoordinationState } from './coordination-state'
 import { EventDelivery } from './event-delivery.entity'
 import { EventDeliveryService } from './event-delivery.service'
 import { LobbyChannelsService } from './lobby-channels.service'
@@ -17,10 +18,11 @@ import { WebhookClient } from './webhook-client'
   providers: [
     { provide: Clock, useClass: SystemClock },
     WebhookClient,
+    CoordinationState,
     EventDeliveryService,
     LobbyChannelsService,
     ModerationCaseAnnouncer,
   ],
-  exports: [EventDeliveryService],
+  exports: [CoordinationState, EventDeliveryService],
 })
 export class BotIntegrationModule {}

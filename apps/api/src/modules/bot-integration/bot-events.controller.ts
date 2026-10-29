@@ -22,6 +22,7 @@ import type { Request } from 'express'
 import { Public } from '../../common/auth/auth.decorators'
 import { BOT_EVENT_THROTTLE } from '../../common/security/throttler.config'
 import { DiscordPresenceService } from '../account/discord-presence.service'
+import { CoordinationState } from './coordination-state'
 import { LobbyChannelsService } from './lobby-channels.service'
 
 type RequestWithRawBody = Request & { rawBody?: Buffer }
@@ -43,6 +44,7 @@ export class BotEventsController {
   constructor(
     private readonly presence: DiscordPresenceService,
     private readonly lobbyChannels: LobbyChannelsService,
+    private readonly coordination: CoordinationState,
   ) {}
 
   @Public()
@@ -72,6 +74,11 @@ export class BotEventsController {
       throw new BadRequestException('invalid_event')
     }
 
+    if (parsed.data.type === 'bot.status') {
+      // Memory only: a heartbeat every minute must not wake the database.
+      this.coordination.recordBot(parsed.data.payload, Date.now())
+      return
+    }
     if (parsed.data.type === 'lobby.channels_created') {
       await this.lobbyChannels.apply(parsed.data)
       return
