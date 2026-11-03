@@ -17,7 +17,7 @@ type Status = 'idle' | 'submitting' | 'success' | 'invalidToken' | 'error'
  * would be one more place to keep in sync.
  */
 export function ResetPasswordForm() {
-  const content = useAuthContent().resetPassword
+  const { resetPassword: content, revealPassword } = useAuthContent()
   const token = useSearchParams().get('token') ?? ''
   const [status, setStatus] = useState<Status>('idle')
 
@@ -85,6 +85,7 @@ export function ResetPasswordForm() {
         autoComplete="new-password"
         label={content.passwordLabel}
         hint={content.passwordHint}
+        revealLabel={revealPassword}
         minLength={12}
         required
       />

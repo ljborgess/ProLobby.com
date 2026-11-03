@@ -15,6 +15,8 @@ export interface LandingContent {
   topBar: {
     cta: string
     signIn: string
+    /** With a session: the one door, back into the account. */
+    account: string
     /** Short labels for the top bar ticker — same real facts as `facts.items`, tightened for a small badge instead of a full strip. */
     ticker: { value: string; label: string }[]
   }
@@ -23,6 +25,8 @@ export interface LandingContent {
     titleAccent: string
     titleSuffix: string
     subtitle: string
+    /** Under the hero's squad drawing: what the five shirts are. */
+    squadCaption: string
   }
   facts: {
     eyebrow: string
@@ -33,6 +37,12 @@ export interface LandingContent {
     title: string
     body: string
     items: string[]
+    /** The position picker: what the queue does for the place chosen. */
+    picker: {
+      entersAs: (code: string) => string
+      pairs: (name: string) => string
+      elo: (code: string) => string
+    }
   }
   soloQueue: {
     eyebrow: string
@@ -45,6 +55,27 @@ export interface LandingContent {
   }
   footer: {
     tagline: string
+  }
+  /**
+   * The broadcast frame (2026-10-29): the plates a matchday transmission puts
+   * on screen. Pre-match, never "live": no match is running on this page.
+   */
+  broadcast: {
+    stage: string
+    clockLabel: string
+    lineup: string
+    example: string
+    pick: string
+    replay: string
+  }
+  /** The page's close, before the footer: the one place the offer is repeated. */
+  closing: {
+    title: string
+    body: string
+    cta: string
+    signIn: string
+    /** With a session: straight to the queue. */
+    signedInCta: string
   }
   /**
    * The queue board — the lineup view a lobby fills into. Labelled as an
@@ -70,6 +101,7 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
     topBar: {
       cta: 'Criar conta',
       signIn: 'Entrar',
+      account: 'Minha conta',
       ticker: [
         { value: '5', label: 'posições' },
         { value: '30s', label: 'de fila' },
@@ -83,14 +115,14 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
       titleSuffix: ' é matchmaking de verdade pro seu Pro Clubs',
       subtitle:
         'Cadastra seu personagem, entra na fila por posição e é pareado com outros jogadores verificados — sem grupo de WhatsApp, sem gente sumida no meio do jogo.',
+      squadCaption: 'Um personagem por posição, cada um verificado por print do jogo.',
     },
     facts: {
-      eyebrow: 'O que já está decidido',
+      eyebrow: 'Regras da fila hoje',
       items: [
         { value: '5', label: 'categorias de posição' },
         { value: '30s', label: 'pra confirmar a fila' },
         { value: '11v11', label: 'humano + IA do jogo cobre o resto' },
-        { value: '2', label: 'idiomas — pt e es' },
       ],
     },
     positions: {
@@ -98,6 +130,13 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
       title: 'Você entra na posição que joga de verdade',
       body: 'Cada personagem tem categoria fixa e elo próprio — desempenho de goleiro não vira elo de atacante. Até 5 personagens por conta, um por categoria.',
       items: ['Goleiro', 'Zaga', 'Meio', 'Ponta', 'Ataque'],
+      picker: {
+        entersAs: (code) => `Você entra na fila como ${code}.`,
+        pairs: (name) =>
+          `A fila pareia você com outro jogador de ${name.toLowerCase()} do lado de lá: posição contra posição, não sorteio.`,
+        elo: (code) =>
+          `Seu elo de ${code} sobe ou desce só com partidas nessa posição. O que você faz em outra posição não mexe nele.`,
+      },
     },
     soloQueue: {
       eyebrow: 'Entra sozinho, sai com time',
@@ -124,6 +163,21 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
     footer: {
       tagline: 'Matchmaking competitivo e identidade verificada para EA FC Pro Clubs.',
     },
+    broadcast: {
+      stage: 'Pré-jogo',
+      clockLabel: 'pra confirmar a fila',
+      lineup: 'Escalação',
+      example: 'exemplo',
+      pick: 'Escolha sua posição',
+      replay: 'Replay',
+    },
+    closing: {
+      title: 'Pronto pra entrar em campo?',
+      body: 'Cria a conta, cadastra o personagem da sua posição e entra na fila. A partida é no jogo; o resto a ProLobby coordena.',
+      cta: 'Criar minha conta',
+      signIn: 'Já tenho conta',
+      signedInCta: 'Ir pra fila',
+    },
     queueBoard: {
       title: 'Lobby',
       formation: '4-3-3',
@@ -146,6 +200,7 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
     topBar: {
       cta: 'Crear cuenta',
       signIn: 'Entrar',
+      account: 'Mi cuenta',
       ticker: [
         { value: '5', label: 'posiciones' },
         { value: '30s', label: 'de cola' },
@@ -159,14 +214,14 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
       titleSuffix: ' es matchmaking de verdad para tu Pro Clubs',
       subtitle:
         'Registra tu personaje, entra a la cola por posición y te emparejamos con otros jugadores verificados — sin grupo de WhatsApp, sin gente que desaparece a mitad del partido.',
+      squadCaption: 'Un personaje por posición, cada uno verificado con una captura del juego.',
     },
     facts: {
-      eyebrow: 'Lo que ya está decidido',
+      eyebrow: 'Reglas de la cola hoy',
       items: [
         { value: '5', label: 'categorías de posición' },
         { value: '30s', label: 'para confirmar la cola' },
         { value: '11v11', label: 'humano + la IA del juego cubre el resto' },
-        { value: '2', label: 'idiomas — pt y es' },
       ],
     },
     positions: {
@@ -174,6 +229,13 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
       title: 'Entras en la posición que juegas de verdad',
       body: 'Cada personaje tiene categoría fija y elo propio — el desempeño de arquero no se vuelve elo de delantero. Hasta 5 personajes por cuenta, uno por categoría.',
       items: ['Arquero', 'Defensa', 'Mediocampo', 'Extremo', 'Delantero'],
+      picker: {
+        entersAs: (code) => `Entras a la cola como ${code}.`,
+        pairs: (name) =>
+          `La cola te empareja con otro jugador de ${name.toLowerCase()} del otro lado: posición contra posición, no sorteo.`,
+        elo: (code) =>
+          `Tu elo de ${code} sube o baja solo con partidos en esa posición. Lo que haces en otra posición no lo toca.`,
+      },
     },
     soloQueue: {
       eyebrow: 'Entras solo, sales con equipo',
@@ -199,6 +261,21 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
     },
     footer: {
       tagline: 'Matchmaking competitivo e identidad verificada para EA FC Pro Clubs.',
+    },
+    broadcast: {
+      stage: 'Previa',
+      clockLabel: 'para confirmar la cola',
+      lineup: 'Alineación',
+      example: 'ejemplo',
+      pick: 'Elige tu posición',
+      replay: 'Repetición',
+    },
+    closing: {
+      title: '¿Listo para salir a la cancha?',
+      body: 'Crea la cuenta, registra el personaje de tu posición y entra a la cola. El partido es en el juego; del resto se encarga ProLobby.',
+      cta: 'Crear mi cuenta',
+      signIn: 'Ya tengo cuenta',
+      signedInCta: 'Ir a la cola',
     },
     queueBoard: {
       title: 'Lobby',

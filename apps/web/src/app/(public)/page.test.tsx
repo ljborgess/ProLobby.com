@@ -43,9 +43,19 @@ describe('Home', () => {
     expect(redirect).not.toHaveBeenCalled()
   })
 
-  it('sends a signed-in visitor to /verifications instead of showing the landing', async () => {
+  it('shows the landing to a signed-in visitor too, with the account instead of sign-up', async () => {
     signedIn()
 
-    await expect(Home()).rejects.toThrow('NEXT_REDIRECT:/verifications')
+    renderWithLocale(await Home())
+
+    // The logo is the way home from inside the app (2026-10-29): this page no
+    // longer bounces a session away, it swaps the doors.
+    expect(screen.getByRole('link', { name: 'Minha conta' })).toHaveAttribute(
+      'href',
+      '/verifications',
+    )
+    expect(screen.queryByRole('link', { name: 'Criar conta' })).toBeNull()
+    expect(screen.getByRole('link', { name: 'Ir pra fila' })).toHaveAttribute('href', '/queue')
+    expect(redirect).not.toHaveBeenCalled()
   })
 })

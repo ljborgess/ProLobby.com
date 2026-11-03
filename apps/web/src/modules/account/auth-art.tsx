@@ -1,3 +1,5 @@
+import { useId } from 'react'
+
 /**
  * The art beside the auth forms: a match readout, drawn.
  *
@@ -105,22 +107,30 @@ function RadarRings() {
   )
 }
 
-/** The pitch, in plan, meant to be tilted by the wrapper above. */
-function PitchGrid() {
+/**
+ * The pitch, in plan, meant to be tilted by the wrapper above. Its gradient
+ * and mask ids are per instance: the phone's copy (auth-layout.tsx) sits in
+ * the DOM before the panel's and is `display: none` on a wide screen, and a
+ * mask referenced by a shared id from a hidden subtree paints nothing.
+ */
+export function PitchGrid() {
+  // Stripped to a plain token: React's ids carry characters a `url(#…)`
+  // reference does not always survive.
+  const id = `pitch${useId().replace(/[^\w-]/g, '')}`
   return (
     <svg viewBox="0 0 120 80" preserveAspectRatio="none" className="size-full">
       <defs>
-        <linearGradient id="auth-pitch-fade" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={`${id}-fade`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="white" stopOpacity="0" />
           <stop offset="55%" stopColor="white" stopOpacity="0.55" />
           <stop offset="100%" stopColor="white" stopOpacity="1" />
         </linearGradient>
-        <mask id="auth-pitch-mask">
-          <rect width="120" height="80" fill="url(#auth-pitch-fade)" />
+        <mask id={`${id}-mask`}>
+          <rect width="120" height="80" fill={`url(#${id}-fade)`} />
         </mask>
       </defs>
       <g
-        mask="url(#auth-pitch-mask)"
+        mask={`url(#${id}-mask)`}
         fill="none"
         stroke="currentColor"
         className="text-accent"

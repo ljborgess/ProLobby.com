@@ -106,15 +106,17 @@ await check('login devolve o cookie de sessão HttpOnly', async () => {
   session = cookie.split(';')[0]
 })
 
-console.log('\nroteamento (2026-09-22: /verifications é a área logada, a home é só landing)')
-await check(
-  'a home logada redireciona para /verifications, sem mostrar landing nem painel',
-  async () => {
-    const res = await call(WEB, { auth: true })
-    expect(res.status, 307, 'status')
-    expect(res.headers.get('location'), '/verifications', 'destino')
-  },
+console.log(
+  '\nroteamento (/verifications é a área logada; desde 2026-10-29 a home aparece pra todos)',
 )
+await check('a home logada mostra a landing com a conta no lugar do cadastro', async () => {
+  const res = await call(WEB, { auth: true })
+  expect(res.status, 200, 'status')
+  const html = await res.text()
+  expect(html.includes('Minha conta'), true, 'link da conta')
+  expect(html.includes('Criar conta'), false, 'sem botão de cadastro')
+  expect(html.includes('Próximos passos'), false, 'painel ausente')
+})
 await check('a home anônima mostra a landing, não o painel', async () => {
   const res = await call(WEB)
   expect(res.status, 200, 'status')

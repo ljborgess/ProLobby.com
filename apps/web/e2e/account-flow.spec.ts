@@ -51,11 +51,13 @@ test.describe('visitante', () => {
 test.describe('sessão com cookie mas sem API', () => {
   /**
    * A home só olha se o cookie existe, nunca se ele é válido — quem decide
-   * isso é a API, em /verifications. Um cookie forjado (ou expirado) ainda
-   * assim é redirecionado pra lá, e cai no aviso de indisponível desta suíte
-   * sem API, não num loop nem numa tela quebrada.
+   * isso é a API, em /verifications. Desde 2026-10-29 a home aparece também
+   * com sessão (a logo é o caminho de volta pra ela) e troca "Criar conta"
+   * por "Minha conta". Um cookie forjado (ou expirado) segue esse link e cai
+   * no aviso de indisponível desta suíte sem API, não num loop nem numa tela
+   * quebrada.
    */
-  test('a home redireciona quem tem cookie de sessão pra /verifications', async ({
+  test('a home com cookie de sessão oferece a conta, que leva pra /verifications', async ({
     page,
     context,
   }) => {
@@ -64,6 +66,8 @@ test.describe('sessão com cookie mas sem API', () => {
     ])
 
     await page.goto('/')
+    await expect(page.getByRole('link', { name: 'Criar conta' })).toHaveCount(0)
+    await page.getByRole('link', { name: 'Minha conta' }).click()
 
     await expect(page).toHaveURL(/\/verifications$/)
     await expect(

@@ -22,10 +22,10 @@
    real, so they get display size, not card size. Text colour, not accent: the
    check in the head row already says "decided". */
 .landing-score-value {
-  font-size: clamp(2.5rem, 1.8rem + 2.4vw, 3.75rem);
-  font-weight: 300;
-  line-height: 1;
-  letter-spacing: -0.03em;
+  font-size: clamp(3rem, 2.2rem + 2.6vw, 4.5rem);
+  font-weight: 700;
+  line-height: 0.9;
+  letter-spacing: 0.01em;
 }
 
 /* ---- Lobby fill (solo queue) ------------------------------------------- */
@@ -228,5 +228,155 @@
 @media (prefers-reduced-motion: reduce) {
   .landing-page .landing-glow {
     opacity: 0.2;
+  }
+}
+
+.landing-closing {
+  background:
+    radial-gradient(
+      ellipse 45% 70% at 50% 0%,
+      color-mix(in srgb, var(--color-accent-strong) 30%, transparent),
+      transparent 70%
+    ),
+    linear-gradient(to bottom, var(--color-surface), var(--color-bg));
+  border-top: 1px solid rgb(255 255 255 / 6%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+}
+
+/*
+ * Matchday broadcast (2026-10-29). The landing reads as a transmission:
+ * slanted plates name each segment, the headline is the opening graphic with
+ * its green bar, the team sheet's rows come up one by one. Every move is
+ * opacity or clip on drawn layers; nothing interactive changes place.
+ */
+.landing-plate {
+  position: relative;
+  padding: 0.35rem 0.9rem 0.35rem 0;
+  isolation: isolate;
+}
+
+.landing-plate::before {
+  content: '';
+  position: absolute;
+  inset: 0 -0.25rem 0 0.35rem;
+  z-index: -1;
+  background: linear-gradient(90deg, rgb(255 255 255 / 9%), rgb(255 255 255 / 3%));
+  border: 1px solid rgb(255 255 255 / 10%);
+  transform: skewX(-14deg);
+}
+
+.landing-plate-tab {
+  width: 0.4rem;
+  align-self: stretch;
+  background: var(--color-accent);
+  transform: skewX(-14deg);
+}
+
+.landing-reveal .landing-plate {
+  animation: landing-plate-wipe linear both;
+  animation-timeline: view();
+  animation-range: entry 10% cover 30%;
+}
+
+@keyframes landing-plate-wipe {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* The opening graphic: the headline on a slanted band, the green wire on
+   its lower edge, the same plate language as the segment names. */
+.landing-opening {
+  position: relative;
+  isolation: isolate;
+  padding: 0.12em 0.35em 0.18em 0.25em;
+}
+
+.landing-opening::before {
+  content: '';
+  position: absolute;
+  inset: 0 -0.2em 0 -0.15em;
+  z-index: -1;
+  background: linear-gradient(
+    90deg,
+    rgb(255 255 255 / 5%),
+    rgb(255 255 255 / 1.5%) 85%,
+    transparent
+  );
+  border-bottom: 1px solid var(--color-accent);
+  transform: skewX(-8deg);
+  transform-origin: bottom left;
+  animation: landing-band-wipe 900ms cubic-bezier(0.16, 1, 0.3, 1) 150ms both;
+}
+
+@keyframes landing-band-wipe {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* How it works as a run of show: one rule, a station mark on it per step. */
+.landing-runshow {
+  border-top: 1px solid rgb(255 255 255 / 14%);
+}
+
+.landing-runshow-station {
+  padding-top: 1.75rem;
+}
+
+.landing-runshow-mark {
+  position: absolute;
+  top: -0.3rem;
+  left: 0;
+  width: 1.6rem;
+  height: 0.55rem;
+  background: var(--color-accent);
+  transform: skewX(-14deg);
+}
+
+.landing-runshow-station + .landing-runshow-station .landing-runshow-mark {
+  background: rgb(255 255 255 / 55%);
+}
+
+/* A name strip that overlaps the bottom edge of the figure it names. */
+.landing-lower-third {
+  z-index: 2;
+  background: var(--color-surface);
+}
+
+/* The team sheet: rows come up one by one, as a lineup graphic does. */
+.landing-lineup-row {
+  animation: landing-row-in 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(450ms + var(--row) * 110ms);
+}
+
+@keyframes landing-row-in {
+  from {
+    opacity: 0;
+    clip-path: inset(0 0 0 100%);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.landing-scorebug {
+  min-height: 2.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-reveal .landing-plate,
+  .landing-opening::before,
+  .landing-lineup-row {
+    animation: none;
   }
 }
