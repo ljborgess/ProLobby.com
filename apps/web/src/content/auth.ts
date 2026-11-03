@@ -18,7 +18,10 @@ export interface AuthContent {
     securityQuestionTooShort: string
     securityAnswerTooShort: string
     securityAnswerLabel: string
-    acceptTerms: string
+    /** "Li e aceito os [Termos de Uso]." — the middle part opens the Terms. */
+    acceptTermsBefore: string
+    termsLink: string
+    acceptTermsAfter: string
     submit: string
     submitting: string
     switchToSignIn: string
@@ -119,7 +122,9 @@ export const AUTH_CONTENT: Record<Locale, AuthContent> = {
       securityQuestionTooShort: 'A pergunta precisa de pelo menos 8 caracteres.',
       securityAnswerTooShort: 'A resposta precisa de pelo menos 2 caracteres.',
       securityAnswerLabel: 'Resposta',
-      acceptTerms: 'Li e aceito os Termos de Uso.',
+      acceptTermsBefore: 'Li e aceito os ',
+      termsLink: 'Termos de Uso',
+      acceptTermsAfter: '.',
       submit: 'Criar conta',
       submitting: 'Criando conta…',
       switchToSignIn: 'Já tem conta? Entrar',
@@ -220,7 +225,9 @@ export const AUTH_CONTENT: Record<Locale, AuthContent> = {
       securityQuestionTooShort: 'La pregunta necesita al menos 8 caracteres.',
       securityAnswerTooShort: 'La respuesta necesita al menos 2 caracteres.',
       securityAnswerLabel: 'Respuesta',
-      acceptTerms: 'Leí y acepto los Términos de Uso.',
+      acceptTermsBefore: 'Leí y acepto los ',
+      termsLink: 'Términos de Uso',
+      acceptTermsAfter: '.',
       submit: 'Crear cuenta',
       submitting: 'Creando cuenta…',
       switchToSignIn: '¿Ya tienes cuenta? Entrar',

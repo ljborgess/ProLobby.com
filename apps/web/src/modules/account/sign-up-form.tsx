@@ -7,6 +7,7 @@ import { TextField } from '@/common/ui/text-field'
 import { useAuthContent } from '@/hooks/use-auth-content'
 import { AuthHeading, AuthNote } from './auth-layout'
 import { SignUpHeading } from './sign-up-heading'
+import { TermsDialogLink } from './terms'
 import { CURRENT_TERMS_VERSION } from './terms-version'
 
 /** Group names in the Label role: small caps, wide tracking, like a panel. */
@@ -348,17 +349,33 @@ export function SignUpForm() {
         </fieldset>
 
         <div className="flex flex-col gap-1">
-          <label className="-my-1 flex cursor-pointer items-start gap-2.5 py-1 text-sm text-foreground-soft transition-colors hover:text-foreground">
+          {/* The button that opens the Terms sits outside the <label>: a control
+              inside a label competes for its name, and a click on it would tick
+              the box. The checkbox reads the whole sentence through
+              aria-labelledby. */}
+          <div className="-my-1 flex items-start gap-2.5 py-1 text-sm text-foreground-soft">
             <input
+              id="accepted-terms"
               type="checkbox"
               name="acceptedTerms"
               aria-required
+              aria-labelledby="accepted-terms-label accepted-terms-link accepted-terms-end"
               aria-invalid={errors.acceptedTerms ? true : undefined}
               aria-describedby={errors.acceptedTerms ? 'accepted-terms-error' : undefined}
               className="mt-1 h-5 w-5 shrink-0 cursor-pointer accent-accent [color-scheme:dark]"
             />
-            <span>{content.acceptTerms}</span>
-          </label>
+            <span>
+              <label
+                id="accepted-terms-label"
+                htmlFor="accepted-terms"
+                className="cursor-pointer transition-colors hover:text-foreground"
+              >
+                {content.acceptTermsBefore}
+              </label>
+              <TermsDialogLink id="accepted-terms-link" label={content.termsLink} />
+              <span id="accepted-terms-end">{content.acceptTermsAfter}</span>
+            </span>
+          </div>
           {errors.acceptedTerms && (
             <p id="accepted-terms-error" className="pl-7 text-xs text-danger">
               {errors.acceptedTerms}

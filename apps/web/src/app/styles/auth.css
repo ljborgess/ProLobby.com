@@ -265,3 +265,19 @@
     opacity: 0;
   }
 }
+
+/* The Terms dialog on sign-up: the page dims behind it, the dialog opens in. */
+.terms-dialog::backdrop {
+  background: rgb(7 11 20 / 78%);
+  backdrop-filter: blur(4px);
+}
+
+.terms-dialog[open] {
+  animation: auth-rise 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .terms-dialog[open] {
+    animation: none;
+  }
+}
