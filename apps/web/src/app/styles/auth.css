@@ -281,3 +281,14 @@
     animation: none;
   }
 }
+
+/* One scrollbar, in the dialog's own colours: the text area is the only part that scrolls. */
+.terms-dialog:modal {
+  max-height: none;
+}
+
+.terms-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 22%) transparent;
+  overscroll-behavior: contain;
+}
