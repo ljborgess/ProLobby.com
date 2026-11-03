@@ -23,7 +23,7 @@ do EA FC; a ProLobby monta o jogo, coordena pelo Discord e mede o que aconteceu.
 
 | Etapa | O que acontece |
 |---|---|
-| **1. Conta** | E-mail verificado, pergunta de segurança pra recuperar sem e-mail, aceite dos [Termos](https://github.com/ljborgess/ProLobby.com/blob/dev/docs/produto/04-governanca/03-termos.md) |
+| **1. Conta** | E-mail verificado, pergunta de segurança pra recuperar sem e-mail, aceite dos [Termos](docs/produto/04-governanca/03-termos.md) |
 | **2. Personagem** | Até 5 por conta, um por posição. O print da tela `Archetypes` prova a posse; a moderação confere até o OCR entrar |
 | **3. Discord** | Vínculo por OAuth2. Sair do servidor bloqueia a fila até voltar |
 | **4. Fila** | Entrada individual por posição. Dois lados equilibrados por elo; a IA do jogo completa as vagas vazias. A fila pausa quando não dá pra coordenar mais lobbies |
