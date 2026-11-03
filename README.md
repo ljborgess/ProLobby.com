@@ -45,8 +45,6 @@ CSS: nada de print ou arte do EA FC.
 | **Próximos passos**: o que falta pra entrar na fila | **Fila**: o vestiário, uma camisa por posição |
 | ![Elenco](docs/assets/telas/08-elenco.jpg) | ![Clube](docs/assets/telas/11-clube.jpg) |
 | **Elenco**: as cinco posições no campo | **Clube**: uniforme e escudo de quem pode ser capitão |
-| ![Discord](docs/assets/telas/07-discord.jpg) | |
-| **Vínculo com o Discord** | |
 
 ## Status
 
