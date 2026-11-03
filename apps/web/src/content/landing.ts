@@ -37,6 +37,12 @@ export interface LandingContent {
     title: string
     body: string
     items: string[]
+    /** The position picker: what the queue does for the place chosen. */
+    picker: {
+      entersAs: (code: string) => string
+      pairs: (name: string) => string
+      elo: (code: string) => string
+    }
   }
   soloQueue: {
     eyebrow: string
@@ -59,9 +65,8 @@ export interface LandingContent {
     clockLabel: string
     lineup: string
     example: string
-    tactical: string
+    pick: string
     replay: string
-    finalWhistle: string
   }
   /** The page's close, before the footer: the one place the offer is repeated. */
   closing: {
@@ -113,12 +118,11 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
       squadCaption: 'Um personagem por posição, cada um verificado por print do jogo.',
     },
     facts: {
-      eyebrow: 'O que já está decidido',
+      eyebrow: 'Regras da fila hoje',
       items: [
         { value: '5', label: 'categorias de posição' },
         { value: '30s', label: 'pra confirmar a fila' },
         { value: '11v11', label: 'humano + IA do jogo cobre o resto' },
-        { value: '2', label: 'idiomas — pt e es' },
       ],
     },
     positions: {
@@ -126,6 +130,13 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
       title: 'Você entra na posição que joga de verdade',
       body: 'Cada personagem tem categoria fixa e elo próprio — desempenho de goleiro não vira elo de atacante. Até 5 personagens por conta, um por categoria.',
       items: ['Goleiro', 'Zaga', 'Meio', 'Ponta', 'Ataque'],
+      picker: {
+        entersAs: (code) => `Você entra na fila como ${code}.`,
+        pairs: (name) =>
+          `A fila pareia você com outro jogador de ${name.toLowerCase()} do lado de lá: posição contra posição, não sorteio.`,
+        elo: (code) =>
+          `Seu elo de ${code} sobe ou desce só com partidas nessa posição. O que você faz em outra posição não mexe nele.`,
+      },
     },
     soloQueue: {
       eyebrow: 'Entra sozinho, sai com time',
@@ -157,9 +168,8 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
       clockLabel: 'pra confirmar a fila',
       lineup: 'Escalação',
       example: 'exemplo',
-      tactical: 'Câmera tática',
+      pick: 'Escolha sua posição',
       replay: 'Replay',
-      finalWhistle: 'Apito final',
     },
     closing: {
       title: 'Pronto pra entrar em campo?',
@@ -207,12 +217,11 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
       squadCaption: 'Un personaje por posición, cada uno verificado con una captura del juego.',
     },
     facts: {
-      eyebrow: 'Lo que ya está decidido',
+      eyebrow: 'Reglas de la cola hoy',
       items: [
         { value: '5', label: 'categorías de posición' },
         { value: '30s', label: 'para confirmar la cola' },
         { value: '11v11', label: 'humano + la IA del juego cubre el resto' },
-        { value: '2', label: 'idiomas — pt y es' },
       ],
     },
     positions: {
@@ -220,6 +229,13 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
       title: 'Entras en la posición que juegas de verdad',
       body: 'Cada personaje tiene categoría fija y elo propio — el desempeño de arquero no se vuelve elo de delantero. Hasta 5 personajes por cuenta, uno por categoría.',
       items: ['Arquero', 'Defensa', 'Mediocampo', 'Extremo', 'Delantero'],
+      picker: {
+        entersAs: (code) => `Entras a la cola como ${code}.`,
+        pairs: (name) =>
+          `La cola te empareja con otro jugador de ${name.toLowerCase()} del otro lado: posición contra posición, no sorteo.`,
+        elo: (code) =>
+          `Tu elo de ${code} sube o baja solo con partidos en esa posición. Lo que haces en otra posición no lo toca.`,
+      },
     },
     soloQueue: {
       eyebrow: 'Entras solo, sales con equipo',
@@ -251,9 +267,8 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
       clockLabel: 'para confirmar la cola',
       lineup: 'Alineación',
       example: 'ejemplo',
-      tactical: 'Cámara táctica',
+      pick: 'Elige tu posición',
       replay: 'Repetición',
-      finalWhistle: 'Pitazo final',
     },
     closing: {
       title: '¿Listo para salir a la cancha?',

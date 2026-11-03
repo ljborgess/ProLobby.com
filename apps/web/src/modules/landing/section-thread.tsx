@@ -41,7 +41,7 @@ const FIGURES: Record<Variant, React.ReactNode> = {
   ),
 }
 
-export function SectionThread({ step, variant = 'line' }: { step: number; variant?: Variant }) {
+export function SectionThread({ variant = 'line' }: { variant?: Variant }) {
   return (
     <div aria-hidden className="relative z-10 -mt-16 flex justify-center">
       <svg
@@ -56,17 +56,13 @@ export function SectionThread({ step, variant = 'line' }: { step: number; varian
         {FIGURES[variant]}
       </svg>
 
-      {/* The step marker, sitting on the end of the line.
-       *
-       * It lands exactly on the seam between two sections, which is where the
-       * background colour changes — the first build put a `bg-background`
-       * badge half over a `bg-surface` section and the digits vanished into
-       * it. So: the panel colour, a ring to cut it out of whatever is behind,
-       * and a shadow to lift it off the join. Two digits always, because "01"
-       * beside "02" keeps the column aligned down the page. */}
-      <span className="landing-thread-node absolute bottom-0 left-1/2 flex size-9 -translate-x-1/2 translate-y-1/2 items-center justify-center rounded-full border border-accent/50 bg-surface text-xs font-semibold tabular-nums text-accent shadow-[0_0_0_4px_var(--color-bg),0_0_18px_color-mix(in_srgb,var(--color-accent)_30%,transparent)]">
-        {String(step).padStart(2, '0')}
-      </span>
+      {/* The node where the line meets the seam between two sections: the
+       * panel colour, with a ring to cut it out of whatever is behind. No
+       * number since 2026-10-29 — "01" to "04" said nothing the order did not. */}
+      <span
+        aria-hidden
+        className="landing-thread-node absolute bottom-0 left-1/2 size-3 -translate-x-1/2 translate-y-1/2 rounded-full border border-accent/60 bg-surface shadow-[0_0_0_4px_var(--color-bg)]"
+      />
     </div>
   )
 }
