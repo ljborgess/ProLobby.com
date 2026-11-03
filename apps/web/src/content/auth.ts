@@ -27,9 +27,26 @@ export interface AuthContent {
     emailInvalid: string
     passwordTooShort: string
     ageTooYoung: string
-    checkYourEmail: string
     accessGroup: string
     recoveryGroup: string
+    /** Why the birth date is asked, under the field. */
+    birthDateHint: string
+    /** Ready-made security questions (RF-019 takes any text of 8 to 200). */
+    securityQuestionPick: string
+    /** Under the ready-made list: what the question is for (no length rule to state). */
+    securityQuestionWhy: string
+    securityQuestions: string[]
+    securityQuestionCustom: string
+    securityQuestionCustomLabel: string
+    /** One announcement for a failed submit, instead of one per field. */
+    errorSummary: (count: number) => string
+    /** The screen after sending: the same for a new and a taken address (RF-070). */
+    sentTitle: string
+    sentTo: (email: string) => string
+    sentSpam: string
+    sentWrongEmail: string
+    nextStepsTitle: string
+    nextSteps: string[]
   }
   signIn: {
     title: string
@@ -111,9 +128,30 @@ export const AUTH_CONTENT: Record<Locale, AuthContent> = {
       emailInvalid: 'Esse e-mail não parece válido.',
       passwordTooShort: 'Precisa de pelo menos 12 caracteres.',
       ageTooYoung: 'É preciso ter 16 anos ou mais.',
-      checkYourEmail: 'Enviamos um e-mail com as instruções.',
       accessGroup: 'Acesso',
       recoveryGroup: 'Recuperação da conta',
+      birthDateHint: 'Só pra confirmar que você tem 16 anos ou mais.',
+      securityQuestionPick: 'Escolha uma pergunta',
+      securityQuestionWhy: 'Usada se você perder o e-mail e o Discord ao mesmo tempo.',
+      securityQuestions: [
+        'Qual era o nome do seu primeiro animal de estimação?',
+        'Em que cidade seus pais se conheceram?',
+        'Qual o nome da rua onde você cresceu?',
+        'Qual foi o primeiro jogo que você zerou?',
+        'Qual apelido só a sua família usa?',
+      ],
+      securityQuestionCustom: 'Escrever a minha',
+      securityQuestionCustomLabel: 'Sua pergunta',
+      errorSummary: (count) =>
+        count === 1 ? '1 campo precisa de ajuste.' : `${count} campos precisam de ajuste.`,
+      sentTitle: 'Confira seu e-mail',
+      sentTo: (email) =>
+        `Se estiver tudo certo, o link de confirmação chega em ${email} em alguns minutos.`,
+      sentSpam:
+        'Não chegou? Olha o spam e a aba Promoções. Depois de entrar, dá pra pedir outro na sua conta.',
+      sentWrongEmail: 'Errei o e-mail',
+      nextStepsTitle: 'Depois do e-mail',
+      nextSteps: ['Confirmar o e-mail', 'Vincular o Discord', 'Mandar o print do seu personagem'],
     },
     signIn: {
       title: 'Entrar',
@@ -191,9 +229,30 @@ export const AUTH_CONTENT: Record<Locale, AuthContent> = {
       emailInvalid: 'Ese correo no parece válido.',
       passwordTooShort: 'Necesita al menos 12 caracteres.',
       ageTooYoung: 'Debes tener 16 años o más.',
-      checkYourEmail: 'Te enviamos un correo con las instrucciones.',
       accessGroup: 'Acceso',
       recoveryGroup: 'Recuperación de la cuenta',
+      birthDateHint: 'Solo para confirmar que tienes 16 años o más.',
+      securityQuestionPick: 'Elige una pregunta',
+      securityQuestionWhy: 'Se usa si pierdes el correo y Discord al mismo tiempo.',
+      securityQuestions: [
+        '¿Cómo se llamaba tu primera mascota?',
+        '¿En qué ciudad se conocieron tus padres?',
+        '¿Cómo se llama la calle donde creciste?',
+        '¿Cuál fue el primer juego que terminaste?',
+        '¿Qué apodo usa solo tu familia?',
+      ],
+      securityQuestionCustom: 'Escribir la mía',
+      securityQuestionCustomLabel: 'Tu pregunta',
+      errorSummary: (count) =>
+        count === 1 ? '1 campo necesita ajuste.' : `${count} campos necesitan ajuste.`,
+      sentTitle: 'Revisa tu correo',
+      sentTo: (email) =>
+        `Si todo está bien, el enlace de confirmación llega a ${email} en unos minutos.`,
+      sentSpam:
+        '¿No llegó? Revisa el spam y la pestaña Promociones. Después de entrar, puedes pedir otro desde tu cuenta.',
+      sentWrongEmail: 'Me equivoqué de correo',
+      nextStepsTitle: 'Después del correo',
+      nextSteps: ['Confirmar el correo', 'Vincular Discord', 'Enviar la captura de tu personaje'],
     },
     signIn: {
       title: 'Entrar',

@@ -11,10 +11,16 @@ interface TextFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
    * Without it the field stays a plain password input.
    */
   revealLabel?: string
+  /**
+   * Whether this field's own error is a live alert. A form that announces one
+   * summary for the whole submit turns it off, so six errors are not read at
+   * once; the error stays tied to the field through aria-describedby.
+   */
+  announce?: boolean
 }
 
 const INPUT =
-  'min-h-11 w-full rounded-sm border border-white/30 bg-surface px-3.5 py-2.5 text-sm text-foreground caret-accent [color-scheme:dark] outline-none transition-colors hover:border-white/45 focus-visible:border-accent/50 focus-visible:ring-2 focus-visible:ring-accent aria-[invalid=true]:border-danger/70'
+  'min-h-11 w-full rounded-sm border border-white/35 bg-surface px-3.5 py-2.5 text-sm text-foreground caret-accent [color-scheme:dark] outline-none transition-colors hover:border-white/45 focus-visible:border-accent/50 focus-visible:ring-2 focus-visible:ring-accent aria-[invalid=true]:border-danger/70'
 
 /**
  * Labelled input with room for a hint and an error — RNF-015.
@@ -34,6 +40,7 @@ export function TextField({
   hint,
   error,
   revealLabel,
+  announce = true,
   id,
   className,
   type,
@@ -95,13 +102,15 @@ export function TextField({
       ) : (
         input
       )}
-      {hint && !error && (
+      {/* The hint stays beside an error: it is when the field went wrong that
+          its explanation is needed most. */}
+      {hint && (
         <p id={hintId} className="text-xs leading-snug text-foreground-soft">
           {hint}
         </p>
       )}
       {error && (
-        <p id={errorId} role="alert" className="text-xs text-danger">
+        <p id={errorId} role={announce ? 'alert' : undefined} className="text-xs text-danger">
           {error}
         </p>
       )}
