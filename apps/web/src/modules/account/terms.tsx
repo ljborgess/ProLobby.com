@@ -77,13 +77,13 @@ export function TermsDialogLink({ label, id }: { label: string; id?: string }) {
             ref={dialog}
             onClose={() => setOpen(false)}
             aria-label={content.title}
-            className="terms-dialog m-auto w-[min(42rem,calc(100vw-2rem))] overflow-hidden rounded-md border border-white/12 bg-surface p-0 text-foreground shadow-[0_20px_45px_rgb(0_0_0/45%)] outline-none"
+            className="terms-dialog m-auto w-[min(38rem,calc(100vw-2rem))] overflow-hidden rounded-md border border-white/12 bg-surface p-0 text-foreground shadow-[0_20px_45px_rgb(0_0_0/45%)] outline-none"
             onClick={(event) => {
               // A click on the backdrop lands on the dialog itself: close.
               if (event.target === dialog.current) dialog.current.close()
             }}
           >
-            <div className="flex max-h-[min(42rem,calc(100svh-2rem))] flex-col">
+            <div className="flex max-h-[min(34rem,80svh)] flex-col">
               <div className="terms-scroll min-h-0 flex-1 overflow-y-auto px-5 py-6 sm:px-8">
                 <TermsDocument headingLevel={2} />
               </div>
