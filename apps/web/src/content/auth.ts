@@ -83,7 +83,7 @@ export interface AuthContent {
   languageSwitcher: {
     label: string
   }
-  /** Nome do olho no campo de senha; o estado vai em aria-pressed. */
+  /** Name of the eye button in a password field; its state goes in aria-pressed. */
   revealPassword: string
 }
 

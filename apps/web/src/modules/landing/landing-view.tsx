@@ -97,7 +97,11 @@ export function LandingView({ signedIn = false }: { signedIn?: boolean }) {
         {/* The corner bug, pinned to the frame like a broadcast's. */}
         <div className="absolute inset-x-0 top-6 z-10 px-4 sm:px-6">
           <div className="mx-auto max-w-6xl">
-            <Scorebug stage={content.broadcast.stage} clockLabel={content.broadcast.clockLabel} />
+            <Scorebug
+              stage={content.broadcast.stage}
+              clock={content.broadcast.clock}
+              clockLabel={content.broadcast.clockLabel}
+            />
           </div>
         </div>
 
@@ -133,9 +137,8 @@ export function LandingView({ signedIn = false }: { signedIn?: boolean }) {
         </div>
       </section>
 
-      {/* Every seam from here down is threaded, and the threads are numbered:
-          the page reads as one route with landmarks rather than five panels
-          stacked. `seam` drops each section's top rule, because a full-width
+      {/* Every seam from here down is threaded: the page reads as one route
+          rather than five panels stacked. `seam` drops each section's top rule, because a full-width
           hairline across the landing point would cut the thread in half. */}
       <SectionThread variant="line" />
 
@@ -506,7 +509,15 @@ function Plate({ children, className = '' }: { children: React.ReactNode; classN
  * The scorebug in the opening frame: the brand, the stage of the day and the
  * queue's real clock. A spec number, not a running match.
  */
-function Scorebug({ stage, clockLabel }: { stage: string; clockLabel: string }) {
+function Scorebug({
+  stage,
+  clock,
+  clockLabel,
+}: {
+  stage: string
+  clock: string
+  clockLabel: string
+}) {
   return (
     <div
       className="landing-fade-up landing-scorebug inline-flex items-stretch overflow-hidden rounded-sm border border-white/15 bg-surface/90 font-numeric uppercase shadow-[0_8px_20px_rgb(0_0_0/35%)]"
@@ -521,7 +532,7 @@ function Scorebug({ stage, clockLabel }: { stage: string; clockLabel: string }) 
         {stage}
       </span>
       <span className="flex items-baseline gap-2 border-l border-white/15 px-3 py-1.5">
-        <span className="text-xl font-bold leading-none tabular-nums text-accent">0:30</span>
+        <span className="text-xl font-bold leading-none tabular-nums text-accent">{clock}</span>
         <span className="text-[0.7rem] font-semibold normal-case tracking-normal text-foreground-soft">
           {clockLabel}
         </span>
@@ -621,7 +632,7 @@ function PositionPicker() {
         aria-label={content.broadcast.pick}
         className="grid grid-cols-5 gap-2 sm:gap-3"
       >
-        {SQUAD.map(({ category, number }) => {
+        {SQUAD.map(({ category }) => {
           const on = category === chosen
           return (
             <label
@@ -637,7 +648,7 @@ function PositionPicker() {
                 name="landing-position"
                 checked={on}
                 onChange={() => setChosen(category)}
-                aria-label={character.categories[category]}
+                aria-label={`${character.categoryCodes[category]}, ${character.categories[category]}`}
                 className="sr-only"
               />
               <KitShirt
@@ -655,9 +666,6 @@ function PositionPicker() {
                 className={`font-numeric text-base font-bold uppercase tracking-[0.1em] sm:text-lg ${on ? 'text-accent' : 'text-foreground'}`}
               >
                 {character.categoryCodes[category]}
-              </span>
-              <span aria-hidden className="sr-only">
-                {number}
               </span>
             </label>
           )

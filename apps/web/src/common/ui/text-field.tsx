@@ -1,6 +1,6 @@
 'use client'
 
-import { useId, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 
 interface TextFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string
@@ -45,9 +45,25 @@ export function TextField({
   const errorId = error ? `${fieldId}-error` : undefined
   const [revealed, setRevealed] = useState(false)
   const canReveal = type === 'password' && revealLabel !== undefined
+  const field = useRef<HTMLInputElement>(null)
+
+  // A revealed password goes back to type=password before the form submits,
+  // in the capture phase so it is a password field when the browser (and its
+  // password manager) reads the form — never a plain text field named password.
+  useEffect(() => {
+    const form = canReveal ? field.current?.form : null
+    if (!form) return
+    const hide = () => {
+      if (field.current) field.current.type = 'password'
+      setRevealed(false)
+    }
+    form.addEventListener('submit', hide, { capture: true })
+    return () => form.removeEventListener('submit', hide, { capture: true })
+  }, [canReveal])
 
   const input = (
     <input
+      ref={field}
       id={fieldId}
       type={canReveal && revealed ? 'text' : type}
       aria-describedby={[hintId, errorId].filter(Boolean).join(' ') || undefined}
