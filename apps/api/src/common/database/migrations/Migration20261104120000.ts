@@ -11,10 +11,12 @@ export class Migration20261104120000 extends Migration {
     this.addSql(
       `alter table "moderation_case" add constraint "moderation_case_type_check" check("type" in (${BEFORE}, 'support_request'));`,
     )
+    this.addSql(`alter table "moderation_case" add column "discord_id_encrypted" bytea null;`)
   }
 
   override async down(): Promise<void> {
     this.addSql(`delete from "moderation_case" where "type" = 'support_request';`)
+    this.addSql(`alter table "moderation_case" drop column "discord_id_encrypted";`)
     this.addSql(
       `alter table "moderation_case" drop constraint if exists "moderation_case_type_check";`,
     )

@@ -1,7 +1,7 @@
 import { Events, type Client, type GuildMember } from 'discord.js'
 
 import type { Logger } from '../logger'
-import { BRAND, linkRow, picture, plate, webLink, type BotMessage } from './brand'
+import { BRAND, linkRows, picture, plate, webLink, type BotMessage } from './brand'
 import { render, welcomeSvg } from './cards'
 
 /**
@@ -9,13 +9,13 @@ import { render, welcomeSvg } from './cards'
  * and the two buttons that take them there. The mention sits outside the
  * embed — only text outside it pings — and it is the only ping, one person.
  */
-export function welcomeMessage(
+export async function welcomeMessage(
   memberId: string,
   opts: { webUrl?: string; iconUrl?: string; name?: string } = {},
-): BotMessage {
+): Promise<BotMessage> {
   const art = picture(
     'boas-vindas.png',
-    render(welcomeSvg(opts.name ?? 'jogador')),
+    await render(welcomeSvg(opts.name ?? 'jogador')),
     'Chegou no ProLobby. 1: crie a conta. 2: cadastre o personagem com o print do jogo. 3: vincule este Discord e entre na fila.',
   )
   return {
@@ -33,12 +33,10 @@ export function welcomeMessage(
       },
     ],
     files: [art.file],
-    components: [
-      linkRow([
-        { label: 'Criar conta', url: webLink(opts.webUrl, '/sign-up'), emoji: '📝' },
-        { label: 'Vincular Discord', url: webLink(opts.webUrl, '/account/discord'), emoji: '🔗' },
-      ]),
-    ],
+    components: linkRows([
+      { label: 'Criar conta', url: webLink(opts.webUrl, '/sign-up'), emoji: '📝' },
+      { label: 'Vincular Discord', url: webLink(opts.webUrl, '/account/discord'), emoji: '🔗' },
+    ]),
   }
 }
 
@@ -69,11 +67,11 @@ export function welcomeOn(client: Client, log: Logger, deps: WelcomeDeps): void 
       const channel = await client.channels.fetch(channelId)
       if (!channel?.isSendable()) throw new Error('welcome channel is not one the bot can post in')
       await channel.send({
-        ...welcomeMessage(member.id, {
+        ...(await welcomeMessage(member.id, {
           webUrl: deps.webUrl,
           iconUrl: client.user?.displayAvatarURL(),
           name: member.displayName,
-        }),
+        })),
         allowedMentions: { users: [member.id] },
       })
     })().catch((error: unknown) => {

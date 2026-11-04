@@ -48,7 +48,11 @@ export async function main(): Promise<void> {
     webUrl: process.env.WEB_URL,
   })
   if (supportChannelId) {
-    supportChannelOn(client, logger, { channelId: supportChannelId, report: postBotEvent })
+    supportChannelOn(client, logger, {
+      channelId: supportChannelId,
+      report: postBotEvent,
+      webUrl: process.env.WEB_URL,
+    })
   }
   announceCommandOn(client, logger, {
     guildId: process.env.DISCORD_GUILD_ID,

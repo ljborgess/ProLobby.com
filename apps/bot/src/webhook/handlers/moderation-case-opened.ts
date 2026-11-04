@@ -1,6 +1,6 @@
 import type { ModerationCaseOpenedEvent } from '@prolobby/types'
 
-import { BRAND, linkRow, plate, webLink, type BotMessage } from '../../discord/brand'
+import { BRAND, linkRows, plate, webLink, type BotMessage } from '../../discord/brand'
 
 /** How each kind of case reads in the moderators' channel. */
 const CASE_LABEL: Record<string, string> = {
@@ -45,9 +45,9 @@ export function caseMessage(
         timestamp: occurredAt,
       },
     ],
-    components: [
-      linkRow([{ label: 'Abrir painel', url: webLink(opts.webUrl, '/moderation'), emoji: '🛡️' }]),
-    ],
+    components: linkRows([
+      { label: 'Abrir painel', url: webLink(opts.webUrl, '/moderation'), emoji: '🛡️' },
+    ]),
   }
 }
 

@@ -14,8 +14,8 @@ describe('cards', () => {
     expect(wrap('um dois tres quatro cinco seis sete', 10, 2)).toHaveLength(2)
   })
 
-  it('renders a PNG with the site fonts, no system font needed', () => {
-    const png = render(
+  it('renders a PNG with the site fonts, no system font needed', async () => {
+    const png = await render(
       boardSvg(
         { goalkeeper: 'low', defender: 'busy', midfielder: 'full', winger: 'low', striker: 'low' },
         'lobbies_full',

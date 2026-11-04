@@ -21,7 +21,8 @@ export async function handlePlatformEvent(
   switch (event.type) {
     case 'lobby.closed':
       await openLobbyChannels(event, deps.lobby)
-      await announceLobbyClosed(event, deps.queueStatus, deps.warn)
+      // Not awaited: the public card must not hold the channels' acknowledgement.
+      void announceLobbyClosed(event, deps.queueStatus, deps.warn)
       return
     case 'lobby.ended':
       await dropLobbyChannels(event, deps.lobby)

@@ -1,5 +1,5 @@
 import { CoordinationState } from '../bot-integration/coordination-state'
-import { QueueBoardPublisher } from './queue-board.publisher'
+import { BOARD_MIN_INTERVAL_MS, QueueBoardPublisher } from './queue-board.publisher'
 
 describe('QueueBoardPublisher (#fila-status)', () => {
   const bands = {
@@ -39,12 +39,14 @@ describe('QueueBoardPublisher (#fila-status)', () => {
     expect(webhook.post).toHaveBeenCalledTimes(1)
   })
 
-  it('sends again when a band moves', async () => {
+  it('sends again when a band moves, but not sooner than the minimum interval', async () => {
     const { publisher, webhook, queueService } = setup()
+    const t0 = new Date('2026-11-04T12:00:00Z')
 
-    await publisher.publish()
+    await publisher.publish(t0)
     queueService.movement.mockResolvedValue({ ...bands, winger: 'busy' })
-    await publisher.publish()
+    expect(await publisher.publish(new Date(t0.getTime() + 5_000))).toBe(false)
+    expect(await publisher.publish(new Date(t0.getTime() + BOARD_MIN_INTERVAL_MS))).toBe(true)
 
     expect(webhook.post).toHaveBeenCalledTimes(2)
   })

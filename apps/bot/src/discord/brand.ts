@@ -35,8 +35,9 @@ export function picture(name: string, png: Buffer, alt: string) {
   }
 }
 
-export const webLink = (webUrl: string | undefined, path: string): string =>
-  `${(webUrl ?? 'https://prolobby.com.br').replace(/\/$/, '')}${path}`
+/** Without `WEB_URL` there is no link: a test bot must never send people to production. */
+export const webLink = (webUrl: string | undefined, path: string): string | undefined =>
+  webUrl ? `${webUrl.replace(/\/$/, '')}${path}` : undefined
 
 /** The broadcast plate on top of every embed: PROLOBBY · SEGMENT. */
 export const plate = (segment: string, iconUrl?: string): APIEmbed['author'] => ({
@@ -44,18 +45,28 @@ export const plate = (segment: string, iconUrl?: string): APIEmbed['author'] => 
   ...(iconUrl ? { icon_url: iconUrl } : {}),
 })
 
-/** One row of link buttons: links only, the bot never takes a player action. */
-export function linkRow(
-  buttons: { label: string; url: string; emoji?: string }[],
-): APIActionRowComponent<APIButtonComponent> {
-  return {
-    type: ComponentType.ActionRow,
-    components: buttons.map(({ label, url, emoji }) => ({
-      type: ComponentType.Button,
-      style: ButtonStyle.Link,
-      label,
-      url,
-      ...(emoji ? { emoji: { name: emoji } } : {}),
-    })),
-  }
+/**
+ * The link buttons under a card: links only, the bot never takes a player
+ * action. A button without a URL is dropped, and no row is returned when none
+ * is left — Discord refuses an empty row.
+ */
+export function linkRows(
+  buttons: { label: string; url?: string; emoji?: string }[],
+): APIActionRowComponent<APIButtonComponent>[] {
+  const linked = buttons.filter(
+    (button): button is { label: string; url: string; emoji?: string } => Boolean(button.url),
+  )
+  if (linked.length === 0) return []
+  return [
+    {
+      type: ComponentType.ActionRow,
+      components: linked.map(({ label, url, emoji }) => ({
+        type: ComponentType.Button,
+        style: ButtonStyle.Link,
+        label,
+        url,
+        ...(emoji ? { emoji: { name: emoji } } : {}),
+      })),
+    },
+  ]
 }

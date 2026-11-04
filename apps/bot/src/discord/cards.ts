@@ -1,5 +1,5 @@
 import { join } from 'node:path'
-import { Resvg } from '@resvg/resvg-js'
+import { renderAsync } from '@resvg/resvg-js'
 
 /**
  * The bot's pictures, drawn like the landing (DESIGN.md "Cabine de
@@ -31,12 +31,15 @@ export const INK = {
 const SORA = 'font-family="Sora"'
 const BARLOW = 'font-family="Barlow Condensed"'
 
-export function render(svg: string): Buffer {
-  return new Resvg(svg, {
+/**
+ * Off the event loop: resvg rasterizes on libuv's thread pool, so a burst of
+ * joins does not stall the gateway heartbeat or the webhook server.
+ */
+export async function render(svg: string): Promise<Buffer> {
+  const image = await renderAsync(svg, {
     font: { fontFiles: FONT_FILES, loadSystemFonts: false, defaultFontFamily: 'Sora' },
   })
-    .render()
-    .asPng()
+  return image.asPng()
 }
 
 /** Text that came from a person goes through here before it touches the SVG. */

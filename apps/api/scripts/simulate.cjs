@@ -1,16 +1,17 @@
-// Simulador de servidor de teste — só desenvolvimento, nunca produção.
+// Test-server simulator: development only, never production.
 //
-//   pnpm --filter @prolobby/api simulate suporte [quantos]
-//     Manda chamados e denúncias falsos como se viessem de #suporte-e-denuncia:
-//     viram casos de moderação e o bot avisa em #casos-moderacao.
+//   pnpm --filter @prolobby/api simulate suporte [count]
+//     Sends fake support requests and reports as if they came from
+//     #suporte-e-denuncia: they become moderation cases, announced by the bot
+//     in #casos-moderacao.
 //
 //   pnpm --filter @prolobby/api simulate fila
-//     Coloca 7 jogadores de teste na fila (GOL, ZAG e ATA em dupla, um MEI) e
-//     responde por eles cada etapa do lobby. Entre como MEI pela tela pra fechar.
-//     Ctrl+C encerra; os 7 continuam no banco pra próxima rodada.
+//     Puts 7 test players in the queue (GOL, ZAG and ATA in pairs, one MEI)
+//     and answers every lobby step for them. Join as MEI on the site to close
+//     the lobby. Ctrl+C stops; the 7 stay in the database for the next run.
 //
-// Precisa de `pnpm --filter @prolobby/api build` antes (lê o dist) e da API e
-// do bot no ar. Recusa qualquer banco que não seja local.
+// Needs `pnpm --filter @prolobby/api build` first (it reads dist) and the API
+// and the bot running. Refuses any database that is not local.
 const path = require('node:path')
 const { randomUUID, randomInt } = require('node:crypto')
 

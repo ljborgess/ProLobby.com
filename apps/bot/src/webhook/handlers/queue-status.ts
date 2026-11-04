@@ -1,6 +1,6 @@
 import type { LobbyClosedEvent, QueueBoardEvent } from '@prolobby/types'
 
-import { BRAND, linkRow, picture, plate, webLink, type BotMessage } from '../../discord/brand'
+import { BRAND, linkRows, picture, plate, webLink, type BotMessage } from '../../discord/brand'
 import { boardSvg, lobbySvg, render } from '../../discord/cards'
 
 /** The plate the bot finds its own board by after a restart. */
@@ -34,15 +34,15 @@ const PAUSE: Record<NonNullable<QueueBoardEvent['payload']['paused']>, string> =
  * green while lobbies close, stadium amber while paused. The text under it
  * says the same for screen readers and notifications.
  */
-export function boardMessage(
+export async function boardMessage(
   event: QueueBoardEvent,
   opts: { webUrl?: string; iconUrl?: string } = {},
-): BotMessage {
+): Promise<BotMessage> {
   const { bands, paused } = event.payload
   const summary = POSITIONS.map(([key, code]) => `${code} ${BAND_WORD[bands[key]]}`).join(', ')
   const art = picture(
     'fila.png',
-    render(boardSvg(bands, paused, event.occurredAt)),
+    await render(boardSvg(bands, paused, event.occurredAt)),
     `Placar da fila: ${summary}. ${paused ? `Pausada: ${PAUSE[paused]}` : 'No ar.'}`,
   )
   return {
@@ -58,23 +58,23 @@ export function boardMessage(
         timestamp: event.occurredAt,
       },
     ],
-    components: [
-      linkRow([{ label: 'Entrar na fila', url: webLink(opts.webUrl, '/queue'), emoji: '⚽' }]),
-    ],
+    components: linkRows([
+      { label: 'Entrar na fila', url: webLink(opts.webUrl, '/queue'), emoji: '⚽' },
+    ]),
     files: [art.file],
   }
 }
 
 /** A public card per closed lobby: how many humans a side, never who. */
-export function lobbyClosedMessage(
+export async function lobbyClosedMessage(
   event: LobbyClosedEvent,
   opts: { iconUrl?: string } = {},
-): BotMessage {
+): Promise<BotMessage> {
   const a = event.payload.sideA.discordIds.length
   const b = event.payload.sideB.discordIds.length
   const art = picture(
     'lobby.png',
-    render(lobbySvg(a, b)),
+    await render(lobbySvg(a, b)),
     `Lobby fechado: ${a} humanos de um lado, ${b} do outro.`,
   )
   return {
@@ -105,13 +105,15 @@ export async function showQueueBoard(event: QueueBoardEvent, deps: QueueStatusDe
   if (!deps.channelId) return
   await deps.upsertBoard(
     deps.channelId,
-    boardMessage(event, { webUrl: deps.webUrl, iconUrl: deps.iconUrl?.() }),
+    await boardMessage(event, { webUrl: deps.webUrl, iconUrl: deps.iconUrl?.() }),
   )
 }
 
 /**
  * Best effort: the lobby's channels are what matters on `lobby.closed`, so a
- * failed public card must not make the API retry the whole event.
+ * failed public card must not make the API retry the whole event. The router
+ * does not wait on it either (handlers/index.ts): rendering and uploading the
+ * picture would eat into the API's 10 s acknowledgement window.
  */
 export async function announceLobbyClosed(
   event: LobbyClosedEvent,
@@ -119,8 +121,9 @@ export async function announceLobbyClosed(
   warn: (message: string) => void,
 ): Promise<void> {
   if (!deps.channelId) return
-  await deps
-    .post(deps.channelId, lobbyClosedMessage(event, { iconUrl: deps.iconUrl?.() }))
+  const channelId = deps.channelId
+  await lobbyClosedMessage(event, { iconUrl: deps.iconUrl?.() })
+    .then((message) => deps.post(channelId, message))
     .catch((error: unknown) => {
       warn(
         `lobby card not posted in #fila-status: ${error instanceof Error ? error.message : error}`,

@@ -10,8 +10,8 @@ import {
 } from './queue-status'
 
 describe('#fila-status', () => {
-  it('is a scoreboard picture, green while lobbies close, with the bands as alt text', () => {
-    const message = boardMessage(sampleQueueBoardEvent())
+  it('is a scoreboard picture, green while lobbies close, with the bands as alt text', async () => {
+    const message = await boardMessage(sampleQueueBoardEvent())
     const [embed] = message.embeds
 
     expect(embed!.author?.name).toBe(BOARD_PLATE)
@@ -22,26 +22,28 @@ describe('#fila-status', () => {
     expect(message.files![0]!.description).toContain('MEI cheia')
   })
 
-  it('turns amber and says why when the queue is paused', () => {
+  it('turns amber and says why when the queue is paused', async () => {
     const event = sampleQueueBoardEvent()
     event.payload.paused = 'lobbies_full'
-    const [embed] = boardMessage(event).embeds
+    const [embed] = (await boardMessage(event)).embeds
 
     expect(embed!.color).toBe(BRAND.amber)
     expect(embed!.description).toContain('todos os lobbies ocupados')
   })
 
-  it('links to the queue on the site, never acting for the player', () => {
-    const message = boardMessage(sampleQueueBoardEvent(), { webUrl: 'https://prolobby.test/' })
+  it('links to the queue on the site, never acting for the player', async () => {
+    const message = await boardMessage(sampleQueueBoardEvent(), {
+      webUrl: 'https://prolobby.test/',
+    })
 
     expect(message.components![0]!.components[0]).toMatchObject({
       url: 'https://prolobby.test/queue',
     })
   })
 
-  it('counts the humans of a closed lobby without naming anyone', () => {
+  it('counts the humans of a closed lobby without naming anyone', async () => {
     const event = sampleLobbyClosedEvent()
-    const message = lobbyClosedMessage(event)
+    const message = await lobbyClosedMessage(event)
     const text = JSON.stringify({ ...message, files: message.files!.map((f) => f.description) })
 
     expect(text).toContain('5 × 5')

@@ -52,13 +52,13 @@ describe('/anunciar', () => {
     expect(json.contexts).toEqual([0])
   })
 
-  it('puts @everyone outside the card only when asked, with the title on top', () => {
-    const loud = announcementMessage({
+  it('puts @everyone outside the card only when asked, with the title on top', async () => {
+    const loud = await announcementMessage({
       text: 'Beta aberto',
       title: ' Novidade ',
       pingEveryone: true,
     })
-    const quiet = announcementMessage({ text: 'Beta aberto', pingEveryone: false })
+    const quiet = await announcementMessage({ text: 'Beta aberto', pingEveryone: false })
 
     expect(loud.content).toBe('@everyone')
     expect(loud.embeds[0]!.title).toBe('Novidade')

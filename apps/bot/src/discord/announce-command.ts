@@ -47,12 +47,16 @@ export type AnnounceInput = {
 }
 
 /** The announcement as a broadcast card; @everyone rides outside it, where it pings. */
-export function announcementMessage(
+export async function announcementMessage(
   input: { text: string; title?: string | null; pingEveryone: boolean },
   iconUrl?: string,
-): BotMessage {
+): Promise<BotMessage> {
   const headline = input.title?.trim() || 'Recado da equipe'
-  const art = picture('anuncio.png', render(announcementSvg(headline)), `Anúncio: ${headline}`)
+  const art = picture(
+    'anuncio.png',
+    await render(announcementSvg(headline)),
+    `Anúncio: ${headline}`,
+  )
   return {
     ...(input.pingEveryone ? { content: '@everyone' } : {}),
     files: [art.file],
@@ -86,7 +90,7 @@ export async function announce(input: AnnounceInput, deps: AnnounceDeps): Promis
   if (!text) return 'O anúncio está vazio.'
   await deps.post(
     deps.channelId,
-    announcementMessage({ ...input, text }, deps.iconUrl),
+    await announcementMessage({ ...input, text }, deps.iconUrl),
     input.pingEveryone,
   )
   return `Anúncio postado em <#${deps.channelId}>.`
@@ -121,13 +125,19 @@ export function announceCommandOn(
       log.error('announce', 'announcement failed', {
         message: error instanceof Error ? error.message : String(error),
       })
-      void interaction
-        .reply({ content: 'Não deu pra postar o anúncio agora.', flags: MessageFlags.Ephemeral })
-        .catch(() => {})
+      const failed = 'Não deu pra postar o anúncio agora.'
+      void (
+        interaction.deferred
+          ? interaction.editReply(failed)
+          : interaction.reply({ content: failed, flags: MessageFlags.Ephemeral })
+      ).catch(() => {})
     })
   })
 
   async function handle(interaction: ChatInputCommandInteraction): Promise<void> {
+    // Acknowledged first: rendering and uploading the banner can pass Discord's
+    // 3 s, and an expired interaction after the post made moderators repeat it.
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral })
     const reply = await announce(
       {
         allowed: interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild) ?? false,
@@ -148,6 +158,6 @@ export function announceCommandOn(
         },
       },
     )
-    await interaction.reply({ content: reply, flags: MessageFlags.Ephemeral })
+    await interaction.editReply(reply)
   }
 }

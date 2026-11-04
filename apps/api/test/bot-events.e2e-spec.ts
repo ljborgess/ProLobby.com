@@ -342,6 +342,9 @@ describe('bot → platform events (#150, RF-060)', () => {
       expect(res.status).toBe(204)
       const [opened] = await casesBy('quero saber como funciona')
       expect(opened?.openedBy).toBeFalsy()
+      // The way back to someone with no account: their Discord, encrypted.
+      expect(opened?.discordIdEncrypted?.length).toBeGreaterThan(0)
+      expect(opened?.discordIdEncrypted?.toString()).not.toContain(STRANGER)
     })
 
     it('refuses an empty or oversized message', async () => {
