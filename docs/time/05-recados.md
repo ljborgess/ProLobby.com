@@ -6,6 +6,19 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 
 ---
 
+## 2026-11-04 · Rafael
+
+### Painel de moderação por seções: duas issues de tela suas
+
+- **Suas:** #309 (sidebar com as seções de casos, lista, detalhe e o fluxo de encerrar com Procedente/Improcedente) e #314 (seções Jogadores, Auditoria, Métricas e Planos). Faça nessa ordem; a #314 entra na sidebar da #309.
+- **Dá pra começar já:** o contrato da API está escrito em cada issue. A API vem do Luciano (#307, #312, #313); até lá use dados de exemplo no formato do contrato.
+- **Regra do painel:** nenhuma tela mostra e-mail nem data de nascimento, e nada edita ou apaga entrada de auditoria. A seção Planos só aparece pra admin.
+- **Visual:** o padrão do painel atual. Simples, com botões e pouco texto, em pt/es.
+- **2FA:** o login com código (#311) fica com o Luciano. Quando entrar, o painel só abre com sessão de 2FA ok; não precisa tratar isso nas suas telas.
+- Decisões completas em #306 e #310.
+
+---
+
 ## 2026-10-29 · Rafael
 
 ### As telas são suas daqui pra frente; issues novas
