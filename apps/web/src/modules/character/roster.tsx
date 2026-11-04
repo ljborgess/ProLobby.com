@@ -4,6 +4,7 @@ import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react'
 import type { CharacterCategory } from '@/content/character'
 import { useCharacterContent } from '@/hooks/use-character-content'
 import { CheckMark } from '@/common/ui/icons'
+import { KitFabric, SHIRT_PATH, type KitLook } from '@/modules/kit/kit-art'
 import { Brackets } from './pitch-art'
 import { archetypeLabel, type CharacterView } from './types'
 
@@ -33,6 +34,7 @@ export function Roster({
   onClaim,
   onSend,
   widget,
+  look = null,
 }: {
   characters: CharacterView[]
   /** The place picked on the pitch; kept by the flow, so it survives the print screen. */
@@ -46,6 +48,8 @@ export function Roster({
   onSend: (characterId: string) => void
   /** Takes the side panel while open: the registration, next to its pitch. */
   widget: ReactNode
+  /** The declared club's kit: the shirts on the pitch wear it. Null without a club. */
+  look?: KitLook | null
 }) {
   const content = useCharacterContent()
   const sectionRef = useRef<HTMLElement>(null)
@@ -76,6 +80,7 @@ export function Roster({
             selected={selected}
             count={content.roster.count(filled, CATEGORY_ORDER.length)}
             onSelect={onSelect}
+            look={look}
           />
           <Legend />
         </div>
@@ -151,12 +156,14 @@ function Board({
   selected,
   count,
   onSelect,
+  look,
 }: {
   characters: CharacterView[]
   selected: CharacterCategory
   /** "4/5 vagas", read off the pitch like a match HUD. */
   count: string
   onSelect: (category: CharacterCategory) => void
+  look: KitLook | null
 }) {
   const statusFor = (category: CharacterCategory): SlotStatus | 'empty' => {
     const character = characters.find((item) => item.category === category)
@@ -218,6 +225,7 @@ function Board({
                   status={statusFor(category)}
                   selected={selected === category}
                   onSelect={() => onSelect(category)}
+                  look={look}
                 />
               </div>
             </div>
@@ -287,12 +295,14 @@ function Marker({
   status,
   selected,
   onSelect,
+  look,
 }: {
   category: CharacterCategory
   character?: CharacterView
   status: SlotStatus | 'empty'
   selected: boolean
   onSelect: () => void
+  look: KitLook | null
 }) {
   const content = useCharacterContent()
   const label = character ? archetypeLabel(character.archetype) : content.roster.free
@@ -326,7 +336,7 @@ function Marker({
           }`}
         />
         <span className="relative block">
-          <Shirt status={status} code={content.categoryCodes[category]} />
+          <Shirt status={status} code={content.categoryCodes[category]} look={look} />
         </span>
       </span>
       {/* Position and archetype together, the way a team sheet reads: the
@@ -353,10 +363,30 @@ function Marker({
   )
 }
 
-const SHIRT = 'M17 7l7 3 7-3 11 6-4 9-4-2v22H14V20l-4 2-4-9z'
+const SHIRT_SIZE =
+  'size-12 overflow-visible transition-transform duration-200 group-hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:group-hover:translate-y-0 sm:size-14'
+const VERIFIED_GLOW =
+  'drop-shadow-[0_0_10px_color-mix(in_srgb,var(--color-accent)_55%,transparent)]'
 
-/** A drawn shirt, in the state of its place — the Quadro da Fila marks on a kit. */
-export function Shirt({ status, code }: { status: SlotStatus | 'empty'; code: string }) {
+/**
+ * A drawn shirt, in the state of its place — the Quadro da Fila marks on a
+ * kit. With the club's kit (`look`) the fabric is the club's, and the state
+ * moves to what the kit never touches: the outline and a badge on the chest,
+ * both in the interface's own colours, so a white, black or yellow shirt
+ * reads the same. A free place stays the faint outline, kit or not.
+ */
+export function Shirt({
+  status,
+  code,
+  look = null,
+}: {
+  status: SlotStatus | 'empty'
+  code: string
+  look?: KitLook | null
+}) {
+  if (look && status !== 'empty') {
+    return <KitStateShirt status={status} code={code} look={look} />
+  }
   const body: Record<SlotStatus | 'empty', string> = {
     verified: 'fill-accent stroke-accent',
     review: 'fill-background stroke-accent',
@@ -368,14 +398,10 @@ export function Shirt({ status, code }: { status: SlotStatus | 'empty'; code: st
     <svg
       viewBox="0 0 48 48"
       aria-hidden
-      className={`size-12 overflow-visible transition-transform duration-200 group-hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:group-hover:translate-y-0 sm:size-14 ${
-        status === 'verified'
-          ? 'drop-shadow-[0_0_10px_color-mix(in_srgb,var(--color-accent)_55%,transparent)]'
-          : ''
-      }`}
+      className={`${SHIRT_SIZE} ${status === 'verified' ? VERIFIED_GLOW : ''}`}
     >
       <path
-        d={SHIRT}
+        d={SHIRT_PATH}
         strokeWidth={1.4}
         strokeLinejoin="round"
         className={`transition-colors ${body[status]}`}
@@ -412,6 +438,76 @@ export function Shirt({ status, code }: { status: SlotStatus | 'empty'; code: st
           strokeLinecap="round"
           className="stroke-foreground-soft transition-colors group-hover:stroke-accent"
         />
+      )}
+    </svg>
+  )
+}
+
+/** A shirt in the club's kit, its state on the outline and a badge in the interface's colours. */
+function KitStateShirt({
+  status,
+  code,
+  look,
+}: {
+  status: SlotStatus
+  code: string
+  look: KitLook
+}) {
+  const ring: Record<SlotStatus, string> = {
+    verified: 'stroke-accent',
+    review: 'stroke-accent',
+    pending: 'stroke-white/55',
+    rejected: 'stroke-danger',
+  }
+  return (
+    <svg
+      viewBox="0 0 48 48"
+      aria-hidden
+      data-kit-shirt={status}
+      className={`${SHIRT_SIZE} ${status === 'verified' ? VERIFIED_GLOW : ''}`}
+    >
+      {/* Only a verified place is in full colour; the others wait a little dimmer. */}
+      <g opacity={status === 'verified' ? 1 : 0.62}>
+        <KitFabric kit={look.kit} />
+      </g>
+      <path
+        d={SHIRT_PATH}
+        fill="none"
+        strokeWidth={1.6}
+        strokeLinejoin="round"
+        className={`transition-colors ${ring[status]}`}
+      />
+      <circle
+        cx="24"
+        cy="28"
+        r="7"
+        strokeWidth={1.2}
+        className={`fill-background ${ring[status]}`}
+      />
+      {status === 'verified' && (
+        <path
+          d="M20.5 28l2.8 2.8 5.2-5.6"
+          fill="none"
+          strokeWidth={2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="stroke-accent"
+        />
+      )}
+      {status === 'review' && (
+        <circle cx="24" cy="28" r="2.6" className="landing-slot-wait fill-accent" />
+      )}
+      {(status === 'pending' || status === 'rejected') && (
+        <text
+          x="24"
+          y="30.6"
+          textAnchor="middle"
+          fontSize="7.5"
+          fontWeight={600}
+          className={status === 'rejected' ? 'fill-danger' : 'fill-foreground'}
+        >
+          {code}
+        </text>
       )}
     </svg>
   )
