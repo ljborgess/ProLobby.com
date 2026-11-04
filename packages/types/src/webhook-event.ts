@@ -107,6 +107,26 @@ export const moderationCaseOpenedEventSchema = z.object({
     .strict(),
 })
 
+/**
+ * A case closed from the moderation panel (#306, #308): the bot sends the
+ * outcome by DM to whoever opened it — never to the person reported (RF-036).
+ * The Discord id is personal data; `EventDelivery` keeps the payload encrypted.
+ */
+export const moderationCaseClosedEventSchema = z.object({
+  id: uuid,
+  occurredAt,
+  type: z.literal('moderation.case_closed'),
+  payload: z
+    .object({
+      discordId: snowflake,
+      caseType: z.string().regex(/^[a-z_]{1,40}$/),
+      outcome: z.enum(['resolved', 'dismissed']),
+      reason: z.string().regex(/^[a-z_]{1,40}$/),
+      note: z.string().max(500).nullable(),
+    })
+    .strict(),
+})
+
 const movementBandSchema = z.enum(['low', 'busy', 'full'])
 
 /**
@@ -140,6 +160,7 @@ export const platformEventSchema = z.discriminatedUnion('type', [
   accountPunishedEventSchema,
   systemQuotaAlertEventSchema,
   moderationCaseOpenedEventSchema,
+  moderationCaseClosedEventSchema,
   queueBoardEventSchema,
 ])
 
@@ -148,6 +169,7 @@ export type LobbyEndedEvent = z.infer<typeof lobbyEndedEventSchema>
 export type AccountPunishedEvent = z.infer<typeof accountPunishedEventSchema>
 export type SystemQuotaAlertEvent = z.infer<typeof systemQuotaAlertEventSchema>
 export type ModerationCaseOpenedEvent = z.infer<typeof moderationCaseOpenedEventSchema>
+export type ModerationCaseClosedEvent = z.infer<typeof moderationCaseClosedEventSchema>
 export type QueueBoardEvent = z.infer<typeof queueBoardEventSchema>
 export type PlatformEvent = z.infer<typeof platformEventSchema>
 export type QuotaResource = z.infer<typeof quotaResourceSchema>

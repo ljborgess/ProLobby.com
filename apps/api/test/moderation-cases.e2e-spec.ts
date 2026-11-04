@@ -16,6 +16,7 @@ import { SESSION_COOKIE_NAME } from '../src/common/security/session-cookie'
 import { Account } from '../src/modules/account/account.entity'
 import { AccountRole, AccountState } from '../src/modules/account/account.enums'
 import { CURRENT_TERMS_VERSION } from '../src/modules/account/terms.constants'
+import { EventDelivery } from '../src/modules/bot-integration/event-delivery.entity'
 import { AuditAction, AuditEntry } from '../src/modules/moderation/audit-entry.entity'
 import { ModerationCase } from '../src/modules/moderation/moderation-case.entity'
 import {
@@ -232,5 +233,32 @@ describe('moderation cases by section (#307)', () => {
       targetAccount: reporter.id,
     })
     expect(baseless).toBe(1)
+  })
+
+  it('queues the DM to whoever reported, never to the person reported (#308, RF-036)', async () => {
+    const [reporter, target] = [await account(), await account()]
+    const id = await report(reporter.id, target.id)
+
+    await close(id, { outcome: 'resolved', reason: 'confirmed' })
+
+    const deliveries = await orm.em.fork().find(EventDelivery, {
+      type: 'moderation.case_closed',
+      targetId: { $in: [reporter.id, target.id] },
+    })
+    expect(deliveries.map((d) => d.targetId)).toEqual([reporter.id])
+  })
+
+  it('tells nobody when the system opened the case', async () => {
+    const before = await orm.em.fork().count(EventDelivery, { type: 'moderation.case_closed' })
+    const id = await openCase({
+      type: ModerationCaseType.SCORE_DISPUTE,
+      origin: ModerationCaseOrigin.SYSTEM,
+    })
+
+    await close(id, { outcome: 'dismissed', reason: 'already_resolved' })
+
+    expect(await orm.em.fork().count(EventDelivery, { type: 'moderation.case_closed' })).toBe(
+      before,
+    )
   })
 })

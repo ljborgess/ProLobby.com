@@ -4,6 +4,7 @@ export {
   lobbyClosedEventSchema,
   lobbyEndedEventSchema,
   moderationCaseOpenedEventSchema,
+  moderationCaseClosedEventSchema,
   PLATFORM_EVENT_TYPES,
   platformEventSchema,
   queueBoardEventSchema,
@@ -13,6 +14,7 @@ export {
   type LobbyClosedEvent,
   type LobbyEndedEvent,
   type ModerationCaseOpenedEvent,
+  type ModerationCaseClosedEvent,
   type PlatformEvent,
   type QueueBoardEvent,
   type PlatformEventType,
@@ -46,6 +48,7 @@ export {
 export {
   sampleLobbyClosedEvent,
   samplePlatformEvent,
+  sampleModerationCaseClosedEvent,
   sampleModerationCaseOpenedEvent,
   sampleQuotaAlertEvent,
   sampleQueueBoardEvent,
