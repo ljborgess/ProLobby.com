@@ -78,7 +78,5 @@ skills-lock.json
 .claude/settings.local.json
 .cursor/
 
-# impeccable: DESIGN.md e .impeccable/design.json sao artefato de design e
-# entram no repo; consentimento local e cache do detector, nao
-.impeccable/config.local.json
-.impeccable/hook.cache.json
+# impeccable: ferramenta local de design, nunca versionada (DESIGN.md fica).
+**/.impeccable/
