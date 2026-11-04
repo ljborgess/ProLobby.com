@@ -9,6 +9,7 @@ import {
   reportPresenceSnapshot,
   schedulePresenceSnapshots,
 } from './discord/presence'
+import { queueBoardMessageOn } from './discord/queue-board-message'
 import { readDiscordBotToken } from './discord/token'
 import { welcomeOn } from './discord/welcome'
 import { logger } from './logger'
@@ -56,6 +57,7 @@ export async function main(): Promise<void> {
   await client.login(token)
   logger.info('bootstrap', 'Discord gateway connected')
 
+  const queueBoard = queueBoardMessageOn(client)
   const port = Number(process.env.PORT ?? 3002)
   // /events is never exposed by the Cloudflare tunnel and has no `ports:` in
   // production (ADR-009). HMAC (WEBHOOK_SECRET) is still required: the
@@ -78,6 +80,7 @@ export async function main(): Promise<void> {
         },
         warn: (message) => logger.warn('events', message),
         lobby: { ...lobbyChannelsOn(client), report: postBotEvent },
+        queueStatus: { channelId: process.env.DISCORD_QUEUE_STATUS_CHANNEL_ID, ...queueBoard },
       }),
   })
   const httpServer = app.listen(port, () => {

@@ -23,6 +23,6 @@ import { WebhookClient } from './webhook-client'
     LobbyChannelsService,
     ModerationCaseAnnouncer,
   ],
-  exports: [CoordinationState, EventDeliveryService],
+  exports: [CoordinationState, EventDeliveryService, WebhookClient],
 })
 export class BotIntegrationModule {}

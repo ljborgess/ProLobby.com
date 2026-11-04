@@ -6,6 +6,7 @@ export {
   moderationCaseOpenedEventSchema,
   PLATFORM_EVENT_TYPES,
   platformEventSchema,
+  queueBoardEventSchema,
   quotaResourceSchema,
   systemQuotaAlertEventSchema,
   type AccountPunishedEvent,
@@ -13,6 +14,7 @@ export {
   type LobbyEndedEvent,
   type ModerationCaseOpenedEvent,
   type PlatformEvent,
+  type QueueBoardEvent,
   type PlatformEventType,
   type QuotaResource,
   type SystemQuotaAlertEvent,
@@ -44,6 +46,7 @@ export {
   samplePlatformEvent,
   sampleModerationCaseOpenedEvent,
   sampleQuotaAlertEvent,
+  sampleQueueBoardEvent,
   SNOWFLAKE,
 } from './webhook-fixtures'
 export {

@@ -3,9 +3,11 @@ import type { PlatformEvent } from '@prolobby/types'
 import { openLobbyChannels, type LobbyChannelsDeps } from './lobby-closed'
 import { dropLobbyChannels, type LobbyEndedDeps } from './lobby-ended'
 import { announceModerationCase, type ModerationAnnounceDeps } from './moderation-case-opened'
+import { announceLobbyClosed, showQueueBoard, type QueueStatusDeps } from './queue-status'
 
 export type PlatformEventDeps = ModerationAnnounceDeps & {
   lobby: LobbyChannelsDeps & LobbyEndedDeps
+  queueStatus: QueueStatusDeps
 }
 
 /**
@@ -19,12 +21,16 @@ export async function handlePlatformEvent(
   switch (event.type) {
     case 'lobby.closed':
       await openLobbyChannels(event, deps.lobby)
+      await announceLobbyClosed(event, deps.queueStatus, deps.warn)
       return
     case 'lobby.ended':
       await dropLobbyChannels(event, deps.lobby)
       return
     case 'moderation.case_opened':
       await announceModerationCase(event, deps)
+      return
+    case 'queue.board':
+      await showQueueBoard(event, deps.queueStatus)
       return
     default:
       return
