@@ -23,6 +23,16 @@ export type BotMessage = {
   content?: string
   embeds: APIEmbed[]
   components?: APIActionRowComponent<APIButtonComponent>[]
+  /** Pictures from `cards.ts`, shown by the embed as `attachment://name`; `description` is the alt text. */
+  files?: { attachment: Buffer; name: string; description: string }[]
+}
+
+/** A picture attached to the message and shown inside its embed. */
+export function picture(name: string, png: Buffer, alt: string) {
+  return {
+    image: { url: `attachment://${name}` },
+    file: { attachment: png, name, description: alt },
+  }
 }
 
 export const webLink = (webUrl: string | undefined, path: string): string =>

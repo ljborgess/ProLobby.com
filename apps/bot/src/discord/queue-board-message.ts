@@ -29,7 +29,13 @@ export function queueBoardMessageOn(client: Client) {
           (m) => m.author.id === client.user?.id && m.embeds[0]?.author?.name === BOARD_PLATE,
         )?.id
       }
-      const body = { ...message, content: message.content ?? '', allowedMentions: { parse: [] } }
+      // attachments: [] drops the previous picture; files brings the new one.
+      const body = {
+        ...message,
+        content: message.content ?? '',
+        attachments: [],
+        allowedMentions: { parse: [] },
+      }
       if (boardId) {
         try {
           await channel.messages.edit(boardId, body)

@@ -10,18 +10,16 @@ import {
 } from './queue-status'
 
 describe('#fila-status', () => {
-  it('is a scoreboard: one meter per position, green while lobbies close', () => {
-    const [embed] = boardMessage(sampleQueueBoardEvent()).embeds
+  it('is a scoreboard picture, green while lobbies close, with the bands as alt text', () => {
+    const message = boardMessage(sampleQueueBoardEvent())
+    const [embed] = message.embeds
 
     expect(embed!.author?.name).toBe(BOARD_PLATE)
     expect(embed!.color).toBe(BRAND.green)
-    expect(embed!.fields).toHaveLength(5)
-    expect(embed!.fields![0]).toEqual({
-      name: '`GOL` Goleiro',
-      value: '🟩⬛⬛  pouca gente',
-      inline: true,
-    })
-    expect(embed!.fields![2]!.value).toContain('cheia')
+    expect(embed!.image?.url).toBe('attachment://fila.png')
+    expect(message.files![0]!.attachment.subarray(1, 4).toString()).toBe('PNG')
+    expect(message.files![0]!.description).toContain('GOL pouca gente')
+    expect(message.files![0]!.description).toContain('MEI cheia')
   })
 
   it('turns amber and says why when the queue is paused', () => {
@@ -43,7 +41,8 @@ describe('#fila-status', () => {
 
   it('counts the humans of a closed lobby without naming anyone', () => {
     const event = sampleLobbyClosedEvent()
-    const text = JSON.stringify(lobbyClosedMessage(event))
+    const message = lobbyClosedMessage(event)
+    const text = JSON.stringify({ ...message, files: message.files!.map((f) => f.description) })
 
     expect(text).toContain('5 × 5')
     for (const id of event.payload.sideA.discordIds) expect(text).not.toContain(id)

@@ -8,7 +8,8 @@ import {
 } from 'discord.js'
 
 import type { Logger } from '../logger'
-import { BRAND, plate, type BotMessage } from './brand'
+import { BRAND, picture, plate, type BotMessage } from './brand'
+import { announcementSvg, render } from './cards'
 
 /** Room for the text plus the two-line header, under Discord's 2000. */
 export const ANNOUNCEMENT_MAX = 1800
@@ -50,14 +51,18 @@ export function announcementMessage(
   input: { text: string; title?: string | null; pingEveryone: boolean },
   iconUrl?: string,
 ): BotMessage {
+  const headline = input.title?.trim() || 'Recado da equipe'
+  const art = picture('anuncio.png', render(announcementSvg(headline)), `Anúncio: ${headline}`)
   return {
     ...(input.pingEveryone ? { content: '@everyone' } : {}),
+    files: [art.file],
     embeds: [
       {
         author: plate('ANÚNCIO', iconUrl),
         color: BRAND.green,
         ...(input.title?.trim() ? { title: input.title.trim() } : {}),
         description: input.text,
+        image: art.image,
         footer: { text: 'Equipe ProLobby' },
         timestamp: new Date().toISOString(),
       },

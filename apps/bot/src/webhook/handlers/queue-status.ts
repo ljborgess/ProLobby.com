@@ -1,6 +1,7 @@
 import type { LobbyClosedEvent, QueueBoardEvent } from '@prolobby/types'
 
-import { BRAND, linkRow, plate, webLink, type BotMessage } from '../../discord/brand'
+import { BRAND, linkRow, picture, plate, webLink, type BotMessage } from '../../discord/brand'
+import { boardSvg, lobbySvg, render } from '../../discord/cards'
 
 /** The plate the bot finds its own board by after a restart. */
 export const BOARD_PLATE = 'PROLOBBY · FILA AO VIVO'
@@ -15,11 +16,10 @@ const POSITIONS: [keyof QueueBoardEvent['payload']['bands'], string, string][] =
   ['striker', 'ATA', 'Ataque'],
 ]
 
-/** A three-step meter, like the movement dots on the queue screen. */
-const METER: Record<Band, string> = {
-  low: '🟩⬛⬛  pouca gente',
-  busy: '🟩🟩⬛  movimentada',
-  full: '🟩🟩🟩  cheia',
+const BAND_WORD: Record<Band, string> = {
+  low: 'pouca gente',
+  busy: 'movimentada',
+  full: 'cheia',
 }
 
 const PAUSE: Record<NonNullable<QueueBoardEvent['payload']['paused']>, string> = {
@@ -29,35 +29,39 @@ const PAUSE: Record<NonNullable<QueueBoardEvent['payload']['paused']>, string> =
 }
 
 /**
- * The one message #fila-status keeps current: a scoreboard, edited in place.
- * Bands only, as the app shows them (RF-008); green while lobbies close,
- * stadium amber while paused. Both languages, short — the channel is shared.
+ * The one message #fila-status keeps current: the scoreboard picture
+ * (cards.ts), edited in place. Bands only, as the app shows them (RF-008);
+ * green while lobbies close, stadium amber while paused. The text under it
+ * says the same for screen readers and notifications.
  */
 export function boardMessage(
   event: QueueBoardEvent,
   opts: { webUrl?: string; iconUrl?: string } = {},
 ): BotMessage {
   const { bands, paused } = event.payload
+  const summary = POSITIONS.map(([key, code]) => `${code} ${BAND_WORD[bands[key]]}`).join(', ')
+  const art = picture(
+    'fila.png',
+    render(boardSvg(bands, paused, event.occurredAt)),
+    `Placar da fila: ${summary}. ${paused ? `Pausada: ${PAUSE[paused]}` : 'No ar.'}`,
+  )
   return {
     embeds: [
       {
         author: plate('FILA AO VIVO', opts.iconUrl),
         color: paused ? BRAND.amber : BRAND.green,
         description: paused
-          ? `⏸️ **Pausada** — ${PAUSE[paused]}\nQuem está buscando continua com o tempo que tinha.`
-          : '🟢 **No ar** — fechando lobbies agora · *En vivo, cerrando lobbies*',
-        fields: POSITIONS.map(([key, code, name]) => ({
-          name: `\`${code}\` ${name}`,
-          value: METER[bands[key]],
-          inline: true,
-        })),
-        footer: { text: 'Movimento por posição, nunca quantas pessoas · atualizado' },
+          ? `**Pausada** — ${PAUSE[paused]}. Quem está buscando continua com o tempo que tinha.`
+          : '**No ar** — fechando lobbies agora · *En vivo, cerrando lobbies*',
+        image: art.image,
+        footer: { text: 'Movimento por posição, nunca quantas pessoas' },
         timestamp: event.occurredAt,
       },
     ],
     components: [
       linkRow([{ label: 'Entrar na fila', url: webLink(opts.webUrl, '/queue'), emoji: '⚽' }]),
     ],
+    files: [art.file],
   }
 }
 
@@ -68,21 +72,22 @@ export function lobbyClosedMessage(
 ): BotMessage {
   const a = event.payload.sideA.discordIds.length
   const b = event.payload.sideB.discordIds.length
-  const shirts = (n: number) => '👕'.repeat(n)
+  const art = picture(
+    'lobby.png',
+    render(lobbySvg(a, b)),
+    `Lobby fechado: ${a} humanos de um lado, ${b} do outro.`,
+  )
   return {
     embeds: [
       {
         author: plate('APITO INICIAL', opts.iconUrl),
         color: BRAND.green,
-        title: `Lobby fechado · ${a} × ${b}`,
-        description: [
-          `${shirts(a)}  **×**  ${shirts(b)}`,
-          'Humanos verificados dos dois lados; a IA do jogo completa o resto.',
-          '*Lobby cerrado: la IA del juego completa el resto.*',
-        ].join('\n'),
+        description: `**Lobby fechado · ${a} × ${b}** — a IA do jogo completa o resto. · *Lobby cerrado.*`,
+        image: art.image,
         timestamp: event.occurredAt,
       },
     ],
+    files: [art.file],
   }
 }
 

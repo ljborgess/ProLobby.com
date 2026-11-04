@@ -1,7 +1,8 @@
 import { Events, type Client, type GuildMember } from 'discord.js'
 
 import type { Logger } from '../logger'
-import { BRAND, linkRow, plate, webLink, type BotMessage } from './brand'
+import { BRAND, linkRow, picture, plate, webLink, type BotMessage } from './brand'
+import { render, welcomeSvg } from './cards'
 
 /**
  * What a newcomer sees: a pre-match card with the three steps to the queue
@@ -12,25 +13,26 @@ export function welcomeMessage(
   memberId: string,
   opts: { webUrl?: string; iconUrl?: string; name?: string } = {},
 ): BotMessage {
+  const art = picture(
+    'boas-vindas.png',
+    render(welcomeSvg(opts.name ?? 'jogador')),
+    'Chegou no ProLobby. 1: crie a conta. 2: cadastre o personagem com o print do jogo. 3: vincule este Discord e entre na fila.',
+  )
   return {
     content: `<@${memberId}>`,
     embeds: [
       {
         author: plate('ENTRADA EM CAMPO', opts.iconUrl),
         color: BRAND.green,
-        title: `Chegou no ProLobby${opts.name ? `, ${opts.name}` : ''}!`,
         description: [
           'Matchmaking de verdade pro seu Pro Clubs: você entra sozinho, pela posição que joga, e a gente monta o jogo.',
-          '',
-          '**1 ·** Crie a conta',
-          '**2 ·** Cadastre o personagem e mande o print do jogo',
-          '**3 ·** Vincule este Discord e entre na fila',
-          '',
           '*¡Llegaste! Crea la cuenta, registra tu personaje y vincula este Discord.*',
         ].join('\n'),
+        image: art.image,
         footer: { text: 'Regras em #regras-e-onboarding · Ajuda em #suporte-e-denuncia' },
       },
     ],
+    files: [art.file],
     components: [
       linkRow([
         { label: 'Criar conta', url: webLink(opts.webUrl, '/sign-up'), emoji: '📝' },
