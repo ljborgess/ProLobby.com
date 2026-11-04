@@ -14,3 +14,9 @@ af3ff309f39946396c9063da015e8c31010a9fce:.github/workflows/ci.yml:generic-api-ke
 
 # Token de exemplo ("abc123def456") no README padrão gerado pelo NestJS.
 d25e153faa51c31bd069ee9bcce7a90b92912c72:apps/api/README.md:generic-api-key:5
+
+# Token de sessão do servidor local do impeccable live: só vale em localhost e
+# morre com a sessão. Commitado por engano no #293, tirado do repo em 8649bb7;
+# a pasta está no .gitignore (**/.impeccable/live/).
+af086c9bed288cd92460e5f13256a9a5040f7efe:apps/web/.impeccable/live/server.json:generic-api-key:1
+0f48803540bcb5724eddcb8d7603e9b868ea0c39:apps/web/.impeccable/live/server.json:generic-api-key:1

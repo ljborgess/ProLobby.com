@@ -16,9 +16,10 @@ const signedIn = () => cookieJar.get.mockReturnValue({ name: 'prolobby_session',
 const anonymous = () => cookieJar.get.mockReturnValue(undefined)
 
 /**
- * Routing change of 2026-09-22: the home is a pure landing now, never a
- * dashboard. The signed-in area moved to /verifications, which is where login
- * sends people and where this page sends anyone it finds already signed in.
+ * The home is a landing, never a dashboard (routing change of 2026-09-22): the
+ * signed-in area is /verifications, where login sends people. Since
+ * 2026-10-29 a signed-in visitor sees the landing too, with the account in
+ * place of the sign-up doors.
  */
 describe('Home', () => {
   beforeEach(() => {
@@ -35,9 +36,10 @@ describe('Home', () => {
 
     renderWithLocale(await Home())
 
-    // Exactly one of each, in the top bar: the hero's duplicate pair was
-    // dropped on 2026-09-22, and `getByRole` throwing on a second match is
-    // what keeps it from creeping back.
+    // One of each with these exact names, in the top bar. The close repeats
+    // the offer on purpose (2026-10-29) under its own words, "Criar minha
+    // conta" and "Já tenho conta"; a second identical name would make
+    // `getByRole` throw.
     expect(screen.getByRole('link', { name: 'Criar conta' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Entrar' })).toBeInTheDocument()
     expect(redirect).not.toHaveBeenCalled()

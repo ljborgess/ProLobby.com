@@ -242,9 +242,6 @@
   border-top: 1px solid rgb(255 255 255 / 6%);
 }
 
-@media (prefers-reduced-motion: reduce) {
-}
-
 /*
  * Matchday broadcast (2026-10-29). The landing reads as a transmission:
  * slanted plates name each segment, the headline is the opening graphic with
@@ -282,10 +279,10 @@
 
 @keyframes landing-plate-wipe {
   from {
-    clip-path: inset(0 100% 0 0);
+    clip-path: inset(0 100% 0 -1rem);
   }
   to {
-    clip-path: inset(0 0 0 0);
+    clip-path: inset(0 -1rem 0 -1rem);
   }
 }
 

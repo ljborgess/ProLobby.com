@@ -59,10 +59,7 @@ export function SectionThread({ variant = 'line' }: { variant?: Variant }) {
       {/* The node where the line meets the seam between two sections: the
        * panel colour, with a ring to cut it out of whatever is behind. No
        * number since 2026-10-29 — "01" to "04" said nothing the order did not. */}
-      <span
-        aria-hidden
-        className="landing-thread-node absolute bottom-0 left-1/2 size-3 -translate-x-1/2 translate-y-1/2 rounded-full border border-accent/60 bg-surface shadow-[0_0_0_4px_var(--color-bg)]"
-      />
+      <span className="landing-thread-node absolute bottom-0 left-1/2 size-3 -translate-x-1/2 translate-y-1/2 rounded-full border border-accent/60 bg-surface shadow-[0_0_0_4px_var(--color-bg)]" />
     </div>
   )
 }

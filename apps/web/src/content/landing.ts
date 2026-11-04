@@ -33,7 +33,6 @@ export interface LandingContent {
     items: { value: string; label: string }[]
   }
   positions: {
-    eyebrow: string
     title: string
     body: string
     items: string[]
@@ -45,7 +44,6 @@ export interface LandingContent {
     }
   }
   soloQueue: {
-    eyebrow: string
     title: string
     body: string
   }
@@ -62,6 +60,8 @@ export interface LandingContent {
    */
   broadcast: {
     stage: string
+    /** The queue's confirmation window, as the scorebug shows it. */
+    clock: string
     clockLabel: string
     lineup: string
     example: string
@@ -84,7 +84,6 @@ export interface LandingContent {
    */
   queueBoard: {
     title: string
-    formation: string
     example: string
     filled: string
     waiting: string
@@ -126,7 +125,6 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
       ],
     },
     positions: {
-      eyebrow: 'Fila por posição',
       title: 'Você entra na posição que joga de verdade',
       body: 'Cada personagem tem categoria fixa e elo próprio — desempenho de goleiro não vira elo de atacante. Até 5 personagens por conta, um por categoria.',
       items: ['Goleiro', 'Zaga', 'Meio', 'Ponta', 'Ataque'],
@@ -139,7 +137,6 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
       },
     },
     soloQueue: {
-      eyebrow: 'Entra sozinho, sai com time',
       title: 'Sem grupo de amigo pra fechar 11',
       body: 'A fila pareia sua categoria com quem também entrou sozinho. Faltou gente? A IA do jogo cobre o resto — o jogo continua, ninguém fica esperando um 11º jogador que nunca chega.',
     },
@@ -165,6 +162,7 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
     },
     broadcast: {
       stage: 'Pré-jogo',
+      clock: '0:30',
       clockLabel: 'pra confirmar a fila',
       lineup: 'Escalação',
       example: 'exemplo',
@@ -180,7 +178,6 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
     },
     queueBoard: {
       title: 'Lobby',
-      formation: '4-3-3',
       example: 'Exemplo de como o lobby fecha',
       filled: 'confirmado',
       waiting: 'na fila',
@@ -225,7 +222,6 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
       ],
     },
     positions: {
-      eyebrow: 'Cola por posición',
       title: 'Entras en la posición que juegas de verdad',
       body: 'Cada personaje tiene categoría fija y elo propio — el desempeño de arquero no se vuelve elo de delantero. Hasta 5 personajes por cuenta, uno por categoría.',
       items: ['Arquero', 'Defensa', 'Mediocampo', 'Extremo', 'Delantero'],
@@ -238,7 +234,6 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
       },
     },
     soloQueue: {
-      eyebrow: 'Entras solo, sales con equipo',
       title: 'Sin grupo de amigos para completar 11',
       body: 'La cola empareja tu categoría con quien también entró solo. ¿Faltó gente? La IA del juego cubre el resto — el partido continúa, nadie espera un 11° jugador que nunca llega.',
     },
@@ -264,6 +259,7 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
     },
     broadcast: {
       stage: 'Previa',
+      clock: '0:30',
       clockLabel: 'para confirmar la cola',
       lineup: 'Alineación',
       example: 'ejemplo',
@@ -279,7 +275,6 @@ export const LANDING_CONTENT: Record<Locale, LandingContent> = {
     },
     queueBoard: {
       title: 'Lobby',
-      formation: '4-3-3',
       example: 'Ejemplo de cómo se cierra el lobby',
       filled: 'confirmado',
       waiting: 'en la cola',

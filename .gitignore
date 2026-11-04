@@ -82,3 +82,4 @@ skills-lock.json
 # entram no repo; consentimento local e cache do detector, nao
 .impeccable/config.local.json
 .impeccable/hook.cache.json
+**/.impeccable/live/
