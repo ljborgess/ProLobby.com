@@ -1,5 +1,6 @@
 import type { Server } from 'node:http'
 import { Events } from 'discord.js'
+import { announceCommandOn } from './discord/announce-command'
 import { createDiscordClient, logGatewayErrors } from './discord/client'
 import { lobbyChannelsOn, scheduleLobbySweep } from './discord/lobby-channels'
 import {
@@ -9,6 +10,7 @@ import {
   schedulePresenceSnapshots,
 } from './discord/presence'
 import { readDiscordBotToken } from './discord/token'
+import { welcomeOn } from './discord/welcome'
 import { logger } from './logger'
 import { postBotEvent } from './platform/client'
 import { handlePlatformEvent } from './webhook/handlers'
@@ -37,6 +39,15 @@ export async function main(): Promise<void> {
   // otherwise). What actually covers a boot-window leave is the presence
   // snapshot below, sent once the gateway is Ready.
   reportPresence(client, logger)
+  welcomeOn(client, logger, {
+    channelId: process.env.DISCORD_WELCOME_CHANNEL_ID,
+    guildId: process.env.DISCORD_GUILD_ID,
+    webUrl: process.env.WEB_URL,
+  })
+  announceCommandOn(client, logger, {
+    guildId: process.env.DISCORD_GUILD_ID,
+    channelId: process.env.DISCORD_ANNOUNCEMENTS_CHANNEL_ID,
+  })
   client.once(Events.ClientReady, () => {
     void reportPresenceSnapshot(client, logger)
     schedulePresenceSnapshots(client, logger)
