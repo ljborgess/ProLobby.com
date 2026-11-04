@@ -38,7 +38,7 @@ export function AuthLayout({
   const aside = useLandingContent().authAside[variant]
 
   return (
-    <main className="auth-shell relative flex h-svh flex-1 overflow-hidden">
+    <main className="auth-shell relative flex min-h-svh flex-1 overflow-x-clip">
       <div
         aria-hidden
         className="landing-glow pointer-events-none absolute inset-x-0 top-0 h-80 bg-[radial-gradient(ellipse_80%_70%_at_50%_0%,_var(--color-accent-strong)_0%,_transparent_70%)] lg:hidden"
@@ -64,8 +64,12 @@ export function AuthLayout({
        * measured 449px inside a 721px parent — a percentage height cannot
        * resolve against a parent whose own height came from `flex-1`, which
        * the engine treats as indefinite. So the height is stated outright, and
-       * a `1fr` track takes whatever the header leaves. */}
-      <div className="relative grid h-svh flex-1 grid-rows-[auto_1fr] overflow-y-auto px-4 py-5 sm:px-8 lg:px-14">
+       * a `1fr` track takes whatever the header leaves.
+       *
+       * The page scrolls, not this column (2026-11-03): a scrollbar down the
+       * middle of the screen, beside the art, read as broken. A tall form now
+       * grows the page, and the panel stays put beside it. */}
+      <div className="relative grid min-h-svh flex-1 grid-rows-[auto_1fr] px-4 py-5 sm:px-8 lg:px-14">
         {/* Logo and language share the top row. The switcher used to sit at
             the bottom, where it cost the form the last 40-odd pixels it
             needed to clear a short window without scrolling. */}
@@ -84,7 +88,7 @@ export function AuthLayout({
         </div>
       </div>
 
-      <aside className="relative hidden border-l border-white/5 lg:flex lg:w-[46%] lg:flex-col lg:justify-end">
+      <aside className="relative hidden border-l border-white/5 lg:sticky lg:top-0 lg:flex lg:h-svh lg:w-[46%] lg:flex-col lg:justify-end lg:self-start">
         <AuthArt />
 
         <div className="relative p-14">

@@ -8,6 +8,8 @@ interface SelectFieldProps extends React.SelectHTMLAttributes<HTMLSelectElement>
   error?: string
   options: { value: string; label: string }[]
   placeholder: string
+  /** Same as `TextField`: off when the form announces one summary. */
+  announce?: boolean
 }
 
 /** Labelled native select, wired like `TextField` (RNF-015). */
@@ -17,6 +19,7 @@ export function SelectField({
   error,
   options,
   placeholder,
+  announce = true,
   id,
   className,
   ...selectProps
@@ -35,7 +38,7 @@ export function SelectField({
         id={fieldId}
         aria-describedby={[hintId, errorId].filter(Boolean).join(' ') || undefined}
         aria-invalid={error ? true : undefined}
-        className={`min-h-11 rounded-sm border border-white/30 bg-surface px-3.5 py-2.5 text-sm text-foreground caret-accent [color-scheme:dark] outline-none transition-colors hover:border-white/45 focus-visible:border-accent/50 focus-visible:ring-2 focus-visible:ring-accent aria-[invalid=true]:border-danger/70 ${className ?? ''}`}
+        className={`min-h-11 w-full min-w-0 rounded-sm border border-white/35 bg-surface px-3.5 py-2.5 text-sm text-foreground caret-accent [color-scheme:dark] outline-none transition-colors hover:border-white/45 focus-visible:border-accent/50 focus-visible:ring-2 focus-visible:ring-accent aria-[invalid=true]:border-danger/70 ${className ?? ''}`}
         {...selectProps}
       >
         <option value="">{placeholder}</option>
@@ -45,13 +48,13 @@ export function SelectField({
           </option>
         ))}
       </select>
-      {hint && !error && (
+      {hint && (
         <p id={hintId} className="text-xs leading-snug text-foreground-soft">
           {hint}
         </p>
       )}
       {error && (
-        <p id={errorId} role="alert" className="text-xs text-danger">
+        <p id={errorId} role={announce ? 'alert' : undefined} className="text-xs text-danger">
           {error}
         </p>
       )}

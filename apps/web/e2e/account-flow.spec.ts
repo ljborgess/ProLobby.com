@@ -77,15 +77,18 @@ test.describe('sessão com cookie mas sem API', () => {
 })
 
 test.describe('cadastro', () => {
-  test('exige 8 caracteres na pergunta de segurança antes de enviar', async ({ page }) => {
+  test('exige 8 caracteres na pergunta de segurança escrita à mão antes de enviar', async ({
+    page,
+  }) => {
     await page.goto('/sign-up')
 
-    await expect(page.getByText(/Mínimo de 8 caracteres/)).toBeVisible()
-
     await page.getByLabel('E-mail').fill('jogador@exemplo.com')
-    await page.getByLabel('Senha').fill('uma-senha-bem-longa')
+    await page.getByLabel('Senha', { exact: true }).fill('uma-senha-bem-longa')
     await page.getByLabel('Data de nascimento').fill('2004-06-26')
-    await page.getByLabel('Pergunta de segurança').fill('Babi')
+    // Ready-made questions first; "Escrever a minha" opens the free field.
+    await page.getByLabel('Pergunta de segurança').selectOption({ label: 'Escrever a minha' })
+    await expect(page.getByText(/Mínimo de 8 caracteres/)).toBeVisible()
+    await page.getByLabel('Sua pergunta').fill('Babi')
     await page.getByLabel('Resposta').fill('Sao Paulo')
     await page.getByRole('checkbox').check()
     await page.getByRole('button', { name: 'Criar conta' }).click()
