@@ -28,7 +28,7 @@ jobs:
       # Mesmo uid do runner: sem isso o git do contêiner recusa o repositório
       # montado ("dubious ownership"). Falso positivo conferido vai pro
       # .gitleaksignore, com o motivo.
-      - run: docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.30.1 git /repo --redact --no-banner
+      - run: docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.30.1 git /repo --redact --no-banner --verbose
 
   lint-build-test:
     runs-on: ubuntu-latest
