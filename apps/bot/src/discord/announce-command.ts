@@ -8,6 +8,7 @@ import {
 } from 'discord.js'
 
 import type { Logger } from '../logger'
+import { BRAND, plate, type BotMessage } from './brand'
 
 /** Room for the text plus the two-line header, under Discord's 2000. */
 export const ANNOUNCEMENT_MAX = 1800
@@ -30,16 +31,45 @@ export const announceCommand = new SlashCommandBuilder()
       .setRequired(true)
       .setMaxLength(ANNOUNCEMENT_MAX),
   )
+  .addStringOption((option) =>
+    option.setName('titulo').setDescription('Título em destaque (opcional)').setMaxLength(120),
+  )
   .addBooleanOption((option) =>
     option.setName('marcar_todos').setDescription('Marca @everyone (padrão: não)'),
   )
 
-export type AnnounceInput = { allowed: boolean; text: string; pingEveryone: boolean }
+export type AnnounceInput = {
+  allowed: boolean
+  text: string
+  title?: string | null
+  pingEveryone: boolean
+}
+
+/** The announcement as a broadcast card; @everyone rides outside it, where it pings. */
+export function announcementMessage(
+  input: { text: string; title?: string | null; pingEveryone: boolean },
+  iconUrl?: string,
+): BotMessage {
+  return {
+    ...(input.pingEveryone ? { content: '@everyone' } : {}),
+    embeds: [
+      {
+        author: plate('ANÚNCIO', iconUrl),
+        color: BRAND.green,
+        ...(input.title?.trim() ? { title: input.title.trim() } : {}),
+        description: input.text,
+        footer: { text: 'Equipe ProLobby' },
+        timestamp: new Date().toISOString(),
+      },
+    ],
+  }
+}
 
 export type AnnounceDeps = {
   /** `DISCORD_ANNOUNCEMENTS_CHANNEL_ID`. */
   channelId?: string
-  post: (channelId: string, text: string, pingEveryone: boolean) => Promise<void>
+  post: (channelId: string, message: BotMessage, pingEveryone: boolean) => Promise<void>
+  iconUrl?: string
 }
 
 /** What the moderator reads back, privately. The decision lives here, not in the wiring. */
@@ -49,7 +79,11 @@ export async function announce(input: AnnounceInput, deps: AnnounceDeps): Promis
     return 'Canal de anúncios não configurado (DISCORD_ANNOUNCEMENTS_CHANNEL_ID).'
   const text = input.text.trim()
   if (!text) return 'O anúncio está vazio.'
-  await deps.post(deps.channelId, text, input.pingEveryone)
+  await deps.post(
+    deps.channelId,
+    announcementMessage({ ...input, text }, deps.iconUrl),
+    input.pingEveryone,
+  )
   return `Anúncio postado em <#${deps.channelId}>.`
 }
 
@@ -93,15 +127,17 @@ export function announceCommandOn(
       {
         allowed: interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild) ?? false,
         text: interaction.options.getString('texto', true),
+        title: interaction.options.getString('titulo'),
         pingEveryone: interaction.options.getBoolean('marcar_todos') ?? false,
       },
       {
         channelId: deps.channelId,
-        post: async (channelId, text, pingEveryone) => {
+        iconUrl: client.user?.displayAvatarURL(),
+        post: async (channelId, message, pingEveryone) => {
           const channel = await client.channels.fetch(channelId)
           if (!channel?.isSendable()) throw new Error('announcements channel is not sendable')
           await channel.send({
-            content: pingEveryone ? `@everyone\n${text}` : text,
+            ...message,
             allowedMentions: { parse: pingEveryone ? ['everyone'] : [] },
           })
         },

@@ -1,37 +1,52 @@
 import { sampleLobbyClosedEvent, sampleQueueBoardEvent } from '@prolobby/types'
 
+import { BRAND } from '../../discord/brand'
 import {
-  BOARD_TITLE,
+  BOARD_PLATE,
   announceLobbyClosed,
   boardMessage,
-  lobbyClosedLine,
+  lobbyClosedMessage,
   showQueueBoard,
 } from './queue-status'
 
 describe('#fila-status', () => {
-  it('shows one line per category, by band, and that lobbies are closing', () => {
-    const text = boardMessage(sampleQueueBoardEvent())
+  it('is a scoreboard: one meter per position, green while lobbies close', () => {
+    const [embed] = boardMessage(sampleQueueBoardEvent()).embeds
 
-    expect(text.startsWith(BOARD_TITLE)).toBe(true)
-    expect(text).toContain('`GOL` ⚪ pouca gente')
-    expect(text).toContain('`MEI` 🔥 cheia')
-    expect(text).toContain('▶️ Fechando lobbies')
-    expect(text).toMatch(/<t:\d+:R>/)
+    expect(embed!.author?.name).toBe(BOARD_PLATE)
+    expect(embed!.color).toBe(BRAND.green)
+    expect(embed!.fields).toHaveLength(5)
+    expect(embed!.fields![0]).toEqual({
+      name: '`GOL` Goleiro',
+      value: '🟩⬛⬛  pouca gente',
+      inline: true,
+    })
+    expect(embed!.fields![2]!.value).toContain('cheia')
   })
 
-  it('says why the queue is paused', () => {
+  it('turns amber and says why when the queue is paused', () => {
     const event = sampleQueueBoardEvent()
     event.payload.paused = 'lobbies_full'
+    const [embed] = boardMessage(event).embeds
 
-    expect(boardMessage(event)).toContain('todos os lobbies ocupados')
+    expect(embed!.color).toBe(BRAND.amber)
+    expect(embed!.description).toContain('todos os lobbies ocupados')
+  })
+
+  it('links to the queue on the site, never acting for the player', () => {
+    const message = boardMessage(sampleQueueBoardEvent(), { webUrl: 'https://prolobby.test/' })
+
+    expect(message.components![0]!.components[0]).toMatchObject({
+      url: 'https://prolobby.test/queue',
+    })
   })
 
   it('counts the humans of a closed lobby without naming anyone', () => {
     const event = sampleLobbyClosedEvent()
-    const line = lobbyClosedLine(event)
+    const text = JSON.stringify(lobbyClosedMessage(event))
 
-    expect(line).toContain('5 contra 5')
-    for (const id of event.payload.sideA.discordIds) expect(line).not.toContain(id)
+    expect(text).toContain('5 × 5')
+    for (const id of event.payload.sideA.discordIds) expect(text).not.toContain(id)
   })
 
   it('updates the board in the configured channel, and does nothing without one', async () => {
@@ -49,7 +64,7 @@ describe('#fila-status', () => {
     expect(upsertBoard.mock.calls[0]![0]).toBe('900000000000000004')
   })
 
-  it('never fails the lobby event over the public line', async () => {
+  it('never fails the lobby event over the public card', async () => {
     const warn = jest.fn()
     const post = jest.fn().mockRejectedValue(new Error('missing access'))
 

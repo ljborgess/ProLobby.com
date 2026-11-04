@@ -1,18 +1,43 @@
 import { Events, type Client, type GuildMember } from 'discord.js'
 
 import type { Logger } from '../logger'
+import { BRAND, linkRow, plate, webLink, type BotMessage } from './brand'
 
 /**
- * What a newcomer reads — in both languages, because the channel is shared
- * and the community is not split by language (docs/discord/03-bot.md). The
- * mention is the only ping: one person, the one arriving.
+ * What a newcomer sees: a pre-match card with the three steps to the queue
+ * and the two buttons that take them there. The mention sits outside the
+ * embed — only text outside it pings — and it is the only ping, one person.
  */
-export function welcomeMessage(memberId: string, webUrl?: string): string {
-  const link = `${(webUrl ?? 'https://prolobby.com.br').replace(/\/$/, '')}/account/discord`
-  return [
-    `Chegou no ProLobby, <@${memberId}>! Pra entrar na fila: crie a conta, cadastre o personagem e vincule este Discord em ${link}. As regras estão em #regras-e-onboarding.`,
-    `¡Llegaste a ProLobby, <@${memberId}>! Para entrar en la fila: crea la cuenta, registra tu personaje y vincula este Discord en ${link}.`,
-  ].join('\n')
+export function welcomeMessage(
+  memberId: string,
+  opts: { webUrl?: string; iconUrl?: string; name?: string } = {},
+): BotMessage {
+  return {
+    content: `<@${memberId}>`,
+    embeds: [
+      {
+        author: plate('ENTRADA EM CAMPO', opts.iconUrl),
+        color: BRAND.green,
+        title: `Chegou no ProLobby${opts.name ? `, ${opts.name}` : ''}!`,
+        description: [
+          'Matchmaking de verdade pro seu Pro Clubs: você entra sozinho, pela posição que joga, e a gente monta o jogo.',
+          '',
+          '**1 ·** Crie a conta',
+          '**2 ·** Cadastre o personagem e mande o print do jogo',
+          '**3 ·** Vincule este Discord e entre na fila',
+          '',
+          '*¡Llegaste! Crea la cuenta, registra tu personaje y vincula este Discord.*',
+        ].join('\n'),
+        footer: { text: 'Regras em #regras-e-onboarding · Ajuda em #suporte-e-denuncia' },
+      },
+    ],
+    components: [
+      linkRow([
+        { label: 'Criar conta', url: webLink(opts.webUrl, '/sign-up'), emoji: '📝' },
+        { label: 'Vincular Discord', url: webLink(opts.webUrl, '/account/discord'), emoji: '🔗' },
+      ]),
+    ],
+  }
 }
 
 export type WelcomeDeps = {
@@ -42,7 +67,11 @@ export function welcomeOn(client: Client, log: Logger, deps: WelcomeDeps): void 
       const channel = await client.channels.fetch(channelId)
       if (!channel?.isSendable()) throw new Error('welcome channel is not one the bot can post in')
       await channel.send({
-        content: welcomeMessage(member.id, deps.webUrl),
+        ...welcomeMessage(member.id, {
+          webUrl: deps.webUrl,
+          iconUrl: client.user?.displayAvatarURL(),
+          name: member.displayName,
+        }),
         allowedMentions: { users: [member.id] },
       })
     })().catch((error: unknown) => {

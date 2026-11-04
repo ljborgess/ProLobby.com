@@ -76,16 +76,21 @@ export async function main(): Promise<void> {
         webUrl: process.env.WEB_URL,
         // A channel the bot cannot reach throws, and the API retries: the
         // moderators find out from the delivery-failure case, not silence.
-        send: async (channelId, content) => {
+        iconUrl: queueBoard.iconUrl,
+        send: async (channelId, message) => {
           const channel = await client.channels.fetch(channelId)
           if (!channel?.isSendable()) {
             throw new Error(`channel ${channelId} is not one the bot can post in`)
           }
-          await channel.send({ content, allowedMentions: { parse: [] } })
+          await channel.send({ ...message, allowedMentions: { parse: [] } })
         },
         warn: (message) => logger.warn('events', message),
         lobby: { ...lobbyChannelsOn(client), report: postBotEvent },
-        queueStatus: { channelId: process.env.DISCORD_QUEUE_STATUS_CHANNEL_ID, ...queueBoard },
+        queueStatus: {
+          channelId: process.env.DISCORD_QUEUE_STATUS_CHANNEL_ID,
+          webUrl: process.env.WEB_URL,
+          ...queueBoard,
+        },
       }),
   })
   const httpServer = app.listen(port, () => {

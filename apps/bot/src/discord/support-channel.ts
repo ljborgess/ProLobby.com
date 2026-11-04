@@ -3,6 +3,7 @@ import { Events, type Client, type Message } from 'discord.js'
 import type { BotEvent } from '@prolobby/types'
 
 import type { Logger } from '../logger'
+import { BRAND, plate, type BotMessage } from './brand'
 
 /** Per person, per hour: enough to explain a problem, not enough to flood the panel. */
 export const SUPPORT_PER_HOUR = 3
@@ -12,15 +13,40 @@ const REPLY_TTL_MS = 60_000
 
 export type SupportOutcome = 'opened' | 'limited' | 'empty' | 'failed'
 
-export const SUPPORT_REPLY: Record<SupportOutcome, (id: string) => string> = {
-  opened: (id) =>
-    `<@${id}> recebido: abrimos um caso na moderação, resposta em até 24 h pela plataforma. Sua mensagem saiu do canal pra não ficar pública. · Recibido: abrimos un caso en moderación.`,
-  limited: (id) =>
-    `<@${id}> você já abriu ${SUPPORT_PER_HOUR} casos nesta hora; espere um pouco e escreva tudo numa mensagem só. · Ya abriste ${SUPPORT_PER_HOUR} casos en esta hora.`,
-  empty: (id) =>
-    `<@${id}> escreva o problema em texto: anexo sozinho não abre caso. · Escribe el problema en texto.`,
-  failed: (id) =>
-    `<@${id}> não deu pra abrir o caso agora; tente de novo em alguns minutos. · No se pudo abrir el caso ahora.`,
+const REPLY: Record<SupportOutcome, { color: number; title: string; text: string }> = {
+  opened: {
+    color: BRAND.green,
+    title: '✅ Caso aberto',
+    text: 'A moderação responde em até 24 h, pela plataforma. Sua mensagem saiu do canal pra não ficar pública.\n*Recibido: abrimos un caso en moderación.*',
+  },
+  limited: {
+    color: BRAND.amber,
+    title: '⏳ Calma aí',
+    text: `Você já abriu ${SUPPORT_PER_HOUR} casos nesta hora. Espere um pouco e escreva tudo numa mensagem só.\n*Ya abriste ${SUPPORT_PER_HOUR} casos en esta hora.*`,
+  },
+  empty: {
+    color: BRAND.amber,
+    title: '✍️ Escreva em texto',
+    text: 'Anexo sozinho não abre caso: conte o problema em palavras.\n*Escribe el problema en texto.*',
+  },
+  failed: {
+    color: BRAND.red,
+    title: '⚠️ Não deu agora',
+    text: 'Não conseguimos abrir o caso; tente de novo em alguns minutos. Sua mensagem ficou no canal.\n*No se pudo abrir el caso ahora.*',
+  },
+}
+
+/** The answer under a support message: a short card, pinging only its author. */
+export function supportReply(
+  outcome: SupportOutcome,
+  authorId: string,
+  iconUrl?: string,
+): BotMessage {
+  const { color, title, text } = REPLY[outcome]
+  return {
+    content: `<@${authorId}>`,
+    embeds: [{ author: plate('SUPORTE', iconUrl), color, title, description: text }],
+  }
 }
 
 /** Who wrote recently, in memory: a restart only forgives the hour early. */
@@ -87,7 +113,7 @@ export function supportChannelOn(
       if (outcome !== 'failed') await message.delete().catch(() => {})
       if (!message.channel.isSendable()) return
       const reply = await message.channel.send({
-        content: SUPPORT_REPLY[outcome](message.author.id),
+        ...supportReply(outcome, message.author.id, client.user?.displayAvatarURL()),
         allowedMentions: { users: [message.author.id] },
       })
       setTimeout(() => void reply.delete().catch(() => {}), REPLY_TTL_MS).unref()

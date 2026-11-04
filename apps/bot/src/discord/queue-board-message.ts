@@ -1,6 +1,7 @@
 import type { Client } from 'discord.js'
 
-import { BOARD_TITLE } from '../webhook/handlers/queue-status'
+import { BOARD_PLATE } from '../webhook/handlers/queue-status'
+import type { BotMessage } from './brand'
 
 /**
  * The single board message in #fila-status, edited in place so the channel
@@ -19,29 +20,29 @@ export function queueBoardMessageOn(client: Client) {
   }
 
   return {
-    async upsertBoard(channelId: string, content: string): Promise<void> {
+    iconUrl: () => client.user?.displayAvatarURL(),
+    async upsertBoard(channelId: string, message: BotMessage): Promise<void> {
       const channel = await channelOf(channelId)
       if (!boardId) {
         const recent = await channel.messages.fetch({ limit: 20 })
         boardId = recent.find(
-          (message) =>
-            message.author.id === client.user?.id && message.content.startsWith(BOARD_TITLE),
+          (m) => m.author.id === client.user?.id && m.embeds[0]?.author?.name === BOARD_PLATE,
         )?.id
       }
+      const body = { ...message, content: message.content ?? '', allowedMentions: { parse: [] } }
       if (boardId) {
         try {
-          await channel.messages.edit(boardId, { content, allowedMentions: { parse: [] } })
+          await channel.messages.edit(boardId, body)
           return
         } catch {
           boardId = undefined // deleted by hand: post a fresh one
         }
       }
-      const sent = await channel.send({ content, allowedMentions: { parse: [] } })
-      boardId = sent.id
+      boardId = (await channel.send(body)).id
     },
-    async post(channelId: string, content: string): Promise<void> {
+    async post(channelId: string, message: BotMessage): Promise<void> {
       const channel = await channelOf(channelId)
-      await channel.send({ content, allowedMentions: { parse: [] } })
+      await channel.send({ ...message, allowedMentions: { parse: [] } })
     },
   }
 }
