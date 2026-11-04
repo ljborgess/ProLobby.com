@@ -24,12 +24,14 @@ export {
   botStatusEventSchema,
   discordMemberJoinedEventSchema,
   discordMemberLeftEventSchema,
+  discordSupportMessageEventSchema,
   lobbyChannelsCreatedEventSchema,
   snowflake,
   type BotEvent,
   type BotStatusEvent,
   type DiscordMemberJoinedEvent,
   type DiscordMemberLeftEvent,
+  type DiscordSupportMessageEvent,
   type LobbyChannelsCreatedEvent,
 } from './bot-event'
 export {

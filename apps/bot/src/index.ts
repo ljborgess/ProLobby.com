@@ -10,6 +10,7 @@ import {
   schedulePresenceSnapshots,
 } from './discord/presence'
 import { queueBoardMessageOn } from './discord/queue-board-message'
+import { supportChannelOn } from './discord/support-channel'
 import { readDiscordBotToken } from './discord/token'
 import { welcomeOn } from './discord/welcome'
 import { logger } from './logger'
@@ -32,7 +33,8 @@ export async function main(): Promise<void> {
   const token = readDiscordBotToken()
   readDiscordGuildId()
 
-  const client = createDiscordClient()
+  const supportChannelId = process.env.DISCORD_SUPPORT_CHANNEL_ID
+  const client = createDiscordClient({ readMessages: Boolean(supportChannelId) })
   logGatewayErrors(client, logger)
   // Registered before login, but this is not what makes a leave during boot
   // survive — discord.js itself drops `guildMemberRemove` for any shard not
@@ -45,6 +47,9 @@ export async function main(): Promise<void> {
     guildId: process.env.DISCORD_GUILD_ID,
     webUrl: process.env.WEB_URL,
   })
+  if (supportChannelId) {
+    supportChannelOn(client, logger, { channelId: supportChannelId, report: postBotEvent })
+  }
   announceCommandOn(client, logger, {
     guildId: process.env.DISCORD_GUILD_ID,
     channelId: process.env.DISCORD_ANNOUNCEMENTS_CHANNEL_ID,

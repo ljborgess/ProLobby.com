@@ -13,6 +13,7 @@ const CASE_LABEL: Record<string, string> = {
   gamertag_change: 'troca de gamertag',
   linked_identity_change: 'troca de identidade vinculada',
   possible_game_bug: 'possível bug do jogo',
+  support_request: 'suporte pelo Discord',
 }
 
 export type ModerationAnnounceDeps = {
