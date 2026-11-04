@@ -92,6 +92,7 @@ O portal é traduzido: os nomes em português vão entre parênteses.
 | Kick Members / Ban Members | só por comando de Admin/Moderador ([RF-048](../requisitos/05-funcionais.md)), nunca automático |
 | View Channels, Send Messages, Embed Links, Read Message History | postar aviso, ler `#suporte-e-denuncia` |
 | Manage Messages | limpeza em canal de bot |
+| Attach Files | as imagens dos cards: placar de `#fila-status`, boas-vindas, lobby fechado e anúncio. Sem ela, mensagem com imagem falha com `Missing Permissions` |
 | Connect | enxergar quem está nas calls, pra medir os 10 min de call vazia ([Canais](02-canais.md)) |
 
 Soma dessas permissões: **`403794966`** — dá pra colar direto na URL (`&permissions=403794966`) ou marcar na calculadora do próprio portal, que mostra o mesmo número.

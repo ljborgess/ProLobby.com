@@ -1,5 +1,6 @@
 import { sampleModerationCaseOpenedEvent } from '@prolobby/types'
 
+import { BRAND } from '../../discord/brand'
 import { announceModerationCase } from './moderation-case-opened'
 
 describe('announceModerationCase (#226)', () => {
@@ -10,15 +11,16 @@ describe('announceModerationCase (#226)', () => {
     warn: jest.fn(),
   })
 
-  it('posts the kind of case and the panel link to the moderators channel', async () => {
+  it('posts a card with the kind of case and a button to the panel', async () => {
     const d = deps()
 
     await announceModerationCase(sampleModerationCaseOpenedEvent(), d)
 
-    expect(d.send).toHaveBeenCalledWith(
-      '900000000000000001',
-      'Caso novo de moderação: **verificação de personagem**. Meta: 24 h.\nhttps://prolobby.test/moderation',
-    )
+    const [channelId, message] = d.send.mock.calls[0]!
+    expect(channelId).toBe('900000000000000001')
+    expect(message.embeds[0].title).toBe('Caso novo: verificação de personagem')
+    expect(message.embeds[0].color).toBe(BRAND.amber)
+    expect(message.components[0].components[0].url).toBe('https://prolobby.test/moderation')
   })
 
   it('names a kind it does not know by its own words, not by refusing it', async () => {
@@ -31,7 +33,7 @@ describe('announceModerationCase (#226)', () => {
       d,
     )
 
-    expect(d.send.mock.calls[0]![1]).toContain('**brand new kind**')
+    expect(d.send.mock.calls[0]![1].embeds[0].title).toContain('brand new kind')
   })
 
   it('carries nothing about the person: no id of the case, account or print', async () => {
@@ -40,7 +42,7 @@ describe('announceModerationCase (#226)', () => {
 
     await announceModerationCase(event, d)
 
-    expect(d.send.mock.calls[0]![1]).not.toContain(event.payload.caseId)
+    expect(JSON.stringify(d.send.mock.calls[0]![1])).not.toContain(event.payload.caseId)
   })
 
   it('warns and does not post when no channel is configured', async () => {

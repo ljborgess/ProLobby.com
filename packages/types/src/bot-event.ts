@@ -85,12 +85,30 @@ export const botStatusEventSchema = z.object({
     .strict(),
 })
 
+/**
+ * A message posted in #suporte-e-denuncia (RF-061): it becomes a moderation
+ * case, so support lives in one panel. The text is personal data and travels
+ * only here, signed, to the case; the bot deletes the public copy.
+ */
+export const discordSupportMessageEventSchema = z.object({
+  id: uuid,
+  occurredAt,
+  type: z.literal('discord.support_message'),
+  payload: z
+    .object({
+      discordId: snowflake,
+      content: z.string().trim().min(1).max(2000),
+    })
+    .strict(),
+})
+
 export const botEventSchema = z.discriminatedUnion('type', [
   discordMemberLeftEventSchema,
   discordMemberJoinedEventSchema,
   discordPresenceSnapshotEventSchema,
   lobbyChannelsCreatedEventSchema,
   botStatusEventSchema,
+  discordSupportMessageEventSchema,
 ])
 
 export type DiscordMemberLeftEvent = z.infer<typeof discordMemberLeftEventSchema>
@@ -98,4 +116,5 @@ export type DiscordMemberJoinedEvent = z.infer<typeof discordMemberJoinedEventSc
 export type DiscordPresenceSnapshotEvent = z.infer<typeof discordPresenceSnapshotEventSchema>
 export type LobbyChannelsCreatedEvent = z.infer<typeof lobbyChannelsCreatedEventSchema>
 export type BotStatusEvent = z.infer<typeof botStatusEventSchema>
+export type DiscordSupportMessageEvent = z.infer<typeof discordSupportMessageEventSchema>
 export type BotEvent = z.infer<typeof botEventSchema>

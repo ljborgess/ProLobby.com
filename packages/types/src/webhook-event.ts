@@ -107,12 +107,40 @@ export const moderationCaseOpenedEventSchema = z.object({
     .strict(),
 })
 
+const movementBandSchema = z.enum(['low', 'busy', 'full'])
+
+/**
+ * The public board of the queue for #fila-status: the band of each category
+ * (RF-008 — never the count) and why no lobby closes, if it is paused (#271).
+ * Sent only when it changes, best effort: a lost one is replaced by the next.
+ */
+export const queueBoardEventSchema = z.object({
+  id: uuid,
+  occurredAt,
+  type: z.literal('queue.board'),
+  payload: z
+    .object({
+      bands: z
+        .object({
+          goalkeeper: movementBandSchema,
+          defender: movementBandSchema,
+          midfielder: movementBandSchema,
+          winger: movementBandSchema,
+          striker: movementBandSchema,
+        })
+        .strict(),
+      paused: z.enum(['discord_unavailable', 'channels_full', 'lobbies_full']).nullable(),
+    })
+    .strict(),
+})
+
 export const platformEventSchema = z.discriminatedUnion('type', [
   lobbyClosedEventSchema,
   lobbyEndedEventSchema,
   accountPunishedEventSchema,
   systemQuotaAlertEventSchema,
   moderationCaseOpenedEventSchema,
+  queueBoardEventSchema,
 ])
 
 export type LobbyClosedEvent = z.infer<typeof lobbyClosedEventSchema>
@@ -120,6 +148,7 @@ export type LobbyEndedEvent = z.infer<typeof lobbyEndedEventSchema>
 export type AccountPunishedEvent = z.infer<typeof accountPunishedEventSchema>
 export type SystemQuotaAlertEvent = z.infer<typeof systemQuotaAlertEventSchema>
 export type ModerationCaseOpenedEvent = z.infer<typeof moderationCaseOpenedEventSchema>
+export type QueueBoardEvent = z.infer<typeof queueBoardEventSchema>
 export type PlatformEvent = z.infer<typeof platformEventSchema>
 export type QuotaResource = z.infer<typeof quotaResourceSchema>
 

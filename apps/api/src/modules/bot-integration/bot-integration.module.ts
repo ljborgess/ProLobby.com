@@ -10,6 +10,7 @@ import { EventDelivery } from './event-delivery.entity'
 import { EventDeliveryService } from './event-delivery.service'
 import { LobbyChannelsService } from './lobby-channels.service'
 import { ModerationCaseAnnouncer } from './moderation-case-announcer'
+import { SupportIntakeService } from './support-intake.service'
 import { WebhookClient } from './webhook-client'
 
 @Module({
@@ -22,7 +23,8 @@ import { WebhookClient } from './webhook-client'
     EventDeliveryService,
     LobbyChannelsService,
     ModerationCaseAnnouncer,
+    SupportIntakeService,
   ],
-  exports: [CoordinationState, EventDeliveryService],
+  exports: [CoordinationState, EventDeliveryService, WebhookClient],
 })
 export class BotIntegrationModule {}

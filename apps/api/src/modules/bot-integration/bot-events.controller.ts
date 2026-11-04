@@ -24,6 +24,7 @@ import { BOT_EVENT_THROTTLE } from '../../common/security/throttler.config'
 import { DiscordPresenceService } from '../account/discord-presence.service'
 import { CoordinationState } from './coordination-state'
 import { LobbyChannelsService } from './lobby-channels.service'
+import { SupportIntakeService } from './support-intake.service'
 
 type RequestWithRawBody = Request & { rawBody?: Buffer }
 
@@ -45,6 +46,7 @@ export class BotEventsController {
     private readonly presence: DiscordPresenceService,
     private readonly lobbyChannels: LobbyChannelsService,
     private readonly coordination: CoordinationState,
+    private readonly support: SupportIntakeService,
   ) {}
 
   @Public()
@@ -81,6 +83,10 @@ export class BotEventsController {
     }
     if (parsed.data.type === 'lobby.channels_created') {
       await this.lobbyChannels.apply(parsed.data)
+      return
+    }
+    if (parsed.data.type === 'discord.support_message') {
+      await this.support.open(parsed.data)
       return
     }
     // 204 whether or not the Discord belongs to an account: the answer must not

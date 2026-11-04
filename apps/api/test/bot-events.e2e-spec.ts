@@ -16,6 +16,11 @@ import { hashIdentity, readIdentityHmacSecret } from '../src/common/security/ide
 import { applySecurity } from '../src/common/security/security.config'
 import { Account } from '../src/modules/account/account.entity'
 import { CURRENT_TERMS_VERSION } from '../src/modules/account/terms.constants'
+import { ModerationCase } from '../src/modules/moderation/moderation-case.entity'
+import {
+  ModerationCaseOrigin,
+  ModerationCaseType,
+} from '../src/modules/moderation/moderation-case.enums'
 
 const SECRET = 'test-webhook-secret-not-the-placeholder'
 const LINKED = '111111111111111111'
@@ -306,6 +311,45 @@ describe('bot → platform events (#150, RF-060)', () => {
       const res = await send(snapshot(['not-a-discord-id']))
 
       expect(res.status).toBe(400)
+    })
+  })
+
+  describe('discord.support_message (RF-061)', () => {
+    const support = (discordId: string, content: string): BotEvent => ({
+      id: randomUUID(),
+      occurredAt: iso(),
+      type: 'discord.support_message',
+      payload: { discordId, content },
+    })
+    const casesBy = (content: string) =>
+      orm.em.fork().find(ModerationCase, { reportMessage: content }, { populate: ['openedBy'] })
+
+    it('opens a support case authored by the linked account', async () => {
+      const email = await linkedAccount('121212121212121212')
+
+      const res = await send(support('121212121212121212', 'não consigo entrar na fila'))
+
+      expect(res.status).toBe(204)
+      const [opened] = await casesBy('não consigo entrar na fila')
+      expect(opened?.type).toBe(ModerationCaseType.SUPPORT_REQUEST)
+      expect(opened?.origin).toBe(ModerationCaseOrigin.DISCORD_MESSAGE)
+      expect(opened?.openedBy?.email).toBe(email)
+    })
+
+    it('still opens the case for someone with no account, with no author', async () => {
+      const res = await send(support(STRANGER, 'quero saber como funciona'))
+
+      expect(res.status).toBe(204)
+      const [opened] = await casesBy('quero saber como funciona')
+      expect(opened?.openedBy).toBeFalsy()
+      // The way back to someone with no account: their Discord, encrypted.
+      expect(opened?.discordIdEncrypted?.length).toBeGreaterThan(0)
+      expect(opened?.discordIdEncrypted?.toString()).not.toContain(STRANGER)
+    })
+
+    it('refuses an empty or oversized message', async () => {
+      expect((await send(support(STRANGER, '   '))).status).toBe(400)
+      expect((await send(support(STRANGER, 'x'.repeat(2001)))).status).toBe(400)
     })
   })
 })

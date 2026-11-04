@@ -1,5 +1,6 @@
 import type { Server } from 'node:http'
 import { Events } from 'discord.js'
+import { announceCommandOn } from './discord/announce-command'
 import { createDiscordClient, logGatewayErrors } from './discord/client'
 import { lobbyChannelsOn, scheduleLobbySweep } from './discord/lobby-channels'
 import {
@@ -8,7 +9,10 @@ import {
   reportPresenceSnapshot,
   schedulePresenceSnapshots,
 } from './discord/presence'
+import { queueBoardMessageOn } from './discord/queue-board-message'
+import { supportChannelOn } from './discord/support-channel'
 import { readDiscordBotToken } from './discord/token'
+import { welcomeOn } from './discord/welcome'
 import { logger } from './logger'
 import { postBotEvent } from './platform/client'
 import { handlePlatformEvent } from './webhook/handlers'
@@ -29,7 +33,8 @@ export async function main(): Promise<void> {
   const token = readDiscordBotToken()
   readDiscordGuildId()
 
-  const client = createDiscordClient()
+  const supportChannelId = process.env.DISCORD_SUPPORT_CHANNEL_ID
+  const client = createDiscordClient({ readMessages: Boolean(supportChannelId) })
   logGatewayErrors(client, logger)
   // Registered before login, but this is not what makes a leave during boot
   // survive — discord.js itself drops `guildMemberRemove` for any shard not
@@ -37,6 +42,22 @@ export async function main(): Promise<void> {
   // otherwise). What actually covers a boot-window leave is the presence
   // snapshot below, sent once the gateway is Ready.
   reportPresence(client, logger)
+  welcomeOn(client, logger, {
+    channelId: process.env.DISCORD_WELCOME_CHANNEL_ID,
+    guildId: process.env.DISCORD_GUILD_ID,
+    webUrl: process.env.WEB_URL,
+  })
+  if (supportChannelId) {
+    supportChannelOn(client, logger, {
+      channelId: supportChannelId,
+      report: postBotEvent,
+      webUrl: process.env.WEB_URL,
+    })
+  }
+  announceCommandOn(client, logger, {
+    guildId: process.env.DISCORD_GUILD_ID,
+    channelId: process.env.DISCORD_ANNOUNCEMENTS_CHANNEL_ID,
+  })
   client.once(Events.ClientReady, () => {
     void reportPresenceSnapshot(client, logger)
     schedulePresenceSnapshots(client, logger)
@@ -45,6 +66,7 @@ export async function main(): Promise<void> {
   await client.login(token)
   logger.info('bootstrap', 'Discord gateway connected')
 
+  const queueBoard = queueBoardMessageOn(client)
   const port = Number(process.env.PORT ?? 3002)
   // /events is never exposed by the Cloudflare tunnel and has no `ports:` in
   // production (ADR-009). HMAC (WEBHOOK_SECRET) is still required: the
@@ -58,15 +80,21 @@ export async function main(): Promise<void> {
         webUrl: process.env.WEB_URL,
         // A channel the bot cannot reach throws, and the API retries: the
         // moderators find out from the delivery-failure case, not silence.
-        send: async (channelId, content) => {
+        iconUrl: queueBoard.iconUrl,
+        send: async (channelId, message) => {
           const channel = await client.channels.fetch(channelId)
           if (!channel?.isSendable()) {
             throw new Error(`channel ${channelId} is not one the bot can post in`)
           }
-          await channel.send({ content, allowedMentions: { parse: [] } })
+          await channel.send({ ...message, allowedMentions: { parse: [] } })
         },
         warn: (message) => logger.warn('events', message),
         lobby: { ...lobbyChannelsOn(client), report: postBotEvent },
+        queueStatus: {
+          channelId: process.env.DISCORD_QUEUE_STATUS_CHANNEL_ID,
+          webUrl: process.env.WEB_URL,
+          ...queueBoard,
+        },
       }),
   })
   const httpServer = app.listen(port, () => {

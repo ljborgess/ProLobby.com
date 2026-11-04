@@ -39,6 +39,8 @@ export enum ModerationCaseType {
   BAN = 'ban',
   /** RF-069: 3 reports dismissed as baseless in 30 days — a case about the reporter. */
   BASELESS_REPORTS = 'baseless_reports',
+  /** RF-061: a message in #suporte-e-denuncia, help or a report, read by a moderator. */
+  SUPPORT_REQUEST = 'support_request',
 }
 
 /** What a user report is about — docs/produto/04-governanca/01-moderacao.md. */
