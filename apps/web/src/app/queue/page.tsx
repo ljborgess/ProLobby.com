@@ -1,4 +1,3 @@
-import type { Metadata } from 'next'
 import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { apiFetch } from '@/common/api/client'
@@ -12,10 +11,9 @@ import { LoadErrorMessage } from '@/modules/account/load-error-message'
 import type { QueuePrerequisites } from '@/modules/account/queue-prerequisites-panel'
 import type { CharacterView } from '@/modules/character/types'
 import { QueueScreen, type QueueState } from '@/modules/queue/queue-screen'
+import { pageMetadata } from '@/common/page-metadata'
 
-export const metadata: Metadata = {
-  title: 'Fila — ProLobby',
-}
+export const generateMetadata = () => pageMetadata('queue')
 
 /**
  * The queue — issue #233. Same session gate and never-crash fallback as

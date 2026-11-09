@@ -1,4 +1,3 @@
-import type { Metadata } from 'next'
 import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { apiFetch } from '@/common/api/client'
@@ -11,10 +10,9 @@ import {
   type QueuePrerequisites,
 } from '@/modules/account/queue-prerequisites-panel'
 import { AppHeader } from '@/modules/account/app-header'
+import { pageMetadata } from '@/common/page-metadata'
 
-export const metadata: Metadata = {
-  title: 'Sua conta — ProLobby',
-}
+export const generateMetadata = () => pageMetadata('verifications')
 
 /**
  * Where login lands — issue #171, moved off the home in the routing change of

@@ -1,11 +1,9 @@
-import type { Metadata } from 'next'
 import { AuthLayout } from '@/modules/account/auth-layout'
 import { SignInForm } from '@/modules/account/sign-in-form'
 import { SignInHeading } from '@/modules/account/sign-in-heading'
+import { pageMetadata } from '@/common/page-metadata'
 
-export const metadata: Metadata = {
-  title: 'Entrar — ProLobby',
-}
+export const generateMetadata = () => pageMetadata('login')
 
 export default function LoginPage() {
   return (

@@ -1,4 +1,3 @@
-import type { Metadata } from 'next'
 import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { apiFetch } from '@/common/api/client'
@@ -9,10 +8,9 @@ import { AccountBackdrop } from '@/modules/account/account-backdrop'
 import { LoadErrorMessage } from '@/modules/account/load-error-message'
 import { CharacterScreen } from '@/modules/character/character-screen'
 import type { ArchetypeOption, CharacterView } from '@/modules/character/types'
+import { pageMetadata } from '@/common/page-metadata'
 
-export const metadata: Metadata = {
-  title: 'Elenco — ProLobby',
-}
+export const generateMetadata = () => pageMetadata('character')
 
 /**
  * Create a character and send its verification print — issue #196. Same
