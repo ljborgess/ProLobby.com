@@ -35,10 +35,14 @@ export default async function ModerationPage() {
 
   let queue: Response
   let options: Response
+  let summary: Response | null
   try {
-    ;[queue, options] = await Promise.all([
+    ;[queue, options, summary] = await Promise.all([
       apiFetch('/api/moderation/character-verifications', init),
       apiFetch('/api/characters/archetypes', init),
+      // The case queue by section (#307). Until it is on `dev` the API has no
+      // such route, and that must not take the prints screen down with it.
+      apiFetch('/api/moderation/cases/summary', init).catch(() => null),
     ])
   } catch {
     return <LoadError />
@@ -63,12 +67,19 @@ export default async function ModerationPage() {
     return <LoadError />
   }
 
+  // The real queue when the API answers; made-up cases only outside
+  // production while it does not (#309); in production without it, the
+  // prints screen alone, as before.
+  const panel = summary?.ok ? 'api' : process.env.NODE_ENV !== 'production' ? 'sample' : null
+
   return (
     <main className="relative flex min-h-svh flex-1 flex-col overflow-x-clip px-4 py-8 sm:px-6">
       <AccountBackdrop />
       <AppHeader />
-      <div className="mx-auto flex w-full max-w-xl flex-1 flex-col py-10">
-        <ModerationScreen cases={cases} archetypes={archetypes} />
+      <div
+        className={`mx-auto flex w-full flex-1 flex-col py-10 ${panel ? 'max-w-6xl' : 'max-w-xl'}`}
+      >
+        <ModerationScreen cases={cases} archetypes={archetypes} panel={panel} />
       </div>
     </main>
   )
