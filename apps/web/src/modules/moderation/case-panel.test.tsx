@@ -24,7 +24,7 @@ describe('CasePanel', () => {
     panel()
 
     const all = await within(sidebar()).findByRole('button', { name: /Todos/ })
-    await waitFor(() => expect(within(all).getByLabelText(pt.openCount(9))).toBeInTheDocument())
+    await waitFor(() => expect(within(all).getByText(pt.openCount(9))).toBeInTheDocument())
     for (const [key, open] of [
       ['verifications', 2],
       ['reports', 3],
@@ -34,7 +34,7 @@ describe('CasePanel', () => {
       ['system', 1],
     ] as const) {
       const button = within(sidebar()).getByRole('button', { name: new RegExp(pt.sections[key]) })
-      expect(within(button).getByLabelText(pt.openCount(open))).toBeInTheDocument()
+      expect(within(button).getByText(pt.openCount(open))).toBeInTheDocument()
     }
   })
 
@@ -67,6 +67,35 @@ describe('CasePanel', () => {
     const list = await screen.findByRole('list', { name: pt.listLabel })
     await waitFor(() => expect(within(list).getAllByRole('listitem')).toHaveLength(1))
     expect(list).toHaveTextContent(pt.caseTypes.captain_abuse)
+  })
+
+  it('drops a type filter once its last case is closed, instead of an empty list', async () => {
+    panel()
+    await section('Denúncias')
+    const group = await screen.findByRole('group', { name: pt.typeFilter })
+    fireEvent.click(
+      within(group).getByRole('button', { name: new RegExp(pt.caseTypes.captain_abuse) }),
+    )
+    const list = await screen.findByRole('list', { name: pt.listLabel })
+    await waitFor(() => expect(within(list).getAllByRole('listitem')).toHaveLength(1))
+
+    fireEvent.click(within(list).getByRole('button'))
+    const detail = await screen.findByRole('article')
+    fireEvent.click(within(detail).getByRole('button', { name: pt.close.outcomes.dismissed }))
+    fireEvent.click(within(detail).getByRole('button', { name: pt.close.reasons.duplicate }))
+    fireEvent.click(within(detail).getByRole('button', { name: pt.close.confirm }))
+
+    // The captain_abuse chip is gone and the section lists its two user reports again.
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('button', { name: new RegExp(pt.caseTypes.captain_abuse) }),
+      ).toBeNull(),
+    )
+    await waitFor(() =>
+      expect(
+        within(screen.getByRole('list', { name: pt.listLabel })).getAllByRole('listitem'),
+      ).toHaveLength(2),
+    )
   })
 
   it('shows the case, its people and the lobby, and never an e-mail or a birth date', async () => {
@@ -165,7 +194,7 @@ describe('CasePanel', () => {
         ),
       )
       const all = within(sidebar()).getByRole('button', { name: /Todos/ })
-      await waitFor(() => expect(within(all).getByLabelText(pt.openCount(8))).toBeInTheDocument())
+      await waitFor(() => expect(within(all).getByText(pt.openCount(8))).toBeInTheDocument())
     })
 
     it('limits the note to 500 characters and counts what is left', async () => {

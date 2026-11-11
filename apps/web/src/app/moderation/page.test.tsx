@@ -35,8 +35,6 @@ describe('ModerationPage', () => {
   beforeEach(() => {
     cookieJar.get.mockReset()
     apiFetch.mockReset()
-    // The case queue (#307) is the third call; by default the API has no such route yet.
-    apiFetch.mockResolvedValue(answer(404))
     notFound.mockClear()
     vi.spyOn(console, 'error').mockImplementation(() => undefined)
   })
@@ -44,7 +42,6 @@ describe('ModerationPage', () => {
   afterEach(() => {
     vi.restoreAllMocks()
     vi.unstubAllEnvs()
-    vi.unstubAllGlobals()
   })
 
   it('is a 404 without a session, before asking the API anything', async () => {
@@ -73,35 +70,6 @@ describe('ModerationPage', () => {
   })
 
   describe('the case queue by section (#309)', () => {
-    const queueUp = () =>
-      apiFetch
-        .mockResolvedValueOnce(answer(200, []))
-        .mockResolvedValueOnce(answer(200, []))
-        .mockResolvedValueOnce(answer(200, { sections: [] }))
-
-    afterEach(() => {
-      vi.unstubAllEnvs()
-    })
-
-    it('shows the panel when the API answers the summary', async () => {
-      signedIn()
-      queueUp()
-      // The panel then reads through /bff, from the browser.
-      vi.stubGlobal(
-        'fetch',
-        vi.fn(async (url: string) =>
-          Response.json(url.includes('/summary') ? { sections: [] } : []),
-        ),
-      )
-
-      renderWithLocale(await ModerationPage())
-
-      expect(
-        screen.getByRole('heading', { name: MODERATION_PANEL_CONTENT.pt.title }),
-      ).toBeInTheDocument()
-      expect(screen.queryByText(MODERATION_PANEL_CONTENT.pt.sample)).not.toBeInTheDocument()
-    })
-
     it('shows made-up cases, and says so, outside production while the API has no queue', async () => {
       signedIn()
       vi.stubEnv('NODE_ENV', 'development')

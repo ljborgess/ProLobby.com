@@ -35,14 +35,10 @@ export default async function ModerationPage() {
 
   let queue: Response
   let options: Response
-  let summary: Response | null
   try {
-    ;[queue, options, summary] = await Promise.all([
+    ;[queue, options] = await Promise.all([
       apiFetch('/api/moderation/character-verifications', init),
       apiFetch('/api/characters/archetypes', init),
-      // The case queue by section (#307). Until it is on `dev` the API has no
-      // such route, and that must not take the prints screen down with it.
-      apiFetch('/api/moderation/cases/summary', init).catch(() => null),
     ])
   } catch {
     return <LoadError />
@@ -67,10 +63,11 @@ export default async function ModerationPage() {
     return <LoadError />
   }
 
-  // The real queue when the API answers; made-up cases only outside
-  // production while it does not (#309); in production without it, the
-  // prints screen alone, as before.
-  const panel = summary?.ok ? 'api' : process.env.NODE_ENV !== 'production' ? 'sample' : null
+  // The case queue by section (#306, #309) has no API on `dev` yet (#307), so
+  // made-up cases show outside production, with a notice. In production the
+  // prints screen stays alone, as before. The real queue is wired in with the
+  // API: the contract test refuses a web call to a route that is not there.
+  const panel = process.env.NODE_ENV !== 'production' ? 'sample' : null
 
   return (
     <main className="relative flex min-h-svh flex-1 flex-col overflow-x-clip px-4 py-8 sm:px-6">

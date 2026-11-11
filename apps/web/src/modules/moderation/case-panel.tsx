@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { useLocale } from '@/common/providers/locale-provider'
 import { CHARACTER_CONTENT } from '@/content/character'
 import { useModerationPanelContent } from '@/hooks/use-moderation-panel-content'
@@ -61,21 +61,43 @@ export function CasePanel({
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [notice, setNotice] = useState('')
 
+  // A late answer must not write into a panel that is gone.
+  const mounted = useRef(true)
+  useEffect(() => {
+    mounted.current = true
+    return () => {
+      mounted.current = false
+    }
+  }, [])
+
   const loadSummary = useCallback(() => {
     source
       .summary()
-      .then((value) => setSummary({ status: 'ready', value }))
-      .catch(() => setSummary({ status: 'error' }))
+      .then((value) => mounted.current && setSummary({ status: 'ready', value }))
+      .catch(() => mounted.current && setSummary({ status: 'error' }))
   }, [source])
 
   useEffect(loadSummary, [loadSummary])
+
+  const sections = summary.status === 'ready' ? summary.value : []
+  const countOf = (key: Selected) =>
+    key === 'all'
+      ? sections.reduce((sum, item) => sum + item.open, 0)
+      : (sections.find((item) => item.key === key)?.open ?? 0)
+  const chips =
+    section === 'all' ? [] : (sections.find((item) => item.key === section)?.types ?? [])
+  // A filter whose last case was just closed has no chip left: it reads as
+  // "all types" instead of an empty list under a filter nobody can see.
+  const activeType = chips.some((chip) => chip.type === type) ? type : null
+  const showingPrints = section === 'verifications' && activeType === 'character_verification'
+
   // What is on screen belongs to one filter and one reload: any other key
   // reads as "loading" without a state write inside the effect.
-  const listKey = `${section}|${type ?? ''}|${reload}`
+  const listKey = `${section}|${activeType ?? ''}|${reload}`
   useEffect(() => {
     let alive = true
     source
-      .list(section === 'all' ? null : section, type)
+      .list(section === 'all' ? null : section, activeType)
       .then(
         (value) =>
           alive &&
@@ -91,19 +113,10 @@ export function CasePanel({
     return () => {
       alive = false
     }
-  }, [source, section, type, listKey])
+  }, [source, section, activeType, listKey])
   const list: Loaded<CaseListItem[]> =
     listed.key === listKey ? listed.result : { status: 'loading' }
   const loadList = () => setReload((n) => n + 1)
-
-  const sections = summary.status === 'ready' ? summary.value : []
-  const countOf = (key: Selected) =>
-    key === 'all'
-      ? sections.reduce((sum, item) => sum + item.open, 0)
-      : (sections.find((item) => item.key === key)?.open ?? 0)
-  const chips =
-    section === 'all' ? [] : (sections.find((item) => item.key === section)?.types ?? [])
-  const showingPrints = section === 'verifications' && type === 'character_verification'
 
   const pick = (next: Selected) => {
     setSection(next)
@@ -153,12 +166,12 @@ export function CasePanel({
                   }`}
                 >
                   <span>{key === 'all' ? content.all : content.sections[key]}</span>
-                  <span
-                    aria-label={content.openCount(countOf(key))}
-                    className="tabular-nums text-foreground-soft"
-                  >
+                  <span aria-hidden className="tabular-nums text-foreground-soft">
                     {summary.status === 'ready' ? countOf(key) : '·'}
                   </span>
+                  {summary.status === 'ready' && (
+                    <span className="sr-only">{content.openCount(countOf(key))}</span>
+                  )}
                 </button>
               </li>
             ))}
@@ -170,12 +183,12 @@ export function CasePanel({
             <div role="group" aria-label={content.typeFilter} className="flex flex-wrap gap-2">
               <button
                 type="button"
-                aria-pressed={type === null}
+                aria-pressed={activeType === null}
                 onClick={() => {
                   setType(null)
                   setSelectedId(null)
                 }}
-                className={`${CHIP} ${type === null ? CHIP_ON : CHIP_OFF}`}
+                className={`${CHIP} ${activeType === null ? CHIP_ON : CHIP_OFF}`}
               >
                 {content.allTypes}
               </button>
@@ -183,12 +196,12 @@ export function CasePanel({
                 <button
                   key={chip.type}
                   type="button"
-                  aria-pressed={type === chip.type}
+                  aria-pressed={activeType === chip.type}
                   onClick={() => {
                     setType(chip.type)
                     setSelectedId(null)
                   }}
-                  className={`${CHIP} ${type === chip.type ? CHIP_ON : CHIP_OFF}`}
+                  className={`${CHIP} ${activeType === chip.type ? CHIP_ON : CHIP_OFF}`}
                 >
                   {content.caseTypes[chip.type]}
                   <span className="tabular-nums text-foreground-soft">{chip.open}</span>

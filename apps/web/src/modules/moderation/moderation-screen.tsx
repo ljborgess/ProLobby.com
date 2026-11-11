@@ -3,15 +3,14 @@
 import { useMemo } from 'react'
 import { useModerationContent } from '@/hooks/use-moderation-content'
 import { CasePanel } from './case-panel'
-import { bffSource } from './cases'
 import { createSampleSource } from './sample-cases'
 import { VerificationQueue, type VerificationCase } from './verification-queue'
 
 /**
  * What `/moderation` shows. `panel` says where the case queue comes from:
- * `api` (the real one, #307), `sample` (made-up cases, only outside production
- * and only while the API is not on) or `null` (no queue yet: the character
- * prints screen alone, as before #309).
+ * `sample` (made-up cases, only outside production, until the API of #307 is
+ * on `dev`) or `null` (no queue: the character prints screen alone, as
+ * before #309).
  */
 export function ModerationScreen({
   cases,
@@ -20,20 +19,13 @@ export function ModerationScreen({
 }: {
   cases: VerificationCase[]
   archetypes: string[]
-  panel: 'api' | 'sample' | null
+  panel: 'sample' | null
 }) {
   const content = useModerationContent()
   const sampleSource = useMemo(() => (panel === 'sample' ? createSampleSource() : null), [panel])
 
-  if (panel) {
-    return (
-      <CasePanel
-        source={sampleSource ?? bffSource}
-        verifications={cases}
-        archetypes={archetypes}
-        sample={panel === 'sample'}
-      />
-    )
+  if (sampleSource) {
+    return <CasePanel source={sampleSource} verifications={cases} archetypes={archetypes} sample />
   }
 
   return (

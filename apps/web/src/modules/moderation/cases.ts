@@ -92,54 +92,16 @@ export interface Closure {
 export type CloseResult = 'closed' | 'already_closed' | 'failed'
 
 /**
- * Where the panel reads and writes. The real one talks to `/bff`; the sample
- * one (sample-cases.ts) keeps everything in memory, in the same shapes, so the
- * screens can be built and tried before the API is on `dev`.
+ * Where the panel reads and writes. Today only the sample one
+ * (sample-cases.ts) exists: it keeps everything in memory, in the shapes of
+ * the API's contract (#307), so the screens can be built and tried before that
+ * API is on `dev`. The real one comes with the `/bff` proxies once it is.
  */
 export interface CasesSource {
   summary(): Promise<SectionSummary[]>
   list(section: SectionKey | null, type: CaseType | null): Promise<CaseListItem[]>
   detail(id: string): Promise<CaseDetail | null>
   close(id: string, closure: Closure): Promise<CloseResult>
-}
-
-async function json<T>(response: Response): Promise<T> {
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}`)
-  }
-  return (await response.json()) as T
-}
-
-/** The real source: the same-origin proxy of the API (#307), never the API itself. */
-export const bffSource: CasesSource = {
-  async summary() {
-    const body = await json<{ sections: SectionSummary[] }>(
-      await fetch('/bff/moderation/cases/summary'),
-    )
-    return body.sections
-  },
-  async list(section, type) {
-    const query = new URLSearchParams()
-    if (section) query.set('section', section)
-    if (type) query.set('type', type)
-    const suffix = query.size > 0 ? `?${query}` : ''
-    return json<CaseListItem[]>(await fetch(`/bff/moderation/cases${suffix}`))
-  },
-  async detail(id) {
-    const response = await fetch(`/bff/moderation/cases/${id}`)
-    if (response.status === 404) return null
-    return json<CaseDetail>(response)
-  },
-  async close(id, closure) {
-    const response = await fetch(`/bff/moderation/cases/${id}/closures`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(closure),
-    })
-    if (response.status === 204) return 'closed'
-    if (response.status === 409) return 'already_closed'
-    return 'failed'
-  },
 }
 
 /** Oldest first: the order a moderator works the queue in. */
