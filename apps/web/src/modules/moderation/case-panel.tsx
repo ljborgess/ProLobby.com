@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } fro
 import { useLocale } from '@/common/providers/locale-provider'
 import { CHARACTER_CONTENT } from '@/content/character'
 import { useModerationPanelContent } from '@/hooks/use-moderation-panel-content'
+import { useModerationToolsContent } from '@/hooks/use-moderation-tools-content'
 import {
   MAX_NOTE,
   REASONS_OF,
@@ -17,15 +18,16 @@ import {
   type SectionKey,
   type SectionSummary,
 } from './cases'
+import { CHIP, CHIP_OFF, CHIP_ON, formatDate } from './panel-styles'
+import { AuditView } from './audit-view'
+import { MetricsView } from './metrics-view'
+import { PlayersView } from './players-view'
+import type { ToolsSource } from './tools'
 import { VerificationQueue, type VerificationCase } from './verification-queue'
 
 type Selected = SectionKey | 'all'
+type ToolKey = 'players' | 'audit' | 'metrics' | 'plans'
 type Loaded<T> = { status: 'loading' } | { status: 'error' } | { status: 'ready'; value: T }
-
-const CHIP =
-  'landing-focus inline-flex min-h-9 items-center gap-2 rounded-full border px-3.5 text-sm transition-colors'
-const CHIP_OFF = 'border-white/15 text-foreground-soft hover:border-white/30 hover:text-foreground'
-const CHIP_ON = 'border-accent bg-accent/10 text-foreground'
 
 /**
  * The moderation panel by section (#306, #309): a sidebar with the open count
@@ -41,15 +43,23 @@ export function CasePanel({
   source,
   verifications,
   archetypes,
+  tools,
+  isAdmin,
   sample = false,
 }: {
   source: CasesSource
+  /** The management sections' data: players, audit, metrics and plans (#314). */
+  tools: ToolsSource
+  /** Whether this session is an admin: only then is Planos offered. */
+  isAdmin: boolean
   verifications: VerificationCase[]
   archetypes: string[]
   /** The source holds made-up cases (the API is not on yet): say so on the screen. */
   sample?: boolean
 }) {
   const content = useModerationPanelContent()
+  const toolsContent = useModerationToolsContent()
+  const [tool, setTool] = useState<ToolKey | null>(null)
   const [summary, setSummary] = useState<Loaded<SectionSummary[]>>({ status: 'loading' })
   const [section, setSection] = useState<Selected>('all')
   const [type, setType] = useState<CaseType | null>(null)
@@ -119,6 +129,7 @@ export function CasePanel({
   const loadList = () => setReload((n) => n + 1)
 
   const pick = (next: Selected) => {
+    setTool(null)
     setSection(next)
     setType(null)
     setSelectedId(null)
@@ -160,9 +171,9 @@ export function CasePanel({
                 <button
                   type="button"
                   onClick={() => pick(key)}
-                  aria-current={section === key ? 'page' : undefined}
+                  aria-current={tool === null && section === key ? 'page' : undefined}
                   className={`landing-focus flex min-h-11 w-full items-center justify-between gap-3 rounded-md border px-3.5 text-sm transition-colors ${
-                    section === key ? CHIP_ON : CHIP_OFF
+                    tool === null && section === key ? CHIP_ON : CHIP_OFF
                   }`}
                 >
                   <span>{key === 'all' ? content.all : content.sections[key]}</span>
@@ -176,67 +187,103 @@ export function CasePanel({
               </li>
             ))}
           </ul>
+          <p className="mb-2 mt-5 hidden px-1 text-xs uppercase tracking-[0.15em] text-foreground-soft lg:block">
+            {toolsContent.group}
+          </p>
+          <ul className="mt-2 flex gap-2 overflow-x-auto pb-1 lg:mt-0 lg:flex-col lg:overflow-visible lg:pb-0">
+            {(['players', 'audit', 'metrics', ...(isAdmin ? ['plans'] : [])] as ToolKey[]).map(
+              (key) => (
+                <li key={key} className="shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTool(key)
+                      setNotice('')
+                    }}
+                    aria-current={tool === key ? 'page' : undefined}
+                    className={`landing-focus flex min-h-11 w-full items-center rounded-md border px-3.5 text-sm transition-colors ${
+                      tool === key ? CHIP_ON : CHIP_OFF
+                    }`}
+                  >
+                    {toolsContent.nav[key]}
+                  </button>
+                </li>
+              ),
+            )}
+          </ul>
         </nav>
 
-        <div className="flex min-w-0 flex-col gap-4">
-          {chips.length > 0 && (
-            <div role="group" aria-label={content.typeFilter} className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                aria-pressed={activeType === null}
-                onClick={() => {
-                  setType(null)
-                  setSelectedId(null)
-                }}
-                className={`${CHIP} ${activeType === null ? CHIP_ON : CHIP_OFF}`}
-              >
-                {content.allTypes}
-              </button>
-              {chips.map((chip) => (
+        {tool ? (
+          <div className="flex min-w-0 flex-col gap-4">
+            <h2 className="font-display text-xl font-semibold text-foreground">
+              {toolsContent.nav[tool]}
+            </h2>
+            {tool === 'players' && <PlayersView source={tools} withPlans={false} />}
+            {tool === 'plans' && isAdmin && <PlayersView source={tools} withPlans />}
+            {tool === 'audit' && <AuditView source={tools} />}
+            {tool === 'metrics' && <MetricsView source={tools} />}
+          </div>
+        ) : (
+          <div className="flex min-w-0 flex-col gap-4">
+            {chips.length > 0 && (
+              <div role="group" aria-label={content.typeFilter} className="flex flex-wrap gap-2">
                 <button
-                  key={chip.type}
                   type="button"
-                  aria-pressed={activeType === chip.type}
+                  aria-pressed={activeType === null}
                   onClick={() => {
-                    setType(chip.type)
+                    setType(null)
                     setSelectedId(null)
                   }}
-                  className={`${CHIP} ${activeType === chip.type ? CHIP_ON : CHIP_OFF}`}
+                  className={`${CHIP} ${activeType === null ? CHIP_ON : CHIP_OFF}`}
                 >
-                  {content.caseTypes[chip.type]}
-                  <span className="tabular-nums text-foreground-soft">{chip.open}</span>
+                  {content.allTypes}
                 </button>
-              ))}
-            </div>
-          )}
+                {chips.map((chip) => (
+                  <button
+                    key={chip.type}
+                    type="button"
+                    aria-pressed={activeType === chip.type}
+                    onClick={() => {
+                      setType(chip.type)
+                      setSelectedId(null)
+                    }}
+                    className={`${CHIP} ${activeType === chip.type ? CHIP_ON : CHIP_OFF}`}
+                  >
+                    {content.caseTypes[chip.type]}
+                    <span className="tabular-nums text-foreground-soft">{chip.open}</span>
+                  </button>
+                ))}
+              </div>
+            )}
 
-          <p role="status" aria-live="polite" className="min-h-5 text-sm text-accent">
-            {notice}
-          </p>
+            <p role="status" aria-live="polite" className="min-h-5 text-sm text-accent">
+              {notice}
+            </p>
 
-          {showingPrints ? (
-            <VerificationQueue cases={verifications} archetypes={archetypes} />
-          ) : (
-            <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-4 xl:grid-cols-[minmax(0,20rem)_minmax(0,1fr)]">
-              <CaseList
-                list={list}
-                selectedId={selectedId}
-                onSelect={(id) => {
-                  setSelectedId(id)
-                  setNotice('')
-                }}
-                onRetry={loadList}
-              />
-              <CaseDetailView
-                key={selectedId ?? 'none'}
-                source={source}
-                id={selectedId}
-                onClosed={closed}
-                onStale={staleClosed}
-              />
-            </div>
-          )}
-        </div>
+            {showingPrints ? (
+              <VerificationQueue cases={verifications} archetypes={archetypes} />
+            ) : (
+              <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-4 xl:grid-cols-[minmax(0,20rem)_minmax(0,1fr)]">
+                <CaseList
+                  list={list}
+                  selectedId={selectedId}
+                  onSelect={(id) => {
+                    setSelectedId(id)
+                    setNotice('')
+                  }}
+                  onRetry={loadList}
+                />
+                <CaseDetailView
+                  key={selectedId ?? 'none'}
+                  source={source}
+                  id={selectedId}
+                  onClosed={closed}
+                  onStale={staleClosed}
+                />
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -522,11 +569,4 @@ function CloseForm({
       </p>
     </form>
   )
-}
-
-function formatDate(iso: string, locale: 'pt' | 'es'): string {
-  return new Date(iso).toLocaleString(locale === 'es' ? 'es' : 'pt-BR', {
-    dateStyle: 'short',
-    timeStyle: 'short',
-  })
 }

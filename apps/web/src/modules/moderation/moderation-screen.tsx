@@ -4,6 +4,7 @@ import { useMemo } from 'react'
 import { useModerationContent } from '@/hooks/use-moderation-content'
 import { CasePanel } from './case-panel'
 import { createSampleSource } from './sample-cases'
+import { createSampleTools } from './sample-tools'
 import { VerificationQueue, type VerificationCase } from './verification-queue'
 
 /**
@@ -23,9 +24,23 @@ export function ModerationScreen({
 }) {
   const content = useModerationContent()
   const sampleSource = useMemo(() => (panel === 'sample' ? createSampleSource() : null), [panel])
+  // Until the API says who is an admin (#313), the made-up panel plays one, so Planos can be seen.
+  const sampleTools = useMemo(
+    () => (panel === 'sample' ? createSampleTools({ admin: true }) : null),
+    [panel],
+  )
 
-  if (sampleSource) {
-    return <CasePanel source={sampleSource} verifications={cases} archetypes={archetypes} sample />
+  if (sampleSource && sampleTools) {
+    return (
+      <CasePanel
+        source={sampleSource}
+        tools={sampleTools}
+        isAdmin
+        verifications={cases}
+        archetypes={archetypes}
+        sample
+      />
+    )
   }
 
   return (

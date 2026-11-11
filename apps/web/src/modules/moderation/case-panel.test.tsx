@@ -5,6 +5,7 @@ import { MODERATION_PANEL_CONTENT } from '@/content/moderation-panel'
 import { CasePanel } from './case-panel'
 import { MAX_NOTE, type CasesSource } from './cases'
 import { createSampleSource, sampleCases } from './sample-cases'
+import { createSampleTools } from './sample-tools'
 
 const pt = MODERATION_PANEL_CONTENT.pt
 const es = MODERATION_PANEL_CONTENT.es
@@ -12,7 +13,16 @@ const es = MODERATION_PANEL_CONTENT.es
 const NOW = Date.parse('2026-11-10T12:00:00Z')
 
 const panel = (source: CasesSource = createSampleSource(sampleCases(NOW)), locale?: 'es') =>
-  renderWithLocale(<CasePanel source={source} verifications={[]} archetypes={[]} />, locale)
+  renderWithLocale(
+    <CasePanel
+      source={source}
+      tools={createSampleTools({ admin: false })}
+      isAdmin={false}
+      verifications={[]}
+      archetypes={[]}
+    />,
+    locale,
+  )
 
 const sidebar = () => screen.getByRole('navigation', { name: pt.sidebarLabel })
 const section = async (name: string) =>
@@ -251,6 +261,8 @@ describe('CasePanel', () => {
     renderWithLocale(
       <CasePanel
         source={source}
+        tools={createSampleTools({ admin: false })}
+        isAdmin={false}
         verifications={[{ caseId: 'c1', category: 'midfielder', platform: 'ps5' }]}
         archetypes={['MAESTRO']}
       />,
