@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/postgresql'
+import { EntityManager, raw } from '@mikro-orm/postgresql'
 import { Injectable, NotFoundException } from '@nestjs/common'
 
 import { decryptAtRest, readEvidenceEncryptionKey } from '../../common/security/evidence-encryption'
@@ -8,7 +8,7 @@ import {
   readIdentityHmacSecret,
 } from '../../common/security/identity-hmac'
 import { Account } from '../account/account.entity'
-import { Character, CharacterState } from '../character/character.entity'
+import { ACTIVE_CHARACTER_STATES, Character } from '../character/character.entity'
 import { PlatformGamertag } from '../character/platform-gamertag.entity'
 import { Lobby, LobbyState } from '../lobby/lobby.entity'
 import { LobbyParticipation } from '../lobby/lobby-participation.entity'
@@ -24,7 +24,15 @@ const WEEK_MS = 7 * 24 * 60 * 60 * 1000
 export type AuditView = {
   entries: Pick<
     AuditEntry,
-    'id' | 'action' | 'actorLabel' | 'targetAccountId' | 'caseId' | 'before' | 'after' | 'createdAt'
+    | 'id'
+    | 'action'
+    | 'actorId'
+    | 'actorLabel'
+    | 'targetAccountId'
+    | 'caseId'
+    | 'before'
+    | 'after'
+    | 'createdAt'
   >[]
   next: string | null
 }
@@ -70,7 +78,7 @@ export class ModerationInsightsService {
     actor?: string
     action?: AuditAction
     account?: string
-    before?: Date
+    before?: AuditCursor
   }): Promise<AuditView> {
     const rows = await this.em.fork().find(
       AuditEntry,
@@ -78,17 +86,35 @@ export class ModerationInsightsService {
         ...(filter.actor ? { actorId: filter.actor } : {}),
         ...(filter.action ? { action: filter.action } : {}),
         ...(filter.account ? { targetAccountId: filter.account } : {}),
-        ...(filter.before ? { createdAt: { $lt: filter.before } } : {}),
+        ...(filter.before
+          ? {
+              $or: [
+                { createdAt: { $lt: filter.before.createdAt } },
+                { createdAt: filter.before.createdAt, id: { $lt: filter.before.id } },
+              ],
+            }
+          : {}),
       },
       { orderBy: { createdAt: 'desc', id: 'desc' }, limit: AUDIT_PAGE + 1 },
     )
     const page = rows.slice(0, AUDIT_PAGE)
     return {
       entries: page.map(
-        ({ id, action, actorLabel, targetAccountId, caseId, before, after, createdAt }) => ({
+        ({
           id,
           action,
+          actorId,
           actorLabel,
+          targetAccountId,
+          caseId,
+          before,
+          after,
+          createdAt,
+        }) => ({
+          id,
+          action,
+          actorId,
+          actorLabel: withoutOperator(actorLabel),
           targetAccountId,
           caseId,
           before,
@@ -96,7 +122,7 @@ export class ModerationInsightsService {
           createdAt,
         }),
       ),
-      next: rows.length > AUDIT_PAGE ? page[page.length - 1]!.createdAt.toISOString() : null,
+      next: rows.length > AUDIT_PAGE ? cursorOf(page[page.length - 1]!) : null,
     }
   }
 
@@ -108,36 +134,25 @@ export class ModerationInsightsService {
    */
   async metrics(now: Date = new Date()): Promise<{ beta: BetaMetric[]; success: SuccessMetric[] }> {
     const em = this.em.fork()
-    const finished = await em.find(
-      Lobby,
-      { state: LobbyState.FINISHED },
-      { fields: ['id', 'endedAt', 'createdAt'] },
-    )
     const weekAgo = new Date(now.getTime() - WEEK_MS)
-    const lastWeek = finished.filter((lobby) => (lobby.endedAt ?? lobby.createdAt) > weekAgo).length
-
-    const disputed = finished.length
-      ? await em.count(ModerationCase, {
-          type: ModerationCaseType.SCORE_DISPUTE,
-          lobbyId: { $in: finished.map((lobby) => lobby.id) },
-        })
-      : 0
-    const undisputed = finished.length
-      ? ((finished.length - disputed) / finished.length) * 100
-      : null
-
-    const played = finished.length
-      ? await em
-          .createQueryBuilder(LobbyParticipation, 'p')
-          .select(['p.account'])
-          .where({ lobby: { $in: finished.map((lobby) => lobby.id) } })
-          .execute<{ account: string }[]>()
-      : []
-    const perAccount = new Map<string, number>()
-    for (const { account } of played) perAccount.set(account, (perAccount.get(account) ?? 0) + 1)
-    const players = perAccount.size
-    const returned = players
-      ? ([...perAccount.values()].filter((count) => count >= 2).length / players) * 100
+    // 04-lancamento.md: a completed match is one both sides confirmed — FINISHED
+    // without passing through NOT_CONFIRMED. A disputed lobby stays IN_DISPUTE.
+    const confirmed = { state: LobbyState.FINISHED, unconfirmedAt: null }
+    const [completed, lastWeek, settled, played] = await Promise.all([
+      em.count(Lobby, confirmed),
+      em.count(Lobby, { ...confirmed, endedAt: { $gt: weekAgo } }),
+      em.count(Lobby, { state: { $in: SETTLED } }),
+      em
+        .createQueryBuilder(LobbyParticipation, 'p')
+        .select(['p.account', raw('count(*) as matches')])
+        .join('p.lobby', 'l')
+        .where({ 'l.state': LobbyState.FINISHED, 'l.unconfirmedAt': null })
+        .groupBy('p.account')
+        .execute<{ matches: string }[]>(),
+    ])
+    const undisputed = settled ? round((completed / settled) * 100) : null
+    const returned = played.length
+      ? round((played.filter((row) => Number(row.matches) >= 2).length / played.length) * 100)
       : null
 
     const beta = (
@@ -153,7 +168,7 @@ export class ModerationInsightsService {
     })
     return {
       beta: [
-        beta('matches_completed', finished.length, 10),
+        beta('matches_completed', completed, 10),
         beta('announced_night_closed', null, 1),
         beta('unannounced_night_closed', null, 1),
         beta('strangers_share', null, 50),
@@ -164,10 +179,10 @@ export class ModerationInsightsService {
         { key: 'matches_per_week', value: lastWeek, band: band(lastWeek, 10, 3) },
         {
           key: 'confirmed_without_dispute',
-          value: round(undisputed),
+          value: undisputed,
           band: band(undisputed, 85, 70),
         },
-        { key: 'returned_for_second', value: round(returned), band: band(returned, 40, 25) },
+        { key: 'returned_for_second', value: returned, band: band(returned, 40, 25) },
       ],
     }
   }
@@ -196,7 +211,7 @@ export class ModerationInsightsService {
       for (const tag of tags) ids.add(tag.account.id)
       const named = await em.find(
         Character,
-        { name: { $ilike: `%${escapeLike(term)}%` }, state: { $in: ACTIVE } },
+        { name: { $ilike: `%${escapeLike(term)}%` }, state: { $in: [...ACTIVE_CHARACTER_STATES] } },
         { limit: SEARCH_LIMIT },
       )
       for (const character of named) ids.add(character.account.id)
@@ -211,7 +226,7 @@ export class ModerationInsightsService {
       after: { kind, results: accounts.length },
     })
     await em.flush()
-    return Promise.all(accounts.map((account) => this.summary(em, account)))
+    return this.summaries(em, accounts)
   }
 
   async player(accountId: string): Promise<PlayerDetail> {
@@ -227,7 +242,7 @@ export class ModerationInsightsService {
       [ModerationCaseType.SUSPENSION, ModerationCaseType.BAN].includes(c.type),
     )
     return {
-      ...(await this.summary(em, account)),
+      ...(await this.summaries(em, [account]))[0]!,
       state: account.state,
       cases: cases
         .filter((c) => !punishments.includes(c))
@@ -240,25 +255,40 @@ export class ModerationInsightsService {
     }
   }
 
-  private async summary(em: EntityManager, account: Account): Promise<PlayerSummary> {
-    const characters = await em.find(
-      Character,
-      { account: account.id, state: { $in: ACTIVE } },
-      { orderBy: { category: 'asc' } },
-    )
-    return {
+  private async summaries(em: EntityManager, accounts: Account[]): Promise<PlayerSummary[]> {
+    const characters = accounts.length
+      ? await em.find(
+          Character,
+          {
+            account: { $in: accounts.map((a) => a.id) },
+            state: { $in: [...ACTIVE_CHARACTER_STATES] },
+          },
+          { orderBy: { category: 'asc' } },
+        )
+      : []
+    return accounts.map((account) => ({
       accountId: account.id,
-      characters: characters.map((c) => ({ name: c.name ?? null, category: c.category })),
+      characters: characters
+        .filter((c) => c.account.id === account.id)
+        .map((c) => ({ name: c.name ?? null, category: c.category })),
       reputation: account.reputation,
       plan: account.plan,
       discordMention: account.discordIdEncrypted
         ? `<@${decryptAtRest(this.encryptionKey, account.discordIdEncrypted).toString()}>`
         : null,
-    }
+    }))
   }
 }
 
-const ACTIVE = [CharacterState.PENDING_VERIFICATION, CharacterState.VERIFIED]
+export type AuditCursor = { createdAt: Date; id: string }
+
+const cursorOf = (entry: AuditEntry) => `${entry.createdAt.toISOString()}_${entry.id}`
+
+/** The CLI writes `cli:<operator e-mail>`; the panel shows who by `actorId`, never the e-mail. */
+const withoutOperator = (label: string) => label.replace(/^(cli(?::bootstrap)?):.*$/, '$1')
+
+/** A lobby whose score is in, from both sides or one, or held in a dispute. */
+const SETTLED = [LobbyState.FINISHED, LobbyState.NOT_CONFIRMED, LobbyState.IN_DISPUTE]
 
 /** 01-mercado.md: at or above `worked` worked, below `failed` failed, ambiguous between. */
 function band(value: number | null, worked: number, failed: number): SuccessMetric['band'] {

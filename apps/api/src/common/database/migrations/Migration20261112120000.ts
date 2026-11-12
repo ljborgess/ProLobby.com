@@ -14,10 +14,12 @@ export class Migration20261112120000 extends Migration {
     )
   }
 
+  // audit_entry is append-only: rows already marked player_searched stay, so the
+  // narrower check only applies to new rows (`not valid`).
   override async down(): Promise<void> {
     this.addSql(`alter table "audit_entry" drop constraint if exists "audit_entry_action_check";`)
     this.addSql(
-      `alter table "audit_entry" add constraint "audit_entry_action_check" check ("action" in (${BEFORE}, ${TWO_FACTOR}));`,
+      `alter table "audit_entry" add constraint "audit_entry_action_check" check ("action" in (${BEFORE}, ${TWO_FACTOR})) not valid;`,
     )
   }
 }

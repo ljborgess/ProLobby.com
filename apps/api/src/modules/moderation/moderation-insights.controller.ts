@@ -12,9 +12,12 @@ import {
 
 import { ModeratorGuard } from '../../common/auth/moderator.guard'
 import type { RequestWithAccount } from '../../common/auth/session.guard'
+import { isUUID } from 'class-validator'
+
 import { AuditAction } from './audit-entry.entity'
 import {
   ModerationInsightsService,
+  type AuditCursor,
   type AuditView,
   type BetaMetric,
   type PlayerDetail,
@@ -33,11 +36,9 @@ export class ModerationInsightsController {
     @Query('actor', new ParseUUIDPipe({ optional: true })) actor?: string,
     @Query('action', new ParseEnumPipe(AuditAction, { optional: true })) action?: AuditAction,
     @Query('account', new ParseUUIDPipe({ optional: true })) account?: string,
-    @Query('before') before?: string,
+    @Query('before') before?: unknown,
   ): Promise<AuditView> {
-    const cursor = before ? new Date(before) : undefined
-    if (cursor && Number.isNaN(cursor.getTime())) throw new BadRequestException('invalid_cursor')
-    return this.insights.audit({ actor, action, account, before: cursor })
+    return this.insights.audit({ actor, action, account, before: parseCursor(before) })
   }
 
   @Get('metrics')
@@ -46,7 +47,12 @@ export class ModerationInsightsController {
   }
 
   @Get('players')
-  search(@Req() request: RequestWithAccount, @Query('q') query = ''): Promise<PlayerSummary[]> {
+  search(
+    @Req() request: RequestWithAccount,
+    @Query('q') query: unknown = '',
+  ): Promise<PlayerSummary[]> {
+    // ?q=a&q=b arrives as an array: only one plain string is a search.
+    if (typeof query !== 'string') throw new BadRequestException('invalid_query')
     if (query.length > 64) throw new BadRequestException('query_too_long')
     return this.insights.searchPlayers(request.account!.id, query)
   }
@@ -55,4 +61,15 @@ export class ModerationInsightsController {
   player(@Param('accountId', ParseUUIDPipe) accountId: string): Promise<PlayerDetail> {
     return this.insights.player(accountId)
   }
+}
+
+/** `<createdAt ISO>_<id>`, the `next` of the previous page. */
+function parseCursor(before: unknown): AuditCursor | undefined {
+  if (before === undefined) return undefined
+  const [iso, id] = typeof before === 'string' ? before.split('_') : []
+  const createdAt = new Date(iso ?? '')
+  if (Number.isNaN(createdAt.getTime()) || !id || !isUUID(id)) {
+    throw new BadRequestException('invalid_cursor')
+  }
+  return { createdAt, id }
 }

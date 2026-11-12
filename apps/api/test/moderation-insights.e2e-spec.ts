@@ -133,6 +133,10 @@ describe('moderation audit, metrics and player search (#312)', () => {
     expect(JSON.stringify(byName.body)).not.toContain('1990-05-20')
   })
 
+  it('turns a repeated q into 400, not 500', async () => {
+    expect((await api('players?q=ab&q=cd')).status).toBe(400)
+  })
+
   it('treats % and _ in a name search as themselves', async () => {
     const res = await api('players?q=%25%25')
 
@@ -188,7 +192,29 @@ describe('moderation audit, metrics and player search (#312)', () => {
     expect((await api('audit?before=nope')).status).toBe(400)
   })
 
-  it('counts finished matches, the share without dispute, and who came back', async () => {
+  it('pages through entries of the same millisecond without losing one, and hides the CLI e-mail', async () => {
+    const em = orm.em.fork()
+    const at = new Date('2026-01-01T00:00:00.000Z')
+    for (let i = 0; i < 51; i++) {
+      em.create(AuditEntry, {
+        action: AuditAction.ROLE_CHANGED,
+        actorLabel: 'cli:admin@test.local',
+        createdAt: at,
+      } as RequiredEntityData<AuditEntry>)
+    }
+    await em.flush()
+
+    const first = await api('audit?action=role_changed')
+    const second = await api(`audit?action=role_changed&before=${first.body.next}`)
+
+    const ids = [...first.body.entries, ...second.body.entries].map((e: { id: string }) => e.id)
+    expect(new Set(ids).size).toBe(51)
+    expect(second.body.next).toBeNull()
+    expect(JSON.stringify(first.body)).not.toContain('admin@test.local')
+    expect(first.body.entries[0].actorLabel).toBe('cli')
+  })
+
+  it('counts matches both sides confirmed, the share without dispute, and who came back', async () => {
     const em = orm.em.fork()
     const now = new Date()
     for (let i = 0; i < 4; i++) {
@@ -198,6 +224,14 @@ describe('moderation audit, metrics and player search (#312)', () => {
         endedAt: now,
       } as RequiredEntityData<Lobby>)
     }
+    // One side only, closed after the 48 h, and a dispute: not completed matches.
+    em.create(Lobby, {
+      state: LobbyState.FINISHED,
+      createdAt: now,
+      endedAt: now,
+      unconfirmedAt: now,
+    } as RequiredEntityData<Lobby>)
+    em.create(Lobby, { state: LobbyState.IN_DISPUTE, createdAt: now } as RequiredEntityData<Lobby>)
     await em.flush()
 
     const res = await api('metrics')
@@ -207,6 +241,6 @@ describe('moderation audit, metrics and player search (#312)', () => {
     expect(beta.matches_completed).toMatchObject({ value: 4, target: 10, met: false })
     expect(beta.strangers_share.value).toBeNull()
     expect(success.matches_per_week).toMatchObject({ value: 4, band: 'ambiguous' })
-    expect(success.confirmed_without_dispute).toMatchObject({ value: 100, band: 'worked' })
+    expect(success.confirmed_without_dispute).toMatchObject({ value: 66.7, band: 'failed' })
   })
 })
