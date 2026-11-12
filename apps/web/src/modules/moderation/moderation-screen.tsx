@@ -1,9 +1,9 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useState } from 'react'
 import { useModerationContent } from '@/hooks/use-moderation-content'
 import { CasePanel } from './case-panel'
-import { createSampleSource } from './sample-cases'
+import { createSampleSource, sampleCases } from './sample-cases'
 import { VerificationQueue, type VerificationCase } from './verification-queue'
 
 /**
@@ -22,7 +22,12 @@ export function ModerationScreen({
   panel: 'sample' | null
 }) {
   const content = useModerationContent()
-  const sampleSource = useMemo(() => (panel === 'sample' ? createSampleSource() : null), [panel])
+  // State, not a memo: React may drop a memoized value, and this holds the
+  // sample's closed cases. The real prints count goes into the sample summary,
+  // so the Personagem filter opens the real queue (#198).
+  const [sampleSource] = useState(() =>
+    panel === 'sample' ? createSampleSource(sampleCases(), { prints: cases.length }) : null,
+  )
 
   if (sampleSource) {
     return <CasePanel source={sampleSource} verifications={cases} archetypes={archetypes} sample />

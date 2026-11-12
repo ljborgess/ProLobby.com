@@ -19,7 +19,6 @@ export interface ModerationPanelContent {
   allTypes: string
   openCount: (open: number) => string
   listLabel: string
-  empty: string
   emptySection: string
   overdue: string
   openedAt: string
@@ -28,6 +27,7 @@ export interface ModerationPanelContent {
   loadError: string
   retry: string
   origin: string
+  origins: Record<string, string>
   reportReason: string
   reportReasons: Record<ReportReason, string>
   text: string
@@ -87,7 +87,6 @@ export const MODERATION_PANEL_CONTENT: Record<Locale, ModerationPanelContent> = 
     allTypes: 'Todos os tipos',
     openCount: (open) => `${open} ${open === 1 ? 'aberto' : 'abertos'}`,
     listLabel: 'Casos, do mais antigo ao mais novo',
-    empty: 'Nenhum caso aberto.',
     emptySection: 'Nada aberto nesta seção.',
     overdue: 'Atrasado',
     openedAt: 'Aberto em',
@@ -96,6 +95,7 @@ export const MODERATION_PANEL_CONTENT: Record<Locale, ModerationPanelContent> = 
     loadError: 'Não deu pra carregar os casos.',
     retry: 'Tentar de novo',
     origin: 'Origem',
+    origins: { system: 'Sistema', user: 'Jogador', discord_message: 'Mensagem no Discord' },
     reportReason: 'Motivo da denúncia',
     reportReasons: { fraud: 'Fraude', disconnect: 'Desconexão', behavior: 'Comportamento' },
     text: 'Texto do caso',
@@ -105,7 +105,7 @@ export const MODERATION_PANEL_CONTENT: Record<Locale, ModerationPanelContent> = 
     noCharacter: 'Sem personagem ativo',
     reputation: 'Reputação',
     history: (open, resolved, dismissed) =>
-      `Casos: ${open} abertos, ${resolved} procedentes, ${dismissed} improcedentes`,
+      `Casos: ${open} ${open === 1 ? 'aberto' : 'abertos'}, ${resolved} ${resolved === 1 ? 'procedente' : 'procedentes'}, ${dismissed} ${dismissed === 1 ? 'improcedente' : 'improcedentes'}`,
     discord: 'Discord',
     close: {
       heading: 'Encerrar caso',
@@ -162,7 +162,6 @@ export const MODERATION_PANEL_CONTENT: Record<Locale, ModerationPanelContent> = 
     allTypes: 'Todos los tipos',
     openCount: (open) => `${open} ${open === 1 ? 'abierto' : 'abiertos'}`,
     listLabel: 'Casos, del más antiguo al más nuevo',
-    empty: 'Ningún caso abierto.',
     emptySection: 'Nada abierto en esta sección.',
     overdue: 'Atrasado',
     openedAt: 'Abierto el',
@@ -171,6 +170,7 @@ export const MODERATION_PANEL_CONTENT: Record<Locale, ModerationPanelContent> = 
     loadError: 'No se pudieron cargar los casos.',
     retry: 'Intentar de nuevo',
     origin: 'Origen',
+    origins: { system: 'Sistema', user: 'Jugador', discord_message: 'Mensaje en Discord' },
     reportReason: 'Motivo de la denuncia',
     reportReasons: { fraud: 'Fraude', disconnect: 'Desconexión', behavior: 'Comportamiento' },
     text: 'Texto del caso',
@@ -180,7 +180,7 @@ export const MODERATION_PANEL_CONTENT: Record<Locale, ModerationPanelContent> = 
     noCharacter: 'Sin personaje activo',
     reputation: 'Reputación',
     history: (open, resolved, dismissed) =>
-      `Casos: ${open} abiertos, ${resolved} procedentes, ${dismissed} improcedentes`,
+      `Casos: ${open} ${open === 1 ? 'abierto' : 'abiertos'}, ${resolved} ${resolved === 1 ? 'procedente' : 'procedentes'}, ${dismissed} ${dismissed === 1 ? 'improcedente' : 'improcedentes'}`,
     discord: 'Discord',
     close: {
       heading: 'Cerrar caso',
