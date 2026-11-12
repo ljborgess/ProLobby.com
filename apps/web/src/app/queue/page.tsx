@@ -38,15 +38,15 @@ export default async function QueuePage() {
   let responses: Response[]
   let look: KitLook | null
   try {
-    ;[responses, look] = await Promise.all([
-      Promise.all([
-        apiFetch('/api/queue', init),
-        apiFetch('/api/characters', init),
-        apiFetch('/api/queue/movement', init),
-        apiFetch('/api/accounts/me/queue-prerequisites', init),
-      ]),
+    const [queueRes, charactersRes, movementRes, prerequisitesRes, clubLook] = await Promise.all([
+      apiFetch('/api/queue', init),
+      apiFetch('/api/characters', init),
+      apiFetch('/api/queue/movement', init),
+      apiFetch('/api/accounts/me/queue-prerequisites', init),
       fetchClubLook(init),
     ])
+    responses = [queueRes, charactersRes, movementRes, prerequisitesRes]
+    look = clubLook
   } catch {
     return <LoadError />
   }

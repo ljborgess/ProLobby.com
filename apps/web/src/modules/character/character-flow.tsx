@@ -63,6 +63,7 @@ export function CharacterFlow({
   return (
     <Roster
       characters={characters}
+      look={look}
       selected={selected}
       focusKey={focusKey}
       onSelect={(category) => {

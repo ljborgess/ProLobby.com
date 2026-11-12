@@ -213,5 +213,10 @@ export interface KitLook {
 
 /** `GET /api/accounts/me/club` → `club`, as far as the kit goes. No club, no look. */
 export function kitLookOf(club: { clubName: string; kit?: Kit } | null): KitLook | null {
-  return club ? { kit: club.kit ?? DEFAULT_KIT, initials: initialsOf(club.clubName) || 'PL' } : null
+  return club ? { kit: club.kit ?? DEFAULT_KIT, initials: kitInitials(club.clubName) } : null
+}
+
+/** The crest's letters for a club name; a name with no letters at all falls back to "PL". */
+export function kitInitials(name: string): string {
+  return initialsOf(name) || 'PL'
 }

@@ -470,6 +470,16 @@ function KitStateShirt({
       <g opacity={status === 'verified' ? 1 : 0.62}>
         <KitFabric kit={look.kit} />
       </g>
+      {/* A dark halo under the state ring: on a kit of the same colour (a red
+          shirt, a rejected place) the ring alone would melt into the fabric. */}
+      <path
+        data-state-halo
+        d={SHIRT_PATH}
+        fill="none"
+        strokeWidth={3.4}
+        strokeLinejoin="round"
+        className="stroke-background"
+      />
       <path
         d={SHIRT_PATH}
         fill="none"
@@ -480,7 +490,7 @@ function KitStateShirt({
       <circle
         cx="24"
         cy="28"
-        r="7"
+        r="8.5"
         strokeWidth={1.2}
         className={`fill-background ${ring[status]}`}
       />
@@ -500,9 +510,9 @@ function KitStateShirt({
       {(status === 'pending' || status === 'rejected') && (
         <text
           x="24"
-          y="30.6"
+          y="30.2"
           textAnchor="middle"
-          fontSize="7.5"
+          fontSize="6"
           fontWeight={600}
           className={status === 'rejected' ? 'fill-danger' : 'fill-foreground'}
         >

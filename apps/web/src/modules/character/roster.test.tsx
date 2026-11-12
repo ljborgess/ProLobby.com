@@ -44,6 +44,37 @@ describe('Shirt with the club kit', () => {
     },
   )
 
+  it.each(['red', 'green', 'navy', 'claret'] as const)(
+    'keeps a dark halo under the state ring on a %s kit, so a ring of its own colour still shows',
+    (primary) => {
+      for (const status of STATUSES) {
+        const { container, unmount } = render(
+          <Shirt status={status} code="MID" look={kit(primary)} />,
+        )
+        const halo = container.querySelector('[data-state-halo]')
+        expect(halo).not.toBeNull()
+        expect(halo!.getAttribute('class')).toContain('stroke-background')
+        // The halo is wider than the ring it protects.
+        expect(Number(halo!.getAttribute('stroke-width'))).toBeGreaterThan(1.6)
+        unmount()
+      }
+    },
+  )
+
+  it.each(['GK', 'DEF', 'MID', 'WNG', 'ST'])(
+    'fits the position code %s inside the badge circle',
+    (code) => {
+      const { container } = render(<Shirt status="pending" code={code} look={kit('white')} />)
+      const circle = container.querySelector('circle[class*="fill-background"]')!
+      const text = container.querySelector('text')!
+
+      const diameter = 2 * Number(circle.getAttribute('r'))
+      // A bold capital is about 0.7 em wide.
+      const width = code.length * Number(text.getAttribute('font-size')) * 0.7
+      expect(width).toBeLessThan(diameter)
+    },
+  )
+
   it('leaves the shirt as it was without a club', () => {
     const { container } = render(<Shirt status="verified" code="MID" />)
     expect(container.querySelector('[data-kit-shirt]')).toBeNull()

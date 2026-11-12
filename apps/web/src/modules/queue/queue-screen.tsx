@@ -14,7 +14,7 @@ import { useCharacterContent } from '@/hooks/use-character-content'
 import { useQueueContent } from '@/hooks/use-queue-content'
 import { ReputationGauge, type ReputationBand } from '@/modules/account/reputation-gauge'
 import { CATEGORY_ORDER, Shirt } from '@/modules/character/roster'
-import { KIT_SWATCH, KitFabric, type KitLook } from '@/modules/kit/kit-art'
+import { KIT_SWATCH, KitFabric, SHIRT_PATH, type KitLook } from '@/modules/kit/kit-art'
 import { archetypeLabel, type CharacterView } from '@/modules/character/types'
 import { LobbyOverlay, type LobbyView } from './lobby-stages'
 import { Clock, PRIMARY } from './queue-ui'
@@ -863,8 +863,6 @@ const SHIRT_NUMBER: Record<CharacterCategory, number> = {
   striker: 9,
 }
 
-const KIT = 'M17 7l7 3 7-3 11 6-4 9-4-2v22H14V20l-4 2-4-9z'
-
 /**
  * The kit on its hanger, two-sided. Through the gap you see the front; when
  * the door opens it turns round in 3D, the signing-day reveal: the archetype
@@ -919,7 +917,7 @@ function KitReveal({
           ) : (
             <>
               <path
-                d={KIT}
+                d={SHIRT_PATH}
                 strokeWidth={1.2}
                 strokeLinejoin="round"
                 className="fill-accent stroke-accent"
@@ -960,7 +958,7 @@ function KitReveal({
             <KitFabric kit={look.kit} />
           ) : (
             <path
-              d={KIT}
+              d={SHIRT_PATH}
               strokeWidth={1.2}
               strokeLinejoin="round"
               className="fill-accent stroke-accent"

@@ -11,16 +11,11 @@ import {
   type KitColor,
 } from '@prolobby/types'
 import { useClubContent } from '@/hooks/use-club-content'
-import { Crest, initialsOf, KIT_SWATCH, KitShirt } from '@/modules/kit/kit-art'
+import type { DeclaredClubView } from '@/modules/kit/declared-club'
+import { Crest, kitInitials, KIT_SWATCH, KitShirt } from '@/modules/kit/kit-art'
 import { PRIMARY, SECONDARY } from '@/modules/queue/queue-ui'
 
-/** `GET /api/accounts/me/club` → `club`. */
-export interface DeclaredClubView {
-  freeSlots: number
-  clubName: string
-  /** Absent only in answers from before Kit Lab: read as the default kit. */
-  kit?: Kit
-}
+export type { DeclaredClubView }
 
 type Outcome = 'saved' | 'removed' | 'invalid' | 'error'
 
@@ -76,7 +71,7 @@ export function ClubPanel({ initial }: { initial: DeclaredClubView | null }) {
     !sameKit(club.kit ?? DEFAULT_KIT, kit)
   const canSave = name.length > 0 && freeSlots !== null && changed
   const captains = freeSlots !== null && freeSlots >= CAPTAIN_FLOOR
-  const initials = initialsOf(name) || 'PL'
+  const initials = kitInitials(name)
   const pick = (patch: Partial<Kit>) => setKit((current) => ({ ...current, ...patch }))
 
   async function save(event: FormEvent<HTMLFormElement>) {

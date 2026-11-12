@@ -35,13 +35,13 @@ export default async function CharacterPage() {
   let responses: [Response, Response]
   let look: KitLook | null
   try {
-    ;[responses, look] = await Promise.all([
-      Promise.all([
-        apiFetch('/api/characters', init),
-        apiFetch('/api/characters/archetypes', init),
-      ]),
+    const [charactersRes, archetypesRes, clubLook] = await Promise.all([
+      apiFetch('/api/characters', init),
+      apiFetch('/api/characters/archetypes', init),
       fetchClubLook(init),
     ])
+    responses = [charactersRes, archetypesRes]
+    look = clubLook
   } catch {
     return <LoadError />
   }
