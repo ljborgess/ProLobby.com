@@ -113,6 +113,10 @@ export class Account {
   @Enum({ items: () => AccountPlan, default: AccountPlan.NONE })
   plan: AccountPlan & Opt = AccountPlan.NONE
 
+  /** Supporter is monthly and lapses without renewal (#313); Founder and none never expire. */
+  @Property({ nullable: true })
+  planExpiresAt?: Date
+
   @Enum({ items: () => AccountState, default: AccountState.UNVERIFIED })
   @Index()
   state: AccountState & Opt = AccountState.UNVERIFIED
