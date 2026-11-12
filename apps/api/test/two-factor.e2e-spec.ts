@@ -10,7 +10,7 @@ import { applySecurity } from '../src/common/security/security.config'
 import { SESSION_COOKIE_NAME } from '../src/common/security/session-cookie'
 import { Account } from '../src/modules/account/account.entity'
 import { AccountRole, AccountState } from '../src/modules/account/account.enums'
-import { FailedSignIn } from '../src/modules/account/failed-sign-in.entity'
+import { FailedTwoFactor } from '../src/modules/account/failed-two-factor.entity'
 import { CURRENT_TERMS_VERSION } from '../src/modules/account/terms.constants'
 import { issueEnrollment } from '../src/modules/account/two-factor-enrollment.cli'
 import { AuditAction, AuditEntry } from '../src/modules/moderation/audit-entry.entity'
@@ -141,7 +141,7 @@ describe('second factor for the moderation panel (#311)', () => {
     const fresh = await signIn(email)
 
     expect((await panel(fresh)).status).toBe(403)
-    expect((await verify(fresh, '000000')).status).toBe(401)
+    expect((await verify(fresh, '000000')).status).toBe(400)
     const ok = await verify(fresh, codeFor(secret, new Date(), 1))
     expect(ok.status).toBe(204)
     expect((await panel(cookieOf(ok))).status).toBe(200)
@@ -153,7 +153,7 @@ describe('second factor for the moderation panel (#311)', () => {
     const code = codeFor(secret, new Date(), 1)
 
     expect((await verify(await signIn(email), code)).status).toBe(204)
-    expect((await verify(await signIn(email), code)).status).toBe(401)
+    expect((await verify(await signIn(email), code)).status).toBe(400)
   })
 
   it('locks the account after 10 wrong codes in the window, even against the right one', async () => {
@@ -163,7 +163,29 @@ describe('second factor for the moderation panel (#311)', () => {
     for (let i = 0; i < 10; i++) await verify(fresh, '000000')
 
     expect((await verify(fresh, codeFor(secret, new Date(), 1))).status).toBe(429)
-    expect(await orm.em.fork().count(FailedSignIn, { account: id })).toBe(10)
+    expect(await orm.em.fork().count(FailedTwoFactor, { account: id })).toBe(10)
+  })
+
+  it('does not let a correct password reset the code limit', async () => {
+    const { email, cookie } = await account()
+    const { secret } = await withSecondFactor(app, orm, email, cookie)
+    for (let i = 0; i < 9; i++) await verify(await signIn(email), '000000')
+
+    const again = await signIn(email)
+    await verify(again, '000000')
+
+    expect((await verify(again, codeFor(secret, new Date(), 1))).status).toBe(429)
+  })
+
+  it('keeps the expiry of the session it upgrades: passing the factor never lengthens it', async () => {
+    const { email, cookie } = await account()
+    const { secret } = await withSecondFactor(app, orm, email, cookie)
+    const fresh = await signIn(email)
+
+    const ok = await verify(fresh, codeFor(secret, new Date(), 1))
+    const payloadOf = (cookieHeader: string) =>
+      JSON.parse(Buffer.from(cookieHeader.split('=')[1]!.split('.')[1]!, 'base64url').toString())
+    expect(payloadOf(cookieOf(ok)).exp).toBeLessThanOrEqual(payloadOf(fresh).exp)
   })
 
   it('takes a recovery code once, and writes its use to the audit log', async () => {
@@ -171,7 +193,7 @@ describe('second factor for the moderation panel (#311)', () => {
     const { recoveryCodes } = await withSecondFactor(app, orm, email, cookie)
 
     expect((await verify(await signIn(email), recoveryCodes[3]!)).status).toBe(204)
-    expect((await verify(await signIn(email), recoveryCodes[3]!)).status).toBe(401)
+    expect((await verify(await signIn(email), recoveryCodes[3]!)).status).toBe(400)
     const entry = await orm.em
       .fork()
       .findOneOrFail(AuditEntry, { action: AuditAction.RECOVERY_CODE_USED, targetAccountId: id })

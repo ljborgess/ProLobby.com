@@ -32,10 +32,12 @@ export default async function TwoFactorPage() {
     notFound()
   }
   if (!response.ok) notFound()
-  const status = (await response.json()) as {
-    required: boolean
-    enabled: boolean
-    verified: boolean
+  let status: { required: boolean; enabled: boolean; verified: boolean }
+  try {
+    status = (await response.json()) as typeof status
+  } catch {
+    // A tunnel or proxy error page: the door still does not exist.
+    notFound()
   }
 
   if (!status.required) notFound()

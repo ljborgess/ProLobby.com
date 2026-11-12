@@ -23,6 +23,8 @@ export interface SessionTokenPayload {
   sub: string
   /** Seconds since the epoch, set by the signer: when the session began. */
   iat?: number
+  /** Seconds since the epoch, set by the signer: when the session ends. */
+  exp?: number
   /**
    * How this session was authenticated (RFC 8176): `pwd` at sign-in, plus
    * `otp` once the panel's second factor is passed (#311). A fact about the

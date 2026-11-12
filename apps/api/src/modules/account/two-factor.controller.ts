@@ -44,7 +44,11 @@ export class TwoFactorController {
     @Body() dto: TwoFactorCodeDto,
     @Res({ passthrough: true }) response: Response,
   ): Promise<{ recoveryCodes: string[] }> {
-    const { recoveryCodes, token } = await this.twoFactor.activate(request.account!.id, dto.code)
+    const { recoveryCodes, token } = await this.twoFactor.activate(
+      request.account!.id,
+      dto.code,
+      request.sessionExpiresAt,
+    )
     response.cookie(SESSION_COOKIE_NAME, token, sessionCookieOptions(SESSION_TTL_MS))
     return { recoveryCodes }
   }
@@ -58,7 +62,11 @@ export class TwoFactorController {
     @Body() dto: TwoFactorCodeDto,
     @Res({ passthrough: true }) response: Response,
   ): Promise<void> {
-    const token = await this.twoFactor.verify(request.account!.id, dto.code)
+    const token = await this.twoFactor.verify(
+      request.account!.id,
+      dto.code,
+      request.sessionExpiresAt,
+    )
     response.cookie(SESSION_COOKIE_NAME, token, sessionCookieOptions(SESSION_TTL_MS))
   }
 }
