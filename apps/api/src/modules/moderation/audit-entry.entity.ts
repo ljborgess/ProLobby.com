@@ -7,6 +7,8 @@ export enum AuditAction {
   ROLE_CHANGED = 'role_changed',
   /** A moderation case closed, by a moderator or by the system. */
   CASE_RESOLVED = 'case_resolved',
+  /** A moderator looked a player up in the panel (#312) — the kind of term, never the term. */
+  PLAYER_SEARCHED = 'player_searched',
 }
 
 /**
