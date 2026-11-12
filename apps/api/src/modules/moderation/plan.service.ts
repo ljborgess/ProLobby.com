@@ -1,46 +1,58 @@
 import { LockMode } from '@mikro-orm/core'
 import { EntityManager } from '@mikro-orm/postgresql'
-import { ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common'
-import { Cron, CronExpression } from '@nestjs/schedule'
-import { randomUUID } from 'node:crypto'
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common'
 
-import { decryptAtRest, readEvidenceEncryptionKey } from '../../common/security/evidence-encryption'
 import { Account } from '../account/account.entity'
 import { AccountPlan, AccountState } from '../account/account.enums'
-import { EventDeliveryTargetKind } from '../bot-integration/event-delivery.enums'
-import { EventDeliveryService } from '../bot-integration/event-delivery.service'
+import { PaymentEvent, PaymentEventType } from '../account/payment-event.entity'
 import { AuditAction, recordAudit } from './audit-entry.entity'
 
 /** docs/negocio/03-sustentabilidade.md: Supporter is R$ 9,90 a month. */
 export const SUPPORTER_MONTH_MS = 30 * 24 * 60 * 60 * 1000
 
+/** The prices in 03-sustentabilidade.md; the fiscal record keeps what was charged. */
+const PRICE: Record<PaymentEventType, string> = {
+  [PaymentEventType.FOUNDER]: '49.00',
+  [PaymentEventType.SUPPORTER]: '9.90',
+}
+
 const CLOSED = [AccountState.BANNED, AccountState.DELETED]
 
-type Change = {
-  accountId: string
-  discordId: string | null
-  plan: AccountPlan
-  planExpiresAt: Date | null
-  roleChanged: boolean
+export type PlanView = { plan: AccountPlan; planExpiresAt: Date | null }
+
+/**
+ * Changes a plan and audits it, in the caller's unit of work. The Discord role
+ * follows on its own: AccountRoleAnnouncer sees the plan change at the flush.
+ * Shared by the panel, the lapse job and the ban, so the audit reads the same.
+ */
+export function changePlan(
+  em: EntityManager,
+  account: Account,
+  plan: AccountPlan,
+  expiresAt: Date | undefined,
+  by: { actorId?: string; actorLabel: string; caseId?: string; pixReference: string | null },
+): void {
+  recordAudit(em, {
+    action: AuditAction.PLAN_CHANGED,
+    actorId: by.actorId,
+    actorLabel: by.actorLabel,
+    targetAccountId: account.id,
+    caseId: by.caseId,
+    before: { plan: account.plan, expiresAt: account.planExpiresAt?.toISOString() ?? null },
+    after: { plan, expiresAt: expiresAt?.toISOString() ?? null, pixReference: by.pixReference },
+  })
+  account.plan = plan
+  account.planExpiresAt = expiresAt
 }
 
 /**
  * Founder and Supporter (#313), confirmed by hand from the PIX — there is no
  * billing. Founder is a one-off payment and never lapses; Supporter lasts a
- * month from the last confirmed payment, and setting it again renews it.
- *
- * Each change is audited in the same unit of work, and the bot is told after
- * the commit to give or take the Discord role (docs/discord/03-bot.md).
+ * month, and a payment made before the month ends adds to it.
  */
 @Injectable()
 export class PlanService {
-  private readonly logger = new Logger(PlanService.name)
-  private readonly encryptionKey = readEvidenceEncryptionKey()
-
-  constructor(
-    private readonly em: EntityManager,
-    private readonly events: EventDeliveryService,
-  ) {}
+  constructor(private readonly em: EntityManager) {}
 
   async set(
     adminId: string,
@@ -48,95 +60,73 @@ export class PlanService {
     plan: AccountPlan,
     pixReference: string | undefined,
     now: Date = new Date(),
-  ): Promise<{ plan: AccountPlan; planExpiresAt: Date | null }> {
-    const change = await this.em.fork().transactional(async (em) => {
+  ): Promise<PlanView> {
+    return this.em.fork().transactional(async (em) => {
       const account = await em.findOne(
         Account,
         { id: accountId },
         { lockMode: LockMode.PESSIMISTIC_WRITE },
       )
       if (!account) throw new NotFoundException('player_not_found')
-      // A ban takes the recognition roles away (docs/discord/03-bot.md): none comes back.
-      if (plan !== AccountPlan.NONE && CLOSED.includes(account.state)) {
-        throw new ConflictException('account_closed')
+      if (plan === AccountPlan.NONE) {
+        if (account.plan !== AccountPlan.NONE) {
+          changePlan(em, account, plan, undefined, {
+            actorId: adminId,
+            actorLabel: 'admin',
+            pixReference: null,
+          })
+        }
+        return viewOf(account)
       }
-      return this.apply(em, account, plan, now, {
+      // A ban takes the recognition roles away (docs/discord/03-bot.md): none comes back.
+      if (CLOSED.includes(account.state)) throw new ConflictException('account_closed')
+      // Founder already has Supporter's benefits, for good: a month would replace it.
+      if (account.plan === AccountPlan.FOUNDER) throw new ConflictException('already_founder')
+
+      const expiresAt =
+        plan === AccountPlan.SUPPORTER
+          ? new Date(
+              Math.max(now.getTime(), account.planExpiresAt?.getTime() ?? 0) + SUPPORTER_MONTH_MS,
+            )
+          : undefined
+      changePlan(em, account, plan, expiresAt, {
         actorId: adminId,
         actorLabel: 'admin',
-        pixReference: plan === AccountPlan.NONE ? null : (pixReference ?? null),
+        pixReference: pixReference ?? null,
       })
+      const type =
+        plan === AccountPlan.FOUNDER ? PaymentEventType.FOUNDER : PaymentEventType.SUPPORTER
+      em.create(PaymentEvent, {
+        account,
+        type,
+        amount: PRICE[type],
+        confirmedBy: em.getReference(Account, adminId),
+        confirmedAt: now,
+      })
+      return viewOf(account)
     })
-    await this.announce(change, now)
-    return { plan: change.plan, planExpiresAt: change.planExpiresAt }
   }
 
   /** A Supporter month not renewed ends; the role goes with it. */
-  @Cron(CronExpression.EVERY_HOUR, { timeZone: 'UTC' })
   async expire(now: Date = new Date()): Promise<number> {
-    const changes = await this.em.fork().transactional(async (em) => {
+    return this.em.fork().transactional(async (em) => {
       const lapsed = await em.find(
         Account,
         { plan: AccountPlan.SUPPORTER, planExpiresAt: { $lte: now } },
         { lockMode: LockMode.PESSIMISTIC_WRITE },
       )
-      return lapsed.map((account) =>
-        this.apply(em, account, AccountPlan.NONE, now, {
+      for (const account of lapsed) {
+        changePlan(em, account, AccountPlan.NONE, undefined, {
           actorLabel: 'system',
           pixReference: null,
-        }),
-      )
+        })
+      }
+      return lapsed.length
     })
-    for (const change of changes) await this.announce(change, now)
-    if (changes.length) this.logger.log(`supporter plans lapsed: ${changes.length}`)
-    return changes.length
-  }
-
-  private apply(
-    em: EntityManager,
-    account: Account,
-    plan: AccountPlan,
-    now: Date,
-    by: { actorId?: string; actorLabel: string; pixReference: string | null },
-  ): Change {
-    const before = { plan: account.plan, expiresAt: account.planExpiresAt?.toISOString() ?? null }
-    const roleChanged = account.plan !== plan
-    account.plan = plan
-    account.planExpiresAt =
-      plan === AccountPlan.SUPPORTER ? new Date(now.getTime() + SUPPORTER_MONTH_MS) : undefined
-    recordAudit(em, {
-      action: AuditAction.PLAN_CHANGED,
-      actorId: by.actorId,
-      actorLabel: by.actorLabel,
-      targetAccountId: account.id,
-      before,
-      after: {
-        plan,
-        expiresAt: account.planExpiresAt?.toISOString() ?? null,
-        pixReference: by.pixReference,
-      },
-    })
-    return {
-      accountId: account.id,
-      discordId: account.discordIdEncrypted
-        ? decryptAtRest(this.encryptionKey, account.discordIdEncrypted).toString()
-        : null,
-      plan,
-      planExpiresAt: account.planExpiresAt ?? null,
-      roleChanged,
-    }
-  }
-
-  /** A renewal keeps the same role: nothing for the bot. No Discord linked: nobody to give it to. */
-  private async announce(change: Change, now: Date): Promise<void> {
-    if (!change.roleChanged || !change.discordId) return
-    await this.events.enqueue(
-      {
-        id: randomUUID(),
-        occurredAt: now.toISOString(),
-        type: 'account.plan_changed',
-        payload: { discordId: change.discordId, plan: change.plan },
-      },
-      { kind: EventDeliveryTargetKind.ACCOUNT, id: change.accountId },
-    )
   }
 }
+
+const viewOf = (account: Account): PlanView => ({
+  plan: account.plan,
+  planExpiresAt: account.planExpiresAt ?? null,
+})

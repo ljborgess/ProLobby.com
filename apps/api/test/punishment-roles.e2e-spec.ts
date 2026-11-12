@@ -20,8 +20,10 @@ import { AuditAction, AuditEntry } from '../src/modules/moderation/audit-entry.e
 import { ReputationEventReason } from '../src/modules/ranking/ranking-event.enums'
 import { ReputationService } from '../src/modules/ranking/reputation.service'
 import { CapturingMailSender } from './support/capturing-mail-sender'
-
-const DAY = 24 * 60 * 60 * 1000
+import { CURRENT_EDITION } from '../src/common/domain/game-edition.enum'
+import { Platform } from '../src/common/domain/platform.enum'
+import { Archetype, CharacterCategory } from '../src/modules/character/archetype'
+import { Character, CharacterState } from '../src/modules/character/character.entity'
 
 /** #324, RF-055: the bot hears about each punishment, only after the commit. */
 describe('punishment roles (#324)', () => {
@@ -60,6 +62,7 @@ describe('punishment roles (#324)', () => {
 
   /** The announcement leaves after the commit, without the caller awaiting it. */
   const punishedEvents = async (accountId: string, expected: number) => {
+    let found: Record<string, unknown>[] = []
     for (let i = 0; i < 50; i++) {
       const rows = await orm.em
         .fork()
@@ -68,10 +71,11 @@ describe('punishment roles (#324)', () => {
           { targetId: accountId, type: 'account.punished' },
           { orderBy: { createdAt: 'asc' } },
         )
-      if (rows.length >= expected) return rows.map((row) => events.payloadOf(row))
+      found = rows.map((row) => events.payloadOf(row))
+      if (rows.length >= expected) return found
       await new Promise((resolve) => setTimeout(resolve, 20))
     }
-    return []
+    return found
   }
 
   beforeAll(async () => {
@@ -97,8 +101,24 @@ describe('punishment roles (#324)', () => {
     await app.close()
   })
 
+  /** Verificado comes back at the end of a suspension only to someone verified. */
+  const verify = async (accountId: string) => {
+    const em = orm.em.fork()
+    em.create(Character, {
+      account: accountId,
+      category: CharacterCategory.MIDFIELDER,
+      archetype: Archetype.MAESTRO,
+      platform: Platform.PS5,
+      edition: CURRENT_EDITION,
+      state: CharacterState.VERIFIED,
+      verifiedAt: new Date(),
+    })
+    await em.flush()
+  }
+
   it('suspension and its end each tell the bot, with the Discord id', async () => {
     const player = await account(42)
+    await verify(player.id)
 
     await reputation.apply(player.id, ReputationEventReason.DISCONNECT)
     const ends = (await orm.em.fork().findOneOrFail(Account, { id: player.id })).suspensionEndsAt!
@@ -110,8 +130,25 @@ describe('punishment roles (#324)', () => {
     ])
   })
 
+  it('the end of a suspension gives nothing back to someone never verified', async () => {
+    const player = await account(42)
+
+    await reputation.apply(player.id, ReputationEventReason.DISCONNECT)
+    const ends = (await orm.em.fork().findOneOrFail(Account, { id: player.id })).suspensionEndsAt!
+    await reputation.endSuspensions(ends)
+
+    expect(await punishedEvents(player.id, 2)).toEqual([
+      { discordId: player.discord, kind: 'suspension' },
+    ])
+  })
+
   it('a ban tells the bot and takes the plan away, audited', async () => {
     const player = await account(27, AccountPlan.FOUNDER)
+
+    // Giving the plan in the setup already sent one; the ban must add none.
+    const planEvents = () =>
+      orm.em.fork().count(EventDelivery, { targetId: player.id, type: 'account.plan_changed' })
+    const before = await planEvents()
 
     // 27 minus a disconnect crosses 25: ban.
     await reputation.apply(player.id, ReputationEventReason.DISCONNECT)
@@ -119,6 +156,8 @@ describe('punishment roles (#324)', () => {
     const row = await orm.em.fork().findOneOrFail(Account, { id: player.id })
     expect(row).toMatchObject({ state: AccountState.BANNED, plan: AccountPlan.NONE })
     expect(await punishedEvents(player.id, 1)).toEqual([{ discordId: player.discord, kind: 'ban' }])
+    // The ban takes the plan roles itself: no second event for the plan it zeroes.
+    expect(await planEvents()).toBe(before)
     const [audit] = await orm.em
       .fork()
       .find(AuditEntry, { action: AuditAction.PLAN_CHANGED, targetAccountId: player.id })

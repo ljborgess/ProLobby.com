@@ -33,24 +33,25 @@ export function punishmentLogMessage(event: AccountPunishedEvent, iconUrl?: stri
  * #324, RF-055 (docs/discord/03-bot.md): a suspension takes Verificado away
  * and its end gives it back; a ban takes Verificado, Fundador, Apoiador and
  * Beta for good. The person stays in the server either way. A role not
- * configured is skipped; without Verificado there is nothing to do. Someone
- * who left the server is warned about, not retried.
+ * configured is skipped: a ban still takes the ones that are. The API only
+ * sends `suspension_ended` to someone with a verified character. Someone who
+ * left the server is warned about, not retried.
  */
 export async function applyPunishmentRoles(
   event: AccountPunishedEvent,
   deps: PunishmentRoleDeps,
 ): Promise<void> {
   const { verified, beta, founder, supporter } = deps.roleIds
-  if (!verified) {
-    deps.warn('DISCORD_VERIFIED_ROLE_ID not set: punishment roles not applied')
+  const { discordId, kind } = event.payload
+  if (kind !== 'ban' && !verified) {
+    deps.warn('DISCORD_VERIFIED_ROLE_ID not set: Verificado not changed')
     return
   }
-  const { discordId, kind } = event.payload
   const [add, remove] =
     kind === 'suspension_ended'
-      ? [[verified], []]
+      ? [[verified!], []]
       : kind === 'suspension'
-        ? [[], [verified]]
+        ? [[], [verified!]]
         : [[], [verified, beta, founder, supporter].filter((role): role is string => !!role)]
   const member = await deps.setRoles(discordId, add, remove)
   if (!member) {

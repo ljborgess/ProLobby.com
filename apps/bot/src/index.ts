@@ -16,6 +16,7 @@ import { welcomeOn } from './discord/welcome'
 import { logger } from './logger'
 import { postBotEvent } from './platform/client'
 import { handlePlatformEvent } from './webhook/handlers'
+import { RoleOrder } from './webhook/handlers/role-order'
 import { createWebhookServer, readWebhookSecret } from './webhook/server'
 
 /**
@@ -67,6 +68,7 @@ export async function main(): Promise<void> {
   logger.info('bootstrap', 'Discord gateway connected')
 
   const queueBoard = queueBoardMessageOn(client)
+  const roleOrder = new RoleOrder()
   const port = Number(process.env.PORT ?? 3002)
   // /events is never exposed by the Cloudflare tunnel and has no `ports:` in
   // production (ADR-009). HMAC (WEBHOOK_SECRET) is still required: the
@@ -100,6 +102,7 @@ export async function main(): Promise<void> {
             throw error
           }
         },
+        roleOrder,
         roles: {
           roleIds: {
             verified: process.env.DISCORD_VERIFIED_ROLE_ID,

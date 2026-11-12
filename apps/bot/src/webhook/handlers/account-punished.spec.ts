@@ -48,6 +48,16 @@ describe('applyPunishmentRoles (#324)', () => {
     expect(punishmentLogMessage(event).embeds[0]!.color).toBe(BRAND.red)
   })
 
+  it('a ban still takes the plan roles when Verificado is not configured', async () => {
+    const d = { ...deps(), roleIds: { founder: 'R_FOU', supporter: 'R_SUP' } }
+    const event = sampleAccountPunishedEvent()
+    event.payload = { ...event.payload, kind: 'ban' }
+
+    await applyPunishmentRoles(event, d)
+
+    expect(d.setRoles).toHaveBeenCalledWith(event.payload.discordId, [], ['R_FOU', 'R_SUP'])
+  })
+
   it('warns, without failing, when Verificado is not set or the person left', async () => {
     const noRole = { ...deps(), roleIds: {} }
     const left = { ...deps(), setRoles: jest.fn().mockResolvedValue(false) }
