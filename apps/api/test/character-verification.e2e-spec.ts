@@ -25,6 +25,7 @@ import { ModerationCase } from '../src/modules/moderation/moderation-case.entity
 import { ModerationCaseState } from '../src/modules/moderation/moderation-case.enums'
 import { CapturingMailSender } from './support/capturing-mail-sender'
 import { makePng } from './support/png'
+import { withSecondFactor } from './support/two-factor'
 
 const PASSWORD = 'a-long-enough-password'
 
@@ -111,6 +112,8 @@ describe('character verification by moderation (#198)', () => {
     row.emailVerified = true
     row.state = AccountState.ACTIVE
     await em.flush()
+    // The panel needs a session that passed the second factor (#311).
+    moderator = (await withSecondFactor(app, orm, mod.email, moderator)).cookie
   }, 60_000)
 
   afterAll(async () => {
@@ -291,10 +294,11 @@ describe('character verification by moderation (#198)', () => {
     row.emailVerified = true
     row.state = AccountState.ACTIVE
     await em.flush()
+    const otherCookie = (await withSecondFactor(app, orm, other.email, other.cookie)).cookie
 
     const results = await Promise.all([
       decide(caseId, { approve: true, archetype: 'maestro', gamertag: 'Twin1xx' }),
-      decide(caseId, { approve: false, rejection: 'unreadable' }, other.cookie),
+      decide(caseId, { approve: false, rejection: 'unreadable' }, otherCookie),
     ])
 
     expect(results.map((res) => res.status).sort()).toEqual([201, 404])

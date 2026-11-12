@@ -8,7 +8,7 @@ import {
 import { AccountRole } from '../../modules/account/account.enums'
 import type { RequestWithAccount } from './session.guard'
 
-const MODERATION_ROLES: readonly AccountRole[] = [AccountRole.MODERATOR, AccountRole.ADMIN]
+export const MODERATION_ROLES: readonly AccountRole[] = [AccountRole.MODERATOR, AccountRole.ADMIN]
 
 /**
  * Moderation routes — the first role-gated area. Runs after the global
@@ -21,6 +21,11 @@ export class ModeratorGuard implements CanActivate {
     const account = context.switchToHttp().getRequest<RequestWithAccount>().account
     if (!account || !MODERATION_ROLES.includes(account.role)) {
       throw new ForbiddenException('moderator_only')
+    }
+    // RNF-010: the panel can punish and ban; a leaked password alone opens
+    // nothing. The session must have passed the second factor.
+    if (!context.switchToHttp().getRequest<RequestWithAccount>().secondFactor) {
+      throw new ForbiddenException('two_factor_required')
     }
     return true
   }

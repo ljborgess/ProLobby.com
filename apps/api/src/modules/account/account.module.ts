@@ -20,11 +20,14 @@ import { EmailVerification } from './email-verification.entity'
 import { EmailVerificationService } from './email-verification.service'
 import { ExpiredRowsService } from './expired-rows.service'
 import { FailedSignIn } from './failed-sign-in.entity'
+import { FailedTwoFactor } from './failed-two-factor.entity'
 import { PasswordReset } from './password-reset.entity'
 import { PasswordResetService } from './password-reset.service'
 import { PunishmentAppealService } from './punishment-appeal.service'
 import { PunishmentStatusService } from './punishment-status.service'
 import { SessionController } from './session.controller'
+import { TwoFactorController } from './two-factor.controller'
+import { TwoFactorService } from './two-factor.service'
 import { SessionService } from './session.service'
 import { TermsAcceptance } from './terms-acceptance.entity'
 import { WaitingListEntry } from './waiting-list-entry.entity'
@@ -39,6 +42,7 @@ import { WaitingListService } from './waiting-list.service'
       DiscordLinkState,
       EmailVerification,
       FailedSignIn,
+      FailedTwoFactor,
       PasswordReset,
       TermsAcceptance,
       ModerationCase,
@@ -46,8 +50,9 @@ import { WaitingListService } from './waiting-list.service'
       WaitingListEntry,
     ]),
   ],
-  controllers: [AccountController, DeclaredClubController, SessionController],
+  controllers: [AccountController, DeclaredClubController, SessionController, TwoFactorController],
   providers: [
+    TwoFactorService,
     AccountCleanupJob,
     AccountRecoveryService,
     AccountService,

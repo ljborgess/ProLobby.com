@@ -32,6 +32,10 @@ import type { SessionTokenPayload } from './session.constants'
  */
 export interface RequestWithAccount extends Request {
   account?: Account
+  /** This session passed the panel's second factor (#311). */
+  secondFactor?: boolean
+  /** When this session's token expires — an upgraded token keeps it (#311). */
+  sessionExpiresAt?: Date
 }
 
 /**
@@ -83,6 +87,8 @@ export class SessionGuard implements CanActivate {
 
     // fork() because the guard runs outside the request's ORM context. What it
     // returns is read-only for handlers — see RequestWithAccount.
+    request.secondFactor = payload.amr?.includes('otp') ?? false
+    request.sessionExpiresAt = payload.exp ? new Date(payload.exp * 1000) : undefined
     const em = this.em.fork()
     const account = await em.findOne(Account, { id: payload.sub })
 

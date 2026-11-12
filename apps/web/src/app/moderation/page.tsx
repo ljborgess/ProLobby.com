@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { cookies, headers } from 'next/headers'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { apiFetch } from '@/common/api/client'
 import { forwardedIpFrom } from '@/common/api/forwarded-ip'
 import { SESSION_COOKIE_NAME } from '@/common/auth/session-cookie'
@@ -44,6 +44,10 @@ export default async function ModerationPage() {
     return <LoadError />
   }
 
+  if (queue.status === 403 && (await secondFactorMissing(queue))) {
+    // A moderator who has not passed the second factor yet (#311).
+    redirect('/moderation/2fa')
+  }
   if (queue.status === 401 || queue.status === 403) {
     notFound()
   }
@@ -72,6 +76,17 @@ export default async function ModerationPage() {
       </div>
     </main>
   )
+}
+
+/** The API says why it refused: the role, or only the second factor. */
+async function secondFactorMissing(response: Response): Promise<boolean> {
+  try {
+    return (
+      ((await response.clone().json()) as { message?: string }).message === 'two_factor_required'
+    )
+  } catch {
+    return false
+  }
 }
 
 function LoadError() {
