@@ -63,12 +63,20 @@ export default async function ModerationPage() {
     return <LoadError />
   }
 
+  // The case queue by section (#306, #309) has no API on `dev` yet (#307), so
+  // made-up cases show outside production, with a notice. In production the
+  // prints screen stays alone, as before. The real queue is wired in with the
+  // API: the contract test refuses a web call to a route that is not there.
+  const panel = process.env.NODE_ENV !== 'production' ? 'sample' : null
+
   return (
     <main className="relative flex min-h-svh flex-1 flex-col overflow-x-clip px-4 py-8 sm:px-6">
       <AccountBackdrop />
       <AppHeader />
-      <div className="mx-auto flex w-full max-w-xl flex-1 flex-col py-10">
-        <ModerationScreen cases={cases} archetypes={archetypes} />
+      <div
+        className={`mx-auto flex w-full flex-1 flex-col py-10 ${panel ? 'max-w-6xl' : 'max-w-xl'}`}
+      >
+        <ModerationScreen cases={cases} archetypes={archetypes} panel={panel} />
       </div>
     </main>
   )
