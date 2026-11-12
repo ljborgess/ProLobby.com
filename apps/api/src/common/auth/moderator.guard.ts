@@ -22,6 +22,11 @@ export class ModeratorGuard implements CanActivate {
     if (!account || !MODERATION_ROLES.includes(account.role)) {
       throw new ForbiddenException('moderator_only')
     }
+    // RNF-010: the panel can punish and ban; a leaked password alone opens
+    // nothing. The session must have passed the second factor.
+    if (!context.switchToHttp().getRequest<RequestWithAccount>().secondFactor) {
+      throw new ForbiddenException('two_factor_required')
+    }
     return true
   }
 }

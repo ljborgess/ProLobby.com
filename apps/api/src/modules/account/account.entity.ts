@@ -137,6 +137,25 @@ export class Account {
   @Property({ nullable: true })
   sessionsValidFrom?: Date
 
+  /**
+   * The TOTP secret of the panel's second factor (#311, RNF-010),
+   * AES-256-GCM via `encryptAtRest`. Set when setup starts; the factor only
+   * counts once `totpEnabledAt` is set by a first valid code.
+   */
+  @Property({ type: 'blob', nullable: true, hidden: true })
+  totpSecretEncrypted?: Buffer
+
+  @Property({ nullable: true })
+  totpEnabledAt?: Date
+
+  /** Last TOTP step accepted: a code is good once, never twice in its window. */
+  @Property({ type: 'bigint', nullable: true, hidden: true })
+  totpLastStep?: number
+
+  /** SHA-256 of the unused recovery codes; a code leaves the list when used. */
+  @Property({ type: 'json', nullable: true, hidden: true })
+  recoveryCodeHashes?: string[]
+
   @Property()
   createdAt: Date & Opt = new Date()
 }

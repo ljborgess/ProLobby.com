@@ -47,6 +47,8 @@ Só o `sub`. Papel, estado, plano e reputação vêm do banco, por chave primár
 
 **Descartado o híbrido** (papel no token, estado no banco só nos endpoints sensíveis): economizaria query na navegação e exigiria que alguém lembrasse de marcar cada endpoint novo como sensível. O endpoint esquecido seria justamente o que precisava.
 
+**Revisto em 2026-11-12 ([#311](https://github.com/ljborgess/ProLobby.com/issues/311)): o token passa a levar também o `amr`** (RFC 8176), com `pwd` no login e `pwd` + `otp` depois do segundo fator do painel de moderação ([RNF-010](../requisitos/07-nao-funcionais.md#rnf-010--painel-de-moderação-exige-2fa)). Não é autorização: diz como **esta sessão** foi autenticada, um fato que o banco não tem como saber. Papel e estado continuam vindo do banco a cada request, e o `ModeratorGuard` exige os dois, o papel lido do banco e o `otp` no token. Reset do 2FA por admin grava `sessionsValidFrom`, então sessão antiga com `otp` também deixa de valer.
+
 ### Conta banida faz login, em modo restrito
 
 O login funciona; o guard barra tudo menos ver a própria punição e abrir a apelação.
