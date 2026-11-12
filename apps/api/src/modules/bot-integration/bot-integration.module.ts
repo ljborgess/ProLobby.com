@@ -10,6 +10,7 @@ import { EventDelivery } from './event-delivery.entity'
 import { EventDeliveryService } from './event-delivery.service'
 import { LobbyChannelsService } from './lobby-channels.service'
 import { ModerationCaseAnnouncer } from './moderation-case-announcer'
+import { PunishmentAnnouncer } from './punishment-announcer'
 import { SupportIntakeService } from './support-intake.service'
 import { WebhookClient } from './webhook-client'
 
@@ -23,6 +24,7 @@ import { WebhookClient } from './webhook-client'
     EventDeliveryService,
     LobbyChannelsService,
     ModerationCaseAnnouncer,
+    PunishmentAnnouncer,
     SupportIntakeService,
   ],
   exports: [CoordinationState, EventDeliveryService, WebhookClient],

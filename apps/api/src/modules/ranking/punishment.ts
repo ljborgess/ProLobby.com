@@ -1,8 +1,9 @@
 import type { EntityManager } from '@mikro-orm/postgresql'
 
 import type { Account } from '../account/account.entity'
-import { AccountState } from '../account/account.enums'
+import { AccountPlan, AccountState } from '../account/account.enums'
 import { PlatformGamertag } from '../character/platform-gamertag.entity'
+import { AuditAction, recordAudit } from '../moderation/audit-entry.entity'
 import { BlockedIdentity } from '../moderation/blocked-identity.entity'
 import { ModerationCase } from '../moderation/moderation-case.entity'
 import {
@@ -86,6 +87,19 @@ async function ban(
   const banCase = closedCase(em, account, ModerationCaseType.BAN, decision, now)
   account.state = AccountState.BANNED
   account.suspensionEndsAt = undefined
+  // The ban takes Founder and Supporter away too, without refund (docs/discord/03-bot.md).
+  if (account.plan !== AccountPlan.NONE) {
+    recordAudit(em, {
+      action: AuditAction.PLAN_CHANGED,
+      actorLabel: 'system',
+      targetAccountId: account.id,
+      caseId: banCase.id,
+      before: { plan: account.plan, expiresAt: account.planExpiresAt?.toISOString() ?? null },
+      after: { plan: AccountPlan.NONE, expiresAt: null, pixReference: null },
+    })
+    account.plan = AccountPlan.NONE
+    account.planExpiresAt = undefined
+  }
   await em.nativeDelete(QueueEntry, { account, lobby: null })
 
   if (

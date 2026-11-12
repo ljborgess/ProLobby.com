@@ -100,8 +100,10 @@ export async function main(): Promise<void> {
             throw error
           }
         },
-        plan: {
+        roles: {
           roleIds: {
+            verified: process.env.DISCORD_VERIFIED_ROLE_ID,
+            beta: process.env.DISCORD_BETA_ROLE_ID,
             founder: process.env.DISCORD_FOUNDER_ROLE_ID,
             supporter: process.env.DISCORD_SUPPORTER_ROLE_ID,
           },
@@ -109,11 +111,11 @@ export async function main(): Promise<void> {
           // RESTJSONErrorCodes.UnknownMember (10007): left the server.
           setRoles: async (userId, add, remove) => {
             const guildId = process.env.DISCORD_GUILD_ID
-            if (!guildId) throw new Error('DISCORD_GUILD_ID is required to manage plan roles')
+            if (!guildId) throw new Error('DISCORD_GUILD_ID is required to manage roles')
             try {
               const member = await (await client.guilds.fetch(guildId)).members.fetch(userId)
-              if (remove.length) await member.roles.remove(remove, 'plano (#313)')
-              if (add.length) await member.roles.add(add, 'plano (#313)')
+              if (remove.length) await member.roles.remove(remove, 'ProLobby')
+              if (add.length) await member.roles.add(add, 'ProLobby')
               return true
             } catch (error) {
               if (error instanceof DiscordAPIError && error.code === 10007) return false
