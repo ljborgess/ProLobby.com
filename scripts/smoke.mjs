@@ -129,6 +129,20 @@ await check('/verifications sem sessão manda pro login', async () => {
   expect(res.status, 307, 'status')
   expect(res.headers.get('location'), '/login', 'destino')
 })
+await check(
+  '/verifications com sessão expirada manda pro login, não vira 200 em stream',
+  async () => {
+    // Um cookie que a API recusa com 401. O loading.tsx faz a página sair em
+    // stream; o portão do layout (#296) é o que mantém o 307.
+    for (const route of ['verifications', 'queue', 'account/character']) {
+      const res = await call(`${WEB}/${route}`, {
+        headers: { cookie: 'prolobby_session=expirado.invalido.token' },
+      })
+      expect(res.status, 307, `status de /${route}`)
+      expect(res.headers.get('location'), '/login', `destino de /${route}`)
+    }
+  },
+)
 
 console.log('\npré-requisitos da fila')
 await check('/verifications mostra os próximos passos', async () => {

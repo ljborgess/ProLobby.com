@@ -1,9 +1,7 @@
-import type { Metadata } from 'next'
 import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { apiFetch } from '@/common/api/client'
 import { forwardedIpFrom } from '@/common/api/forwarded-ip'
-import { SESSION_COOKIE_NAME } from '@/common/auth/session-cookie'
 import { AccountBackdrop } from '@/modules/account/account-backdrop'
 import { LoadErrorMessage } from '@/modules/account/load-error-message'
 import {
@@ -11,10 +9,9 @@ import {
   type QueuePrerequisites,
 } from '@/modules/account/queue-prerequisites-panel'
 import { AppHeader } from '@/modules/account/app-header'
+import { pageMetadata } from '@/common/page-metadata'
 
-export const metadata: Metadata = {
-  title: 'Sua conta — ProLobby',
-}
+export const generateMetadata = () => pageMetadata('verifications')
 
 /**
  * Where login lands — issue #171, moved off the home in the routing change of
@@ -25,13 +22,7 @@ export const metadata: Metadata = {
  * straight to /login, the same as an expired one does after asking.
  */
 export default async function VerificationsPage() {
-  const jar = await cookies()
-
-  if (!jar.get(SESSION_COOKIE_NAME)) {
-    redirect('/login')
-  }
-
-  const cookie = jar.toString()
+  const cookie = (await cookies()).toString()
 
   let response: Response
   try {

@@ -1,10 +1,8 @@
-import type { Metadata } from 'next'
 import { AuthLayout } from '@/modules/account/auth-layout'
 import { SignUpForm } from '@/modules/account/sign-up-form'
+import { pageMetadata } from '@/common/page-metadata'
 
-export const metadata: Metadata = {
-  title: 'Criar conta — ProLobby',
-}
+export const generateMetadata = () => pageMetadata('signUp')
 
 export default function SignUpPage() {
   return (

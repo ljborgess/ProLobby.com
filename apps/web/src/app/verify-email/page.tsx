@@ -1,10 +1,8 @@
-import type { Metadata } from 'next'
 import { AuthLayout } from '@/modules/account/auth-layout'
 import { VerifyEmailStatus } from '@/modules/account/verify-email-status'
+import { pageMetadata } from '@/common/page-metadata'
 
-export const metadata: Metadata = {
-  title: 'Verificação de e-mail — ProLobby',
-}
+export const generateMetadata = () => pageMetadata('verifyEmail')
 
 /**
  * Where the verification link (RF-002) lands — 2026-09-23 review.

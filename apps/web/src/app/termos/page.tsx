@@ -1,12 +1,10 @@
-import type { Metadata } from 'next'
 import Link from 'next/link'
 import { LanguageSwitcher } from '@/common/ui/language-switcher'
 import { Logo } from '@/common/ui/logo'
 import { TermsDocument } from '@/modules/account/terms'
+import { pageMetadata } from '@/common/page-metadata'
 
-export const metadata: Metadata = {
-  title: 'Termos de Uso — ProLobby',
-}
+export const generateMetadata = () => pageMetadata('terms')
 
 /** The Terms of Use, public: the address the sign-up dialog and e-mails link to. */
 export default function TermsPage() {
