@@ -1,6 +1,7 @@
 import type { PlatformEvent } from '@prolobby/types'
 
-import { applyPlanRole, type PlanRoleDeps } from './account-plan-changed'
+import { applyPlanRole } from './account-plan-changed'
+import { applyPunishmentRoles, type PunishmentRoleDeps } from './account-punished'
 import { openLobbyChannels, type LobbyChannelsDeps } from './lobby-closed'
 import { dropLobbyChannels, type LobbyEndedDeps } from './lobby-ended'
 import { notifyCaseClosed, type CaseClosedDeps } from './moderation-case-closed'
@@ -12,7 +13,7 @@ export type PlatformEventDeps = ModerationAnnounceDeps & {
   lobby: LobbyChannelsDeps & LobbyEndedDeps
   queueStatus: QueueStatusDeps
   dm: CaseClosedDeps['dm']
-  plan: Pick<PlanRoleDeps, 'roleIds' | 'setRoles' | 'logChannelId'>
+  roles: Pick<PunishmentRoleDeps, 'roleIds' | 'setRoles' | 'logChannelId'>
   roleOrder: RoleOrder
 }
 
@@ -39,18 +40,36 @@ export async function handlePlatformEvent(
     case 'moderation.case_closed':
       await notifyCaseClosed(event, deps)
       return
-    case 'account.plan_changed':
-      if (deps.roleOrder.isStale(event.payload.discordId, event.occurredAt)) {
+    case 'account.punished': {
+      // Suspension and its end move Verificado; a ban moves every role.
+      const verified = `${event.payload.discordId}:verified`
+      const plan = `${event.payload.discordId}:plan`
+      if (event.payload.kind !== 'ban' && deps.roleOrder.isStale(verified, event.occurredAt)) {
         deps.warn('role event older than the last one applied: dropped')
         return
       }
-      await applyPlanRole(event, {
-        ...deps.plan,
+      await applyPunishmentRoles(event, {
+        ...deps.roles,
         send: deps.send,
         iconUrl: deps.iconUrl,
         warn: deps.warn,
       })
-      deps.roleOrder.applied(event.payload.discordId, event.occurredAt)
+      deps.roleOrder.applied(verified, event.occurredAt)
+      if (event.payload.kind === 'ban') deps.roleOrder.applied(plan, event.occurredAt)
+      return
+    }
+    case 'account.plan_changed':
+      if (deps.roleOrder.isStale(`${event.payload.discordId}:plan`, event.occurredAt)) {
+        deps.warn('role event older than the last one applied: dropped')
+        return
+      }
+      await applyPlanRole(event, {
+        ...deps.roles,
+        send: deps.send,
+        iconUrl: deps.iconUrl,
+        warn: deps.warn,
+      })
+      deps.roleOrder.applied(`${event.payload.discordId}:plan`, event.occurredAt)
       return
     case 'queue.board':
       await showQueueBoard(event, deps.queueStatus)
