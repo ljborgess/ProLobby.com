@@ -1,4 +1,5 @@
 import type {
+  AccountPlanChangedEvent,
   LobbyClosedEvent,
   ModerationCaseClosedEvent,
   ModerationCaseOpenedEvent,
@@ -80,6 +81,18 @@ export function sampleModerationCaseClosedEvent(
       reason: 'confirmed',
       note: null,
     },
+    ...overrides,
+  }
+}
+
+export function sampleAccountPlanChangedEvent(
+  overrides: Partial<AccountPlanChangedEvent> = {},
+): AccountPlanChangedEvent {
+  return {
+    id: NIL(700),
+    occurredAt: new Date().toISOString(),
+    type: 'account.plan_changed',
+    payload: { discordId: SNOWFLAKE(701), plan: 'founder' },
     ...overrides,
   }
 }

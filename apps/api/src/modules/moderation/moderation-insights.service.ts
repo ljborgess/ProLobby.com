@@ -54,6 +54,7 @@ export type PlayerSummary = {
 
 export type PlayerDetail = PlayerSummary & {
   state: string
+  planExpiresAt: Date | null
   cases: { id: string; type: string; state: string; openedAt: Date }[]
   punishments: { kind: string; openedAt: Date; decision: string | null }[]
 }
@@ -244,6 +245,7 @@ export class ModerationInsightsService {
     return {
       ...(await this.summaries(em, [account]))[0]!,
       state: account.state,
+      planExpiresAt: account.planExpiresAt ?? null,
       cases: cases
         .filter((c) => !punishments.includes(c))
         .map(({ id, type, state, openedAt }) => ({ id, type, state, openedAt })),

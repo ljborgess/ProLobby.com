@@ -13,6 +13,8 @@ export enum AuditAction {
   TWO_FACTOR_ENROLLMENT = 'two_factor_enrollment',
   /** A moderator opened the panel with a recovery code instead of the app (#311). */
   RECOVERY_CODE_USED = 'recovery_code_used',
+  /** A plan activated or revoked by an admin, or a Supporter month that lapsed (#313). */
+  PLAN_CHANGED = 'plan_changed',
 }
 
 /**

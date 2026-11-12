@@ -1,5 +1,6 @@
 import type { PlatformEvent } from '@prolobby/types'
 
+import { applyPlanRole, type PlanRoleDeps } from './account-plan-changed'
 import { openLobbyChannels, type LobbyChannelsDeps } from './lobby-closed'
 import { dropLobbyChannels, type LobbyEndedDeps } from './lobby-ended'
 import { notifyCaseClosed, type CaseClosedDeps } from './moderation-case-closed'
@@ -10,6 +11,7 @@ export type PlatformEventDeps = ModerationAnnounceDeps & {
   lobby: LobbyChannelsDeps & LobbyEndedDeps
   queueStatus: QueueStatusDeps
   dm: CaseClosedDeps['dm']
+  plan: Pick<PlanRoleDeps, 'roleIds' | 'setRoles' | 'logChannelId'>
 }
 
 /**
@@ -34,6 +36,14 @@ export async function handlePlatformEvent(
       return
     case 'moderation.case_closed':
       await notifyCaseClosed(event, deps)
+      return
+    case 'account.plan_changed':
+      await applyPlanRole(event, {
+        ...deps.plan,
+        send: deps.send,
+        iconUrl: deps.iconUrl,
+        warn: deps.warn,
+      })
       return
     case 'queue.board':
       await showQueueBoard(event, deps.queueStatus)
