@@ -6,12 +6,14 @@ import { dropLobbyChannels, type LobbyEndedDeps } from './lobby-ended'
 import { notifyCaseClosed, type CaseClosedDeps } from './moderation-case-closed'
 import { announceModerationCase, type ModerationAnnounceDeps } from './moderation-case-opened'
 import { announceLobbyClosed, showQueueBoard, type QueueStatusDeps } from './queue-status'
+import type { RoleOrder } from './role-order'
 
 export type PlatformEventDeps = ModerationAnnounceDeps & {
   lobby: LobbyChannelsDeps & LobbyEndedDeps
   queueStatus: QueueStatusDeps
   dm: CaseClosedDeps['dm']
   plan: Pick<PlanRoleDeps, 'roleIds' | 'setRoles' | 'logChannelId'>
+  roleOrder: RoleOrder
 }
 
 /**
@@ -38,12 +40,17 @@ export async function handlePlatformEvent(
       await notifyCaseClosed(event, deps)
       return
     case 'account.plan_changed':
+      if (deps.roleOrder.isStale(event.payload.discordId, event.occurredAt)) {
+        deps.warn('role event older than the last one applied: dropped')
+        return
+      }
       await applyPlanRole(event, {
         ...deps.plan,
         send: deps.send,
         iconUrl: deps.iconUrl,
         warn: deps.warn,
       })
+      deps.roleOrder.applied(event.payload.discordId, event.occurredAt)
       return
     case 'queue.board':
       await showQueueBoard(event, deps.queueStatus)

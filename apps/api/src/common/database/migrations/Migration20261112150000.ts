@@ -6,6 +6,10 @@ const BEFORE = `'role_changed', 'case_resolved', 'player_searched', 'two_factor_
 export class Migration20261112150000 extends Migration {
   override async up(): Promise<void> {
     this.addSql(`alter table "account" add column "plan_expires_at" timestamptz null;`)
+    // A Supporter from before this column would never lapse: give it the month from now.
+    this.addSql(
+      `update "account" set "plan_expires_at" = now() + interval '30 days' where "plan" = 'supporter';`,
+    )
     this.addSql(`alter table "audit_entry" drop constraint if exists "audit_entry_action_check";`)
     this.addSql(
       `alter table "audit_entry" add constraint "audit_entry_action_check" check ("action" in (${BEFORE}, 'plan_changed'));`,

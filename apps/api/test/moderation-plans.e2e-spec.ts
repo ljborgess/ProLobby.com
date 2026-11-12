@@ -20,6 +20,8 @@ import { EventDelivery } from '../src/modules/bot-integration/event-delivery.ent
 import { EventDeliveryService } from '../src/modules/bot-integration/event-delivery.service'
 import { AuditAction, AuditEntry } from '../src/modules/moderation/audit-entry.entity'
 import { PlanService, SUPPORTER_MONTH_MS } from '../src/modules/moderation/plan.service'
+import { PaymentEvent } from '../src/modules/account/payment-event.entity'
+import { AccountRoleAnnouncer } from '../src/modules/bot-integration/account-role-announcer'
 import { CapturingMailSender } from './support/capturing-mail-sender'
 
 const PASSWORD = 'a-long-enough-password'
@@ -68,6 +70,7 @@ describe('plan activation (#313)', () => {
 
   let admin: { id: string; cookie: string }
   let plans: () => PlanService
+  let roles: () => AccountRoleAnnouncer
   let moduleEvents: () => EventDeliveryService
   const setPlan = (accountId: string, body: object, cookie = admin.cookie) =>
     request(app.getHttpServer())
@@ -91,6 +94,7 @@ describe('plan activation (#313)', () => {
     await app.init()
     orm = moduleRef.get(MikroORM)
     plans = () => moduleRef.get(PlanService)
+    roles = () => moduleRef.get(AccountRoleAnnouncer)
     moduleEvents = () => moduleRef.get(EventDeliveryService)
     await orm.getSchemaGenerator().refreshDatabase()
     moderator = await account(AccountRole.MODERATOR)
@@ -154,21 +158,84 @@ describe('plan activation (#313)', () => {
     expect(moduleEvents().payloadOf(event!)).toEqual({ discordId: player.discord, plan: 'founder' })
   })
 
-  it('renews Supporter without a second role event, and lapses it after the month', async () => {
+  it('renews Supporter on top of the days left, without a second role event, and lapses it', async () => {
     const player = await account()
     await setPlan(player.id, { plan: 'supporter', pixReference: 'E2E00000003' })
     const renewed = await setPlan(player.id, { plan: 'supporter', pixReference: 'E2E00000004' })
     expect(Date.parse(renewed.body.planExpiresAt)).toBeGreaterThan(
-      Date.now() + SUPPORTER_MONTH_MS - 60_000,
+      Date.now() + 2 * SUPPORTER_MONTH_MS - 60_000,
     )
     expect(await eventsFor(player.id)).toHaveLength(1)
+    const payments = await orm.em.fork().find(PaymentEvent, { account: player.id })
+    expect(payments.map((p) => [p.type, p.amount])).toEqual([
+      ['supporter', '9.90'],
+      ['supporter', '9.90'],
+    ])
 
-    await plans().expire(new Date(Date.now() + SUPPORTER_MONTH_MS + 60_000))
+    await plans().expire(new Date(Date.now() + 2 * SUPPORTER_MONTH_MS + 60_000))
 
     const row = await orm.em.fork().findOneOrFail(Account, { id: player.id })
     expect(row.plan).toBe(AccountPlan.NONE)
     expect(row.planExpiresAt).toBeNull()
     const events = await eventsFor(player.id)
     expect(moduleEvents().payloadOf(events.at(-1)!)).toMatchObject({ plan: 'none' })
+  })
+
+  it('keeps a Founder from being turned into a month of Supporter', async () => {
+    const player = await account()
+    await setPlan(player.id, { plan: 'founder', pixReference: 'E2E00000005' })
+
+    expect(
+      (await setPlan(player.id, { plan: 'supporter', pixReference: 'E2E00000006' })).status,
+    ).toBe(409)
+  })
+
+  it('revoking what is already none changes and audits nothing', async () => {
+    const player = await account()
+
+    await setPlan(player.id, { plan: 'none' })
+
+    expect(
+      await orm.em
+        .fork()
+        .count(AuditEntry, { action: AuditAction.PLAN_CHANGED, targetAccountId: player.id }),
+    ).toBe(0)
+    expect(await eventsFor(player.id)).toHaveLength(0)
+  })
+
+  it('a plan saved in a transaction that rolls back leaves no event behind', async () => {
+    const player = await account()
+
+    await expect(
+      orm.em.fork().transactional(async (em) => {
+        const row = await em.findOneOrFail(Account, { id: player.id })
+        row.plan = AccountPlan.FOUNDER
+        await em.flush()
+        throw new Error('rolled back')
+      }),
+    ).rejects.toThrow('rolled back')
+
+    expect(await eventsFor(player.id)).toHaveLength(0)
+  })
+
+  it('gives the role to someone who links Discord or comes back to the server with a plan', async () => {
+    const player = await account()
+    const em = orm.em.fork()
+    const row = await em.findOneOrFail(Account, { id: player.id })
+    const encrypted = row.discordIdEncrypted
+    row.discordIdEncrypted = undefined
+    row.plan = AccountPlan.FOUNDER
+    await em.flush()
+    expect(await eventsFor(player.id)).toHaveLength(0)
+
+    row.discordIdEncrypted = encrypted
+    await em.flush()
+    await roles().resyncOnJoin(player.discord)
+
+    const events = await eventsFor(player.id)
+    expect(events.map((e) => moduleEvents().payloadOf(e))).toEqual([
+      { discordId: player.discord, plan: 'founder' },
+      { discordId: player.discord, plan: 'founder' },
+    ])
   })
 })
