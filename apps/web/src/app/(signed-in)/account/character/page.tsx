@@ -2,7 +2,6 @@ import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { apiFetch } from '@/common/api/client'
 import { forwardedIpFrom } from '@/common/api/forwarded-ip'
-import { SESSION_COOKIE_NAME } from '@/common/auth/session-cookie'
 import { AppHeader } from '@/modules/account/app-header'
 import { AccountBackdrop } from '@/modules/account/account-backdrop'
 import { LoadErrorMessage } from '@/modules/account/load-error-message'
@@ -18,9 +17,6 @@ export const generateMetadata = () => pageMetadata('character')
  */
 export default async function CharacterPage() {
   const jar = await cookies()
-  if (!jar.get(SESSION_COOKIE_NAME)) {
-    redirect('/login')
-  }
 
   const init = {
     headers: { cookie: jar.toString() },

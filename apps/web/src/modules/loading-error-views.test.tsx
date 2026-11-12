@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { fireEvent, screen } from '@testing-library/react'
+import { fireEvent, screen, within } from '@testing-library/react'
 import { renderWithLocale } from '@/test-utils'
 import { ERROR_CONTENT } from '@/content/error'
 import { LOADING_CONTENT } from '@/content/loading'
@@ -9,7 +9,10 @@ import { LoadingView } from './loading-view'
 describe('LoadingView (#296)', () => {
   it.each(['pt', 'es'] as const)('announces the wait in %s, without a spinner', (locale) => {
     const { container } = renderWithLocale(<LoadingView />, locale)
-    expect(screen.getByRole('status')).toHaveTextContent(LOADING_CONTENT[locale].label)
+    // The live region sits inside <main>, which keeps its landmark.
+    expect(within(screen.getByRole('main')).getByRole('status')).toHaveTextContent(
+      LOADING_CONTENT[locale].label,
+    )
     expect(container.querySelector('[class*="animate-spin"]')).toBeNull()
   })
 
