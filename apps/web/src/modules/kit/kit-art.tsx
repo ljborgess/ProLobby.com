@@ -1,5 +1,11 @@
 import { useId } from 'react'
-import type { CrestShape, Kit, KitColor, KitPattern } from '@prolobby/types'
+import {
+  DEFAULT_KIT,
+  type CrestShape,
+  type Kit,
+  type KitColor,
+  type KitPattern,
+} from '@prolobby/types'
 
 /**
  * The kit palette (Kit Lab, 2026-10-29). Kit colours live only inside the
@@ -23,7 +29,7 @@ export const KIT_SWATCH: Record<KitColor, { fill: string; ink: string }> = {
 }
 
 /** The shirt, front on, in a 48-unit box: the same cut as the lockers' kit. */
-const SHIRT = 'M17 7l7 3 7-3 11 6-4 9-4-2v22H14V20l-4 2-4-9z'
+export const SHIRT_PATH = 'M17 7l7 3 7-3 11 6-4 9-4-2v22H14V20l-4 2-4-9z'
 
 /** What the pattern adds over the primary colour, in the shirt's box. */
 function PatternInk({ pattern, color }: { pattern: KitPattern; color: string }) {
@@ -54,29 +60,27 @@ function PatternInk({ pattern, color }: { pattern: KitPattern; color: string }) 
 }
 
 /**
- * The club's shirt, front on: primary, the pattern in the secondary, the
- * collar and cuffs trimmed in the secondary, the crest over the heart.
+ * The fabric of the shirt: primary, the pattern in the secondary, the collar
+ * and cuffs trimmed in the secondary. Drawn inside a 48-unit box, to nest in
+ * any svg that needs the club's colours — a locker, a roster place.
  */
-export function KitShirt({
-  kit,
-  initials,
-  className = '',
-}: {
-  kit: Kit
-  initials: string
-  className?: string
-}) {
+export function KitFabric({ kit }: { kit: Kit }) {
   const clip = useId()
   const sheen = useId()
   const primary = KIT_SWATCH[kit.primary]
   const secondary = KIT_SWATCH[kit.secondary]
 
   return (
-    <svg viewBox="0 0 48 48" aria-hidden className={`overflow-visible ${className}`}>
+    <g>
       <defs>
         <clipPath id={clip}>
-          <path d={SHIRT} />
+          <path d={SHIRT_PATH} />
         </clipPath>
+        <linearGradient id={sheen} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#ffffff" stopOpacity="0.28" />
+          <stop offset="0.55" stopColor="#ffffff" stopOpacity="0" />
+          <stop offset="1" stopColor="#000000" stopOpacity="0.3" />
+        </linearGradient>
       </defs>
       <g clipPath={`url(#${clip})`}>
         <rect width="48" height="48" fill={primary.fill} />
@@ -84,15 +88,8 @@ export function KitShirt({
         {/* Fabric: a soft light from the left shoulder. */}
         <rect width="48" height="48" fill={`url(#${sheen})`} opacity="0.5" />
       </g>
-      <defs>
-        <linearGradient id={sheen} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#ffffff" stopOpacity="0.28" />
-          <stop offset="0.55" stopColor="#ffffff" stopOpacity="0" />
-          <stop offset="1" stopColor="#000000" stopOpacity="0.3" />
-        </linearGradient>
-      </defs>
       <path
-        d={SHIRT}
+        d={SHIRT_PATH}
         fill="none"
         stroke="#000000"
         strokeOpacity="0.35"
@@ -114,6 +111,23 @@ export function KitShirt({
         strokeWidth="1.2"
         strokeLinecap="round"
       />
+    </g>
+  )
+}
+
+/** The club's shirt, front on: the fabric and the crest over the heart. */
+export function KitShirt({
+  kit,
+  initials,
+  className = '',
+}: {
+  kit: Kit
+  initials: string
+  className?: string
+}) {
+  return (
+    <svg viewBox="0 0 48 48" aria-hidden className={`overflow-visible ${className}`}>
+      <KitFabric kit={kit} />
       <g transform="translate(27.4 13.2) scale(0.16)">
         <CrestMark kit={kit} initials={initials} />
       </g>
@@ -189,4 +203,20 @@ export function initialsOf(name: string): string {
     .slice(0, 3)
     .map((word) => word[0])
     .join('')
+}
+
+/** What a screen needs to dress a shirt in the declared club's colours. */
+export interface KitLook {
+  kit: Kit
+  initials: string
+}
+
+/** `GET /api/accounts/me/club` → `club`, as far as the kit goes. No club, no look. */
+export function kitLookOf(club: { clubName: string; kit?: Kit } | null): KitLook | null {
+  return club ? { kit: club.kit ?? DEFAULT_KIT, initials: kitInitials(club.clubName) } : null
+}
+
+/** The crest's letters for a club name; a name with no letters at all falls back to "PL". */
+export function kitInitials(name: string): string {
+  return initialsOf(name) || 'PL'
 }

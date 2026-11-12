@@ -14,6 +14,7 @@ import { useCharacterContent } from '@/hooks/use-character-content'
 import { useQueueContent } from '@/hooks/use-queue-content'
 import { ReputationGauge, type ReputationBand } from '@/modules/account/reputation-gauge'
 import { CATEGORY_ORDER, Shirt } from '@/modules/character/roster'
+import { KIT_SWATCH, KitFabric, SHIRT_PATH, type KitLook } from '@/modules/kit/kit-art'
 import { archetypeLabel, type CharacterView } from '@/modules/character/types'
 import { LobbyOverlay, type LobbyView } from './lobby-stages'
 import { Clock, PRIMARY } from './queue-ui'
@@ -195,12 +196,15 @@ export function QueueScreen({
   movement,
   reputation,
   reputationBand,
+  look: kitLook = null,
 }: {
   initial: QueueState
   characters: CharacterView[]
   movement: Record<CharacterCategory, MovementBand>
   reputation: number
   reputationBand: ReputationBand
+  /** The declared club's kit: lockers and the walker wear it. Null without a club. */
+  look?: KitLook | null
 }) {
   const content = useQueueContent()
   const router = useRouter()
@@ -415,6 +419,7 @@ export function QueueScreen({
             code={codes[state.entry.category]}
             archetype={walking ? archetypeLabel(walking.archetype) : codes[state.entry.category]}
             exit={scene === 'found'}
+            look={kitLook}
           />
         ) : (
           <Carousel
@@ -424,6 +429,7 @@ export function QueueScreen({
             focus={focus}
             onTurnTo={turnTo}
             onStep={step}
+            look={kitLook}
           />
         )}
       </section>
@@ -632,6 +638,7 @@ function Carousel({
   focus,
   onTurnTo,
   onStep,
+  look,
 }: {
   characters: CharacterView[]
   movement: Record<CharacterCategory, MovementBand>
@@ -639,6 +646,7 @@ function Carousel({
   focus: number
   onTurnTo: (index: number) => void
   onStep: (direction: 1 | -1) => void
+  look: KitLook | null
 }) {
   const content = useQueueContent()
   const characterContent = useCharacterContent()
@@ -756,6 +764,7 @@ function Carousel({
                   filled={character !== undefined}
                   name={character ? (character.name ?? archetypeLabel(character.archetype)) : ''}
                   number={SHIRT_NUMBER[category]}
+                  look={look}
                 />
               </span>
             </label>
@@ -778,12 +787,14 @@ function Locker({
   filled,
   name = '',
   number = 0,
+  look = null,
 }: {
   code: string
   filled: boolean
   /** On the back of the shirt, when the door opens. */
   name?: string
   number?: number
+  look?: KitLook | null
 }) {
   return (
     <span
@@ -811,7 +822,7 @@ function Locker({
                   strokeLinejoin="round"
                 />
               </svg>
-              <KitReveal code={code} name={name} number={number} />
+              <KitReveal code={code} name={name} number={number} look={look} />
             </span>
           </>
         )}
@@ -852,14 +863,29 @@ const SHIRT_NUMBER: Record<CharacterCategory, number> = {
   striker: 9,
 }
 
-const KIT = 'M17 7l7 3 7-3 11 6-4 9-4-2v22H14V20l-4 2-4-9z'
-
 /**
  * The kit on its hanger, two-sided. Through the gap you see the front; when
  * the door opens it turns round in 3D, the signing-day reveal: the archetype
  * arched over a big number on the back, then a slow sway on the hanger.
  */
-function KitReveal({ code, name, number }: { code: string; name: string; number: number }) {
+function KitReveal({
+  code,
+  name,
+  number,
+  look,
+}: {
+  code: string
+  name: string
+  number: number
+  look: KitLook | null
+}) {
+  // The club's colours stay inside the shirt: the state (the check) sits on a
+  // badge in the interface's own colours, and the back's print is haloed in
+  // the primary so a stripe never cuts a letter.
+  const swatch = look ? KIT_SWATCH[look.kit.primary] : null
+  const printed = swatch
+    ? { fill: swatch.ink, stroke: swatch.fill, strokeWidth: 0.9, paintOrder: 'stroke' as const }
+    : null
   return (
     <span className="queue-kit relative -mt-1 block aspect-square w-[78%]">
       <span className="queue-kit-turn absolute inset-0">
@@ -869,32 +895,55 @@ function KitReveal({ code, name, number }: { code: string; name: string; number:
           aria-hidden
           className="queue-kit-face absolute inset-0 size-full overflow-visible drop-shadow-[0_0_14px_color-mix(in_srgb,var(--color-accent)_50%,transparent)]"
         >
-          <path
-            d={KIT}
-            strokeWidth={1.2}
-            strokeLinejoin="round"
-            className="fill-accent stroke-accent"
-          />
-          <path d="M14 13h20" strokeWidth={0.8} className="stroke-background/40" />
-          <path
-            d="M18.5 27l4 4 7.5-8"
-            fill="none"
-            strokeWidth={2.4}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="stroke-background"
-          />
-          <text
-            x="24"
-            y="38.5"
-            textAnchor="middle"
-            fontSize="4.2"
-            fontWeight={700}
-            letterSpacing="0.6"
-            className="fill-background/70"
-          >
-            {code}
-          </text>
+          {look ? (
+            <>
+              <KitFabric kit={look.kit} />
+              <circle
+                cx="24"
+                cy="28"
+                r="7.5"
+                strokeWidth={1.2}
+                className="fill-background stroke-accent"
+              />
+              <path
+                d="M20.3 28l3 3 5.4-5.8"
+                fill="none"
+                strokeWidth={2.2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="stroke-accent"
+              />
+            </>
+          ) : (
+            <>
+              <path
+                d={SHIRT_PATH}
+                strokeWidth={1.2}
+                strokeLinejoin="round"
+                className="fill-accent stroke-accent"
+              />
+              <path d="M14 13h20" strokeWidth={0.8} className="stroke-background/40" />
+              <path
+                d="M18.5 27l4 4 7.5-8"
+                fill="none"
+                strokeWidth={2.4}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="stroke-background"
+              />
+              <text
+                x="24"
+                y="38.5"
+                textAnchor="middle"
+                fontSize="4.2"
+                fontWeight={700}
+                letterSpacing="0.6"
+                className="fill-background/70"
+              >
+                {code}
+              </text>
+            </>
+          )}
         </svg>
         {/* Back: name arched over the number. */}
         <svg
@@ -905,18 +954,23 @@ function KitReveal({ code, name, number }: { code: string; name: string; number:
           <defs>
             <path id={`kit-arc-${code}`} d="M15 19 Q24 14 33 19" />
           </defs>
-          <path
-            d={KIT}
-            strokeWidth={1.2}
-            strokeLinejoin="round"
-            className="fill-accent stroke-accent"
-          />
+          {look ? (
+            <KitFabric kit={look.kit} />
+          ) : (
+            <path
+              d={SHIRT_PATH}
+              strokeWidth={1.2}
+              strokeLinejoin="round"
+              className="fill-accent stroke-accent"
+            />
+          )}
           {/* The arc is ~19 units long: a long name shrinks to fit instead of losing its ends. */}
           <text
             fontSize={Math.min(3.6, 26 / Math.max(name.length, 1))}
             fontWeight={700}
             letterSpacing={Math.min(3.6, 26 / Math.max(name.length, 1)) * 0.11}
-            className="fill-background"
+            className={printed ? undefined : 'fill-background'}
+            {...printed}
           >
             <textPath href={`#kit-arc-${code}`} startOffset="50%" textAnchor="middle">
               {name}
@@ -928,7 +982,8 @@ function KitReveal({ code, name, number }: { code: string; name: string; number:
             textAnchor="middle"
             fontSize="15"
             fontWeight={800}
-            className="fill-background"
+            className={printed ? undefined : 'fill-background'}
+            {...printed}
           >
             {number}
           </text>
@@ -968,12 +1023,14 @@ function Tunnel({
   code,
   archetype,
   exit,
+  look,
 }: {
   entry: QueueEntryView
   now: number
   code: string
   archetype: string
   exit: boolean
+  look: KitLook | null
 }) {
   const content = useQueueContent()
   const waited = now - new Date(entry.joinedAt).getTime()
@@ -1035,7 +1092,7 @@ function Tunnel({
         <div aria-hidden className="absolute bottom-[6%] left-1/2 -translate-x-1/2">
           <span className="absolute -bottom-1 left-1/2 h-3 w-16 -translate-x-1/2 rounded-[50%] bg-black/60 blur-[2px]" />
           <span className="queue-walker block scale-[1.6] sm:scale-[2]">
-            <Shirt status="verified" code={code} />
+            <Shirt status="verified" code={code} look={look} />
           </span>
         </div>
       </div>
