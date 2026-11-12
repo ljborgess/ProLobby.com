@@ -1,6 +1,14 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+} from 'react'
 import { useLocale } from '@/common/providers/locale-provider'
 import { CHARACTER_CONTENT } from '@/content/character'
 import { useModerationPanelContent } from '@/hooks/use-moderation-panel-content'
@@ -80,11 +88,16 @@ export function CasePanel({
     }
   }, [])
 
+  // Only the newest summary request may write: an older answer arriving late
+  // must not overwrite the counters of a newer one.
+  const summaryRun = useRef(0)
   const loadSummary = useCallback(() => {
+    const run = ++summaryRun.current
+    const current = () => mounted.current && run === summaryRun.current
     source
       .summary()
-      .then((value) => mounted.current && setSummary({ status: 'ready', value }))
-      .catch(() => mounted.current && setSummary({ status: 'error' }))
+      .then((value) => current() && setSummary({ status: 'ready', value }))
+      .catch(() => current() && setSummary({ status: 'error' }))
   }, [source])
 
   useEffect(loadSummary, [loadSummary])
@@ -105,6 +118,8 @@ export function CasePanel({
   // reads as "loading" without a state write inside the effect.
   const listKey = `${section}|${activeType ?? ''}|${reload}`
   useEffect(() => {
+    // The prints queue has its own screen and its own data: no case list to load.
+    if (showingPrints) return
     let alive = true
     source
       .list(section === 'all' ? null : section, activeType)
@@ -123,7 +138,7 @@ export function CasePanel({
     return () => {
       alive = false
     }
-  }, [source, section, activeType, listKey])
+  }, [source, section, activeType, listKey, showingPrints])
   const list: Loaded<CaseListItem[]> =
     listed.key === listKey ? listed.result : { status: 'loading' }
   const loadList = () => setReload((n) => n + 1)
@@ -161,6 +176,25 @@ export function CasePanel({
         <p className="rounded-md border border-white/15 px-3.5 py-2 text-sm text-foreground-soft">
           {content.sample}
         </p>
+      )}
+
+      {summary.status === 'error' && (
+        <div
+          role="alert"
+          className="flex flex-wrap items-center gap-3 rounded-md border border-danger/50 px-3.5 py-2 text-sm"
+        >
+          <span className="text-foreground">{content.loadError}</span>
+          <button
+            type="button"
+            onClick={() => {
+              setSummary({ status: 'loading' })
+              loadSummary()
+            }}
+            className={`${CHIP} ${CHIP_OFF}`}
+          >
+            {content.retry}
+          </button>
+        </div>
       )}
 
       <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-6 lg:grid-cols-[13rem_minmax(0,1fr)]">
@@ -368,13 +402,19 @@ function CaseDetailView({
   const { locale } = useLocale()
   const categories = CHARACTER_CONTENT[locale].categories as Record<string, string>
   const [detail, setDetail] = useState<Loaded<CaseDetail | null>>({ status: 'loading' })
+  // The case is gone (closed meanwhile by another moderator): the same path as a 409.
+  const markStale = useEffectEvent(() => onStale())
 
   useEffect(() => {
     if (!id) return
     let alive = true
     source
       .detail(id)
-      .then((value) => alive && setDetail({ status: 'ready', value }))
+      .then((value) => {
+        if (!alive) return
+        if (value === null) markStale()
+        else setDetail({ status: 'ready', value })
+      })
       .catch(() => alive && setDetail({ status: 'error' }))
     return () => {
       alive = false
@@ -401,6 +441,9 @@ function CaseDetailView({
         <p className="flex flex-wrap items-center gap-x-3 text-xs text-foreground-soft">
           <span>
             {content.openedAt} {formatDate(item.openedAt, locale)}
+          </span>
+          <span>
+            {content.origin}: {content.origins[item.origin] ?? item.origin}
           </span>
           {item.overdue && <span className="text-danger">{content.overdue}</span>}
           {item.lobbyId && (
@@ -488,11 +531,11 @@ function CloseForm({
     if (!outcome || !reason) return
     setStatus('closing')
     const trimmed = note.trim()
-    const result = await source.close(id, {
-      outcome,
-      reason,
-      ...(trimmed ? { note: trimmed } : {}),
-    })
+    // A network failure rejects: it must read as "failed", not leave the
+    // button on "Encerrando…" for good.
+    const result = await source
+      .close(id, { outcome, reason, ...(trimmed ? { note: trimmed } : {}) })
+      .catch(() => 'failed' as const)
     if (result === 'closed') {
       onClosed(id)
     } else if (result === 'already_closed') {

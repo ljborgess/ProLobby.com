@@ -123,6 +123,8 @@ describe('CasePanel', () => {
     expect(detail).toHaveTextContent('Mirabel')
     expect(detail).toHaveTextContent(`${pt.reputation} 48`)
     expect(detail).toHaveTextContent(pt.history(1, 0, 2))
+    expect(detail).toHaveTextContent('1 aberto, 0 procedentes, 2 improcedentes')
+    expect(detail).toHaveTextContent(`${pt.origin}: ${pt.origins.user}`)
     expect(detail).toHaveTextContent('5b6d1f0a')
     expect(detail.textContent).not.toMatch(/@\w+\.\w+|nascimento|birth/i)
   })
@@ -275,6 +277,107 @@ describe('CasePanel', () => {
 
     expect(await screen.findByRole('button', { name: /aprovar/i })).toBeInTheDocument()
     expect(screen.queryByRole('list', { name: pt.listLabel })).toBeNull()
+  })
+
+  it('recovers when closing a case fails on the network, instead of hanging on "Encerrando…"', async () => {
+    const source = createSampleSource(sampleCases(NOW))
+    source.close = () => Promise.reject(new Error('offline'))
+    panel(source)
+    fireEvent.click(
+      within(await screen.findByRole('list', { name: pt.listLabel })).getAllByRole('button')[0]!,
+    )
+    const detail = await screen.findByRole('article')
+
+    fireEvent.click(within(detail).getByRole('button', { name: pt.close.outcomes.dismissed }))
+    fireEvent.click(within(detail).getByRole('button', { name: pt.close.reasons.no_evidence }))
+    fireEvent.click(within(detail).getByRole('button', { name: pt.close.confirm }))
+
+    await waitFor(() => expect(screen.getByText(pt.close.failed)).toBeInTheDocument())
+    expect(within(detail).getByRole('button', { name: pt.close.confirm })).toBeEnabled()
+  })
+
+  it('shows when the counters did not load, and tries again', async () => {
+    const source = createSampleSource(sampleCases(NOW))
+    const summary = vi.spyOn(source, 'summary')
+    summary.mockRejectedValueOnce(new Error('down'))
+    panel(source)
+
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent(pt.loadError)
+    fireEvent.click(within(alert).getByRole('button', { name: pt.retry }))
+
+    await waitFor(() => expect(screen.queryByRole('alert')).toBeNull())
+    const all = await within(sidebar()).findByRole('button', { name: /Todos/ })
+    await waitFor(() => expect(within(all).getByText(pt.openCount(9))).toBeInTheDocument())
+  })
+
+  it('treats a case that is gone (closed by someone else) like a 409', async () => {
+    const source = createSampleSource(sampleCases(NOW))
+    source.detail = async () => null
+    panel(source)
+
+    fireEvent.click(
+      within(await screen.findByRole('list', { name: pt.listLabel })).getAllByRole('button')[0]!,
+    )
+
+    await waitFor(() =>
+      expect(screen.getByRole('status')).toHaveTextContent(pt.close.alreadyClosed),
+    )
+  })
+
+  it('keeps the newest counters when an older summary answers late', async () => {
+    const source = createSampleSource(sampleCases(NOW))
+    const real = source.summary.bind(source)
+    let release: (() => void) | null = null
+    const slow = new Promise<void>((resolve) => (release = resolve))
+    const summary = vi.spyOn(source, 'summary')
+    // The first call (on mount) is slow and stale; the second (after a close) is quick.
+    summary.mockImplementationOnce(async () => {
+      const stale = await real()
+      await slow
+      return stale.map((item) => ({ ...item, open: 99 }))
+    })
+    panel(source)
+    const detail = await (async () => {
+      fireEvent.click(
+        within(await screen.findByRole('list', { name: pt.listLabel })).getAllByRole('button')[0]!,
+      )
+      return screen.findByRole('article')
+    })()
+    fireEvent.click(within(detail).getByRole('button', { name: pt.close.outcomes.dismissed }))
+    fireEvent.click(within(detail).getByRole('button', { name: pt.close.reasons.duplicate }))
+    fireEvent.click(within(detail).getByRole('button', { name: pt.close.confirm }))
+    const all = await within(sidebar()).findByRole('button', { name: /Todos/ })
+    await waitFor(() => expect(within(all).getByText(pt.openCount(8))).toBeInTheDocument())
+
+    release!()
+    await new Promise((resolve) => setTimeout(resolve, 20))
+
+    expect(within(all).getByText(pt.openCount(8))).toBeInTheDocument()
+  })
+
+  it('does not load a case list while the prints queue is open', async () => {
+    const source = createSampleSource(sampleCases(NOW), { prints: 1 })
+    const list = vi.spyOn(source, 'list')
+    renderWithLocale(
+      <CasePanel
+        source={source}
+        tools={createSampleTools({ admin: false })}
+        isAdmin={false}
+        verifications={[{ caseId: 'c1', category: 'midfielder', platform: 'ps5' }]}
+        archetypes={['MAESTRO']}
+      />,
+    )
+    await section('Verificações')
+    await waitFor(() => expect(list).toHaveBeenCalledWith('verifications', null))
+    list.mockClear()
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: new RegExp(pt.caseTypes.character_verification) }),
+    )
+
+    expect(await screen.findByRole('button', { name: /aprovar/i })).toBeInTheDocument()
+    expect(list).not.toHaveBeenCalled()
   })
 
   it('reads in Spanish', async () => {

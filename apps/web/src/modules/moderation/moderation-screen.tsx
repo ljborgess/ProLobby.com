@@ -1,9 +1,9 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useState } from 'react'
 import { useModerationContent } from '@/hooks/use-moderation-content'
 import { CasePanel } from './case-panel'
-import { createSampleSource } from './sample-cases'
+import { createSampleSource, sampleCases } from './sample-cases'
 import { createSampleTools } from './sample-tools'
 import { VerificationQueue, type VerificationCase } from './verification-queue'
 
@@ -23,11 +23,15 @@ export function ModerationScreen({
   panel: 'sample' | null
 }) {
   const content = useModerationContent()
-  const sampleSource = useMemo(() => (panel === 'sample' ? createSampleSource() : null), [panel])
+  // State, not a memo: React may drop a memoized value, and these hold the
+  // sample's closed cases and plan changes. The real prints count goes into the
+  // sample summary, so the Personagem filter opens the real queue (#198).
+  const [sampleSource] = useState(() =>
+    panel === 'sample' ? createSampleSource(sampleCases(), { prints: cases.length }) : null,
+  )
   // Until the API says who is an admin (#313), the made-up panel plays one, so Planos can be seen.
-  const sampleTools = useMemo(
-    () => (panel === 'sample' ? createSampleTools({ admin: true }) : null),
-    [panel],
+  const [sampleTools] = useState(() =>
+    panel === 'sample' ? createSampleTools({ admin: true }) : null,
   )
 
   if (sampleSource && sampleTools) {

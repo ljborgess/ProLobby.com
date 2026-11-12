@@ -118,7 +118,10 @@ export function sampleCases(now = Date.now()): CaseDetail[] {
 }
 
 /** An in-memory source over the sample cases: closing one removes it, a second close answers 409. */
-export function createSampleSource(cases: CaseDetail[] = sampleCases(), delayMs = 0): CasesSource {
+export function createSampleSource(
+  cases: CaseDetail[] = sampleCases(),
+  { delayMs = 0, prints = 0 }: { delayMs?: number; prints?: number } = {},
+): CasesSource {
   const open = new Map(cases.map((item) => [item.id, item]))
   const wait = () => (delayMs > 0 ? new Promise<void>((r) => setTimeout(r, delayMs)) : undefined)
   const preview = (item: CaseDetail) => item.text?.slice(0, 120) ?? null
@@ -128,13 +131,15 @@ export function createSampleSource(cases: CaseDetail[] = sampleCases(), delayMs 
       await wait()
       return SECTION_KEYS.map<SectionSummary>((key) => {
         const mine = [...open.values()].filter((item) => item.section === key)
-        return {
-          key,
-          open: mine.length,
-          types: CASE_TYPES.filter((type) => SECTION_OF[type] === key)
-            .map((type) => ({ type, open: mine.filter((item) => item.type === type).length }))
-            .filter((entry) => entry.open > 0),
+        const types = CASE_TYPES.filter((type) => SECTION_OF[type] === key)
+          .map((type) => ({ type, open: mine.filter((item) => item.type === type).length }))
+          .filter((entry) => entry.open > 0)
+        // The character prints are the real queue (#198), not a sample: the
+        // Personagem filter counts them, and the panel shows the real screen.
+        if (key === 'verifications' && prints > 0) {
+          types.unshift({ type: 'character_verification', open: prints })
         }
+        return { key, open: mine.length + (key === 'verifications' ? prints : 0), types }
       })
     },
     async list(section, type) {
