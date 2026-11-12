@@ -9,6 +9,10 @@ export enum AuditAction {
   CASE_RESOLVED = 'case_resolved',
   /** A moderator looked a player up in the panel (#312) — the kind of term, never the term. */
   PLAYER_SEARCHED = 'player_searched',
+  /** An admin issued a 2FA enrollment code, wiping any factor the account had (#311). */
+  TWO_FACTOR_ENROLLMENT = 'two_factor_enrollment',
+  /** A moderator opened the panel with a recovery code instead of the app (#311). */
+  RECOVERY_CODE_USED = 'recovery_code_used',
 }
 
 /**
