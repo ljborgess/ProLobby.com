@@ -8,7 +8,7 @@ import { rejectCrossSite } from '@/common/api/same-origin'
  * carries the upgraded session cookie back untouched.
  */
 export async function POST(request: Request): Promise<Response> {
-  const refused = rejectCrossSite(request, { jsonBody: false })
+  const refused = rejectCrossSite(request, { jsonBody: true })
   if (refused) {
     return refused
   }
@@ -17,9 +17,10 @@ export async function POST(request: Request): Promise<Response> {
     apiFetch('/api/accounts/me/two-factor/setup', {
       method: 'POST',
       headers: {
+        'content-type': 'application/json',
         ...(cookie ? { cookie } : {}),
       },
-
+      body: await request.text(),
       cache: 'no-store',
       forwardedIp: forwardedIpFrom(request),
     }),
