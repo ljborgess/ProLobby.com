@@ -33,6 +33,23 @@ export function base32(bytes: Buffer): string {
   return out
 }
 
+export function fromBase32(text: string): Buffer {
+  let bits = 0
+  let value = 0
+  const out: number[] = []
+  for (const char of text.toUpperCase()) {
+    const index = BASE32.indexOf(char)
+    if (index < 0) continue
+    value = (value << 5) | index
+    bits += 5
+    if (bits >= 8) {
+      out.push((value >>> (bits - 8)) & 0xff)
+      bits -= 8
+    }
+  }
+  return Buffer.from(out)
+}
+
 /** What the authenticator app scans or opens: issuer and account label, no secret in logs. */
 export function otpauthUrl(secret: Buffer, label: string): string {
   const issuer = 'ProLobby'
@@ -71,12 +88,15 @@ export function verifyTotp(
   return null
 }
 
-/** Ten single-use recovery codes, `xxxx-xxxx`, about 40 bits each. */
+/** A single-use code, `xxxx-xxxx`, about 40 bits: recovery and enrollment use the same shape. */
+export function generateOneTimeCode(): string {
+  const raw = base32(randomBytes(5)).toLowerCase()
+  return `${raw.slice(0, 4)}-${raw.slice(4, 8)}`
+}
+
+/** Ten single-use recovery codes. */
 export function generateRecoveryCodes(count = 10): string[] {
-  return Array.from({ length: count }, () => {
-    const raw = base32(randomBytes(5)).toLowerCase()
-    return `${raw.slice(0, 4)}-${raw.slice(4, 8)}`
-  })
+  return Array.from({ length: count }, generateOneTimeCode)
 }
 
 /**

@@ -113,7 +113,7 @@ describe('character verification by moderation (#198)', () => {
     row.state = AccountState.ACTIVE
     await em.flush()
     // The panel needs a session that passed the second factor (#311).
-    moderator = (await withSecondFactor(app, moderator)).cookie
+    moderator = (await withSecondFactor(app, orm, mod.email, moderator)).cookie
   }, 60_000)
 
   afterAll(async () => {
@@ -294,7 +294,7 @@ describe('character verification by moderation (#198)', () => {
     row.emailVerified = true
     row.state = AccountState.ACTIVE
     await em.flush()
-    const otherCookie = (await withSecondFactor(app, other.cookie)).cookie
+    const otherCookie = (await withSecondFactor(app, orm, other.email, other.cookie)).cookie
 
     const results = await Promise.all([
       decide(caseId, { approve: true, archetype: 'maestro', gamertag: 'Twin1xx' }),

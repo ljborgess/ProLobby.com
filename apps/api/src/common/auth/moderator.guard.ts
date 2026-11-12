@@ -8,7 +8,7 @@ import {
 import { AccountRole } from '../../modules/account/account.enums'
 import type { RequestWithAccount } from './session.guard'
 
-const MODERATION_ROLES: readonly AccountRole[] = [AccountRole.MODERATOR, AccountRole.ADMIN]
+export const MODERATION_ROLES: readonly AccountRole[] = [AccountRole.MODERATOR, AccountRole.ADMIN]
 
 /**
  * Moderation routes — the first role-gated area. Runs after the global

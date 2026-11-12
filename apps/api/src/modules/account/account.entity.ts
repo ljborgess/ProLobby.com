@@ -149,12 +149,23 @@ export class Account {
   totpEnabledAt?: Date
 
   /** Last TOTP step accepted: a code is good once, never twice in its window. */
-  @Property({ type: 'bigint', nullable: true, hidden: true })
+  @Property({ type: 'integer', nullable: true, hidden: true })
   totpLastStep?: number
 
   /** SHA-256 of the unused recovery codes; a code leaves the list when used. */
   @Property({ type: 'json', nullable: true, hidden: true })
   recoveryCodeHashes?: string[]
+
+  /**
+   * SHA-256 of the one-time enrollment code an admin issues by CLI
+   * (`two-factor-enrollment.cli`). Without it nobody sets up the factor: a
+   * leaked password alone must not let a stranger enroll their own phone.
+   */
+  @Property({ nullable: true, hidden: true })
+  twoFactorEnrollmentHash?: string
+
+  @Property({ nullable: true, hidden: true })
+  twoFactorEnrollmentExpiresAt?: Date
 
   @Property()
   createdAt: Date & Opt = new Date()

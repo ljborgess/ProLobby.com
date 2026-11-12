@@ -7,7 +7,19 @@ import { useTwoFactorContent } from '@/hooks/use-two-factor-content'
 import { AuthNote } from '@/modules/account/auth-layout'
 
 type Setup = { secret: string; otpauthUrl: string }
-type Status = 'idle' | 'busy' | 'invalid' | 'error'
+type Status = 'idle' | 'busy' | 'invalid' | 'invalidEnrollment' | 'tooMany' | 'error'
+
+/**
+ * What an answer means on this screen. A 409 (the factor got enabled in
+ * another tab) and a 401 (the session ended) both resolve by loading the page
+ * again, which lands on the right step.
+ */
+function outcomeOf(response: Response | undefined, invalid: Status): Status | 'reload' {
+  if (!response) return 'error'
+  if (response.status === 429) return 'tooMany'
+  if (response.status === 409 || response.status === 401) return 'reload'
+  return response.status < 500 ? invalid : 'error'
+}
 
 /**
  * The panel's second factor — #311. Two paths: a moderator without the
@@ -34,14 +46,20 @@ function VerifyCode() {
       router.refresh()
       return
     }
-    setStatus(response && response.status < 500 ? 'invalid' : 'error')
+    settle(outcomeOf(response, 'invalid'))
+  }
+
+  function settle(outcome: Status | 'reload') {
+    if (outcome === 'reload') return router.refresh()
+    setStatus(outcome)
   }
 
   return (
     <section className="flex flex-col gap-5">
       <Heading title={content.verifyTitle} intro={content.verifyIntro} />
       <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
-        <CodeField label={content.codeLabel} hint={content.codeHint} />
+        {/* Letters too: a recovery code is `xxxx-xxxx`. */}
+        <CodeField label={content.codeLabel} hint={content.codeHint} numeric={false} />
         <Feedback status={status} />
         <button type="submit" disabled={status === 'busy'} className="auth-submit px-5 text-base">
           {status === 'busy' ? content.verifying : content.verify}
@@ -60,10 +78,17 @@ function SetUp() {
   const [copied, setCopied] = useState(false)
   const [status, setStatus] = useState<Status>('idle')
 
-  async function start() {
+  function settle(outcome: Status | 'reload') {
+    if (outcome === 'reload') return router.refresh()
+    setStatus(outcome)
+  }
+
+  async function start(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const enrollmentCode = String(new FormData(event.currentTarget).get('enrollment') ?? '').trim()
     setStatus('busy')
-    const response = await post('/bff/accounts/me/two-factor/setup')
-    if (!response?.ok) return setStatus('error')
+    const response = await post('/bff/accounts/me/two-factor/setup', { enrollmentCode })
+    if (!response?.ok) return settle(outcomeOf(response, 'invalidEnrollment'))
     setSetup((await response.json()) as Setup)
     setStatus('idle')
   }
@@ -73,7 +98,7 @@ function SetUp() {
     const code = String(new FormData(event.currentTarget).get('code') ?? '').trim()
     setStatus('busy')
     const response = await post('/bff/accounts/me/two-factor/activation', { code })
-    if (!response?.ok) return setStatus(response && response.status < 500 ? 'invalid' : 'error')
+    if (!response?.ok) return settle(outcomeOf(response, 'invalid'))
     setCodes(((await response.json()) as { recoveryCodes: string[] }).recoveryCodes)
     setStatus('idle')
   }
@@ -124,17 +149,20 @@ function SetUp() {
     <section className="flex flex-col gap-5">
       <Heading title={content.setupTitle} intro={content.setupIntro} />
       {!setup ? (
-        <>
+        <form onSubmit={start} className="flex flex-col gap-4" noValidate>
+          <TextField
+            name="enrollment"
+            type="text"
+            autoComplete="off"
+            label={content.enrollmentLabel}
+            hint={content.enrollmentHint}
+            maxLength={9}
+          />
           <Feedback status={status} />
-          <button
-            type="button"
-            onClick={start}
-            disabled={status === 'busy'}
-            className="auth-submit px-5 text-base"
-          >
+          <button type="submit" disabled={status === 'busy'} className="auth-submit px-5 text-base">
             {status === 'busy' ? content.starting : content.start}
           </button>
-        </>
+        </form>
       ) : (
         <form onSubmit={activate} className="flex flex-col gap-4" noValidate>
           <div className="flex flex-col gap-1.5">
@@ -166,12 +194,20 @@ function Heading({ title, intro }: { title: string; intro: string }) {
   )
 }
 
-function CodeField({ label, hint }: { label: string; hint: string }) {
+function CodeField({
+  label,
+  hint,
+  numeric = true,
+}: {
+  label: string
+  hint: string
+  numeric?: boolean
+}) {
   return (
     <TextField
       name="code"
       type="text"
-      inputMode="numeric"
+      inputMode={numeric ? 'numeric' : 'text'}
       autoComplete="one-time-code"
       label={label}
       hint={hint}
@@ -182,11 +218,17 @@ function CodeField({ label, hint }: { label: string; hint: string }) {
 
 function Feedback({ status }: { status: Status }) {
   const content = useTwoFactorContent()
-  if (status !== 'invalid' && status !== 'error') return null
+  const message = {
+    invalid: content.invalidCode,
+    invalidEnrollment: content.invalidEnrollment,
+    tooMany: content.tooMany,
+    error: content.error,
+  }[status as 'invalid' | 'invalidEnrollment' | 'tooMany' | 'error']
+  if (!message) return null
   return (
     <AuthNote tone="error">
       <p role="alert" className="text-sm leading-relaxed text-danger">
-        {status === 'invalid' ? content.invalidCode : content.error}
+        {message}
       </p>
     </AuthNote>
   )

@@ -6,7 +6,7 @@ import { SESSION_TTL_MS } from '../../common/auth/session.constants'
 import type { RequestWithAccount } from '../../common/auth/session.guard'
 import { SESSION_COOKIE_NAME, sessionCookieOptions } from '../../common/security/session-cookie'
 import { LOGIN_THROTTLE } from '../../common/security/throttler.config'
-import { TwoFactorCodeDto } from './dto/two-factor-code.dto'
+import { TwoFactorCodeDto, TwoFactorEnrollmentDto } from './dto/two-factor-code.dto'
 import { TwoFactorService, type TwoFactorStatus } from './two-factor.service'
 
 /**
@@ -22,11 +22,18 @@ export class TwoFactorController {
     return this.twoFactor.status(request.account!, request.secondFactor ?? false)
   }
 
-  /** Shows the secret once, for the authenticator app. Starting over replaces it. */
+  /**
+   * Shows the secret once, for the authenticator app, against the enrollment
+   * code an admin handed over. Starting over replaces the secret.
+   */
   @Post('accounts/me/two-factor/setup')
   @HttpCode(HttpStatus.OK)
-  setup(@Req() request: RequestWithAccount): Promise<{ secret: string; otpauthUrl: string }> {
-    return this.twoFactor.setup(request.account!.id)
+  @Throttle(LOGIN_THROTTLE)
+  setup(
+    @Req() request: RequestWithAccount,
+    @Body() dto: TwoFactorEnrollmentDto,
+  ): Promise<{ secret: string; otpauthUrl: string }> {
+    return this.twoFactor.setup(request.account!.id, dto.enrollmentCode)
   }
 
   @Post('accounts/me/two-factor/activation')

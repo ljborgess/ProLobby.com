@@ -7,8 +7,10 @@ export enum AuditAction {
   ROLE_CHANGED = 'role_changed',
   /** A moderation case closed, by a moderator or by the system. */
   CASE_RESOLVED = 'case_resolved',
-  /** A moderator's second factor wiped by an admin, to set it up again (#311). */
-  TWO_FACTOR_RESET = 'two_factor_reset',
+  /** An admin issued a 2FA enrollment code, wiping any factor the account had (#311). */
+  TWO_FACTOR_ENROLLMENT = 'two_factor_enrollment',
+  /** A moderator opened the panel with a recovery code instead of the app (#311). */
+  RECOVERY_CODE_USED = 'recovery_code_used',
 }
 
 /**
