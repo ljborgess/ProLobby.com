@@ -1,7 +1,10 @@
 import type {
+  AccountPlanChangedEvent,
   LobbyClosedEvent,
+  ModerationCaseClosedEvent,
   ModerationCaseOpenedEvent,
   PlatformEvent,
+  QueueBoardEvent,
   SystemQuotaAlertEvent,
 } from './webhook-event'
 
@@ -60,6 +63,55 @@ export function sampleModerationCaseOpenedEvent(
     occurredAt: new Date().toISOString(),
     type: 'moderation.case_opened',
     payload: { caseId: NIL(401), caseType: 'character_verification' },
+    ...overrides,
+  }
+}
+
+export function sampleModerationCaseClosedEvent(
+  overrides: Partial<ModerationCaseClosedEvent> = {},
+): ModerationCaseClosedEvent {
+  return {
+    id: NIL(600),
+    occurredAt: new Date().toISOString(),
+    type: 'moderation.case_closed',
+    payload: {
+      discordId: SNOWFLAKE(601),
+      caseType: 'user_report',
+      outcome: 'resolved',
+      reason: 'confirmed',
+      note: null,
+    },
+    ...overrides,
+  }
+}
+
+export function sampleAccountPlanChangedEvent(
+  overrides: Partial<AccountPlanChangedEvent> = {},
+): AccountPlanChangedEvent {
+  return {
+    id: NIL(700),
+    occurredAt: new Date().toISOString(),
+    type: 'account.plan_changed',
+    payload: { discordId: SNOWFLAKE(701), plan: 'founder' },
+    ...overrides,
+  }
+}
+
+export function sampleQueueBoardEvent(overrides: Partial<QueueBoardEvent> = {}): QueueBoardEvent {
+  return {
+    id: NIL(500),
+    occurredAt: new Date().toISOString(),
+    type: 'queue.board',
+    payload: {
+      bands: {
+        goalkeeper: 'low',
+        defender: 'busy',
+        midfielder: 'full',
+        winger: 'low',
+        striker: 'busy',
+      },
+      paused: null,
+    },
     ...overrides,
   }
 }

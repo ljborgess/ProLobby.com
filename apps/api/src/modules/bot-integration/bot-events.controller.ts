@@ -22,8 +22,10 @@ import type { Request } from 'express'
 import { Public } from '../../common/auth/auth.decorators'
 import { BOT_EVENT_THROTTLE } from '../../common/security/throttler.config'
 import { DiscordPresenceService } from '../account/discord-presence.service'
+import { AccountRoleAnnouncer } from './account-role-announcer'
 import { CoordinationState } from './coordination-state'
 import { LobbyChannelsService } from './lobby-channels.service'
+import { SupportIntakeService } from './support-intake.service'
 
 type RequestWithRawBody = Request & { rawBody?: Buffer }
 
@@ -45,6 +47,8 @@ export class BotEventsController {
     private readonly presence: DiscordPresenceService,
     private readonly lobbyChannels: LobbyChannelsService,
     private readonly coordination: CoordinationState,
+    private readonly support: SupportIntakeService,
+    private readonly roles: AccountRoleAnnouncer,
   ) {}
 
   @Public()
@@ -83,8 +87,15 @@ export class BotEventsController {
       await this.lobbyChannels.apply(parsed.data)
       return
     }
+    if (parsed.data.type === 'discord.support_message') {
+      await this.support.open(parsed.data)
+      return
+    }
     // 204 whether or not the Discord belongs to an account: the answer must not
     // say who is on the platform.
     await this.presence.apply(parsed.data)
+    if (parsed.data.type === 'discord.member_joined') {
+      await this.roles.resyncOnJoin(parsed.data.payload.discordId)
+    }
   }
 }

@@ -107,12 +107,79 @@ export const moderationCaseOpenedEventSchema = z.object({
     .strict(),
 })
 
+/**
+ * A case closed from the moderation panel (#306, #308): the bot sends the
+ * outcome by DM to whoever opened it — never to the person reported (RF-036).
+ * The Discord id is personal data; `EventDelivery` keeps the payload encrypted.
+ */
+export const moderationCaseClosedEventSchema = z.object({
+  id: uuid,
+  occurredAt,
+  type: z.literal('moderation.case_closed'),
+  payload: z
+    .object({
+      discordId: snowflake,
+      caseType: z.string().regex(/^[a-z_]{1,40}$/),
+      outcome: z.enum(['resolved', 'dismissed']),
+      reason: z.string().regex(/^[a-z_]{1,40}$/),
+      note: z.string().max(500).nullable(),
+    })
+    .strict(),
+})
+
+/**
+ * A plan activated or revoked in the panel (#313): the bot gives the Founder or
+ * Supporter role — recognition only, no channel or permission — takes the
+ * other one away, and logs it in #log-moderacao. `none` takes both away.
+ */
+export const accountPlanChangedEventSchema = z.object({
+  id: uuid,
+  occurredAt,
+  type: z.literal('account.plan_changed'),
+  payload: z
+    .object({
+      discordId: snowflake,
+      plan: z.enum(['founder', 'supporter', 'none']),
+    })
+    .strict(),
+})
+
+const movementBandSchema = z.enum(['low', 'busy', 'full'])
+
+/**
+ * The public board of the queue for #fila-status: the band of each category
+ * (RF-008 — never the count) and why no lobby closes, if it is paused (#271).
+ * Sent only when it changes, best effort: a lost one is replaced by the next.
+ */
+export const queueBoardEventSchema = z.object({
+  id: uuid,
+  occurredAt,
+  type: z.literal('queue.board'),
+  payload: z
+    .object({
+      bands: z
+        .object({
+          goalkeeper: movementBandSchema,
+          defender: movementBandSchema,
+          midfielder: movementBandSchema,
+          winger: movementBandSchema,
+          striker: movementBandSchema,
+        })
+        .strict(),
+      paused: z.enum(['discord_unavailable', 'channels_full', 'lobbies_full']).nullable(),
+    })
+    .strict(),
+})
+
 export const platformEventSchema = z.discriminatedUnion('type', [
   lobbyClosedEventSchema,
   lobbyEndedEventSchema,
   accountPunishedEventSchema,
   systemQuotaAlertEventSchema,
   moderationCaseOpenedEventSchema,
+  moderationCaseClosedEventSchema,
+  queueBoardEventSchema,
+  accountPlanChangedEventSchema,
 ])
 
 export type LobbyClosedEvent = z.infer<typeof lobbyClosedEventSchema>
@@ -120,6 +187,9 @@ export type LobbyEndedEvent = z.infer<typeof lobbyEndedEventSchema>
 export type AccountPunishedEvent = z.infer<typeof accountPunishedEventSchema>
 export type SystemQuotaAlertEvent = z.infer<typeof systemQuotaAlertEventSchema>
 export type ModerationCaseOpenedEvent = z.infer<typeof moderationCaseOpenedEventSchema>
+export type ModerationCaseClosedEvent = z.infer<typeof moderationCaseClosedEventSchema>
+export type QueueBoardEvent = z.infer<typeof queueBoardEventSchema>
+export type AccountPlanChangedEvent = z.infer<typeof accountPlanChangedEventSchema>
 export type PlatformEvent = z.infer<typeof platformEventSchema>
 export type QuotaResource = z.infer<typeof quotaResourceSchema>
 

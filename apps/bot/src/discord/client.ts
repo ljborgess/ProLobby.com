@@ -13,7 +13,10 @@ import type { Logger } from '../logger'
 // library drops the event on the floor instead of emitting a partial one.
 // RF-060 depends on this event firing for every real member, not just the
 // first fifty seen since the last restart.
-export function createDiscordClient(): Client {
+// Reading #suporte-e-denuncia (RF-061) needs Message Content, another
+// privileged intent: asked for only when that channel is configured, so a bot
+// without it in the Developer Portal still starts.
+export function createDiscordClient({ readMessages = false } = {}): Client {
   return new Client({
     // GuildVoiceStates (#251): without it a voice channel's members are always
     // empty, and the lobby sweep would delete calls with people in them.
@@ -21,6 +24,7 @@ export function createDiscordClient(): Client {
       GatewayIntentBits.Guilds,
       GatewayIntentBits.GuildMembers,
       GatewayIntentBits.GuildVoiceStates,
+      ...(readMessages ? [GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] : []),
     ],
     partials: [Partials.GuildMember, Partials.User],
   })
