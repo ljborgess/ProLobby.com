@@ -1,5 +1,5 @@
 import type { Server } from 'node:http'
-import { Events } from 'discord.js'
+import { DiscordAPIError, Events } from 'discord.js'
 import { announceCommandOn } from './discord/announce-command'
 import { createDiscordClient, logGatewayErrors } from './discord/client'
 import { lobbyChannelsOn, scheduleLobbySweep } from './discord/lobby-channels'
@@ -89,6 +89,17 @@ export async function main(): Promise<void> {
           await channel.send({ ...message, allowedMentions: { parse: [] } })
         },
         warn: (message) => logger.warn('events', message),
+        // RESTJSONErrorCodes.CannotSendMessagesToThisUser (50007): DMs closed.
+        dm: async (userId, message) => {
+          try {
+            const user = await client.users.fetch(userId)
+            await user.send({ ...message, allowedMentions: { parse: [] } })
+            return true
+          } catch (error) {
+            if (error instanceof DiscordAPIError && error.code === 50007) return false
+            throw error
+          }
+        },
         lobby: { ...lobbyChannelsOn(client), report: postBotEvent },
         queueStatus: {
           channelId: process.env.DISCORD_QUEUE_STATUS_CHANNEL_ID,

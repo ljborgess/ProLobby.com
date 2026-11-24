@@ -1,4 +1,5 @@
 import { EntityManager, raw } from '@mikro-orm/postgresql'
+import { randomUUID } from 'node:crypto'
 import {
   BadRequestException,
   ConflictException,
@@ -10,6 +11,8 @@ import {
 import { decryptAtRest, readEvidenceEncryptionKey } from '../../common/security/evidence-encryption'
 import { Account } from '../account/account.entity'
 import { Character, CharacterState } from '../character/character.entity'
+import { EventDeliveryTargetKind } from '../bot-integration/event-delivery.enums'
+import { EventDeliveryService } from '../bot-integration/event-delivery.service'
 import { UserReportService } from '../queue/user-report.service'
 import { AuditAction, recordAudit } from './audit-entry.entity'
 import type { CloseCaseDto } from './dto/close-case.dto'
@@ -78,6 +81,7 @@ export class ModerationCasesService {
   constructor(
     private readonly em: EntityManager,
     private readonly userReports: UserReportService,
+    private readonly events: EventDeliveryService,
   ) {}
 
   async summary(moderatorId: string): Promise<SectionSummary[]> {
@@ -155,6 +159,11 @@ export class ModerationCasesService {
    * Closes a case with one ready reason and an optional note. The audit entry
    * goes in the same unit of work as the change, so neither exists without the
    * other. Dismissing a report counts towards RF-069 inside that same work.
+   *
+   * Whoever opened the case hears the outcome by DM (#308), queued only after
+   * the commit — a rolled-back closing must not be announced. The person
+   * reported is never told who reported them, and gets nothing from here
+   * (RF-036). A case the system opened has nobody to tell.
    */
   async close(
     moderatorId: string,
@@ -165,7 +174,7 @@ export class ModerationCasesService {
     const allowed = dto.outcome === 'resolved' ? RESOLVED_REASONS : DISMISSED_REASONS
     if (!allowed.includes(dto.reason)) throw new BadRequestException('reason_not_for_outcome')
 
-    await this.em.fork().transactional(async (em) => {
+    const closed = await this.em.fork().transactional(async (em) => {
       const moderationCase = await this.findOwnable(em, moderatorId, caseId)
       if (moderationCase.type === ModerationCaseType.CHARACTER_VERIFICATION) {
         throw new ConflictException('use_verification_flow')
@@ -194,7 +203,36 @@ export class ModerationCasesService {
       if (moderationCase.state === ModerationCaseState.DISMISSED) {
         await this.userReports.afterDismissal(em, moderationCase, now)
       }
+      const opener = moderationCase.openedBy
+        ? await em.findOneOrFail(Account, { id: moderationCase.openedBy.id })
+        : null
+      const encrypted = opener?.discordIdEncrypted ?? moderationCase.discordIdEncrypted
+      return {
+        type: moderationCase.type,
+        openerId: opener?.id,
+        discordId: encrypted ? decryptAtRest(this.encryptionKey, encrypted).toString() : null,
+        note,
+      }
     })
+
+    if (!closed.discordId) return
+    await this.events.enqueue(
+      {
+        id: randomUUID(),
+        occurredAt: now.toISOString(),
+        type: 'moderation.case_closed',
+        payload: {
+          discordId: closed.discordId,
+          caseType: closed.type,
+          outcome: dto.outcome,
+          reason: dto.reason,
+          note: closed.note,
+        },
+      },
+      closed.openerId
+        ? { kind: EventDeliveryTargetKind.ACCOUNT, id: closed.openerId }
+        : { kind: EventDeliveryTargetKind.SYSTEM },
+    )
   }
 
   /** A queued case, and never one about the moderator asking. */

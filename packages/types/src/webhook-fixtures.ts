@@ -1,5 +1,6 @@
 import type {
   LobbyClosedEvent,
+  ModerationCaseClosedEvent,
   ModerationCaseOpenedEvent,
   PlatformEvent,
   QueueBoardEvent,
@@ -61,6 +62,24 @@ export function sampleModerationCaseOpenedEvent(
     occurredAt: new Date().toISOString(),
     type: 'moderation.case_opened',
     payload: { caseId: NIL(401), caseType: 'character_verification' },
+    ...overrides,
+  }
+}
+
+export function sampleModerationCaseClosedEvent(
+  overrides: Partial<ModerationCaseClosedEvent> = {},
+): ModerationCaseClosedEvent {
+  return {
+    id: NIL(600),
+    occurredAt: new Date().toISOString(),
+    type: 'moderation.case_closed',
+    payload: {
+      discordId: SNOWFLAKE(601),
+      caseType: 'user_report',
+      outcome: 'resolved',
+      reason: 'confirmed',
+      note: null,
+    },
     ...overrides,
   }
 }
