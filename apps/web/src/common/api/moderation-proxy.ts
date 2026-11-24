@@ -12,7 +12,7 @@ export const queryOf = (request: Request): string => new URL(request.url).search
 
 /**
  * What a `/bff/moderation/*` route sends to the API: the session cookie and the
- * forwarded IP, never cached. The route itself calls `apiFetch('/api/...')`
+ * forwarded IP, never cached. The route itself calls `apiFetch`
  * with a literal path, so the API contract test can see it. The API decides
  * who gets in (role, second factor); the web only carries the call.
  */
