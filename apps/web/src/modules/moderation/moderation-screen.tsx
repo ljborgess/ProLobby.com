@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useModerationContent } from '@/hooks/use-moderation-content'
 import { CasePanel } from './case-panel'
 import { createSampleSource, sampleCases } from './sample-cases'
+import { createSampleTools } from './sample-tools'
 import { VerificationQueue, type VerificationCase } from './verification-queue'
 
 /**
@@ -22,15 +23,28 @@ export function ModerationScreen({
   panel: 'sample' | null
 }) {
   const content = useModerationContent()
-  // State, not a memo: React may drop a memoized value, and this holds the
-  // sample's closed cases. The real prints count goes into the sample summary,
-  // so the Personagem filter opens the real queue (#198).
+  // State, not a memo: React may drop a memoized value, and these hold the
+  // sample's closed cases and plan changes. The real prints count goes into the
+  // sample summary, so the Personagem filter opens the real queue (#198).
   const [sampleSource] = useState(() =>
     panel === 'sample' ? createSampleSource(sampleCases(), { prints: cases.length }) : null,
   )
+  // Until the API says who is an admin (#313), the made-up panel plays one, so Planos can be seen.
+  const [sampleTools] = useState(() =>
+    panel === 'sample' ? createSampleTools({ admin: true }) : null,
+  )
 
-  if (sampleSource) {
-    return <CasePanel source={sampleSource} verifications={cases} archetypes={archetypes} sample />
+  if (sampleSource && sampleTools) {
+    return (
+      <CasePanel
+        source={sampleSource}
+        tools={sampleTools}
+        isAdmin
+        verifications={cases}
+        archetypes={archetypes}
+        sample
+      />
+    )
   }
 
   return (
