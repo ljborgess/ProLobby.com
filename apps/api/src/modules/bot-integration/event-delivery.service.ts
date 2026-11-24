@@ -1,3 +1,4 @@
+import type { EntityManager as CoreEntityManager } from '@mikro-orm/core'
 import { EntityManager } from '@mikro-orm/postgresql'
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common'
 import { platformEventSchema, type PlatformEvent } from '@prolobby/types'
@@ -112,6 +113,31 @@ export class EventDeliveryService implements OnModuleDestroy {
 
     void this.attempt(row.id)
     return row
+  }
+
+  /**
+   * Outbox: the delivery row joins the caller's unit of work, so it commits or
+   * rolls back with the change it announces. Nothing is sent until `kick`;
+   * a row never kicked (a crash between commit and kick) goes at the next boot.
+   */
+  stage(em: CoreEntityManager, event: PlatformEvent, target: DeliveryTarget): EventDelivery {
+    const parsed = platformEventSchema.parse(event)
+    return em.create(EventDelivery, {
+      eventId: parsed.id,
+      type: parsed.type,
+      payloadEncrypted: encryptAtRest(
+        this.encryptionKey,
+        Buffer.from(JSON.stringify(parsed.payload)),
+      ),
+      occurredAt: new Date(parsed.occurredAt),
+      targetKind: target.kind,
+      targetId: target.id,
+    })
+  }
+
+  /** First attempt of a row `stage` wrote, once its transaction committed. */
+  kick(id: string): void {
+    void this.attempt(id)
   }
 
   private arm(id: string, delayMs: number): void {

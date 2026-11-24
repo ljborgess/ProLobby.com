@@ -127,6 +127,23 @@ export const moderationCaseClosedEventSchema = z.object({
     .strict(),
 })
 
+/**
+ * A plan activated or revoked in the panel (#313): the bot gives the Founder or
+ * Supporter role — recognition only, no channel or permission — takes the
+ * other one away, and logs it in #log-moderacao. `none` takes both away.
+ */
+export const accountPlanChangedEventSchema = z.object({
+  id: uuid,
+  occurredAt,
+  type: z.literal('account.plan_changed'),
+  payload: z
+    .object({
+      discordId: snowflake,
+      plan: z.enum(['founder', 'supporter', 'none']),
+    })
+    .strict(),
+})
+
 const movementBandSchema = z.enum(['low', 'busy', 'full'])
 
 /**
@@ -162,6 +179,7 @@ export const platformEventSchema = z.discriminatedUnion('type', [
   moderationCaseOpenedEventSchema,
   moderationCaseClosedEventSchema,
   queueBoardEventSchema,
+  accountPlanChangedEventSchema,
 ])
 
 export type LobbyClosedEvent = z.infer<typeof lobbyClosedEventSchema>
@@ -171,6 +189,7 @@ export type SystemQuotaAlertEvent = z.infer<typeof systemQuotaAlertEventSchema>
 export type ModerationCaseOpenedEvent = z.infer<typeof moderationCaseOpenedEventSchema>
 export type ModerationCaseClosedEvent = z.infer<typeof moderationCaseClosedEventSchema>
 export type QueueBoardEvent = z.infer<typeof queueBoardEventSchema>
+export type AccountPlanChangedEvent = z.infer<typeof accountPlanChangedEventSchema>
 export type PlatformEvent = z.infer<typeof platformEventSchema>
 export type QuotaResource = z.infer<typeof quotaResourceSchema>
 

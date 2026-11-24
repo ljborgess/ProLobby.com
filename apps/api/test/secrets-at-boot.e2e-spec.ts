@@ -11,6 +11,7 @@ import { DiscordLinkService } from '../src/modules/account/discord-link.service'
 import { DiscordPresenceService } from '../src/modules/account/discord-presence.service'
 import { BotEventsController } from '../src/modules/bot-integration/bot-events.controller'
 import { SupportIntakeService } from '../src/modules/bot-integration/support-intake.service'
+import { AccountRoleAnnouncer } from '../src/modules/bot-integration/account-role-announcer'
 import { CoordinationState } from '../src/modules/bot-integration/coordination-state'
 import { LobbyChannelsService } from '../src/modules/bot-integration/lobby-channels.service'
 import { DiscordOAuth, createDiscordOAuth } from '../src/modules/account/discord-oauth'
@@ -242,6 +243,7 @@ describe('the bot events channel is validated at boot', () => {
         { provide: LobbyChannelsService, useValue: {} },
         { provide: CoordinationState, useValue: {} },
         { provide: SupportIntakeService, useValue: {} },
+        { provide: AccountRoleAnnouncer, useValue: {} },
       ],
     }).compile()
 

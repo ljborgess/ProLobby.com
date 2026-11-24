@@ -1,4 +1,5 @@
 export {
+  accountPlanChangedEventSchema,
   accountPunishedEventSchema,
   isKnownPlatformEventType,
   lobbyClosedEventSchema,
@@ -10,6 +11,7 @@ export {
   queueBoardEventSchema,
   quotaResourceSchema,
   systemQuotaAlertEventSchema,
+  type AccountPlanChangedEvent,
   type AccountPunishedEvent,
   type LobbyClosedEvent,
   type LobbyEndedEvent,
@@ -46,6 +48,7 @@ export {
   verifyWebhookSignature,
 } from './webhook-signature'
 export {
+  sampleAccountPlanChangedEvent,
   sampleLobbyClosedEvent,
   samplePlatformEvent,
   sampleModerationCaseClosedEvent,
