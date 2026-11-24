@@ -68,7 +68,11 @@ O compose recusa subir sem cada variável obrigatória e diz qual falta (`X is r
    dc exec api node dist/modules/account/set-role.cli.js voce@exemplo.com admin voce@exemplo.com
    ```
 
-   O painel de moderação exige 2FA (#311). O código de cadastro sai de `two-factor-enrollment.cli.js <email> <seu email de admin>`, pelo mesmo `dc exec api`.
+   O painel de moderação exige 2FA (#311). O código de cadastro do app autenticador vale 24 h e uma vez, e é entregue em mão:
+
+   ```sh
+   dc exec api node dist/modules/account/two-factor-enrollment.cli.js voce@exemplo.com voce@exemplo.com
+   ```
 
 ## Conferir o critério de aceite
 
@@ -107,11 +111,19 @@ dc down
 O dump diário (#123, RNF-007) roda no `api-backup`, fora do processo da API:
 
 ```sh
-dc --profile backup run --rm api-backup                       # dump
-dc --profile backup run --rm api-backup restore <object-key>  # restore
+dc --profile backup run --rm api-backup    # dump
 ```
 
 A restauração precisa ser testada no primeiro deploy, num projeto Neon novo (ADR-009).
+
+> **Cuidado: o `api-backup` aponta pro banco de produção** (`DATABASE_DIRECT_URL`), e o restore sobrescreve o banco de destino. Pra testar ou recuperar em outro lugar, passe a URL do projeto novo no `-e`. Os argumentos repetem o comando inteiro, porque a imagem não tem `ENTRYPOINT`:
+>
+> ```sh
+> dc --profile backup run --rm -e DATABASE_URL='<url direta do projeto novo>' \
+>   api-backup node dist/common/backup/cli.js restore <object-key>
+> ```
+>
+> Restaurar **em produção** só no botão de pânico, depois de decidido entre os sócios.
 
 ## Botão de pânico
 
