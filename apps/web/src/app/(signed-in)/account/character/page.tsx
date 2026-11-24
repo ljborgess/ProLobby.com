@@ -1,11 +1,13 @@
 import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { apiFetch } from '@/common/api/client'
+import { fetchClubLook } from '@/common/api/club-look'
 import { forwardedIpFrom } from '@/common/api/forwarded-ip'
 import { AppHeader } from '@/modules/account/app-header'
 import { AccountBackdrop } from '@/modules/account/account-backdrop'
 import { LoadErrorMessage } from '@/modules/account/load-error-message'
 import { CharacterScreen } from '@/modules/character/character-screen'
+import type { KitLook } from '@/modules/kit/kit-art'
 import type { ArchetypeOption, CharacterView } from '@/modules/character/types'
 import { pageMetadata } from '@/common/page-metadata'
 
@@ -25,11 +27,15 @@ export default async function CharacterPage() {
   }
 
   let responses: [Response, Response]
+  let look: KitLook | null
   try {
-    responses = await Promise.all([
+    const [charactersRes, archetypesRes, clubLook] = await Promise.all([
       apiFetch('/api/characters', init),
       apiFetch('/api/characters/archetypes', init),
+      fetchClubLook(init),
     ])
+    responses = [charactersRes, archetypesRes]
+    look = clubLook
   } catch {
     return <LoadError />
   }
@@ -57,7 +63,7 @@ export default async function CharacterPage() {
       <AccountBackdrop />
       <AppHeader />
       <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col py-6 sm:py-10">
-        <CharacterScreen characters={characters} archetypes={archetypes} />
+        <CharacterScreen characters={characters} archetypes={archetypes} look={look} />
       </div>
     </main>
   )

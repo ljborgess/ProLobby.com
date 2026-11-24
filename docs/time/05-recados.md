@@ -6,6 +6,30 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 
 ---
 
+## 2026-11-12 · Rafael
+
+### Punição e plano já mexem nos cargos do Discord (#313, #324)
+
+- **Resolve o recado de 2026-10-20 (Bot, RF-055):** o Luciano ligou o `account.punished` dos dois lados. A API manda depois do commit, e o bot tira o Verificado na suspensão, devolve no fim dela, e no ban tira Verificado, Fundador, Apoiador e Beta. Não precisa mais te avisar nada. O gatilho que **concede** o Verificado continua travado no piloto de OCR.
+- **Contrato mudou:** o payload do `account.punished` agora é `{ discordId, kind: 'suspension' | 'suspension_ended' | 'ban' }` (antes `accountId`). Evento novo `account.plan_changed` com `{ discordId, plan }`.
+- **Pras telas do painel (#314):** `POST /api/moderation/players/:id/plan` com `{ plan: 'founder' | 'supporter' | 'none', pixReference }`, só admin (moderador recebe `403 admin_only`). `pixReference` (8 a 64, letra, número ou hífen) é obrigatório pra ativar. Conta banida ou excluída: `409 account_closed`; Fundador não vira Apoiador: `409 already_founder`. Renovar Apoiador soma 30 dias aos que faltam. Responde `{ plan, planExpiresAt }`; o detalhe do jogador também traz `planExpiresAt`. Banimento zera o plano.
+- **Variáveis novas do bot:** `DISCORD_VERIFIED_ROLE_ID`, `DISCORD_BETA_ROLE_ID`, `DISCORD_FOUNDER_ROLE_ID`, `DISCORD_SUPPORTER_ROLE_ID` e `DISCORD_MODERATION_LOG_CHANNEL_ID` (ver `apps/bot/.env.example`).
+
+---
+
+## 2026-11-04 · Rafael
+
+### Painel de moderação por seções: duas issues de tela suas
+
+- **Suas:** #309 (sidebar com as seções de casos, lista, detalhe e o fluxo de encerrar com Procedente/Improcedente) e #314 (seções Jogadores, Auditoria, Métricas e Planos). Faça nessa ordem; a #314 entra na sidebar da #309.
+- **Dá pra começar já:** o contrato da API está escrito em cada issue. A API vem do Luciano (#307, #312, #313); até lá use dados de exemplo no formato do contrato.
+- **Regra do painel:** nenhuma tela mostra e-mail nem data de nascimento, e nada edita ou apaga entrada de auditoria. A seção Planos só aparece pra admin.
+- **Visual:** o padrão do painel atual. Simples, com botões e pouco texto, em pt/es.
+- **2FA:** o login com código (#311) fica com o Luciano. Quando entrar, o painel só abre com sessão de 2FA ok; não precisa tratar isso nas suas telas.
+- Decisões completas em #306 e #310.
+
+---
+
 ## 2026-10-29 · Rafael
 
 ### As telas são suas daqui pra frente; issues novas
@@ -87,7 +111,7 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 - **Apelação de suspensão (#160):** `POST /api/accounts/me/punishment/appeals` com `{ message }` passou a aceitar conta `suspended`, além de `banned`. Uma por punição: a segunda é `409 appeal_already_filed`.
 - **Avaliação por pares:** `GET /api/queue` traz em `lastMatch` as listas `teammates` (os outros humanos do mesmo lado) e `opponents` (os do outro lado), cada item `{ participationId, gamertag, category, myRating }`; `gamertag` pode vir `null`. Só dá pra avaliar `teammates`, com a partida em `finished`, até `lastMatch.rateUntil` (48 h depois do encerramento; `null` fora disso). `POST /api/queue/ratings` com `{ lobbyId, participationId, kind: 'thumbs_up' | 'negative' }` responde `204`. Erros: `404 no_lobby`, `404 not_a_teammate` (outro lado ou a própria pessoa), `409 rating_closed` (partida não encerrada), `409 rating_exists` (já avaliou essa pessoa nessa partida). Avaliar é opcional, e a tela nunca mostra quem avaliou quem.
 - **Denúncia:** `POST /api/queue/user-reports` com `{ lobbyId, participationId, reason: 'fraud' | 'disconnect' | 'behavior', message }`, com a mensagem entre 20 e 2000 caracteres, responde `201 { caseId }`. Vale pra qualquer pessoa da partida, dos dois lados. Erros: `404 no_lobby` (não jogou essa partida), `404 not_in_match` (a própria pessoa ou alguém de fora), `409 too_many_open_reports` (já tem 3 abertas, RF-068). A tela nunca mostra pro denunciado quem foi. O `participationId` vem das listas `teammates` e `opponents` do `lastMatch`.
-- **Bot (RF-055):** a API ainda **não** manda `account.punished`, porque o bot ainda não trata esse evento. Quando você pegar a revogação do cargo Verificado, me avise que eu ligo o envio dos dois lados (punição e fim de suspensão).
+- **Bot (RF-055)** (**resolvido** em 2026-11-12, #324): a API ainda **não** manda `account.punished`, porque o bot ainda não trata esse evento. Quando você pegar a revogação do cargo Verificado, me avise que eu ligo o envio dos dois lados (punição e fim de suspensão).
 
 ---
 

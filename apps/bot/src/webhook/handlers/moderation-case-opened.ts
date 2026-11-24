@@ -1,5 +1,7 @@
 import type { ModerationCaseOpenedEvent } from '@prolobby/types'
 
+import { BRAND, linkRows, plate, webLink, type BotMessage } from '../../discord/brand'
+
 /** How each kind of case reads in the moderators' channel. */
 const CASE_LABEL: Record<string, string> = {
   character_verification: 'verificação de personagem',
@@ -13,6 +15,7 @@ const CASE_LABEL: Record<string, string> = {
   gamertag_change: 'troca de gamertag',
   linked_identity_change: 'troca de identidade vinculada',
   possible_game_bug: 'possível bug do jogo',
+  support_request: 'suporte pelo Discord',
 }
 
 export type ModerationAnnounceDeps = {
@@ -20,8 +23,32 @@ export type ModerationAnnounceDeps = {
   channelId?: string
   /** The web app, for the link to the panel (`WEB_URL`). */
   webUrl?: string
-  send: (channelId: string, content: string) => Promise<void>
+  iconUrl?: () => string | undefined
+  send: (channelId: string, message: BotMessage) => Promise<void>
   warn: (message: string) => void
+}
+
+/** A card for the team: the kind of case, the 24 h goal, the way to the panel. */
+export function caseMessage(
+  label: string,
+  occurredAt: string,
+  opts: { webUrl?: string; iconUrl?: string } = {},
+): BotMessage {
+  return {
+    embeds: [
+      {
+        author: plate('MODERAÇÃO', opts.iconUrl),
+        color: BRAND.amber,
+        title: `Caso novo: ${label}`,
+        fields: [{ name: 'Meta', value: 'resposta em até 24 h', inline: true }],
+        footer: { text: 'Os detalhes ficam no painel, atrás do login do moderador' },
+        timestamp: occurredAt,
+      },
+    ],
+    components: linkRows([
+      { label: 'Abrir painel', url: webLink(opts.webUrl, '/moderation'), emoji: '🛡️' },
+    ]),
+  }
 }
 
 /**
@@ -45,6 +72,8 @@ export async function announceModerationCase(
     return
   }
   const label = CASE_LABEL[event.payload.caseType] ?? event.payload.caseType.replace(/_/g, ' ')
-  const panel = deps.webUrl ? `\n${deps.webUrl.replace(/\/$/, '')}/moderation` : ''
-  await deps.send(deps.channelId, `Caso novo de moderação: **${label}**. Meta: 24 h.${panel}`)
+  await deps.send(
+    deps.channelId,
+    caseMessage(label, event.occurredAt, { webUrl: deps.webUrl, iconUrl: deps.iconUrl?.() }),
+  )
 }

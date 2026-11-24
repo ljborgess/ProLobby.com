@@ -904,3 +904,42 @@ describe('QueueScreen (#233)', () => {
     expect(screen.getByRole('button', { name: QUEUE_CONTENT.es.joinAs('MED') })).toBeInTheDocument()
   })
 })
+
+describe('QueueScreen with the club kit', () => {
+  const look = {
+    kit: { primary: 'yellow', secondary: 'navy', pattern: 'hoops', crest: 'shield' },
+    initials: 'VFC',
+  } as const
+
+  const withKit = (initial: QueueState, kitLook: typeof look | null) =>
+    renderWithLocale(
+      <QueueScreen
+        initial={initial}
+        characters={[MAESTRO]}
+        movement={MOVEMENT}
+        reputation={50}
+        reputationBand="slow_queue"
+        look={kitLook}
+      />,
+    )
+
+  it('hangs the club shirt in the lockers', () => {
+    const { container } = withKit({ entry: null, blockedUntil: null }, look)
+    expect(
+      container.querySelectorAll(
+        '.queue-hanger svg path[fill="#f4d03a"], .queue-hanger svg rect[fill="#f4d03a"]',
+      ).length,
+    ).toBeGreaterThan(0)
+  })
+
+  it('walks the club shirt down the tunnel', () => {
+    const { container } = withKit(searchingAgain(null), look)
+    expect(container.querySelector('.queue-walker [data-kit-shirt="verified"]')).not.toBeNull()
+  })
+
+  it('keeps the plain look without a club', () => {
+    const { container } = withKit({ entry: null, blockedUntil: null }, null)
+    expect(container.querySelector('.queue-hanger svg rect[fill="#f4d03a"]')).toBeNull()
+    expect(container.querySelector('[data-kit-shirt]')).toBeNull()
+  })
+})
