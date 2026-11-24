@@ -17,6 +17,7 @@ import { CATEGORY_ORDER, Shirt } from '@/modules/character/roster'
 import { KIT_SWATCH, KitFabric, SHIRT_PATH, type KitLook } from '@/modules/kit/kit-art'
 import { archetypeLabel, type CharacterView } from '@/modules/character/types'
 import { LobbyOverlay, type LobbyView } from './lobby-stages'
+import { every } from './clock'
 import { Clock, PRIMARY } from './queue-ui'
 import { LastMatchPanel, type LastMatchView } from './result-stages'
 
@@ -116,10 +117,11 @@ function useNow(on: boolean): number {
     if (!on) return
     const tick = () => setNow(Date.now())
     const first = setTimeout(tick, 0)
-    const timer = setInterval(tick, 1000)
+    // The tab title counts the 30 s down even while hidden (#298).
+    const stop = every(1000, tick)
     return () => {
       clearTimeout(first)
-      clearInterval(timer)
+      stop()
     }
   }, [on])
   return now
@@ -317,24 +319,19 @@ export function QueueScreen({
   const fast = isTimed(state.entry?.lobby)
   useEffect(() => {
     if (!inQueue) return
-    const timer = setInterval(
-      async () => {
-        try {
-          await reload()
-        } catch {
-          // A missed poll is not news; the next one tries again.
-        }
-      },
-      fast ? LOBBY_POLL_MS : POLL_MS,
-    )
-    // A hidden tab's timers get throttled to about one a minute: coming back
-    // asks at once instead of waiting out the interval.
+    // On the worker clock: a tab hidden for minutes still polls on time (#298).
+    const stop = every(fast ? LOBBY_POLL_MS : POLL_MS, () => {
+      // A missed poll is not news; the next one tries again.
+      reload().catch(() => {})
+    })
+    // Where the worker could not load, a hidden tab's timers still get
+    // throttled: coming back asks at once instead of waiting out the interval.
     const onVisible = () => {
       if (document.visibilityState === 'visible') reload().catch(() => {})
     }
     document.addEventListener('visibilitychange', onVisible)
     return () => {
-      clearInterval(timer)
+      stop()
       document.removeEventListener('visibilitychange', onVisible)
     }
     // reload only reads refs and setters; the interval restarts on the two flags.

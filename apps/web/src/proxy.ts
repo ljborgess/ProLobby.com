@@ -43,6 +43,9 @@ export function proxy(request: NextRequest): NextResponse {
     "media-src 'self'",
     "font-src 'self'",
     "connect-src 'self'",
+    // The queue's poll clock (#298). Spelled out: under `strict-dynamic` the
+    // `'self'` of script-src is ignored, and workers would fall back to it.
+    "worker-src 'self'",
     "frame-ancestors 'none'",
     "base-uri 'self'",
     // Keeps a native submit — the one that happens before hydration — from
