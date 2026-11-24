@@ -6,6 +6,7 @@ export {
   moderationCaseOpenedEventSchema,
   PLATFORM_EVENT_TYPES,
   platformEventSchema,
+  queueBoardEventSchema,
   quotaResourceSchema,
   systemQuotaAlertEventSchema,
   type AccountPunishedEvent,
@@ -13,6 +14,7 @@ export {
   type LobbyEndedEvent,
   type ModerationCaseOpenedEvent,
   type PlatformEvent,
+  type QueueBoardEvent,
   type PlatformEventType,
   type QuotaResource,
   type SystemQuotaAlertEvent,
@@ -22,12 +24,14 @@ export {
   botStatusEventSchema,
   discordMemberJoinedEventSchema,
   discordMemberLeftEventSchema,
+  discordSupportMessageEventSchema,
   lobbyChannelsCreatedEventSchema,
   snowflake,
   type BotEvent,
   type BotStatusEvent,
   type DiscordMemberJoinedEvent,
   type DiscordMemberLeftEvent,
+  type DiscordSupportMessageEvent,
   type LobbyChannelsCreatedEvent,
 } from './bot-event'
 export {
@@ -44,6 +48,7 @@ export {
   samplePlatformEvent,
   sampleModerationCaseOpenedEvent,
   sampleQuotaAlertEvent,
+  sampleQueueBoardEvent,
   SNOWFLAKE,
 } from './webhook-fixtures'
 export {

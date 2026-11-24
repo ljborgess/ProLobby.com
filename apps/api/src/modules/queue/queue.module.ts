@@ -15,6 +15,7 @@ import { QueueEntry } from './queue-entry.entity'
 import { QueueMatchingJob } from './queue-matching.job'
 import { QueueMatchingService } from './queue-matching.service'
 import { QueueController } from './queue.controller'
+import { QueueBoardPublisher } from './queue-board.publisher'
 import { QueueService } from './queue.service'
 import { QueueStallState } from './queue-stall'
 
@@ -32,6 +33,7 @@ import { QueueStallState } from './queue-stall'
     PeerRatingService,
     UserReportService,
     QueueService,
+    QueueBoardPublisher,
     QueueMatchingService,
     QueueMatchingJob,
     QueueStallState,

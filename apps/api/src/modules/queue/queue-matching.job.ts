@@ -6,6 +6,7 @@ import { FormationVoteService } from './formation-vote.service'
 import { LobbyConfirmationService } from './lobby-confirmation.service'
 import { LobbyInviteService } from './lobby-invite.service'
 import { MatchReportService } from './match-report.service'
+import { QueueBoardPublisher } from './queue-board.publisher'
 import { QueueMatchingService } from './queue-matching.service'
 
 /**
@@ -25,6 +26,7 @@ export class QueueMatchingJob {
     private readonly formationVoteService: FormationVoteService,
     private readonly matchReportService: MatchReportService,
     private readonly queueMatchingService: QueueMatchingService,
+    private readonly queueBoardPublisher: QueueBoardPublisher,
   ) {}
 
   // Off under Jest: the e2e suites drive the services themselves, and a run
@@ -47,6 +49,8 @@ export class QueueMatchingJob {
       if (results > 0) this.logger.log(`moved ${results} result(s) past their window`)
       const lobbies = await this.queueMatchingService.closeMatches()
       if (lobbies > 0) this.logger.log(`created ${lobbies} lobby(ies)`)
+      // Not awaited: the bot being slow must not hold the next run back.
+      void this.queueBoardPublisher.publish()
     } catch (error) {
       this.logger.error('failed to run the queue', error instanceof Error ? error.stack : undefined)
     }

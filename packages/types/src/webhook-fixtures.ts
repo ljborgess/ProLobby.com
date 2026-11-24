@@ -2,6 +2,7 @@ import type {
   LobbyClosedEvent,
   ModerationCaseOpenedEvent,
   PlatformEvent,
+  QueueBoardEvent,
   SystemQuotaAlertEvent,
 } from './webhook-event'
 
@@ -60,6 +61,25 @@ export function sampleModerationCaseOpenedEvent(
     occurredAt: new Date().toISOString(),
     type: 'moderation.case_opened',
     payload: { caseId: NIL(401), caseType: 'character_verification' },
+    ...overrides,
+  }
+}
+
+export function sampleQueueBoardEvent(overrides: Partial<QueueBoardEvent> = {}): QueueBoardEvent {
+  return {
+    id: NIL(500),
+    occurredAt: new Date().toISOString(),
+    type: 'queue.board',
+    payload: {
+      bands: {
+        goalkeeper: 'low',
+        defender: 'busy',
+        midfielder: 'full',
+        winger: 'low',
+        striker: 'busy',
+      },
+      paused: null,
+    },
     ...overrides,
   }
 }
