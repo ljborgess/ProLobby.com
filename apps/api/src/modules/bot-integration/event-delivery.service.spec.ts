@@ -300,7 +300,7 @@ describe('EventDeliveryService', () => {
       id: '5f0c2c1e-7a4b-4d2e-8c1f-3b6a9d8e7f10',
       occurredAt: clock.now().toISOString(),
       type: 'account.punished' as const,
-      payload: { accountId, kind: 'ban' as const },
+      payload: { discordId: '100000000000000001', kind: 'ban' as const },
     }
     const row = {
       id: 'delivery-1',

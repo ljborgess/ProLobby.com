@@ -1,21 +1,20 @@
-import type { Metadata } from 'next'
 import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { apiFetch } from '@/common/api/client'
+import { fetchClubLook } from '@/common/api/club-look'
 import { forwardedIpFrom } from '@/common/api/forwarded-ip'
-import { SESSION_COOKIE_NAME } from '@/common/auth/session-cookie'
 import { ProLobbyEmblem } from '@/common/ui/pro-lobby-emblem'
 import type { CharacterCategory } from '@/content/character'
 import type { MovementBand } from '@/content/queue'
 import { AccountBackdrop } from '@/modules/account/account-backdrop'
 import { LoadErrorMessage } from '@/modules/account/load-error-message'
 import type { QueuePrerequisites } from '@/modules/account/queue-prerequisites-panel'
+import type { KitLook } from '@/modules/kit/kit-art'
 import type { CharacterView } from '@/modules/character/types'
 import { QueueScreen, type QueueState } from '@/modules/queue/queue-screen'
+import { pageMetadata } from '@/common/page-metadata'
 
-export const metadata: Metadata = {
-  title: 'Fila — ProLobby',
-}
+export const generateMetadata = () => pageMetadata('queue')
 
 /**
  * The queue — issue #233. Same session gate and never-crash fallback as
@@ -23,9 +22,6 @@ export const metadata: Metadata = {
  */
 export default async function QueuePage() {
   const jar = await cookies()
-  if (!jar.get(SESSION_COOKIE_NAME)) {
-    redirect('/login')
-  }
 
   const init = {
     headers: { cookie: jar.toString() },
@@ -34,13 +30,17 @@ export default async function QueuePage() {
   }
 
   let responses: Response[]
+  let look: KitLook | null
   try {
-    responses = await Promise.all([
+    const [queueRes, charactersRes, movementRes, prerequisitesRes, clubLook] = await Promise.all([
       apiFetch('/api/queue', init),
       apiFetch('/api/characters', init),
       apiFetch('/api/queue/movement', init),
       apiFetch('/api/accounts/me/queue-prerequisites', init),
+      fetchClubLook(init),
     ])
+    responses = [queueRes, charactersRes, movementRes, prerequisitesRes]
+    look = clubLook
   } catch {
     return <LoadError />
   }
@@ -78,6 +78,7 @@ export default async function QueuePage() {
           movement={movement}
           reputation={prerequisites.reputation}
           reputationBand={prerequisites.reputationBand}
+          look={look}
         />
       </div>
     </main>

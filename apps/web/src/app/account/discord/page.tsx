@@ -1,4 +1,3 @@
-import type { Metadata } from 'next'
 import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { AccountBackdrop } from '@/modules/account/account-backdrop'
@@ -7,10 +6,9 @@ import { forwardedIpFrom } from '@/common/api/forwarded-ip'
 import { AppHeader } from '@/modules/account/app-header'
 import { DiscordLinkPanel } from '@/modules/account/discord-link-panel'
 import { isDiscordLinkStatus, type DiscordLinkStatus } from '@/modules/account/discord-link-status'
+import { pageMetadata } from '@/common/page-metadata'
 
-export const metadata: Metadata = {
-  title: 'Discord — ProLobby',
-}
+export const generateMetadata = () => pageMetadata('discord')
 
 export default async function DiscordPage({ searchParams }: PageProps<'/account/discord'>) {
   const cookie = (await cookies()).toString()

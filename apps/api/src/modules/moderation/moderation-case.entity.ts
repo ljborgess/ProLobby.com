@@ -115,6 +115,13 @@ export class ModerationCase {
   reportMessage?: string
 
   /**
+   * `SUPPORT_REQUEST` only: who wrote in #suporte-e-denuncia, AES-256-GCM via
+   * `encryptAtRest` — the way to answer someone with no linked account (RF-061).
+   */
+  @Property({ type: 'blob', nullable: true, hidden: true })
+  discordIdEncrypted?: Buffer
+
+  /**
    * The case this one appeals — set only on `PUNISHMENT_APPEAL`. The unique
    * index above is what actually enforces RF-037 (one appeal per
    * punishment); this column is what a moderator follows to see what is

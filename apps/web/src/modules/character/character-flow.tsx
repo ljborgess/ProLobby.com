@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { BackAction } from '@/common/ui/back-action'
 import type { CharacterCategory } from '@/content/character'
 import { useCharacterContent } from '@/hooks/use-character-content'
+import type { KitLook } from '@/modules/kit/kit-art'
 import { CharacterForm } from './character-form'
 import { PrintUpload } from './print-upload'
 import { firstToLookAt, Roster } from './roster'
@@ -17,9 +18,11 @@ import type { ArchetypeOption, CharacterView } from './types'
 export function CharacterFlow({
   characters: initial,
   archetypes,
+  look = null,
 }: {
   characters: CharacterView[]
   archetypes: ArchetypeOption[]
+  look?: KitLook | null
 }) {
   const content = useCharacterContent()
   const [characters, setCharacters] = useState(initial)
@@ -60,6 +63,7 @@ export function CharacterFlow({
   return (
     <Roster
       characters={characters}
+      look={look}
       selected={selected}
       focusKey={focusKey}
       onSelect={(category) => {
