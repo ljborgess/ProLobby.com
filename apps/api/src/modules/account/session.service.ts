@@ -114,12 +114,21 @@ export class SessionService implements OnModuleInit {
     // next quarter of an hour and lock themselves out on a single later slip.
     await this.em.nativeDelete(FailedSignIn, { account: account.id })
 
-    const payload: SessionTokenPayload = { sub: account.id }
+    return { token: await this.issue(account.id, ['pwd']), account }
+  }
 
-    return {
-      token: await this.jwtService.signAsync(payload, { expiresIn: SESSION_TTL_SECONDS }),
-      account,
-    }
+  /** A session token for this account, saying how it was authenticated (#311). */
+  issue(
+    accountId: string,
+    amr: NonNullable<SessionTokenPayload['amr']>,
+    /** Keep the expiry of the session being upgraded, so a second factor never lengthens it. */
+    expiresAt?: Date,
+  ): Promise<string> {
+    const payload: SessionTokenPayload = { sub: accountId, amr }
+    const left = expiresAt
+      ? Math.max(1, Math.floor((expiresAt.getTime() - Date.now()) / 1000))
+      : SESSION_TTL_SECONDS
+    return this.jwtService.signAsync(payload, { expiresIn: Math.min(left, SESSION_TTL_SECONDS) })
   }
 
   private async windowSpent(account: Account): Promise<boolean> {

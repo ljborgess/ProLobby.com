@@ -23,6 +23,15 @@ export interface SessionTokenPayload {
   sub: string
   /** Seconds since the epoch, set by the signer: when the session began. */
   iat?: number
+  /** Seconds since the epoch, set by the signer: when the session ends. */
+  exp?: number
+  /**
+   * How this session was authenticated (RFC 8176): `pwd` at sign-in, plus
+   * `otp` once the panel's second factor is passed (#311). A fact about the
+   * session, not a permission — role and state still come from the database
+   * on every request (ADR-007).
+   */
+  amr?: ('pwd' | 'otp')[]
 }
 
 /** RNF-021: an HS256 secret short enough to guess forges any session. */

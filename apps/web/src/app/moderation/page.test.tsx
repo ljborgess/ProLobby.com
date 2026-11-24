@@ -9,6 +9,9 @@ const apiFetch = vi.fn()
 const notFound = vi.fn(() => {
   throw new Error('NEXT_NOT_FOUND')
 })
+const redirect = vi.fn((to: string) => {
+  throw new Error(`NEXT_REDIRECT ${to}`)
+})
 
 vi.mock('next/headers', () => ({
   cookies: () => Promise.resolve(cookieJar),
@@ -16,6 +19,7 @@ vi.mock('next/headers', () => ({
 }))
 vi.mock('next/navigation', () => ({
   notFound: () => notFound(),
+  redirect: (to: string) => redirect(to),
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
   usePathname: () => '/moderation',
 }))
@@ -56,6 +60,15 @@ describe('ModerationPage', () => {
     apiFetch.mockResolvedValueOnce(answer(status)).mockResolvedValueOnce(answer(200, []))
 
     await expect(ModerationPage()).rejects.toThrow('NEXT_NOT_FOUND')
+  })
+
+  it('sends a moderator without the second factor to set it up or type the code (#311)', async () => {
+    signedIn()
+    apiFetch
+      .mockResolvedValueOnce(answer(403, { message: 'two_factor_required' }))
+      .mockResolvedValueOnce(answer(200, []))
+
+    await expect(ModerationPage()).rejects.toThrow('NEXT_REDIRECT /moderation/2fa')
   })
 
   it('shows the real prints queue to a moderator, also outside production', async () => {
