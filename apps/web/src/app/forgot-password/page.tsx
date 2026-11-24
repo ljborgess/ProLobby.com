@@ -1,11 +1,9 @@
-import type { Metadata } from 'next'
 import { AuthLayout } from '@/modules/account/auth-layout'
 import { ForgotPasswordForm } from '@/modules/account/forgot-password-form'
 import { ForgotPasswordHeading } from '@/modules/account/forgot-password-heading'
+import { pageMetadata } from '@/common/page-metadata'
 
-export const metadata: Metadata = {
-  title: 'Esqueci minha senha — ProLobby',
-}
+export const generateMetadata = () => pageMetadata('forgotPassword')
 
 /**
  * Where "esqueci minha senha" on the login screen lands — RF-024, 2026-09-23

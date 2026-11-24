@@ -1,4 +1,3 @@
-import type { Metadata } from 'next'
 import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { apiFetch } from '@/common/api/client'
@@ -7,10 +6,9 @@ import { AppHeader } from '@/modules/account/app-header'
 import { AccountBackdrop } from '@/modules/account/account-backdrop'
 import { ClubPanel, type DeclaredClubView } from '@/modules/account/club-panel'
 import { LoadErrorMessage } from '@/modules/account/load-error-message'
+import { pageMetadata } from '@/common/page-metadata'
 
-export const metadata: Metadata = {
-  title: 'Clube — ProLobby',
-}
+export const generateMetadata = () => pageMetadata('club')
 
 /**
  * The declared club — #229. Reads the account's own declaration, if any. An
