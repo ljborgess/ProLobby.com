@@ -39,7 +39,9 @@ export function MetricsView({ source }: { source: ToolsSource }) {
               key={metric.key}
               className="flex flex-col gap-1 rounded-md border border-white/10 bg-surface p-4"
             >
-              <span className="text-xs text-foreground-soft">{metric.label}</span>
+              <span className="text-xs text-foreground-soft">
+                {content.metrics.labels[metric.key] ?? metric.key}
+              </span>
               <span className="font-display text-2xl font-semibold tabular-nums text-foreground">
                 {metric.value === null ? (
                   <span className="text-base font-normal text-foreground-soft">
@@ -72,7 +74,9 @@ export function MetricsView({ source }: { source: ToolsSource }) {
               key={metric.key}
               className="flex flex-col gap-1 rounded-md border border-white/10 bg-surface p-4"
             >
-              <span className="text-xs text-foreground-soft">{metric.label}</span>
+              <span className="text-xs text-foreground-soft">
+                {content.metrics.labels[metric.key] ?? metric.key}
+              </span>
               <span className="font-display text-2xl font-semibold tabular-nums text-foreground">
                 {metric.value === null ? (
                   <span className="text-base font-normal text-foreground-soft">

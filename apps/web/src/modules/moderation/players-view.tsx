@@ -8,6 +8,7 @@ import { useModerationToolsContent } from '@/hooks/use-moderation-tools-content'
 import { CHIP, CHIP_OFF, CHIP_ON, FIELD, formatDate } from './panel-styles'
 import {
   MAX_PIX_REFERENCE,
+  PIX_REFERENCE,
   type PlayerSheet,
   type PlayerSummary,
   type Plan,
@@ -137,6 +138,7 @@ function Sheet({
 }) {
   const content = useModerationToolsContent()
   const caseTypes = useModerationPanelContent().caseTypes as Record<string, string>
+  const caseDecisions = content.caseStates as Record<string, string>
   const { locale } = useLocale()
   const categories = CHARACTER_CONTENT[locale].categories as Record<string, string>
   const [sheet, setSheet] = useState<Loaded<PlayerSheet | null>>({ status: 'loading' })
@@ -167,7 +169,12 @@ function Sheet({
         <h2 className="font-display text-xl font-semibold text-foreground">{name}</h2>
         <p className="text-xs text-foreground-soft">
           {content.players.plan}: {content.plans[player.plan]}
+          {player.planExpiresAt &&
+            ` ${content.players.planUntil} ${formatDate(player.planExpiresAt, locale)}`}
           {player.reputation !== null && ` · ${content.players.reputation} ${player.reputation}`}
+        </p>
+        <p className="text-xs text-foreground-soft">
+          {content.players.state}: {content.players.states[player.state] ?? player.state}
         </p>
         {player.discordMention && (
           <p className="text-xs text-foreground-soft">
@@ -213,9 +220,9 @@ function Sheet({
             {player.punishments.map((item, index) => (
               <li key={index}>
                 {content.players.punishmentKinds[item.kind] ?? item.kind} {content.players.from}{' '}
-                {formatDate(item.from, locale)}{' '}
-                {item.until
-                  ? `${content.players.until} ${formatDate(item.until, locale)}`
+                {formatDate(item.openedAt, locale)}{' '}
+                {item.decision
+                  ? `(${caseDecisions[item.decision] ?? item.decision})`
                   : `(${content.players.ongoing})`}
               </li>
             ))}
@@ -252,12 +259,14 @@ function PlanForm({
   const content = useModerationToolsContent()
   const [pix, setPix] = useState('')
   const [pending, setPending] = useState<Plan | null>(null)
-  const [status, setStatus] = useState<'idle' | 'saving' | 'done' | 'forbidden' | 'failed'>('idle')
+  const [status, setStatus] = useState<
+    'idle' | 'saving' | 'done' | 'forbidden' | 'account_closed' | 'already_founder' | 'failed'
+  >('idle')
   const [missingPix, setMissingPix] = useState(false)
 
   function ask(next: Plan) {
     setStatus('idle')
-    if (next !== 'none' && pix.trim() === '') {
+    if (next !== 'none' && !PIX_REFERENCE.test(pix.trim())) {
       setMissingPix(true)
       return
     }
@@ -275,7 +284,7 @@ function PlanForm({
       setPending(null)
       setPix('')
     } else {
-      setStatus(result === 'forbidden' ? 'forbidden' : 'failed')
+      setStatus(result)
       setPending(null)
     }
   }
@@ -303,7 +312,7 @@ function PlanForm({
       </label>
       {missingPix && (
         <p role="alert" className="text-sm text-danger">
-          {content.plan.pixRequired}
+          {content.plan.pixInvalid}
         </p>
       )}
 
@@ -355,6 +364,8 @@ function PlanForm({
       <p role="status" aria-live="polite" className="min-h-5 text-sm text-foreground-soft">
         {status === 'done' && content.plan.done}
         {status === 'forbidden' && content.plan.forbidden}
+        {status === 'account_closed' && content.plan.accountClosed}
+        {status === 'already_founder' && content.plan.alreadyFounder}
         {status === 'failed' && content.plan.failed}
       </p>
     </section>

@@ -1,6 +1,13 @@
-import { AUDIT_PAGE_SIZE, type AuditEntry, type PlayerSheet, type ToolsSource } from './tools'
+import {
+  AUDIT_PAGE_SIZE,
+  MIN_SEARCH_LENGTH,
+  type AuditEntry,
+  type PlayerSheet,
+  type ToolsSource,
+} from './tools'
 
 const HOUR = 3_600_000
+const DAY = 24 * HOUR
 const iso = (hoursAgo: number, now: number) => new Date(now - hoursAgo * HOUR).toISOString()
 const uid = (n: number) => `00000000-0000-4000-9000-${String(n).padStart(12, '0')}`
 
@@ -10,7 +17,7 @@ export function samplePlayers(now = Date.now()): PlayerSheet[] {
     n: number,
     name: string,
     category: string,
-    reputation: number | null,
+    reputation: number,
     plan: PlayerSheet['plan'],
     extra: Partial<PlayerSheet> = {},
   ): PlayerSheet => ({
@@ -19,6 +26,8 @@ export function samplePlayers(now = Date.now()): PlayerSheet[] {
     reputation,
     plan,
     discordMention: `<@2000000000000000${String(n).padStart(2, '0')}>`,
+    state: 'active',
+    planExpiresAt: null,
     cases: [],
     punishments: [],
     ...extra,
@@ -28,32 +37,43 @@ export function samplePlayers(now = Date.now()): PlayerSheet[] {
       cases: [{ id: uid(101), type: 'user_report', state: 'dismissed', openedAt: iso(900, now) }],
     }),
     base(2, 'Mirabel', 'midfielder', 48, 'none', {
+      state: 'suspended',
       cases: [
         { id: uid(102), type: 'user_report', state: 'open', openedAt: iso(61, now) },
         { id: uid(103), type: 'punishment_appeal', state: 'resolved', openedAt: iso(500, now) },
       ],
-      punishments: [{ kind: 'suspension', from: iso(600, now), until: iso(430, now) }],
+      punishments: [{ kind: 'suspension', openedAt: iso(600, now), decision: 'resolved' }],
     }),
     base(3, 'Kestrel', 'striker', 35, 'none', {
-      punishments: [{ kind: 'suspension', from: iso(30, now), until: null }],
+      state: 'banned',
+      punishments: [{ kind: 'ban', openedAt: iso(30, now), decision: null }],
     }),
-    base(4, 'Ravenna', 'winger', 91, 'supporter'),
+    base(4, 'Ravenna', 'winger', 91, 'supporter', {
+      planExpiresAt: new Date(now + 12 * DAY).toISOString(),
+    }),
     base(5, 'Dornan', 'defender', 55, 'none', {
       cases: [{ id: uid(104), type: 'captain_abuse', state: 'open', openedAt: iso(12, now) }],
     }),
-    base(6, 'Hollis', 'goalkeeper', null, 'none'),
+    base(6, 'Hollis', 'goalkeeper', 50, 'none'),
   ]
 }
 
-const ACTORS = ['Luciano', 'Rafael', 'sistema']
+/** The moderators of the sample audit: an account id each, as the API's `actorId`. */
+export const SAMPLE_ACTORS = [
+  { id: uid(901), label: 'Luciano' },
+  { id: uid(902), label: 'Rafael' },
+  { id: null, label: 'sistema' },
+] as const
 
 export function sampleAudit(now = Date.now(), count = 27): AuditEntry[] {
   return Array.from({ length: count }, (_, i) => {
     const resolved = i % 3 !== 0
+    const actor = SAMPLE_ACTORS[i % SAMPLE_ACTORS.length]!
     return {
       id: uid(1000 + i),
       action: resolved ? 'case_resolved' : i % 6 === 0 ? 'plan_changed' : 'role_changed',
-      actorLabel: ACTORS[i % ACTORS.length]!,
+      actorId: actor.id,
+      actorLabel: actor.label,
       targetAccountId: uid((i % 6) + 1),
       caseId: resolved ? uid(100 + (i % 5)) : null,
       before: resolved ? 'open' : i % 6 === 0 ? 'none' : 'user',
@@ -65,7 +85,9 @@ export function sampleAudit(now = Date.now(), count = 27): AuditEntry[] {
 
 /**
  * An in-memory source over the sample data. A plan change sticks for the life
- * of the source; an account that is not an admin gets `forbidden`, like the API.
+ * of the source and follows the API's rules: only an admin (403 otherwise),
+ * a banned account is closed (409), a Founder stays Founder (409), a renewed
+ * Supporter gets 30 days on top of what is left.
  */
 export function createSampleTools(
   { admin, delayMs = 0 }: { admin: boolean; delayMs?: number },
@@ -85,7 +107,7 @@ export function createSampleTools(
     async searchPlayers(query) {
       await wait()
       const needle = query.trim().toLowerCase()
-      if (!needle) return []
+      if (needle.length < MIN_SEARCH_LENGTH) return []
       return players
         .filter(
           (p) =>
@@ -100,13 +122,11 @@ export function createSampleTools(
     },
     async audit(filters, before) {
       await wait()
-      const actor = filters.actor.trim().toLowerCase()
-      const account = filters.account.trim().toLowerCase()
       const matching = audit.filter(
         (entry) =>
-          (!actor || entry.actorLabel.toLowerCase().includes(actor)) &&
+          (!filters.actor || entry.actorId === filters.actor) &&
           (!filters.action || entry.action === filters.action) &&
-          (!account || entry.targetAccountId?.toLowerCase().includes(account)),
+          (!filters.account || entry.targetAccountId === filters.account),
       )
       // Newest first; the cursor is the id of the last entry already shown.
       const start = before ? matching.findIndex((entry) => entry.id === before) + 1 : 0
@@ -117,31 +137,20 @@ export function createSampleTools(
     },
     async metrics() {
       await wait()
+      // The keys and targets of the API (moderation-insights.service.ts).
       return {
         beta: [
-          { key: 'matches', label: 'Partidas fechadas', value: 34, target: 30, met: true },
-          { key: 'players', label: 'Jogadores ativos', value: 41, target: 40, met: true },
-          { key: 'verified', label: 'Personagens verificados', value: 52, target: 60, met: false },
-          {
-            key: 'reports',
-            label: 'Casos resolvidos no prazo (%)',
-            value: 88,
-            target: 90,
-            met: false,
-          },
-          { key: 'uptime', label: 'Fila no ar (%)', value: 99, target: 95, met: true },
-          {
-            key: 'bot',
-            label: 'Eventos entregues ao bot (%)',
-            value: null,
-            target: 99,
-            met: false,
-          },
+          { key: 'matches_completed', value: 34, target: 10, met: true },
+          { key: 'announced_night_closed', value: null, target: 1, met: false },
+          { key: 'unannounced_night_closed', value: null, target: 1, met: false },
+          { key: 'strangers_share', value: 38, target: 50, met: false },
+          { key: 'ocr_first_pass', value: 84, target: 80, met: true },
+          { key: 'lobbies_cancelled_by_bug', value: 0, target: 0, met: true },
         ],
         success: [
-          { key: 'retention', label: 'Quem voltou na semana seguinte', value: 46, band: 'worked' },
-          { key: 'queue', label: 'Tempo médio na fila (min)', value: 11, band: 'ambiguous' },
-          { key: 'cancel', label: 'Lobbies desfeitos (%)', value: null, band: null },
+          { key: 'matches_per_week', value: 12, band: 'worked' },
+          { key: 'confirmed_without_dispute', value: 78, band: 'ambiguous' },
+          { key: 'returned_for_second', value: null, band: null },
         ],
       }
     },
@@ -150,6 +159,15 @@ export function createSampleTools(
       if (!admin) return 'forbidden'
       const player = players.find((p) => p.accountId === accountId)
       if (!player) return 'failed'
+      if (player.state === 'banned') return 'account_closed'
+      if (player.plan === 'founder' && plan === 'supporter') return 'already_founder'
+      const now = Date.now()
+      if (plan === 'supporter') {
+        const left = player.planExpiresAt ? Math.max(0, Date.parse(player.planExpiresAt) - now) : 0
+        player.planExpiresAt = new Date(now + left + 30 * DAY).toISOString()
+      } else {
+        player.planExpiresAt = null
+      }
       player.plan = plan
       return 'ok'
     },

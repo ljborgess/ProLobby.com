@@ -4,7 +4,7 @@ import { renderWithLocale } from '@/test-utils'
 import { MODERATION_TOOLS_CONTENT } from '@/content/moderation-tools'
 import { CasePanel } from './case-panel'
 import { createSampleSource, sampleCases } from './sample-cases'
-import { createSampleTools, sampleAudit, samplePlayers } from './sample-tools'
+import { SAMPLE_ACTORS, createSampleTools, sampleAudit, samplePlayers } from './sample-tools'
 import { AUDIT_PAGE_SIZE, type ToolsSource } from './tools'
 
 const pt = MODERATION_TOOLS_CONTENT.pt
@@ -139,7 +139,9 @@ describe('management sections', () => {
       })
 
       fireEvent.change(screen.getByLabelText(pt.audit.action), { target: { value: '' } })
-      fireEvent.change(screen.getByLabelText(pt.audit.actor), { target: { value: 'rafael' } })
+      fireEvent.change(screen.getByLabelText(pt.audit.actor), {
+        target: { value: SAMPLE_ACTORS[1].id },
+      })
       fireEvent.click(screen.getByRole('button', { name: pt.audit.filter }))
       await waitFor(() => {
         const rows = within(screen.getByRole('table')).getAllByRole('row').slice(1)
@@ -148,9 +150,23 @@ describe('management sections', () => {
       })
 
       fireEvent.change(screen.getByLabelText(pt.audit.actor), { target: { value: '' } })
-      fireEvent.change(screen.getByLabelText(pt.audit.account), { target: { value: 'zzzz' } })
+      fireEvent.change(screen.getByLabelText(pt.audit.account), {
+        target: { value: '00000000-0000-4000-9000-00000000ffff' },
+      })
       fireEvent.click(screen.getByRole('button', { name: pt.audit.filter }))
       expect(await screen.findByText(pt.audit.empty)).toBeInTheDocument()
+    })
+
+    it('does not send a filter that is not an account id (the API answers 400)', async () => {
+      panel({ admin: false })
+      await open(pt.nav.audit)
+      await screen.findByRole('table')
+
+      fireEvent.change(screen.getByLabelText(pt.audit.account), { target: { value: 'zzzz' } })
+      fireEvent.click(screen.getByRole('button', { name: pt.audit.filter }))
+
+      expect(screen.getByRole('alert')).toHaveTextContent(pt.audit.invalidId)
+      expect(screen.getByRole('table')).toBeInTheDocument()
     })
 
     it('loads older entries with "Carregar mais" until there are no more', async () => {
@@ -191,7 +207,7 @@ describe('management sections', () => {
       await open(pt.nav.metrics)
 
       const beta = await screen.findByRole('region', { name: pt.metrics.beta })
-      expect(within(beta).getAllByText(pt.noData)).toHaveLength(1)
+      expect(within(beta).getAllByText(pt.noData)).toHaveLength(2)
       expect(
         within(screen.getByRole('region', { name: pt.metrics.success })).getAllByText(pt.noData),
       ).toHaveLength(1)
@@ -199,9 +215,9 @@ describe('management sections', () => {
   })
 
   describe('Planos', () => {
-    const openPlayer = async () => {
+    const openPlayer = async (term = 'borges') => {
       await open(pt.nav.plans)
-      await search('borges')
+      await search(term)
       fireEvent.click(
         within(await screen.findByRole('list', { name: pt.players.results })).getByRole('button'),
       )
@@ -226,15 +242,61 @@ describe('management sections', () => {
 
       fireEvent.click(within(sheet).getByRole('button', { name: pt.plan.activate.founder }))
 
-      expect(within(sheet).getByRole('alert')).toHaveTextContent(pt.plan.pixRequired)
+      expect(within(sheet).getByRole('alert')).toHaveTextContent(pt.plan.pixInvalid)
       expect(within(sheet).queryByRole('alertdialog')).toBeNull()
+
+      // The API takes 8 to 64 letters, digits or hyphens: nothing shorter, no spaces.
+      for (const bad of ['E2026', 'E2026 PIX 0001']) {
+        fireEvent.change(within(sheet).getByLabelText(new RegExp(pt.plan.pix)), {
+          target: { value: bad },
+        })
+        fireEvent.click(within(sheet).getByRole('button', { name: pt.plan.activate.founder }))
+        expect(within(sheet).queryByRole('alertdialog')).toBeNull()
+      }
+    })
+
+    it('says why when the account is banned (409)', async () => {
+      panel({ admin: true })
+      const sheet = await openPlayer('kestrel')
+      const pix = () => within(sheet).getByLabelText(new RegExp(pt.plan.pix))
+      const confirm = () =>
+        fireEvent.click(
+          within(within(sheet).getByRole('alertdialog')).getByRole('button', {
+            name: pt.plan.confirm,
+          }),
+        )
+
+      fireEvent.change(pix(), { target: { value: 'E2026PIX' } })
+      fireEvent.click(within(sheet).getByRole('button', { name: pt.plan.activate.founder }))
+      confirm()
+      await waitFor(() =>
+        expect(screen.getByRole('status')).toHaveTextContent(pt.plan.accountClosed),
+      )
+    })
+
+    it('does not turn a Founder into a Supporter', async () => {
+      panel({ admin: true })
+      const sheet = await openPlayer()
+
+      fireEvent.change(within(sheet).getByLabelText(new RegExp(pt.plan.pix)), {
+        target: { value: 'E2026PIX' },
+      })
+      fireEvent.click(within(sheet).getByRole('button', { name: pt.plan.activate.supporter }))
+      fireEvent.click(
+        within(within(sheet).getByRole('alertdialog')).getByRole('button', {
+          name: pt.plan.confirm,
+        }),
+      )
+      await waitFor(() =>
+        expect(screen.getByRole('status')).toHaveTextContent(pt.plan.alreadyFounder),
+      )
     })
 
     it('asks for a confirmation, and changes nothing until it is given', async () => {
       const tools = createSampleTools({ admin: true }, samplePlayers(NOW), sampleAudit(NOW))
-      const before = await tools.searchPlayers('borges')
+      const before = await tools.searchPlayers('dornan')
       panel({ admin: true, tools })
-      const sheet = await openPlayer()
+      const sheet = await openPlayer('dornan')
 
       fireEvent.change(within(sheet).getByLabelText(new RegExp(pt.plan.pix)), {
         target: { value: 'E2026PIX' },
@@ -242,12 +304,12 @@ describe('management sections', () => {
       fireEvent.click(within(sheet).getByRole('button', { name: pt.plan.activate.supporter }))
 
       const dialog = within(sheet).getByRole('alertdialog')
-      expect(dialog).toHaveTextContent(pt.plan.confirmActivate(pt.plans.supporter, 'borges_fc'))
-      expect((await tools.searchPlayers('borges'))[0]!.plan).toBe(before[0]!.plan)
+      expect(dialog).toHaveTextContent(pt.plan.confirmActivate(pt.plans.supporter, 'Dornan'))
+      expect((await tools.searchPlayers('dornan'))[0]!.plan).toBe(before[0]!.plan)
 
       fireEvent.click(within(dialog).getByRole('button', { name: pt.plan.cancel }))
       expect(within(sheet).queryByRole('alertdialog')).toBeNull()
-      expect((await tools.searchPlayers('borges'))[0]!.plan).toBe('founder')
+      expect((await tools.searchPlayers('dornan'))[0]!.plan).toBe('none')
 
       fireEvent.click(within(sheet).getByRole('button', { name: pt.plan.activate.supporter }))
       fireEvent.click(
@@ -256,7 +318,7 @@ describe('management sections', () => {
         }),
       )
       await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent(pt.plan.done))
-      expect((await tools.searchPlayers('borges'))[0]!.plan).toBe('supporter')
+      expect((await tools.searchPlayers('dornan'))[0]!.plan).toBe('supporter')
       expect(sheet).toHaveTextContent(`${pt.plan.current}: ${pt.plans.supporter}`)
     })
 

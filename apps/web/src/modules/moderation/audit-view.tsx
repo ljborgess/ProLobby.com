@@ -4,7 +4,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { useLocale } from '@/common/providers/locale-provider'
 import { useModerationToolsContent } from '@/hooks/use-moderation-tools-content'
 import { CHIP, CHIP_OFF, FIELD, formatDate } from './panel-styles'
-import type { AuditEntry, AuditFilters, ToolsSource } from './tools'
+import { isUuid, type AuditEntry, type AuditFilters, type ToolsSource } from './tools'
 
 const NO_FILTERS: AuditFilters = { actor: '', action: '', account: '' }
 const KNOWN_ACTIONS = ['role_changed', 'case_resolved', 'plan_changed'] as const
@@ -50,9 +50,13 @@ export function AuditView({ source }: { source: ToolsSource }) {
 
   const current: State = loadedKey === key ? state : { status: 'loading' }
 
+  const invalid = (value: string) => value.trim() !== '' && !isUuid(value.trim())
+  const badId = invalid(draft.actor) || invalid(draft.account)
+
   function filter(event: FormEvent) {
     event.preventDefault()
-    setApplied({ ...draft })
+    if (badId) return
+    setApplied({ actor: draft.actor.trim(), action: draft.action, account: draft.account.trim() })
   }
 
   async function loadMore() {
@@ -89,6 +93,7 @@ export function AuditView({ source }: { source: ToolsSource }) {
           <input
             value={draft.actor}
             onChange={(event) => setDraft({ ...draft, actor: event.target.value })}
+            aria-invalid={invalid(draft.actor) || undefined}
             className={FIELD}
           />
         </label>
@@ -112,9 +117,15 @@ export function AuditView({ source }: { source: ToolsSource }) {
           <input
             value={draft.account}
             onChange={(event) => setDraft({ ...draft, account: event.target.value })}
+            aria-invalid={invalid(draft.account) || undefined}
             className={FIELD}
           />
         </label>
+        {badId && (
+          <p role="alert" className="text-sm text-danger sm:col-span-3">
+            {content.audit.invalidId}
+          </p>
+        )}
         <button
           type="submit"
           className="landing-focus min-h-11 self-start rounded-full bg-accent px-5 text-sm font-medium text-background sm:col-span-3"
