@@ -49,6 +49,7 @@ export {
 } from './webhook-signature'
 export {
   sampleAccountPlanChangedEvent,
+  sampleAccountPunishedEvent,
   sampleLobbyClosedEvent,
   samplePlatformEvent,
   sampleModerationCaseClosedEvent,

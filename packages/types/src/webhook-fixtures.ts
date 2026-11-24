@@ -1,5 +1,6 @@
 import type {
   AccountPlanChangedEvent,
+  AccountPunishedEvent,
   LobbyClosedEvent,
   ModerationCaseClosedEvent,
   ModerationCaseOpenedEvent,
@@ -93,6 +94,18 @@ export function sampleAccountPlanChangedEvent(
     occurredAt: new Date().toISOString(),
     type: 'account.plan_changed',
     payload: { discordId: SNOWFLAKE(701), plan: 'founder' },
+    ...overrides,
+  }
+}
+
+export function sampleAccountPunishedEvent(
+  overrides: Partial<AccountPunishedEvent> = {},
+): AccountPunishedEvent {
+  return {
+    id: NIL(800),
+    occurredAt: new Date().toISOString(),
+    type: 'account.punished',
+    payload: { discordId: SNOWFLAKE(801), kind: 'suspension' },
     ...overrides,
   }
 }
