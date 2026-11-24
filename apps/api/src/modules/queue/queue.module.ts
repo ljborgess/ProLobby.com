@@ -38,5 +38,6 @@ import { QueueStallState } from './queue-stall'
     QueueMatchingJob,
     QueueStallState,
   ],
+  exports: [UserReportService],
 })
 export class QueueModule {}

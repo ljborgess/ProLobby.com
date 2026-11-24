@@ -18,6 +18,7 @@ import { throttlerConfig, throttlingDisabled } from './common/security/throttler
 import { AccountModule } from './modules/account/account.module'
 import { BotIntegrationModule } from './modules/bot-integration/bot-integration.module'
 import { CharacterModule } from './modules/character/character.module'
+import { ModerationModule } from './modules/moderation/moderation.module'
 import { OpsModule } from './modules/ops/ops.module'
 import { QueueModule } from './modules/queue/queue.module'
 import { RankingModule } from './modules/ranking/ranking.module'
@@ -36,6 +37,7 @@ import { RankingModule } from './modules/ranking/ranking.module'
     AccountModule,
     RankingModule,
     CharacterModule,
+    ModerationModule,
     BotIntegrationModule,
     OpsModule,
     QueueModule,
