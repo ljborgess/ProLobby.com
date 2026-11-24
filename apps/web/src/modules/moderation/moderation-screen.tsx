@@ -1,59 +1,37 @@
 'use client'
 
 import { useState } from 'react'
-import { useModerationContent } from '@/hooks/use-moderation-content'
+import { createBffCasesSource, createBffToolsSource } from './bff-source'
 import { CasePanel } from './case-panel'
-import { createSampleSource, sampleCases } from './sample-cases'
-import { createSampleTools } from './sample-tools'
-import { VerificationQueue, type VerificationCase } from './verification-queue'
+import type { VerificationCase } from './verification-queue'
 
 /**
- * What `/moderation` shows. `panel` says where the case queue comes from:
- * `sample` (made-up cases, only outside production, until the API of #307 is
- * on `dev`) or `null` (no queue: the character prints screen alone, as
- * before #309).
+ * What `/moderation` shows: the panel of cases and management sections, read
+ * from the API through `/bff/moderation/*` (#307, #312, #313), with the
+ * character prints screen (#198) inside its Personagem filter.
  */
 export function ModerationScreen({
   cases,
   archetypes,
-  panel,
 }: {
   cases: VerificationCase[]
   archetypes: string[]
-  panel: 'sample' | null
 }) {
-  const content = useModerationContent()
-  // State, not a memo: React may drop a memoized value, and these hold the
-  // sample's closed cases and plan changes. The real prints count goes into the
-  // sample summary, so the Personagem filter opens the real queue (#198).
-  const [sampleSource] = useState(() =>
-    panel === 'sample' ? createSampleSource(sampleCases(), { prints: cases.length }) : null,
-  )
-  // Until the API says who is an admin (#313), the made-up panel plays one, so Planos can be seen.
-  const [sampleTools] = useState(() =>
-    panel === 'sample' ? createSampleTools({ admin: true }) : null,
-  )
-
-  if (sampleSource && sampleTools) {
-    return (
-      <CasePanel
-        source={sampleSource}
-        tools={sampleTools}
-        isAdmin
-        verifications={cases}
-        archetypes={archetypes}
-        sample
-      />
-    )
-  }
+  // State, not a memo: React may drop a memoized value, and a source is a
+  // long-lived object the panel's effects depend on.
+  const [source] = useState(createBffCasesSource)
+  const [tools] = useState(createBffToolsSource)
 
   return (
-    <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-1">
-        <h1 className="landing-section-title font-display text-foreground">{content.title}</h1>
-        <p className="text-sm leading-relaxed text-foreground-soft">{content.subtitle}</p>
-      </header>
-      <VerificationQueue cases={cases} archetypes={archetypes} />
-    </div>
+    <CasePanel
+      source={source}
+      tools={tools}
+      // No endpoint says who is an admin (#313): every moderator sees Planos
+      // and the API refuses the others with 403 `admin_only`, which the form
+      // shows. Hiding it by role comes when the session carries the role.
+      isAdmin
+      verifications={cases}
+      archetypes={archetypes}
+    />
   )
 }

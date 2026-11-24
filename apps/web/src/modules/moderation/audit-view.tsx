@@ -7,7 +7,14 @@ import { CHIP, CHIP_OFF, FIELD, formatDate } from './panel-styles'
 import { isUuid, type AuditEntry, type AuditFilters, type ToolsSource } from './tools'
 
 const NO_FILTERS: AuditFilters = { actor: '', action: '', account: '' }
-const KNOWN_ACTIONS = ['role_changed', 'case_resolved', 'plan_changed'] as const
+const KNOWN_ACTIONS = [
+  'role_changed',
+  'case_resolved',
+  'player_searched',
+  'two_factor_enrollment',
+  'recovery_code_used',
+  'plan_changed',
+] as const
 
 type Page = { entries: AuditEntry[]; next: string | null }
 type State =

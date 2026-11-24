@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, screen } from '@testing-library/react'
 import { renderWithLocale } from '@/test-utils'
-import { MODERATION_CONTENT } from '@/content/moderation'
 import { MODERATION_PANEL_CONTENT } from '@/content/moderation-panel'
 
 const cookieJar = { get: vi.fn(), toString: () => 'prolobby_session=jwt' }
 const apiFetch = vi.fn()
+const fetchMock = vi.fn()
 const notFound = vi.fn(() => {
   throw new Error('NEXT_NOT_FOUND')
 })
@@ -39,6 +39,8 @@ describe('ModerationPage', () => {
   beforeEach(() => {
     cookieJar.get.mockReset()
     apiFetch.mockReset()
+    fetchMock.mockReset()
+    vi.stubGlobal('fetch', fetchMock)
     notFound.mockClear()
     vi.spyOn(console, 'error').mockImplementation(() => undefined)
   })
@@ -46,6 +48,7 @@ describe('ModerationPage', () => {
   afterEach(() => {
     vi.restoreAllMocks()
     vi.unstubAllEnvs()
+    vi.unstubAllGlobals()
   })
 
   it('is a 404 without a session, before asking the API anything', async () => {
@@ -79,9 +82,25 @@ describe('ModerationPage', () => {
       )
       .mockResolvedValueOnce(answer(200, [{ archetype: 'MAESTRO' }]))
 
+    fetchMock.mockImplementation((url: string) =>
+      Promise.resolve(
+        url.startsWith('/bff/moderation/cases/summary')
+          ? answer(200, {
+              sections: [
+                {
+                  key: 'verifications',
+                  open: 1,
+                  types: [{ type: 'character_verification', open: 1 }],
+                },
+              ],
+            })
+          : answer(200, []),
+      ),
+    )
+
     renderWithLocale(await ModerationPage())
 
-    // The sample panel counts the real prints: the Personagem filter opens the real queue.
+    // The Personagem filter opens the real prints queue.
     fireEvent.click(await screen.findByRole('button', { name: /Verificações/ }))
     fireEvent.click(
       await screen.findByRole('button', {
@@ -93,25 +112,27 @@ describe('ModerationPage', () => {
   })
 
   describe('the case queue by section (#309)', () => {
-    it('shows made-up cases, and says so, outside production while the API has no queue', async () => {
+    it('reads the queue from the API, never from made-up cases', async () => {
       signedIn()
-      vi.stubEnv('NODE_ENV', 'development')
       apiFetch.mockResolvedValueOnce(answer(200, [])).mockResolvedValueOnce(answer(200, []))
+      fetchMock.mockImplementation((url: string) =>
+        Promise.resolve(
+          url.startsWith('/bff/moderation/cases/summary')
+            ? answer(200, {
+                sections: [{ key: 'reports', open: 1, types: [{ type: 'user_report', open: 1 }] }],
+              })
+            : answer(200, []),
+        ),
+      )
 
       renderWithLocale(await ModerationPage())
 
-      expect(screen.getByText(MODERATION_PANEL_CONTENT.pt.sample)).toBeInTheDocument()
-    })
-
-    it('never shows made-up cases in production: the prints screen alone', async () => {
-      signedIn()
-      vi.stubEnv('NODE_ENV', 'production')
-      apiFetch.mockResolvedValueOnce(answer(200, [])).mockResolvedValueOnce(answer(200, []))
-
-      renderWithLocale(await ModerationPage())
-
-      expect(screen.getByRole('heading', { name: MODERATION_CONTENT.pt.title })).toBeInTheDocument()
+      expect(await screen.findByRole('button', { name: /Denúncias/ })).toBeInTheDocument()
       expect(screen.queryByText(MODERATION_PANEL_CONTENT.pt.sample)).not.toBeInTheDocument()
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/bff/moderation/cases/summary',
+        expect.objectContaining({ cache: 'no-store' }),
+      )
     })
   })
 })
