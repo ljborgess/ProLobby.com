@@ -23,6 +23,7 @@ import { PlanService, SUPPORTER_MONTH_MS } from '../src/modules/moderation/plan.
 import { PaymentEvent } from '../src/modules/account/payment-event.entity'
 import { AccountRoleAnnouncer } from '../src/modules/bot-integration/account-role-announcer'
 import { CapturingMailSender } from './support/capturing-mail-sender'
+import { withSecondFactor } from './support/two-factor'
 
 const PASSWORD = 'a-long-enough-password'
 
@@ -65,7 +66,12 @@ describe('plan activation (#313)', () => {
     const res = await request(app.getHttpServer())
       .post('/api/sessions')
       .send({ email, password: PASSWORD })
-    return { id: row.id, email, discord: discordOf(counter), cookie: cookieOf(res) }
+    // The panel needs a session that passed the second factor (#311).
+    const cookie =
+      role === AccountRole.USER
+        ? cookieOf(res)
+        : (await withSecondFactor(app, orm, email, cookieOf(res))).cookie
+    return { id: row.id, email, discord: discordOf(counter), cookie }
   }
 
   let admin: { id: string; cookie: string }

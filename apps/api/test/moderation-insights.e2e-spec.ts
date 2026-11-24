@@ -28,6 +28,7 @@ import {
   ModerationCaseType,
 } from '../src/modules/moderation/moderation-case.enums'
 import { CapturingMailSender } from './support/capturing-mail-sender'
+import { withSecondFactor } from './support/two-factor'
 
 const PASSWORD = 'a-long-enough-password'
 
@@ -70,7 +71,12 @@ describe('moderation audit, metrics and player search (#312)', () => {
     const res = await request(app.getHttpServer())
       .post('/api/sessions')
       .send({ email, password: PASSWORD })
-    return { id: row.id, email, discord: discordOf(counter), cookie: cookieOf(res) }
+    // The panel needs a session that passed the second factor (#311).
+    const cookie =
+      role === AccountRole.USER
+        ? cookieOf(res)
+        : (await withSecondFactor(app, orm, email, cookieOf(res))).cookie
+    return { id: row.id, email, discord: discordOf(counter), cookie }
   }
 
   const api = (path: string, cookie = moderator.cookie) =>

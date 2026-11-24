@@ -26,6 +26,7 @@ import {
   UserReportReason,
 } from '../src/modules/moderation/moderation-case.enums'
 import { CapturingMailSender } from './support/capturing-mail-sender'
+import { withSecondFactor } from './support/two-factor'
 
 const PASSWORD = 'a-long-enough-password'
 
@@ -65,7 +66,12 @@ describe('moderation cases by section (#307)', () => {
     const res = await request(app.getHttpServer())
       .post('/api/sessions')
       .send({ email, password: PASSWORD })
-    return { id: row.id, email, cookie: cookieOf(res) }
+    // The panel needs a session that passed the second factor (#311).
+    const cookie =
+      role === AccountRole.USER
+        ? cookieOf(res)
+        : (await withSecondFactor(app, orm, email, cookieOf(res))).cookie
+    return { id: row.id, email, cookie }
   }
 
   const openCase = async (
