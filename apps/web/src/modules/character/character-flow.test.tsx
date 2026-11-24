@@ -474,3 +474,37 @@ describe('Roster (tactics board)', () => {
     expect(marker('goalkeeper')).toHaveFocus()
   })
 })
+
+/** #294: the real screen, not the Roster alone, has to hand the club's kit down to the pitch. */
+describe('CharacterFlow with the club kit', () => {
+  const look = {
+    kit: { primary: 'red', secondary: 'navy', pattern: 'plain', crest: 'shield' },
+    initials: 'VFC',
+  } as const
+  const characters = [
+    {
+      id: 'c1',
+      category: 'midfielder',
+      archetype: 'MAESTRO',
+      platform: 'ps5',
+      state: 'verified',
+      elo: 1000,
+    },
+  ] as const
+
+  it('dresses the places on the pitch in the club kit', () => {
+    const { container } = renderWithLocale(
+      <CharacterFlow characters={[...characters]} archetypes={ARCHETYPES} look={look} />,
+    )
+
+    expect(container.querySelectorAll('[data-kit-shirt]')).toHaveLength(1)
+  })
+
+  it('keeps the plain shirts without a club', () => {
+    const { container } = renderWithLocale(
+      <CharacterFlow characters={[...characters]} archetypes={ARCHETYPES} />,
+    )
+
+    expect(container.querySelector('[data-kit-shirt]')).toBeNull()
+  })
+})

@@ -56,14 +56,20 @@ export const lobbyEndedEventSchema = z.object({
   payload: z.object({ lobbyId: uuid }).strict(),
 })
 
+/**
+ * A punishment applied or served (RF-055, #324): suspension takes Verificado
+ * away, its end gives it back, a ban takes every role away for good
+ * (docs/discord/03-bot.md). The Discord id, not the account id: the bot has
+ * no database to turn one into the other.
+ */
 export const accountPunishedEventSchema = z.object({
   id: uuid,
   occurredAt,
   type: z.literal('account.punished'),
   payload: z
     .object({
-      accountId: uuid,
-      kind: z.enum(['suspension', 'ban']),
+      discordId: snowflake,
+      kind: z.enum(['suspension', 'suspension_ended', 'ban']),
     })
     .strict(),
 })

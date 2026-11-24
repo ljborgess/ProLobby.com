@@ -1,9 +1,10 @@
 import type { EntityManager } from '@mikro-orm/postgresql'
 
 import type { Account } from '../account/account.entity'
-import { AccountState } from '../account/account.enums'
+import { AccountPlan, AccountState } from '../account/account.enums'
 import { PlatformGamertag } from '../character/platform-gamertag.entity'
 import { BlockedIdentity } from '../moderation/blocked-identity.entity'
+import { changePlan } from '../moderation/plan.service'
 import { ModerationCase } from '../moderation/moderation-case.entity'
 import {
   ModerationCaseOrigin,
@@ -86,6 +87,14 @@ async function ban(
   const banCase = closedCase(em, account, ModerationCaseType.BAN, decision, now)
   account.state = AccountState.BANNED
   account.suspensionEndsAt = undefined
+  // The ban takes Founder and Supporter away too, without refund (docs/discord/03-bot.md).
+  if (account.plan !== AccountPlan.NONE) {
+    changePlan(em, account, AccountPlan.NONE, undefined, {
+      actorLabel: 'system',
+      caseId: banCase.id,
+      pixReference: null,
+    })
+  }
   await em.nativeDelete(QueueEntry, { account, lobby: null })
 
   if (

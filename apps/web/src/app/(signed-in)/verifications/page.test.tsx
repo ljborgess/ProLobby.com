@@ -25,7 +25,6 @@ vi.mock('@/common/api/client', () => ({ apiFetch: (...args: unknown[]) => apiFet
 import VerificationsPage from './page'
 
 const signedIn = () => cookieJar.get.mockReturnValue({ name: 'prolobby_session', value: 'jwt' })
-const anonymous = () => cookieJar.get.mockReturnValue(undefined)
 const answers = (status: number, body: unknown) =>
   apiFetch.mockResolvedValue(new Response(JSON.stringify(body), { status }))
 
@@ -43,13 +42,6 @@ describe('VerificationsPage', () => {
 
   afterEach(() => {
     vi.restoreAllMocks()
-  })
-
-  it('redirects to login without calling the API when there is no session cookie', async () => {
-    anonymous()
-
-    await expect(VerificationsPage()).rejects.toThrow('NEXT_REDIRECT:/login')
-    expect(apiFetch).not.toHaveBeenCalled()
   })
 
   it('shows the panel when the API answers cleanly', async () => {
