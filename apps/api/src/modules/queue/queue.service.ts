@@ -12,7 +12,8 @@ import { isUniqueViolation } from '../../common/database/postgres-error'
 import { Account } from '../account/account.entity'
 import { CharacterCategory } from '../character/archetype'
 import { ACTIVE_CHARACTER_STATES, Character, CharacterState } from '../character/character.entity'
-import { DeclaredClub } from '../account/declared-club.entity'
+import type { Kit } from '@prolobby/types'
+import { DeclaredClub, kitOf } from '../account/declared-club.entity'
 import { CaptainOffer } from '../lobby/captain-offer.entity'
 import { LobbyParticipation, LobbySide } from '../lobby/lobby-participation.entity'
 import { type Lobby, LobbyState } from '../lobby/lobby.entity'
@@ -105,8 +106,16 @@ export interface QueueEntryView {
     reportConfirmBy: Date | null
     /** While the match runs: who played, to name an absence in the report (4.1). */
     players: { teammates: TeammateView[]; opponents: TeammateView[] } | null
+    /**
+     * Each side dressed in its captain's club (Kit Lab, #300): null until both
+     * captains confirmed. The kit is the captain's current one; the name is
+     * the one captured at confirmation, the same as `inviteClubName`.
+     */
+    sides: { mine: CaptainClub | null; theirs: CaptainClub | null } | null
   } | null
 }
+
+export type CaptainClub = { clubName: string; kit: Kit }
 
 /** RF-008: what the screen shows of each category, never the count. */
 export type MovementBand = 'low' | 'busy' | 'full'
@@ -203,6 +212,7 @@ export class QueueService {
                 entry.lobby.state === LobbyState.AWAITING_CONFIRMATION)
                 ? await this.peerRatingService.players(em, entry.lobby, accountId)
                 : null,
+            sides: entry.lobby && mine ? await captainClubs(em, entry.lobby, mine.side) : null,
           })
         : null,
       blockedUntil: block.blockedUntil,
@@ -311,6 +321,25 @@ export class QueueService {
 }
 
 type LobbyExtra = Omit<NonNullable<QueueEntryView['lobby']>, 'state' | 'confirmBy' | 'inviteBy'>
+
+/** Only the captain's club name and kit leave here: nothing else of the other account. */
+async function captainClubs(
+  em: EntityManager,
+  lobby: Lobby,
+  side: LobbySide,
+): Promise<NonNullable<QueueEntryView['lobby']>['sides']> {
+  if (!lobby.captainA || !lobby.captainB) return null
+  const clubs = await em.find(DeclaredClub, {
+    account: { $in: [lobby.captainA.id, lobby.captainB.id] },
+  })
+  const of = (captain: Account, name: string | undefined): CaptainClub | null => {
+    const club = clubs.find((c) => c.account.id === captain.id)
+    return club ? { clubName: name ?? club.clubName, kit: kitOf(club) } : null
+  }
+  const a = of(lobby.captainA, lobby.clubA)
+  const b = of(lobby.captainB, lobby.clubB)
+  return side === LobbySide.A ? { mine: a, theirs: b } : { mine: b, theirs: a }
+}
 
 function toView(
   entry: QueueEntry,
