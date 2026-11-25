@@ -128,7 +128,6 @@ describe('ModerationPage', () => {
       renderWithLocale(await ModerationPage())
 
       expect(await screen.findByRole('button', { name: /Denúncias/ })).toBeInTheDocument()
-      expect(screen.queryByText(MODERATION_PANEL_CONTENT.pt.sample)).not.toBeInTheDocument()
       expect(fetchMock).toHaveBeenCalledWith(
         '/bff/moderation/cases/summary',
         expect.objectContaining({ cache: 'no-store' }),

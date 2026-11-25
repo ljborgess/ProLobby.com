@@ -11,7 +11,6 @@ import type { Locale } from './locale'
 export interface ModerationPanelContent {
   title: string
   sidebarLabel: string
-  sample: string
   all: string
   sections: Record<SectionKey, string>
   caseTypes: Record<CaseType, string>
@@ -57,7 +56,6 @@ export const MODERATION_PANEL_CONTENT: Record<Locale, ModerationPanelContent> = 
   pt: {
     title: 'Painel de moderação',
     sidebarLabel: 'Seções do painel',
-    sample: 'Dados de exemplo: a API do painel ainda não está no ar. Nada aqui é de verdade.',
     all: 'Todos',
     sections: {
       verifications: 'Verificações',
@@ -132,7 +130,6 @@ export const MODERATION_PANEL_CONTENT: Record<Locale, ModerationPanelContent> = 
   es: {
     title: 'Panel de moderación',
     sidebarLabel: 'Secciones del panel',
-    sample: 'Datos de ejemplo: la API del panel aún no está en línea. Nada aquí es real.',
     all: 'Todos',
     sections: {
       verifications: 'Verificaciones',
