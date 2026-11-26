@@ -53,7 +53,6 @@ export function CasePanel({
   archetypes,
   tools,
   isAdmin,
-  sample = false,
 }: {
   source: CasesSource
   /** The management sections' data: players, audit, metrics and plans (#314). */
@@ -62,8 +61,6 @@ export function CasePanel({
   isAdmin: boolean
   verifications: VerificationCase[]
   archetypes: string[]
-  /** The source holds made-up cases (the API is not on yet): say so on the screen. */
-  sample?: boolean
 }) {
   const content = useModerationPanelContent()
   const toolsContent = useModerationToolsContent()
@@ -172,11 +169,6 @@ export function CasePanel({
   return (
     <div className="flex flex-col gap-6">
       <h1 className="landing-section-title font-display text-foreground">{content.title}</h1>
-      {sample && (
-        <p className="rounded-md border border-white/15 px-3.5 py-2 text-sm text-foreground-soft">
-          {content.sample}
-        </p>
-      )}
 
       {summary.status === 'error' && (
         <div

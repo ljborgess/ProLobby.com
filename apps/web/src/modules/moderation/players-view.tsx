@@ -8,6 +8,7 @@ import { useModerationToolsContent } from '@/hooks/use-moderation-tools-content'
 import { CHIP, CHIP_OFF, CHIP_ON, FIELD, formatDate } from './panel-styles'
 import {
   MAX_PIX_REFERENCE,
+  MIN_SEARCH_LENGTH,
   PIX_REFERENCE,
   type PlayerSheet,
   type PlayerSummary,
@@ -31,7 +32,7 @@ export function PlayersView({ source, withPlans }: { source: ToolsSource; withPl
   function search(event: FormEvent) {
     event.preventDefault()
     const term = query.trim()
-    if (!term) return
+    if (term.length < MIN_SEARCH_LENGTH) return
     setSelectedId(null)
     setResults({ status: 'loading' })
     source
@@ -56,7 +57,7 @@ export function PlayersView({ source, withPlans }: { source: ToolsSource; withPl
         <p className="text-xs text-foreground-soft">{content.players.searchHint}</p>
         <button
           type="submit"
-          disabled={query.trim() === ''}
+          disabled={query.trim().length < MIN_SEARCH_LENGTH}
           className="landing-focus min-h-11 self-start rounded-full bg-accent px-5 text-sm font-medium text-background disabled:opacity-60"
         >
           {content.players.search}
@@ -236,7 +237,13 @@ function Sheet({
           accountId={player.accountId}
           who={name}
           plan={player.plan}
-          onChanged={(plan) => setSheet({ status: 'ready', value: { ...player, plan } })}
+          // Read the sheet again: a plan change also moves the expiry date.
+          onChanged={() =>
+            source
+              .player(accountId)
+              .then((value) => setSheet({ status: 'ready', value }))
+              .catch(() => undefined)
+          }
         />
       )}
     </article>
@@ -254,7 +261,7 @@ function PlanForm({
   accountId: string
   who: string
   plan: Plan
-  onChanged: (plan: Plan) => void
+  onChanged: () => void
 }) {
   const content = useModerationToolsContent()
   const [pix, setPix] = useState('')
@@ -279,7 +286,7 @@ function PlanForm({
     setStatus('saving')
     const result = await source.setPlan(accountId, pending, pix.trim())
     if (result === 'ok') {
-      onChanged(pending)
+      onChanged()
       setStatus('done')
       setPending(null)
       setPix('')
