@@ -6,6 +6,17 @@ Recado vale até ser marcado como **resolvido**. Não se apaga: o histórico exp
 
 ---
 
+## 2026-11-26 · Rafael
+
+### Encerrar disputa de placar agora pede a decisão (#342)
+
+- **Mudou o contrato do `POST /api/moderation/cases/:id/closures`** pra casos `score_dispute`: além de `outcome` e `reason`, vai `dispute: 'score'` com `scoreA` e `scoreB` (0 a 20), ou `dispute: 'annul'` pra anular (RF-044). Sem a decisão, a API responde `400 dispute_decision_required`; com ela em outro tipo de caso, `400 not_a_score_dispute`.
+- **Na tela do caso de disputa**: placar do lado A e do lado B, ou o botão de anular, antes de encerrar. Moderador que jogou a partida recebe `403 moderator_in_match`.
+- **Partida anulada** aparece no histórico do perfil (#337) com `state: 'annulled'` e `annulled: true`.
+- Por enquanto **1 moderador decide**; a votação de 3 é a #343 e vai precisar de tela de voto.
+
+---
+
 ## 2026-11-12 · Rafael
 
 ### Punição e plano já mexem nos cargos do Discord (#313, #324)

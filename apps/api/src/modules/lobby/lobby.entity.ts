@@ -28,6 +28,8 @@ export enum LobbyState {
   CANCELLED_NO_FAULT = 'cancelled_no_fault',
   /** Terminal: someone never got the invite and the captain gave no reason (#248). */
   CANCELLED_BY_CAPTAIN = 'cancelled_by_captain',
+  /** Terminal: a dispute moderation annulled (RF-044, #342) — no score, elo or reputation. */
+  ANNULLED = 'annulled',
 }
 
 /**
@@ -40,6 +42,7 @@ export const TERMINAL_LOBBY_STATES: readonly LobbyState[] = [
   LobbyState.EXPIRED_NO_REPORT,
   LobbyState.CANCELLED_NO_FAULT,
   LobbyState.CANCELLED_BY_CAPTAIN,
+  LobbyState.ANNULLED,
 ]
 
 /**

@@ -317,6 +317,8 @@ Por que precisou ser dito: [Ranking](../produto/02-jogador/02-ranking.md) falava
 
 **Correção de 2026-09-11 — "espera até haver 3" era deadlock, não espera.** São 4 moderadores no total; com 2 deles envolvidos no mesmo caso sobram 2 elegíveis **permanentemente**, e nada faz aparecer um terceiro. O caso ficava pendente pra sempre e as contas envolvidas presas em `em_disputa` (fila bloqueada) junto. Restando menos de 3 elegíveis, vale [RF-075](#rf-075--caso-sem-3-moderadores-elegíveis-resolve-em-desfecho-neutro).
 
+**Desvio temporário de 2026-11-26 ([#342](https://github.com/ljborgess/ProLobby.com/issues/342)): por enquanto, 1 moderador elegível decide a disputa de placar.** Até então, nada tirava a partida de `em_disputa`, e toda disputa prendia a fila dos envolvidos pra sempre. A decisão foi destravar já: quem jogou a partida é recusado, a decisão é auditada, e os 3 votos com o desfecho neutro do RF-075 entram na [#343](https://github.com/ljborgess/ProLobby.com/issues/343), antes do beta.
+
 ### RF-036 · Denunciado nunca vê quem denunciou
 **Origem**: [produto/04-governanca/01-moderacao.md](../produto/04-governanca/01-moderacao.md)
 

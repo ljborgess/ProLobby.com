@@ -13,6 +13,9 @@ import { Account } from '../account/account.entity'
 import { Character, CharacterState } from '../character/character.entity'
 import { EventDeliveryTargetKind } from '../bot-integration/event-delivery.enums'
 import { EventDeliveryService } from '../bot-integration/event-delivery.service'
+import { LobbyParticipation } from '../lobby/lobby-participation.entity'
+import { LobbyState } from '../lobby/lobby.entity'
+import { MatchReportService } from '../queue/match-report.service'
 import { UserReportService } from '../queue/user-report.service'
 import { AuditAction, recordAudit } from './audit-entry.entity'
 import type { CloseCaseDto } from './dto/close-case.dto'
@@ -82,6 +85,7 @@ export class ModerationCasesService {
     private readonly em: EntityManager,
     private readonly userReports: UserReportService,
     private readonly events: EventDeliveryService,
+    private readonly matchReports: MatchReportService,
   ) {}
 
   async summary(moderatorId: string): Promise<SectionSummary[]> {
@@ -182,6 +186,11 @@ export class ModerationCasesService {
       if (moderationCase.state !== ModerationCaseState.OPEN) {
         throw new ConflictException('case_already_closed')
       }
+      if (moderationCase.type === ModerationCaseType.SCORE_DISPUTE) {
+        await this.decideDispute(em, moderatorId, moderationCase, dto, now)
+      } else if (dto.dispute) {
+        throw new BadRequestException('not_a_score_dispute')
+      }
       const note = dto.note?.trim() || null
       moderationCase.state =
         dto.outcome === 'resolved' ? ModerationCaseState.RESOLVED : ModerationCaseState.DISMISSED
@@ -233,6 +242,41 @@ export class ModerationCasesService {
         ? { kind: EventDeliveryTargetKind.ACCOUNT, id: closed.openerId }
         : { kind: EventDeliveryTargetKind.SYSTEM },
     )
+  }
+
+  /**
+   * The match side of closing a score dispute (#342): without it the lobby
+   * stayed `in_dispute` and held everyone's queue for good. A moderator who
+   * played the match cannot decide it (RF-035). One eligible moderator
+   * decides for now; the quorum of three (RF-035, RF-075) is #343.
+   */
+  private async decideDispute(
+    em: EntityManager,
+    moderatorId: string,
+    moderationCase: ModerationCase,
+    dto: CloseCaseDto,
+    now: Date,
+  ): Promise<void> {
+    if (!dto.dispute) throw new BadRequestException('dispute_decision_required')
+    const lobbyId = moderationCase.lobbyId
+    if (!lobbyId) throw new ConflictException('dispute_without_lobby')
+    if (await em.count(LobbyParticipation, { lobby: lobbyId, account: moderatorId })) {
+      throw new ForbiddenException('moderator_in_match')
+    }
+    const decision =
+      dto.dispute === 'annul' ? 'annul' : { scoreA: dto.scoreA!, scoreB: dto.scoreB! }
+    await this.matchReports.decideDisputeIn(em, lobbyId, decision, now)
+    recordAudit(em, {
+      action: AuditAction.CASE_RESOLVED,
+      actorId: moderatorId,
+      actorLabel: 'moderator',
+      caseId: moderationCase.id,
+      before: { lobby: lobbyId, state: LobbyState.IN_DISPUTE },
+      after:
+        decision === 'annul'
+          ? { lobby: lobbyId, state: LobbyState.ANNULLED }
+          : { lobby: lobbyId, state: LobbyState.FINISHED, ...decision },
+    })
   }
 
   /** A queued case, and never one about the moderator asking. */

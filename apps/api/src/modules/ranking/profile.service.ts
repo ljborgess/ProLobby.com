@@ -12,12 +12,13 @@ import { EloEvent } from './elo-event.entity'
 import { EloService, eloOf } from './elo.service'
 import { EloEventReason } from './ranking-event.enums'
 
-/** A match that happened: a score, an expiry without one, or a dispute. Never a cancelled lobby. */
+/** A match that happened: a score, an expiry without one, a dispute or its annulment. Never a cancelled lobby. */
 const PLAYED_STATES = [
   LobbyState.FINISHED,
   LobbyState.NOT_CONFIRMED,
   LobbyState.IN_DISPUTE,
   LobbyState.EXPIRED_NO_REPORT,
+  LobbyState.ANNULLED,
 ]
 /** The states with a score that stands: what the win/draw/loss record counts. */
 const SCORED_STATES = [LobbyState.FINISHED, LobbyState.NOT_CONFIRMED]
@@ -129,7 +130,9 @@ export class ProfileService {
     const items = page.map((p): MatchHistoryItem => {
       const lobby = p.lobby
       const own = events.filter((e) => e.lobbyId === lobby.id)
-      const annulled = own.length > 0 && own.every((e) => e.revertedAt)
+      // Annulled by moderation in a dispute (#342), or its result events reverted (RF-044).
+      const annulled =
+        lobby.state === LobbyState.ANNULLED || (own.length > 0 && own.every((e) => e.revertedAt))
       const score = scoreFor(lobby, p.side, annulled)
       const person = (q: LobbyParticipation): Person => ({
         accountId: q.account.id,
