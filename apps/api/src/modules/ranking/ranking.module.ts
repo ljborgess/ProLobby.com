@@ -7,17 +7,20 @@ import { LeaderboardController } from './leaderboard.controller'
 import { LeaderboardService } from './leaderboard.service'
 import { MatchEloService } from './match-elo.service'
 import { MatchRollbackService } from './match-rollback.service'
+import { ProfileController } from './profile.controller'
+import { ProfileService } from './profile.service'
 import { ReputationService } from './reputation.service'
 import { SuspensionEndJob } from './suspension-end.job'
 
 /** Phase 2.4: elo and reputation, always through their event logs (#53). */
 @Module({
-  controllers: [LeaderboardController],
+  controllers: [LeaderboardController, ProfileController],
   providers: [
     EloService,
     EloDecayService,
     EloDecayJob,
     LeaderboardService,
+    ProfileService,
     ReputationService,
     MatchEloService,
     MatchRollbackService,
