@@ -1,10 +1,15 @@
 import { EntityManager } from '@mikro-orm/postgresql'
-import { BadRequestException, Injectable, ServiceUnavailableException } from '@nestjs/common'
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  ServiceUnavailableException,
+} from '@nestjs/common'
 
 import { HashService } from '../../common/auth/hash.service'
 import { isUniqueViolation } from '../../common/database/postgres-error'
 import { isOldEnough } from './account.age'
-import { Account } from './account.entity'
+import { Account, NICKNAME_UNIQUE_INDEX } from './account.entity'
 import { normaliseSecurityAnswer } from './account.security-answer'
 import { CapacityService } from './capacity.service'
 import { EmailVerificationService } from './email-verification.service'
@@ -149,6 +154,31 @@ export class AccountService {
       }
       throw error
     }
+  }
+
+  async nickname(accountId: string): Promise<string | null> {
+    const account = await this.em.fork().findOneOrFail(Account, { id: accountId })
+    return account.nickname ?? null
+  }
+
+  /**
+   * Sets or clears the platform nickname (#335). Uniqueness is the database's
+   * job (`lower(nickname)` index): a check-then-write here would let two
+   * people take the same name in the same instant.
+   */
+  async setNickname(accountId: string, nickname: string | null): Promise<string | null> {
+    const em = this.em.fork()
+    const account = await em.findOneOrFail(Account, { id: accountId })
+    account.nickname = nickname ?? undefined
+    try {
+      await em.flush()
+    } catch (error) {
+      if (isUniqueViolation(error, NICKNAME_UNIQUE_INDEX)) {
+        throw new ConflictException('nickname_taken')
+      }
+      throw error
+    }
+    return account.nickname ?? null
   }
 }
 

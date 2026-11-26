@@ -9,7 +9,14 @@ import { AccountPlan, AccountRole, AccountState } from './account.enums'
  * Dossier counterpart: `Conta` in docs/requisitos/03-dados.md#conta — every
  * other entity points here, so this one is built first.
  */
+/** `Craque` and `craque` are the same nickname (#335). Byte-identical to migration 20261126120000. */
+export const NICKNAME_UNIQUE_INDEX = 'account_nickname_lower_unique'
+
 @Entity({ tableName: 'account' })
+@Unique({
+  name: NICKNAME_UNIQUE_INDEX,
+  expression: `create unique index "${NICKNAME_UNIQUE_INDEX}" on "account" (lower("nickname"))`,
+})
 export class Account {
   @PrimaryKey({ type: 'uuid' })
   id: string & Opt = randomUUID()
@@ -116,6 +123,13 @@ export class Account {
   /** Supporter is monthly and lapses without renewal (#313); Founder and none never expire. */
   @Property({ nullable: true })
   planExpiresAt?: Date
+
+  /**
+   * How ranking, profile and history show this person (#335): never the
+   * gamertag, which would key their competitive history from outside.
+   */
+  @Property({ length: 16, nullable: true })
+  nickname?: string
 
   @Enum({ items: () => AccountState, default: AccountState.UNVERIFIED })
   @Index()
