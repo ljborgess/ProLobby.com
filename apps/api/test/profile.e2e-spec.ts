@@ -163,7 +163,8 @@ describe('public profile and match history (#337)', () => {
     await match(me, rival, { score: [2, 1], delta: [12, -12] })
     await match(me, rival, { score: [0, 0], delta: [0, 0] })
     await match(rival, me, { score: [3, 0], delta: [8, -8] })
-    await match(me, rival, { state: LobbyState.CANCELLED_NO_FAULT })
+    // A cancelled lobby never moved elo; it must not show in the record either.
+    await match(me, rival, { state: LobbyState.CANCELLED_NO_FAULT, delta: [0, 0] })
 
     const res = await get(me.account.id)
     expect(res.status).toBe(200)
