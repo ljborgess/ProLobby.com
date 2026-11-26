@@ -1,4 +1,4 @@
-import type { CrestShape, KitColor, KitPattern } from '@prolobby/types'
+import type { CrestShape, KitColor, KitPattern } from '@prolobby/types/kit'
 import type { Locale } from './locale'
 
 /** Text for the declared club screen — #229, RF-006. One object per locale. */

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import type { Kit } from '@prolobby/types'
+import type { Kit } from '@prolobby/types/kit'
 import { renderWithLocale } from '@/test-utils'
 import { KIT_SWATCH, type KitLook } from '@/modules/kit/kit-art'
 import { Roster, Shirt, type SlotStatus } from './roster'

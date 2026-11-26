@@ -9,7 +9,7 @@ import {
   KIT_PATTERNS,
   type Kit,
   type KitColor,
-} from '@prolobby/types'
+} from '@prolobby/types/kit'
 import { useClubContent } from '@/hooks/use-club-content'
 import type { DeclaredClubView } from '@/modules/kit/declared-club'
 import { Crest, kitInitials, KIT_SWATCH, KitShirt } from '@/modules/kit/kit-art'
