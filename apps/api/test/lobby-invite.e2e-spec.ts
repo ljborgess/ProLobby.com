@@ -98,7 +98,7 @@ describe('lobby invite window (#248)', () => {
   }
 
   /** Eight humans, both captains confirmed: the invite window is running. */
-  const closedLobby = async () => {
+  const closedLobby = async (beforeCaptains?: (players: Player[]) => Promise<void>) => {
     const players = [
       await queued(CharacterCategory.MIDFIELDER),
       await queued(CharacterCategory.MIDFIELDER),
@@ -115,6 +115,7 @@ describe('lobby invite window (#248)', () => {
     for (const player of players) {
       await confirmation.respond(player.accountId, true, new Date(t0 + SECOND))
     }
+    await beforeCaptains?.(players)
     const closedAt = new Date(t0 + 5 * SECOND)
     const offers = await orm.em.fork().find(CaptainOffer, { lobby: created!.id, outcome: null })
     for (const offer of offers) {
@@ -300,6 +301,38 @@ describe('lobby invite window (#248)', () => {
     await expect(
       invite.received(a.others[1]!.accountId, at(Date.now() + 6 * MINUTE)),
     ).rejects.toMatchObject({ status: 409 })
+  })
+
+  it("dresses each side in its captain's current kit once both confirmed, nothing before (#300)", async () => {
+    const queue = (cookie: string) =>
+      request(app.getHttpServer()).get('/api/queue').set('Cookie', cookie)
+    let before: unknown = 'unset'
+    const { a, b } = await closedLobby(async (players) => {
+      before = (await queue(players[0]!.cookie)).body.entry.lobby.sides
+    })
+    expect(before).toBeNull()
+
+    // The captain of B repaints after confirming: the lobby shows the new kit.
+    await orm.em
+      .fork()
+      .nativeUpdate(
+        DeclaredClub,
+        { account: b.captain.accountId },
+        { kitPrimary: 'red', kitPattern: 'stripes' },
+      )
+
+    const fromA = (await queue(a.others[0]!.cookie)).body.entry.lobby.sides
+    const fromB = (await queue(b.captain.cookie)).body.entry.lobby.sides
+    const kitShape = { primary: expect.any(String), secondary: expect.any(String) }
+    expect(fromA.mine).toEqual({
+      clubName: expect.stringMatching(/^Clube \d+$/),
+      kit: expect.objectContaining(kitShape),
+    })
+    expect(fromA.theirs.kit).toMatchObject({ primary: 'red', pattern: 'stripes' })
+    expect(fromB.mine).toEqual(fromA.theirs)
+    expect(fromB.theirs).toEqual(fromA.mine)
+    // Only the club leaves: no account id, e-mail or anything else of the captain.
+    expect(Object.keys(fromA.theirs).sort()).toEqual(['clubName', 'kit'])
   })
 
   it('refuses outside a lobby', async () => {
