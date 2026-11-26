@@ -5,7 +5,7 @@ import {
   type Kit,
   type KitColor,
   type KitPattern,
-} from '@prolobby/types'
+} from '@prolobby/types/kit'
 
 /**
  * The kit palette (Kit Lab, 2026-10-29). Kit colours live only inside the

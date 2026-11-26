@@ -1,4 +1,4 @@
-import type { Kit } from '@prolobby/types'
+import type { Kit } from '@prolobby/types/kit'
 
 /** `GET /api/accounts/me/club` → `club`. */
 export interface DeclaredClubView {
