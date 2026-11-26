@@ -1,3 +1,4 @@
+import { EntityManager } from '@mikro-orm/postgresql'
 import { Injectable, Logger } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
 
@@ -8,6 +9,10 @@ import { LobbyInviteService } from './lobby-invite.service'
 import { MatchReportService } from './match-report.service'
 import { QueueBoardPublisher } from './queue-board.publisher'
 import { QueueMatchingService } from './queue-matching.service'
+import { nextQueueWork, QueueWake } from './queue-wake'
+
+/** What a sleeping queue checks at the latest, should a wake be missed (#333). */
+const IDLE_CAP_MS = 6 * 60 * 60 * 1000
 
 /**
  * #231, #232: every 5 s the queue undoes the lobbies whose 30 s ran out, then
@@ -27,6 +32,8 @@ export class QueueMatchingJob {
     private readonly matchReportService: MatchReportService,
     private readonly queueMatchingService: QueueMatchingService,
     private readonly queueBoardPublisher: QueueBoardPublisher,
+    private readonly em: EntityManager,
+    private readonly wake: QueueWake,
   ) {}
 
   // Off under Jest: the e2e suites drive the services themselves, and a run
@@ -36,6 +43,10 @@ export class QueueMatchingJob {
     waitForCompletion: true,
   })
   async run(): Promise<void> {
+    // Nothing searching and no deadline due: skip the database, so Neon can
+    // hibernate (ADR-009, #333). A call to the queue's routes wakes it.
+    if (!this.wake.due()) return
+    const mark = this.wake.mark()
     try {
       const undone = await this.lobbyConfirmationService.expire()
       if (undone > 0) this.logger.log(`undid ${undone} lobby(ies) past the 30 s`)
@@ -51,6 +62,9 @@ export class QueueMatchingJob {
       if (lobbies > 0) this.logger.log(`created ${lobbies} lobby(ies)`)
       // Not awaited: the bot being slow must not hold the next run back.
       void this.queueBoardPublisher.publish()
+      const now = new Date()
+      const next = await nextQueueWork(this.em.fork(), now)
+      this.wake.sleepUntil(next, IDLE_CAP_MS, now.getTime(), mark)
     } catch (error) {
       this.logger.error('failed to run the queue', error instanceof Error ? error.stack : undefined)
     }

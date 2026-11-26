@@ -17,6 +17,7 @@ import { QueueMatchingService } from './queue-matching.service'
 import { QueueController } from './queue.controller'
 import { QueueBoardPublisher } from './queue-board.publisher'
 import { QueueService } from './queue.service'
+import { QueueWake, QueueWakeInterceptor } from './queue-wake'
 import { QueueStallState } from './queue-stall'
 
 /** Phase 2.5 and the lobby of phase 3: queue, matchmaking, captains (#55, #56). */
@@ -37,6 +38,8 @@ import { QueueStallState } from './queue-stall'
     QueueMatchingService,
     QueueMatchingJob,
     QueueStallState,
+    QueueWake,
+    QueueWakeInterceptor,
   ],
   exports: [UserReportService],
 })
