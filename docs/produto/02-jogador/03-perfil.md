@@ -8,6 +8,17 @@
 - **Dado bruto continua privado**: print, foto de tela, Discord ID e gamertag/PSN ID fora do contexto do lobby ativo — mesma regra já fechada em [Personagens e verificação](01-verificacao.md) (histórico de prints visível só pro dono + moderação).
 - **Clube EA declarado (auto-declaração pra virar capitão, ver [Personagens e verificação](01-verificacao.md)) também é privado** — usado só internamente pelo matchmaking, sem benefício claro de expor pros outros usuários. Só aparece pros convidados daquele lado quando a pessoa é escolhida capitão de fato.
 
+## Apelido — como o jogador aparece
+
+**Decidido em 2026-11-26.** Ranking, perfil e histórico mostram um **apelido da plataforma**, escolhido pela pessoa, nunca a gamertag ou o PSN ID.
+
+- Motivo: a gamertag é pública fora da plataforma. Mostrá-la no ranking faria dela a chave pro histórico competitivo de qualquer um, que é justamente o que a regra de [não ter busca](#como-se-chega-ao-perfil-de-outra-pessoa) evita. Sem nome nenhum, o ranking perderia a identidade de "bom jogador", que é o valor dele.
+- **3 a 16 caracteres, letras sem acento, números e `_`.** Unicode deixaria imitar o apelido de outra pessoa com letras parecidas (`a` latino e `а` cirílico).
+- **Único, sem diferenciar maiúscula e minúscula**: `Craque` e `craque` são o mesmo apelido.
+- **Opcional.** Sem apelido, a pessoa aparece no ranking como "sem apelido" e não some dele. Ninguém fica fora do ranking por não ter escolhido um nome.
+- A reputação e o histórico seguem a **conta**, não o apelido: trocar de apelido não apaga nada.
+- **Fora desta fatia**: a moderação resetar um apelido ofensivo, e um limite de trocas. Entram se o abuso aparecer.
+
 ## Ranking
 
 - **Cinco rankings separados, um por categoria** — coerente com o elo ser por personagem/categoria ([Ranking](02-ranking.md)). Ranking geral único misturaria elos que o dossiê decidiu manter incomparáveis.

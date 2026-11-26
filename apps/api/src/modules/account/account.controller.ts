@@ -33,6 +33,7 @@ import { OpenPunishmentAppealDto } from './dto/open-punishment-appeal.dto'
 import { RequestAccountRecoveryDto } from './dto/request-account-recovery.dto'
 import { RequestPasswordResetDto } from './dto/request-password-reset.dto'
 import { ResendVerificationDto } from './dto/resend-verification.dto'
+import { SetNicknameDto } from './dto/set-nickname.dto'
 import { SignUpDto } from './dto/sign-up.dto'
 import { VerifyEmailDto } from './dto/verify-email.dto'
 import { DiscordLinkService } from './discord-link.service'
@@ -289,6 +290,27 @@ export class AccountController {
   @AllowStates(AccountState.ACTIVE, AccountState.UNVERIFIED)
   async currentDiscordLink(@Req() request: RequestWithAccount): Promise<{ linked: boolean }> {
     return { linked: await this.discordLinkService.isLinked(request.account!.id) }
+  }
+
+  /** The platform nickname, how ranking and profile show this account (#335). */
+  @Get('me/nickname')
+  @AllowStates(AccountState.ACTIVE, AccountState.UNVERIFIED)
+  async currentNickname(@Req() request: RequestWithAccount): Promise<{ nickname: string | null }> {
+    return { nickname: await this.accountService.nickname(request.account!.id) }
+  }
+
+  /**
+   * Sets or clears it: `409 nickname_taken` when someone has it in any case.
+   * Throttled: each call is also a probe of which names exist.
+   */
+  @Put('me/nickname')
+  @AllowStates(AccountState.ACTIVE, AccountState.UNVERIFIED)
+  @Throttle(LOGIN_THROTTLE)
+  async setNickname(
+    @Req() request: RequestWithAccount,
+    @Body() dto: SetNicknameDto,
+  ): Promise<{ nickname: string | null }> {
+    return { nickname: await this.accountService.setNickname(request.account!.id, dto.nickname) }
   }
 
   /**
