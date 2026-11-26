@@ -18,11 +18,8 @@ export function askToAlert() {
  * The 30 s are spent looking at the console, not at this tab (audit of
  * 2026-10-28). While a lobby waits on this account's answer the tab title
  * counts it down; the moment it appears, a hidden tab raises a notification
- * and a phone vibrates.
- *
- * ponytail: the notification rides the poll, and a tab hidden for minutes
- * gets its timers throttled to about one a minute, so it can arrive late in
- * the 30 s. A worker timer or a push (SSE) is the upgrade if that bites.
+ * and a phone vibrates. It rides the poll, which runs on a worker clock so a
+ * tab hidden for minutes still asks on time (#298, `clock.ts`).
  */
 export function useMatchAlert(
   confirmBy: string | null,
