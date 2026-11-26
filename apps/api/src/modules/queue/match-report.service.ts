@@ -412,6 +412,36 @@ export class MatchReportService {
   }
 
   /**
+   * Moderation decides a dispute (02-estados.md, state 9; #342), inside the
+   * caller's transaction that also closes the case. A score settles the match
+   * as `finished` and applies its elo and reputation once: a dispute is always
+   * opened before `finished`, so nothing was applied yet. `annul` (RF-044)
+   * ends it with no score, elo or reputation. Either way the queue is free.
+   */
+  async decideDisputeIn(
+    em: EntityManager,
+    lobbyId: string,
+    decision: ReportScore | 'annul',
+    now: Date,
+  ): Promise<void> {
+    const lobby = await em.findOne(Lobby, { id: lobbyId }, { lockMode: LockMode.PESSIMISTIC_WRITE })
+    if (lobby?.state !== LobbyState.IN_DISPUTE) {
+      throw new ConflictException('lobby_not_in_dispute')
+    }
+    if (decision === 'annul') {
+      lobby.state = LobbyState.ANNULLED
+      lobby.scoreA = undefined
+      lobby.scoreB = undefined
+      lobby.endedAt = now
+      await em.flush()
+      await em.nativeDelete(QueueEntry, { lobby })
+      return
+    }
+    await settle(em, lobby, LobbyState.FINISHED, now, decision)
+    await this.finishedFor(em, lobby)
+  }
+
+  /**
    * Elo (#209) and reputation for a finished match. Clean for every human of it — +1, up to
    * 70 (#208) — except who a report named absent: named by both sides, the
    * absence is confirmed and costs −8 (docs/produto/03-partida/04-resultado.md);

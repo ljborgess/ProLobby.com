@@ -41,6 +41,6 @@ import { QueueStallState } from './queue-stall'
     QueueWake,
     QueueWakeInterceptor,
   ],
-  exports: [UserReportService],
+  exports: [UserReportService, MatchReportService],
 })
 export class QueueModule {}

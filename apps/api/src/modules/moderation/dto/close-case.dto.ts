@@ -1,5 +1,15 @@
 import { Transform } from 'class-transformer'
-import { IsEnum, IsIn, IsOptional, IsString, MaxLength } from 'class-validator'
+import {
+  IsEnum,
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  MaxLength,
+  Min,
+  ValidateIf,
+} from 'class-validator'
 
 import { ClosureReason } from '../moderation-sections'
 
@@ -16,4 +26,24 @@ export class CloseCaseDto {
   @IsString()
   @MaxLength(500)
   note?: string
+
+  /**
+   * Score disputes only, and required there (#342): the score that stands,
+   * or `annul` when no evidence decides it (RF-044). 0 to 20 a side, as a report.
+   */
+  @IsOptional()
+  @IsIn(['score', 'annul'])
+  dispute?: 'score' | 'annul'
+
+  @ValidateIf((dto: CloseCaseDto) => dto.dispute === 'score')
+  @IsInt()
+  @Min(0)
+  @Max(20)
+  scoreA?: number
+
+  @ValidateIf((dto: CloseCaseDto) => dto.dispute === 'score')
+  @IsInt()
+  @Min(0)
+  @Max(20)
+  scoreB?: number
 }

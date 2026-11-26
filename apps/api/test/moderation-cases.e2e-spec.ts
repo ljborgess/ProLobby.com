@@ -6,6 +6,8 @@ import { randomBytes } from 'node:crypto'
 import request from 'supertest'
 
 import { AppModule } from '../src/app.module'
+import { CURRENT_EDITION } from '../src/common/domain/game-edition.enum'
+import { Platform } from '../src/common/domain/platform.enum'
 import { MailSender } from '../src/common/mail/mail.types'
 import {
   encryptAtRest,
@@ -17,6 +19,13 @@ import { Account } from '../src/modules/account/account.entity'
 import { AccountRole, AccountState } from '../src/modules/account/account.enums'
 import { CURRENT_TERMS_VERSION } from '../src/modules/account/terms.constants'
 import { EventDelivery } from '../src/modules/bot-integration/event-delivery.entity'
+import { Archetype, CharacterCategory } from '../src/modules/character/archetype'
+import { Character, CharacterState } from '../src/modules/character/character.entity'
+import { LobbyParticipation, LobbySide } from '../src/modules/lobby/lobby-participation.entity'
+import { Lobby, LobbyState } from '../src/modules/lobby/lobby.entity'
+import { QueueEntry } from '../src/modules/queue/queue-entry.entity'
+import { EloEvent } from '../src/modules/ranking/elo-event.entity'
+import { EloEventReason } from '../src/modules/ranking/ranking-event.enums'
 import { AuditAction, AuditEntry } from '../src/modules/moderation/audit-entry.entity'
 import { ModerationCase } from '../src/modules/moderation/moderation-case.entity'
 import {
@@ -257,7 +266,7 @@ describe('moderation cases by section (#307)', () => {
   it('tells nobody when the system opened the case', async () => {
     const before = await orm.em.fork().count(EventDelivery, { type: 'moderation.case_closed' })
     const id = await openCase({
-      type: ModerationCaseType.SCORE_DISPUTE,
+      type: ModerationCaseType.BOT_DELIVERY_FAILURE,
       origin: ModerationCaseOrigin.SYSTEM,
     })
 
@@ -266,5 +275,151 @@ describe('moderation cases by section (#307)', () => {
     expect(await orm.em.fork().count(EventDelivery, { type: 'moderation.case_closed' })).toBe(
       before,
     )
+  })
+
+  describe('a score dispute frees the queue when decided (#342)', () => {
+    /** A match in dispute between two verified midfielders, and its case. */
+    const disputed = async () => {
+      const [a, b] = [await account(), await account()]
+      const em = orm.em.fork()
+      const lobby = em.create(Lobby, {
+        state: LobbyState.IN_DISPUTE,
+        closedAt: new Date(),
+        unconfirmedAt: new Date(),
+      })
+      for (const [player, side] of [
+        [a, LobbySide.A],
+        [b, LobbySide.B],
+      ] as const) {
+        const character = em.create(Character, {
+          account: player.id,
+          category: CharacterCategory.MIDFIELDER,
+          archetype: Archetype.MAESTRO,
+          platform: Platform.PS5,
+          edition: CURRENT_EDITION,
+          state: CharacterState.VERIFIED,
+          verifiedAt: new Date(),
+        })
+        em.create(LobbyParticipation, {
+          lobby,
+          account: player.id,
+          character,
+          side,
+          category: CharacterCategory.MIDFIELDER,
+          eloAtEntry: 1000,
+        })
+        em.create(QueueEntry, {
+          account: player.id,
+          character,
+          category: CharacterCategory.MIDFIELDER,
+          eloAtEntry: 1000,
+          lobby,
+        })
+      }
+      await em.flush()
+      const caseId = await openCase({
+        type: ModerationCaseType.SCORE_DISPUTE,
+        openedBy: a.id,
+        lobbyId: lobby.id,
+      })
+      return { a, b, lobbyId: lobby.id, caseId }
+    }
+    const lobbyOf = (id: string) => orm.em.fork().findOneOrFail(Lobby, { id })
+    const eloOf = (lobbyId: string) =>
+      orm.em.fork().find(EloEvent, { lobbyId, reason: EloEventReason.MATCH_RESULT })
+
+    it('settles the score moderation decides, applies elo once, and lets both search again', async () => {
+      const { a, lobbyId, caseId } = await disputed()
+      const res = await close(caseId, {
+        outcome: 'resolved',
+        reason: 'confirmed',
+        dispute: 'score',
+        scoreA: 3,
+        scoreB: 1,
+      })
+      expect(res.status).toBe(204)
+
+      expect(await lobbyOf(lobbyId)).toMatchObject({
+        state: LobbyState.FINISHED,
+        scoreA: 3,
+        scoreB: 1,
+      })
+      const elo = await eloOf(lobbyId)
+      expect(elo).toHaveLength(2)
+      expect(elo.map((e) => Math.sign(e.delta)).sort()).toEqual([-1, 1])
+      expect(await orm.em.fork().count(QueueEntry, { lobby: lobbyId })).toBe(0)
+      expect((await orm.em.fork().findOneOrFail(ModerationCase, { id: caseId })).state).toBe(
+        ModerationCaseState.RESOLVED,
+      )
+      const audit = await orm.em.fork().find(AuditEntry, { caseId })
+      expect(audit.map((e) => e.after)).toContainEqual(
+        expect.objectContaining({ state: LobbyState.FINISHED, scoreA: 3, scoreB: 1 }),
+      )
+      const queued = await api().get('/api/queue').set('Cookie', a.cookie)
+      expect(queued.status).toBe(200)
+    })
+
+    it('annuls with no score, elo or reputation (RF-044)', async () => {
+      const { lobbyId, caseId } = await disputed()
+      const res = await close(caseId, {
+        outcome: 'resolved',
+        reason: 'confirmed',
+        dispute: 'annul',
+      })
+      expect(res.status).toBe(204)
+      const lobby = await lobbyOf(lobbyId)
+      expect(lobby.state).toBe(LobbyState.ANNULLED)
+      expect(lobby.scoreA ?? null).toBeNull()
+      expect(await eloOf(lobbyId)).toHaveLength(0)
+      expect(await orm.em.fork().count(QueueEntry, { lobby: lobbyId })).toBe(0)
+    })
+
+    it('asks for the decision, and refuses a score out of range', async () => {
+      const { caseId, lobbyId } = await disputed()
+      const missing = await close(caseId, { outcome: 'resolved', reason: 'confirmed' })
+      expect(missing.status).toBe(400)
+      expect(missing.body.message).toBe('dispute_decision_required')
+      const wrong = await close(caseId, {
+        outcome: 'resolved',
+        reason: 'confirmed',
+        dispute: 'score',
+        scoreA: 21,
+        scoreB: 0,
+      })
+      expect(wrong.status).toBe(400)
+      expect((await lobbyOf(lobbyId)).state).toBe(LobbyState.IN_DISPUTE)
+    })
+
+    it('never lets a moderator who played the match decide it (RF-035)', async () => {
+      const { lobbyId, caseId } = await disputed()
+      const player = await account(AccountRole.MODERATOR)
+      const em = orm.em.fork()
+      const participation = await em.findOneOrFail(LobbyParticipation, {
+        lobby: lobbyId,
+        side: LobbySide.B,
+      })
+      participation.account = em.getReference(Account, player.id)
+      await em.flush()
+
+      const res = await close(
+        caseId,
+        { outcome: 'resolved', reason: 'confirmed', dispute: 'annul' },
+        player.cookie,
+      )
+      expect(res.status).toBe(403)
+      expect(res.body.message).toBe('moderator_in_match')
+      expect((await lobbyOf(lobbyId)).state).toBe(LobbyState.IN_DISPUTE)
+    })
+
+    it('refuses a dispute decision on any other kind of case', async () => {
+      const id = await openCase({ type: ModerationCaseType.BOT_DELIVERY_FAILURE })
+      const res = await close(id, {
+        outcome: 'resolved',
+        reason: 'confirmed',
+        dispute: 'annul',
+      })
+      expect(res.status).toBe(400)
+      expect(res.body.message).toBe('not_a_score_dispute')
+    })
   })
 })
