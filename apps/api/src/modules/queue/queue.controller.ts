@@ -38,6 +38,7 @@ import { MatchReportService, type MatchReportView } from './match-report.service
 import { PeerRatingService } from './peer-rating.service'
 import { UserReportService } from './user-report.service'
 import { QueueService, type MovementBand, type QueueEntryView } from './queue.service'
+import { QueueWakeInterceptor } from './queue-wake'
 
 /**
  * The logged-in account's place in the queue — #228, #232.
@@ -47,6 +48,8 @@ import { QueueService, type MovementBand, type QueueEntryView } from './queue.se
  */
 @Controller('queue')
 @AllowStates(AccountState.ACTIVE, AccountState.UNVERIFIED)
+// Every call here may start work for the queue job, which sleeps when idle (#333).
+@UseInterceptors(QueueWakeInterceptor)
 export class QueueController {
   constructor(
     private readonly queueService: QueueService,
